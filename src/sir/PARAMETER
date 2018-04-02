@@ -1,0 +1,22 @@
+c	----------------------------------------------------------------
+c	WARNING: Whenever this file is changed, the code should be 
+c       recompiled and linked.
+c       ----------------------------------------------------------------
+  
+c	Fundamental parameters:
+
+	parameter (kt=400)      !maximum number of depth points (64)
+        parameter (kn=400)      !maximum number of nodes (64)
+	parameter (kl=10)       !maximum number of lines (100)
+	parameter (kld=5000)    !maximum number of wavelengths (600)
+        parameter (mfitmax=200) !maximum number of total nodes (200)
+
+
+
+
+
+
+
+
+
+

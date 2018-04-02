@@ -1,0 +1,39 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+db	../gen_h5.py	/^db = f.create_dataset('model', model_3d.shape, dtype=np.float32)$/;"	kind:variable	line:16
+db	../gen_h5.py	/^db = f.create_dataset('model', model_3d.shape, dtype=np.float64)$/;"	kind:variable	line:27
+db	../gen_h5.py	/^db = f.create_dataset('model', model_3d.shape, dtype=np.float64)$/;"	kind:variable	line:39
+f	../gen_h5.py	/^f = h5py.File('model_chromosphere.h5', 'w')$/;"	kind:variable	line:26
+f	../gen_h5.py	/^f = h5py.File('model_chromosphere2.h5', 'w')$/;"	kind:variable	line:38
+f	../gen_h5.py	/^f = h5py.File('model_photosphere.h5', 'w')$/;"	kind:variable	line:15
+f	../test.py	/^        f = h5py.File('output.h5', 'r')$/;"	kind:variable	line:44
+gen_h5.py	../gen_h5.py	1;"	kind:file	line:1
+h5py	../gen_h5.py	/^import h5py$/;"	kind:namespace	line:2
+h5py	../test.py	/^import h5py$/;"	kind:namespace	line:4
+hazel	../test.py	/^import hazel$/;"	kind:namespace	line:3
+iterator	../test.py	/^    iterator = hazel.iterator(use_mpi=False)$/;"	kind:variable	line:37
+iterator	../test.py	/^    iterator = hazel.iterator(use_mpi=True)$/;"	kind:variable	line:53
+matplotlib	../test.py	/^import matplotlib.pyplot as pl$/;"	kind:namespace	line:2
+mod	../test.py	/^        mod = hazel.Model('conf.ini')$/;"	kind:variable	line:57
+mod	../test.py	/^    mod = hazel.Model('conf.ini')$/;"	kind:variable	line:39
+mod	../test.py	/^    mod = hazel.Model('conf_single.ini')$/;"	kind:variable	line:11
+mod	../test.py	/^    mod = hazel.Model('conf_single_invert.ini')$/;"	kind:variable	line:23
+model	../gen_h5.py	/^model = np.loadtxt('model_chromosphere.1d', skiprows=1)$/;"	kind:variable	line:20
+model	../gen_h5.py	/^model = np.loadtxt('model_chromosphere2.1d', skiprows=1)$/;"	kind:variable	line:31
+model	../gen_h5.py	/^model = np.loadtxt('model_photosphere.1d', dtype=np.float32, skiprows=1)$/;"	kind:variable	line:6
+model_3d	../gen_h5.py	/^model_3d = np.zeros((n_pixel,8), dtype=np.float64)$/;"	kind:variable	line:22
+model_3d	../gen_h5.py	/^model_3d = np.zeros((n_pixel,8), dtype=np.float64)$/;"	kind:variable	line:33
+model_3d	../gen_h5.py	/^model_3d = np.zeros((n_pixel,nz,ncol), dtype=np.float32)$/;"	kind:variable	line:9
+n_pixel	../gen_h5.py	/^n_pixel = 50$/;"	kind:variable	line:4
+np	../gen_h5.py	/^import numpy as np$/;"	kind:namespace	line:1
+np	../test.py	/^import numpy as np$/;"	kind:namespace	line:1
+pl	../test.py	/^import matplotlib.pyplot as pl$/;"	kind:namespace	line:2
+rank	../test.py	/^    rank = iterator.get_rank()$/;"	kind:variable	line:38
+rank	../test.py	/^    rank = iterator.get_rank()$/;"	kind:variable	line:54
+stop	../test.py	/^from ipdb import set_trace as stop$/;"	kind:namespace	line:5
+test.py	../test.py	1;"	kind:file	line:1
+version	../test.py	/^version = 'single'$/;"	kind:variable	line:7

@@ -1,0 +1,26 @@
+Installation
+============
+
+Hazel v2.0 can be easily installed from PyPI by invoking:
+
+::
+
+    pip install hazel
+
+or from the Anaconda Cloud by invoking:
+
+::
+    conda install hazel
+
+It can also be installed from sources by cloning this repository and installing it:
+
+::
+    
+    git clone https://github.com/aasensio/hazel
+    python setup.py install
+
+Remember that if you want to develop the code, it is useful to use instead:
+
+::
+    
+    python setup.py develop

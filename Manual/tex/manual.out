@@ -1,0 +1,35 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Description}{section.1}% 2
+\BOOKMARK [2][-]{subsection.1.2}{Credits}{section.1}% 3
+\BOOKMARK [1][-]{section.2}{Uncompressing and compiling Hazel}{}% 4
+\BOOKMARK [2][-]{subsection.2.1}{Serial version}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.2}{Parallel version}{section.2}% 6
+\BOOKMARK [1][-]{section.3}{New input file}{}% 7
+\BOOKMARK [1][-]{section.4}{Input files}{}% 8
+\BOOKMARK [2][-]{subsection.4.1}{config\137inversion.dat}{section.4}% 9
+\BOOKMARK [2][-]{subsection.4.2}{init\137parameters.dat}{section.4}% 10
+\BOOKMARK [2][-]{subsection.4.3}{direct\137range.dat}{section.4}% 11
+\BOOKMARK [2][-]{subsection.4.4}{invert\137parameters.dat}{section.4}% 12
+\BOOKMARK [1][-]{section.5}{Atomic models}{}% 13
+\BOOKMARK [1][-]{section.6}{Graphical front-ends}{}% 14
+\BOOKMARK [2][-]{subsection.6.1}{Synthesis}{section.6}% 15
+\BOOKMARK [2][-]{subsection.6.2}{Inversion}{section.6}% 16
+\BOOKMARK [1][-]{section.7}{P-Hazel input/output files}{}% 17
+\BOOKMARK [2][-]{subsection.7.1}{Input files}{section.7}% 18
+\BOOKMARK [2][-]{subsection.7.2}{Output files}{section.7}% 19
+\BOOKMARK [2][-]{subsection.7.3}{Ambiguities}{section.7}% 20
+\BOOKMARK [1][-]{section.8}{Calling Hazel from Python}{}% 21
+\BOOKMARK [1][-]{section.9}{Basic Equations}{}% 22
+\BOOKMARK [2][-]{subsection.9.1}{The radiative transfer approach}{section.9}% 23
+\BOOKMARK [2][-]{subsection.9.2}{The multipolar components of the atomic density matrix}{section.9}% 24
+\BOOKMARK [2][-]{subsection.9.3}{Statistical equilibrium equations}{section.9}% 25
+\BOOKMARK [2][-]{subsection.9.4}{Emission and absorption coefficients}{section.9}% 26
+\BOOKMARK [1][-]{section.10}{Inversion}{}% 27
+\BOOKMARK [2][-]{subsection.10.1}{Global Optimization techniques}{section.10}% 28
+\BOOKMARK [2][-]{subsection.10.2}{Convergence}{section.10}% 29
+\BOOKMARK [2][-]{subsection.10.3}{Stopping criterium}{section.10}% 30
+\BOOKMARK [1][-]{section.11}{Ambiguities in the Hanle effect in the saturation regime}{}% 31
+\BOOKMARK [1][-]{section.12}{PhiB'=PhiB}{}% 32
+\BOOKMARK [1][-]{section.13}{PhiB'=PhiB+pi}{}% 33
+\BOOKMARK [1][-]{section.14}{PhiB'=PhiB+pi/2}{}% 34
+\BOOKMARK [1][-]{section.15}{PhiB'=PhiB-pi/2}{}% 35

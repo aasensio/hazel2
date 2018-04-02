@@ -1,0 +1,68 @@
+.. Hazel documentation master file, created by
+   sphinx-quickstart on Tue Apr  5 19:26:23 2016.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Hazel v2.0
+=================================
+Hazel (an acronym for HAnle and ZEeman Light) is a computer program for the 
+synthesis and inversion of Stokes profiles caused by the joint action of atomic 
+level polarization and the Hanle and Zeeman effects. It is based on the quantum 
+theory of spectral line polarization, which takes into account rigorously all the 
+relevant physical mechanisms and ingredients: optical pumping, atomic level 
+polarization, level crossings and repulsions, Zeeman, Paschen-Back and Hanle effects. 
+
+The new Hazel v2.0 is a complete rewrite of the code, putting emphasis on its
+usability. The code is now able to synthesize photospheric lines under the 
+assumption of local thermodynamic equilibrium, chromospheric lines under
+the multi-term approximation (like the He I multiplets) and a selection of
+arbitrary systematic effects like telluric lines or fringes.
+
+The code is written in Python with the most computationally heavy parts coded in Fortran 90. 
+It can be controlled from a user-friendly configuration file, but it can also
+be called programmatically. It can be used in synthesis mode for obtaining emerging
+Stokes parameters from a given atmosphere. It can also be used in inversion mode
+to infer the model parameters from a set of observed Stokes parameters.
+Graphical front-ends are also provided.
+
+Example uses
+============
+
+Serial mode
+-----------
+
+::
+
+    mod = hazel.Model('conf_single_inv.ini')
+    mod.open_output()
+    mod.invert()
+    mod.close_output()
+::
+
+    iterator = hazel.iterator(use_mpi=True)
+    rank = iterator.get_rank()
+
+    if (rank == 0):    
+        mod = hazel.Model('conf_mpi_invh5.ini')
+        iterator.use_model(model=mod)
+    else:
+        iterator.use_model()
+
+    iterator.run_all_pixels()
+
+.. toctree::
+   :hidden:
+   :maxdepth: 2
+
+   installation
+   configuration
+   programmatically
+   atomicModels
+   inputOutput
+   prepareData
+   equations
+   ambiguities
+   refsys
+   acknowledgements
+   disclaimer
+

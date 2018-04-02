@@ -1,0 +1,285 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Graphical front-ends &mdash; Hazel 2.0beta1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Hazel 2.0beta1 documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Hazel
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="programmatically.html">Programmatically</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inputOutput.html">Input/output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prepareData.html">Data preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="equations.html">Basic Equations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ambiguities.html">Ambiguities in the Hanle effect in the saturation regime</a></li>
+<li class="toctree-l1"><a class="reference internal" href="refsys.html">The reference system</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="disclaimer.html">Disclaimer</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Hazel</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Graphical front-ends</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/graphical.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="graphical-front-ends">
+<h1>Graphical front-ends<a class="headerlink" href="#graphical-front-ends" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="python">
+<h2>Python<a class="headerlink" href="#python" title="Permalink to this headline">¶</a></h2>
+<p>The Python GUI requires <code class="docutils literal"><span class="pre">PyQT4</span></code> to be installed in your system. We recommend
+the wonderful Anaconda Python distribution.
+Once you have all packages installed, go to <code class="docutils literal"><span class="pre">runPy</span></code> and type</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build_ext</span> <span class="o">--</span><span class="n">inplace</span>
+</pre></div>
+</div>
+<p>The code should compile and a dynamic library should be generated, that is
+copied to the directory <code class="docutils literal"><span class="pre">pyGUI</span></code>.
+Go to <code class="docutils literal"><span class="pre">pyGUI</span></code> and type</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">hazel</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="idl">
+<h2>IDL<a class="headerlink" href="#idl" title="Permalink to this headline">¶</a></h2>
+<p>Although the code can be run in command line by modifying by hand the
+input files, &nbsp;contains also two user friendly front-ends (GUI) for the
+simple execution and analysis of the results. Note that the directory
+<code class="docutils literal"><span class="pre">IDL_routines</span></code> has to be in your IDL path.</p>
+<div class="figure" id="id1">
+<img alt="_images/f5.png" src="_images/f5.png" />
+<p class="caption"><span class="caption-text">Screen dump of the graphical front-end used for the synthesis.</span></p>
+</div>
+<div class="figure" id="id2">
+<img alt="_images/inv1.png" src="_images/inv1.png" />
+<p class="caption"><span class="caption-text">Screen dump of the graphical front-end used for the inversion.</span></p>
+</div>
+<div class="figure" id="id3">
+<img alt="_images/inv4.png" src="_images/inv4.png" />
+<p class="caption"><span class="caption-text">Screen dump of the graphical front-end used for the inversion.</span></p>
+</div>
+<p>### Synthesis</p>
+<p>It is placed in the directory <code class="docutils literal"><span class="pre">Widget_Synth</span></code> and it is invoked with
+the following commands:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">IDL</span><span class="o">&gt;</span> <span class="o">.</span><span class="n">r</span> <span class="n">hazel</span>
+<span class="n">IDL</span><span class="o">&gt;</span> <span class="n">hazel</span>
+</pre></div>
+</div>
+<p>Figure [fig:synthesis_GUI] shows the GUI for the synthesis mode. All
+the parameters explained in the previous sections (fundamentally those
+in §[sec:init_parameters]) are present in the GUI. All the parameters
+are very simple to modify (when changing numerical values in the GUI,
+always remember to press <code class="docutils literal"><span class="pre">Return</span></code> to activate the change) and clicking
+on <strong>Calculate</strong>, the window is updated with the new Stokes profiles.
+The GUI also shows the value of the solar radiation field when the
+inclination of the line-of-sight and the wavelength of the multiplet is
+changed. The value (which can be introduced in the value of <span class="math">\(I_0\)</span>
+as a boundary condition) is given next to the height of the slab and
+indicated with the label “Allen”. In case of crashes, the GUI can be
+restarted with the following command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">IDL</span><span class="o">&gt;</span> <span class="o">.</span><span class="n">r</span> <span class="n">hazel</span>
+<span class="n">IDL</span><span class="o">&gt;</span> <span class="n">hazel</span><span class="p">,</span> <span class="o">/</span><span class="n">reset</span>
+</pre></div>
+</div>
+<p>### Inversion</p>
+<p>It is placed in the directory <code class="docutils literal"><span class="pre">Widget_Inv</span></code> and it is invoked with the
+following commands:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">IDL</span><span class="o">&gt;</span> <span class="o">.</span><span class="n">r</span> <span class="n">hazel_inv</span>
+<span class="n">IDL</span><span class="o">&gt;</span> <span class="n">hazel_inv</span>
+</pre></div>
+</div>
+<p>Again, in case of crashes, the GUI can be restarted with the following
+command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">IDL</span><span class="o">&gt;</span> <span class="o">.</span><span class="n">r</span> <span class="n">hazel_inv</span>
+<span class="n">IDL</span><span class="o">&gt;</span> <span class="n">hazel_inv</span><span class="p">,</span> <span class="o">/</span><span class="n">reset</span>
+</pre></div>
+</div>
+<p>The GUI for the inversion is more complex because of the large amount of
+parameters that have to be changed. For this reason, the GUI is composed
+of 4 pages, as indicated in Fig. [fig:inversion_GUI].</p>
+<p>The first page is used to select the output file, together with the
+atomic system and multiplet to be used. Finally, the button <strong>Run
+inversion</strong> will call &nbsp;and update the state of the best model in the
+plot window.</p>
+<p>The second page is used simply to load the file with the observed Stokes
+profile. A button is also available to plot the observed data.</p>
+<p>The third page controls the behavior of the DIRECT algorithm. It is
+essentially a graphical representation of the <code class="docutils literal"><span class="pre">direct_range.dat</span></code> file.</p>
+<p>Finally, the fourth page controls the behavior of the cycles, the value
+of the fixed parameters, the weights for each Stokes parameter and the
+level of physical realism introduced in the simulation.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Andres Asensio Ramos.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'2.0beta1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,30 @@
+Metadata-Version: 1.1
+Name: hazel
+Version: 0.1
+Summary: Hazel v2.0
+Home-page: https://github.com/aasensio/hazel_v2
+Author:  A. Asensio Ramos
+Author-email: aasensio@iac.es
+License: GNU General Public License, version 3 (GPLv3)
+Description:     Main Changes in 0.1
+            ---------------------
+            * Working version
+        :copyright:
+            A. Asensio Ramos    
+        :license:
+            GNU General Public License (GPL)
+Keywords: hazel,radiative transfer
+Platform: OS Independent
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Science/Research
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: Unix
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: MacOS
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Topic :: Scientific/Engineering
+Classifier: Topic :: Scientific/Engineering :: Physics

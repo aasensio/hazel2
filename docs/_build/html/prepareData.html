@@ -1,0 +1,251 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Data preparation &mdash; Hazel 2.0beta1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Hazel 2.0beta1 documentation" href="index.html"/>
+        <link rel="next" title="Basic Equations" href="equations.html"/>
+        <link rel="prev" title="Input/output files" href="inputOutput.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Hazel
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="programmatically.html">Programmatically</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inputOutput.html">Input/output files</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Data preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="equations.html">Basic Equations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ambiguities.html">Ambiguities in the Hanle effect in the saturation regime</a></li>
+<li class="toctree-l1"><a class="reference internal" href="refsys.html">The reference system</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="disclaimer.html">Disclaimer</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Hazel</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Data preparation</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/prepareData.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="data-preparation">
+<h1>Data preparation<a class="headerlink" href="#data-preparation" title="Permalink to this headline">¶</a></h1>
+<p>Some data preprocessing has to be done in order to have reliable inversions with
+Hazel. The process takes the following steps:</p>
+<ul class="simple">
+<li><strong>Data normalization</strong>: the data has to be normalized to the local continuum. This
+is sometimes slightly difficult because the nearby Si I line has strong wings and one should
+use that pseudocontinuum. The very first step would be to remove large scale variations
+of the continuum, so that it is as flat as possible (perhaps removing fringes if you have
+any). Then, you proceed to remove the influence
+of the Si I line. What our people typically use is to fit the Si I line using
+almost all its blue wing and only part of the red wing. I guess you can do it using
+an inversion code like SIR or use a Voigt function. You probably want to get photospheric
+information from your observations, so maybe SIR is a better option. Once you have
+the Si I line fitted, just extend the synthetic wing towards the He I line and then normalize
+the spectrum by the synthetic profile. This way, you&#8217;ll have the He I triplet correctly
+normalized.
+If the data is off-limb, things are typically easier because there is no continuum but
+sometimes there is some stray-light that can give you a headache. In this case,
+the input should be normalized by the peak emission.</li>
+<li><strong>Wavelength calibration</strong>: the data has to be wavelength calibrated. How to do it depends
+on whether you want an absolute calibration of velocities or not. If you want such absolute scale, the best is to do the wavelength
+calibration using telluric lines and then transform everything to the Sun using the relative
+velocity between the observed region and the Earth. If not, maybe using some weak
+surrounding photospheric lines is enough. Note that all wavelengths are given with respect
+to the center of the multiplet, which is 10829.0911 Angstrom for the 10830 Angstrom one)</li>
+<li><strong>Computation of the boundary condition and heliocentric angle</strong>: every pixel should be labeled with its heliocentric angle (this is important for
+observations close to the limb, where mu is changing fast) and its boundary condition.
+So, you need to get a map of heliocentric angles together with your map of observed Stokes
+profiles. Concerning the boundary condition, it is enough to compute the ratio between
+the continuum intensity at every pixel and the average at the same heliocentric angle.</li>
+<li><strong>Rotation of the reference system</strong>: it is important to understand which is the reference direction for positive Stokes
+Q in the observations. Note that the output of the code depends on the <span class="math">\(\gamma\)</span> angle, which exactly
+defines this positive Q direction. Two possibilities appear. The first one is to set <span class="math">\(\gamma\)</span> in the code
+so that you understand which is the reference direction in the code and then rotate the Stokes Q and U data
+so that the reference direction for Stokes Q is aligned with that of the code. The second possibility is to
+keep the data as it is and then put the appropriate value of <span class="math">\(\gamma\)</span> in the code to make both reference
+directions equal. This is usually not difficult, but it requires to understand which is the reference direction
+for the telescope, which is sometimes difficult to get. It is always a good advice to have the scattering
+geometry in mind and try to adapt it to your observations. See <span class="xref std std-ref">image_geometry</span> for more information.</li>
+</ul>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="equations.html" class="btn btn-neutral float-right" title="Basic Equations" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="inputOutput.html" class="btn btn-neutral" title="Input/output files" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Andres Asensio Ramos.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'2.0beta1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

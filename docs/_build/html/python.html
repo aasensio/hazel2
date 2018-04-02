@@ -1,0 +1,247 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Python wrapper &mdash; Hazel 2.0beta1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Hazel 2.0beta1 documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Hazel
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="programmatically.html">Programmatically</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inputOutput.html">Input/output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prepareData.html">Data preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="equations.html">Basic Equations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ambiguities.html">Ambiguities in the Hanle effect in the saturation regime</a></li>
+<li class="toctree-l1"><a class="reference internal" href="refsys.html">The reference system</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="disclaimer.html">Disclaimer</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Hazel</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Python wrapper</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/python.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="python-wrapper">
+<h1>Python wrapper<a class="headerlink" href="#python-wrapper" title="Permalink to this headline">¶</a></h1>
+<p>We have developed a wrapper so that the code can be called from Python easily
+and synthesize Stokes profiles using a simple interface.
+The wrapper is installed by going to the <code class="docutils literal"><span class="pre">runPy</span></code> directory and
+typing</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build_ext</span> <span class="o">--</span><span class="n">inplace</span>
+</pre></div>
+</div>
+<p>It will generate a <code class="docutils literal"><span class="pre">pyhazel.so</span></code> file appropriate for your architecture, that
+can be imported from Python. The <code class="docutils literal"><span class="pre">test.py</span></code> file shows how to call the
+wrapper to synthesize the Stokes profiles. In the following we describe the
+inputs:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Args</span><span class="p">:</span> <span class="p">(</span><span class="n">see</span> <span class="n">the</span> <span class="n">manual</span> <span class="k">for</span> <span class="n">the</span> <span class="n">meaning</span> <span class="n">of</span> <span class="nb">all</span> <span class="n">of</span> <span class="n">them</span><span class="p">)</span>
+    <span class="n">synModeInput</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="n">synthesis</span> <span class="n">mode</span>
+    <span class="n">nSlabsInput</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="n">number</span> <span class="n">of</span> <span class="n">slabs</span>
+    <span class="n">B1Input</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">vector</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">3</span> <span class="k">with</span> <span class="n">the</span> <span class="n">magnetic</span> <span class="n">field</span> <span class="n">vector</span> <span class="ow">in</span> <span class="n">spherical</span> <span class="n">coordinates</span> <span class="k">for</span> <span class="n">the</span> <span class="n">first</span> <span class="n">component</span>
+    <span class="n">B2Input</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">vector</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">3</span> <span class="k">with</span> <span class="n">the</span> <span class="n">magnetic</span> <span class="n">field</span> <span class="n">vector</span> <span class="ow">in</span> <span class="n">spherical</span> <span class="n">coordinates</span> <span class="k">for</span> <span class="n">the</span> <span class="n">second</span> <span class="n">component</span>
+    <span class="n">hInput</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">height</span>
+    <span class="n">tau1Input</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">optical</span> <span class="n">depth</span> <span class="n">of</span> <span class="n">the</span> <span class="n">first</span> <span class="n">component</span>
+    <span class="n">tau2Input</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">optical</span> <span class="n">depth</span> <span class="n">of</span> <span class="n">the</span> <span class="n">second</span> <span class="n">component</span>
+    <span class="n">boundaryInput</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">vector</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">4</span> <span class="k">with</span> <span class="n">the</span> <span class="n">boundary</span> <span class="n">condition</span> <span class="k">for</span> <span class="p">(</span><span class="n">I</span><span class="p">,</span><span class="n">Q</span><span class="p">,</span><span class="n">U</span><span class="p">,</span><span class="n">V</span><span class="p">)</span>
+    <span class="n">transInput</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="n">transition</span> <span class="n">to</span> <span class="n">compute</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">model</span> <span class="n">atom</span>
+    <span class="n">atomicPolInput</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="n">include</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">atomic</span> <span class="n">polarization</span>
+    <span class="n">anglesInput</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">vector</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">3</span> <span class="n">describing</span> <span class="n">the</span> <span class="n">LOS</span>
+    <span class="n">lambdaAxisInput</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">vector</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">2</span> <span class="n">defining</span> <span class="n">the</span> <span class="n">left</span> <span class="ow">and</span> <span class="n">right</span> <span class="n">limits</span> <span class="n">of</span> <span class="n">the</span> <span class="n">wavelength</span> <span class="n">axis</span>
+    <span class="n">nLambdaInput</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="n">number</span> <span class="n">of</span> <span class="n">wavelength</span> <span class="n">points</span>
+    <span class="n">dopplerWidth1Input</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">Doppler</span> <span class="n">width</span> <span class="n">of</span> <span class="n">the</span> <span class="n">first</span> <span class="n">component</span>
+    <span class="n">dopplerWidth2Input</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">Doppler</span> <span class="n">width</span> <span class="n">of</span> <span class="n">the</span> <span class="n">second</span> <span class="n">component</span>
+    <span class="n">dampingInput</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">damping</span>
+    <span class="n">dopplerVelocityInput</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">bulk</span> <span class="n">velocity</span> <span class="n">affecting</span> <span class="n">the</span> <span class="n">first</span> <span class="n">component</span>
+    <span class="n">dopplerVelocity2Input</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">bulk</span> <span class="n">velocity</span> <span class="n">affecting</span> <span class="n">the</span> <span class="n">second</span> <span class="n">component</span>
+    <span class="n">ffInput</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">filling</span> <span class="n">factor</span>
+    <span class="n">betaInput</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">enhancement</span> <span class="n">factor</span> <span class="k">for</span> <span class="n">the</span> <span class="n">source</span> <span class="n">function</span> <span class="n">of</span> <span class="n">component</span> <span class="mi">1</span> <span class="n">to</span> <span class="n">allow</span> <span class="k">for</span> <span class="n">emission</span> <span class="n">lines</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">disk</span>
+    <span class="n">beta2Input</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">enhancement</span> <span class="n">factor</span> <span class="k">for</span> <span class="n">the</span> <span class="n">source</span> <span class="n">function</span> <span class="n">of</span> <span class="n">component</span> <span class="mi">2</span> <span class="n">to</span> <span class="n">allow</span> <span class="k">for</span> <span class="n">emission</span> <span class="n">lines</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">disk</span>
+    <span class="n">nbarInput</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">vector</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">4</span> <span class="n">to</span> <span class="n">define</span> <span class="n">nbar</span> <span class="k">for</span> <span class="n">every</span> <span class="n">transition</span> <span class="n">of</span> <span class="n">the</span> <span class="n">model</span> <span class="n">atom</span> <span class="p">(</span><span class="nb">set</span> <span class="n">them</span> <span class="n">to</span> <span class="n">zero</span> <span class="n">to</span> <span class="n">use</span> <span class="n">Allen</span><span class="s1">&#39;s)</span>
+    <span class="n">omegaInput</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">vector</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">4</span> <span class="n">to</span> <span class="n">define</span> <span class="n">omega</span> <span class="k">for</span> <span class="n">every</span> <span class="n">transition</span> <span class="n">of</span> <span class="n">the</span> <span class="n">model</span> <span class="n">atom</span> <span class="p">(</span><span class="nb">set</span> <span class="n">them</span> <span class="n">to</span> <span class="n">zero</span> <span class="n">to</span> <span class="n">use</span> <span class="n">Allen</span><span class="s1">&#39;s)</span>
+    <span class="n">normalization</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="n">normalization</span> <span class="n">of</span> <span class="n">the</span> <span class="n">output</span> <span class="n">Stokes</span> <span class="n">parameters</span> <span class="p">(</span><span class="mi">0</span><span class="o">-&gt;</span> <span class="n">I_max</span><span class="p">,</span> <span class="mi">1</span><span class="o">-&gt;</span> <span class="n">I_peak</span><span class="p">)</span>
+    <span class="n">deltaCollision</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">depolarizing</span> <span class="n">rate</span> <span class="k">for</span> <span class="n">lower</span> <span class="n">term</span>
+
+<span class="n">Returns</span><span class="p">:</span>
+    <span class="n">wavelengthOutput</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">vector</span> <span class="n">of</span> <span class="n">size</span> <span class="n">nLambdaInput</span> <span class="k">with</span> <span class="n">the</span> <span class="n">wavelength</span> <span class="n">axis</span>
+    <span class="n">stokesOutput</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">array</span> <span class="n">of</span> <span class="n">size</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="n">nLambdaInput</span><span class="p">)</span> <span class="k">with</span> <span class="n">the</span> <span class="n">emergent</span> <span class="n">Stokes</span> <span class="n">profiles</span>
+    <span class="n">epsOutput</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">array</span> <span class="n">of</span> <span class="n">size</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="n">nLambdaInput</span><span class="p">)</span> <span class="k">with</span> <span class="n">the</span> <span class="n">emissivity</span> <span class="n">vector</span> <span class="n">at</span> <span class="n">each</span> <span class="n">wavelength</span>
+    <span class="n">etaOutput</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">array</span> <span class="n">of</span> <span class="n">size</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="n">nLambdaInput</span><span class="p">)</span> <span class="k">with</span> <span class="n">the</span> <span class="n">propagation</span> <span class="n">matrix</span> <span class="n">at</span> <span class="n">each</span> <span class="n">wavelength</span>
+<span class="s2">&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Andres Asensio Ramos.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'2.0beta1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
