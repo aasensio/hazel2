@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -30,6 +32,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="Hazel 2.0beta1 documentation" href="index.html"/> 
 
   
@@ -39,6 +44,7 @@
 
 <body class="wy-body-for-nav" role="document">
 
+   
   <div class="wy-grid-for-nav">
 
     
@@ -79,14 +85,21 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic.html">Basic usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="programmatically.html">Programmatically</a></li>
-<li class="toctree-l1"><a class="reference internal" href="inputOutput.html">Input/output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input.html">Input files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output.html">Output files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="prepareData.html">Data preparation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="equations.html">Basic Equations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ambiguities.html">Ambiguities in the Hanle effect in the saturation regime</a></li>
+<li class="toctree-l1"><a class="reference internal" href="photospheric.html">List of photospheric lines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="refsys.html">The reference system</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="disclaimer.html">Disclaimer</a></li>
@@ -102,8 +115,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">Hazel</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Hazel</a>
+        
       </nav>
 
 
@@ -112,23 +127,40 @@
         <div class="rst-content">
           
 
- 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Atomic models</li>
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Atomic models</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
         
-          
-            <a href="_sources/atomicModels.txt" rel="nofollow"> View page source</a>
+            
+            <a href="_sources/atomicModels.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -138,9 +170,9 @@
 <h1>Atomic models<a class="headerlink" href="#atomic-models" title="Permalink to this headline">¶</a></h1>
 <p>Atomic models have to be defined in &nbsp;in order to carry out a
 calculation. This section describes the model atom file in detail by
-using the example <code class="docutils literal"><span class="pre">helium.mod</span></code> that is included in the present version
+using the example <code class="docutils literal notranslate"><span class="pre">helium.mod</span></code> that is included in the present version
 of Hazel. The atom model for He I is given by:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">2</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2</span>
 <span class="mi">5</span>
 <span class="mi">1</span>        <span class="mi">0</span>
                    <span class="mf">0.00</span>
@@ -166,33 +198,33 @@ of Hazel. The atom model for He I is given by:</p>
 </pre></div>
 </div>
 <p>The first two numbers define the general properties of the atom. The
-first line of the file is equal to <span class="math">\(2S\)</span>, where <span class="math">\(S\)</span> is the
-value of the spin of the terms. In the example, <span class="math">\(S=1\)</span>. At present,
+first line of the file is equal to <span class="math notranslate">\(2S\)</span>, where <span class="math notranslate">\(S\)</span> is the
+value of the spin of the terms. In the example, <span class="math notranslate">\(S=1\)</span>. At present,
 the code does not treat transitions between terms of different
 multiplicity which are, otherwise, of reduced importance due to their
 small transition probability. The second line contains the number of
 terms included in the model atom. This example represents the triplet
-system of He i with the lowest five terms, 2s<span class="math">\(^3\)</span>S,
-3s<span class="math">\(^3\)</span>S, 2p<span class="math">\(^3\)</span>P, 3p<span class="math">\(^3\)</span>P and
-3d<span class="math">\(^3\)</span>D</p>
+system of He i with the lowest five terms, 2s<span class="math notranslate">\(^3\)</span>S,
+3s<span class="math notranslate">\(^3\)</span>S, 2p<span class="math notranslate">\(^3\)</span>P, 3p<span class="math notranslate">\(^3\)</span>P and
+3d<span class="math notranslate">\(^3\)</span>D</p>
 <p>Then, the following lines define the term levels included in the model. The
 information for each term consist of a line with an index (0,1,2,…) that
-is used just to label each term and the value of <span class="math">\(2L\)</span>, where
-<span class="math">\(L\)</span> is the value of the electronic orbital angular momentum. Then,
+is used just to label each term and the value of <span class="math notranslate">\(2L\)</span>, where
+<span class="math notranslate">\(L\)</span> is the value of the electronic orbital angular momentum. Then,
 for each term, we must supply a list containing the energy separation in
-cm<span class="math">\(^{-1}\)</span> between each <span class="math">\(J\)</span>-level and the level with the
-smallest absolute value of <span class="math">\(J\)</span>. In case only one value of
-<span class="math">\(J\)</span> is possible in the term, just put 0 in the energy difference.</p>
+cm<span class="math notranslate">\(^{-1}\)</span> between each <span class="math notranslate">\(J\)</span>-level and the level with the
+smallest absolute value of <span class="math notranslate">\(J\)</span>. In case only one value of
+<span class="math notranslate">\(J\)</span> is possible in the term, just put 0 in the energy difference.</p>
 <p>Finally, the list of transitions has to be supplied. The first number
 indicates the number of radiative transitions included in the model.
 Then, the list contains the following numbers for each transition: index
 number, index of lower level, index of upper level, Einstein coefficient
-for spontaneous emission <span class="math">\(A_{ul}\)</span> of the transition, modification
-factor <span class="math">\(f(\bar{n})\)</span>, modification factor <span class="math">\(f(w)\)</span> and value of
-<span class="math">\(J^1_0/J^0_0\)</span>. The modification factors <span class="math">\(f(\bar{n})\)</span> and
-<span class="math">\(f(w)\)</span> are multiplied by the mean number of photons per mode
-<span class="math">\(\bar{n}\)</span> and the anisotropy factor <span class="math">\(w\)</span>, respectively. Since
-&nbsp;uses the value of <span class="math">\(\bar{n}\)</span> and <span class="math">\(w\)</span> calculated from the
+for spontaneous emission <span class="math notranslate">\(A_{ul}\)</span> of the transition, modification
+factor <span class="math notranslate">\(f(\bar{n})\)</span>, modification factor <span class="math notranslate">\(f(w)\)</span> and value of
+<span class="math notranslate">\(J^1_0/J^0_0\)</span>. The modification factors <span class="math notranslate">\(f(\bar{n})\)</span> and
+<span class="math notranslate">\(f(w)\)</span> are multiplied by the mean number of photons per mode
+<span class="math notranslate">\(\bar{n}\)</span> and the anisotropy factor <span class="math notranslate">\(w\)</span>, respectively. Since
+&nbsp;uses the value of <span class="math notranslate">\(\bar{n}\)</span> and <span class="math notranslate">\(w\)</span> calculated from the
 tabulated solar CLV and taking into account geometrical effects, these
 factors can be used to analyze the behavior of the emergent Stokes
 profiles when, for some reason, the anisotropy or the intensity of the
@@ -200,10 +232,13 @@ radiation field is increased or decreased by an arbitrary factor.
 Finally, if the radiation illuminating the atoms has non-zero net
 circular polarization, it is possible to include its effect in the
 statistical equilibrium equations by giving the value of
-<span class="math">\(J^1_0/J^0_0\)</span>.</p>
+<span class="math notranslate">\(J^1_0/J^0_0\)</span>.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -238,13 +273,14 @@ statistical equilibrium equations by giving the value of
             VERSION:'2.0beta1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

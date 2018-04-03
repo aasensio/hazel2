@@ -30,11 +30,6 @@ methods of solution of the Stokes-vector transfer equation, some of
 which can be considered as particular cases of the two general methods
 explained in §6 of Trujillo Bueno (2003).
 
-<<<<<<< HEAD
-.. _image_geometry:
-
-=======
->>>>>>> 047c6a4a8a03596a8fb4278c2a9e10fc60944d2f
 The geometry for the scattering event
 -------------------------------------
 

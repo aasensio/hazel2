@@ -74,6 +74,18 @@ class Parametric_atmosphere(General_atmosphere):
         self.cycles['ff'] = None
 
     def set_parameters(self, pars):
+        """
+        Set parameters of the model
+
+        Parameters
+        ----------
+        pars : list of floats
+            Values of the parameters: lambda0, sigma, depth, a, ff
+
+        Returns
+        -------
+        None
+        """
         self.parameters['lambda0'] = pars[0]
         self.parameters['sigma'] = pars[1]
         self.parameters['depth'] = pars[2]

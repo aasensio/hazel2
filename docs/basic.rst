@@ -1,30 +1,3 @@
-.. Hazel documentation master file, created by
-   sphinx-quickstart on Tue Apr  5 19:26:23 2016.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Hazel v2.0
-=================================
-Hazel (an acronym for HAnle and ZEeman Light) is a computer program for the 
-synthesis and inversion of Stokes profiles caused by the joint action of atomic 
-level polarization and the Hanle and Zeeman effects. It is based on the quantum 
-theory of spectral line polarization, which takes into account rigorously all the 
-relevant physical mechanisms and ingredients: optical pumping, atomic level 
-polarization, level crossings and repulsions, Zeeman, Paschen-Back and Hanle effects. 
-
-The new Hazel v2.0 is a complete rewrite of the code, putting emphasis on its
-usability. The code is now able to synthesize photospheric lines under the 
-assumption of local thermodynamic equilibrium, chromospheric lines under
-the multi-term approximation (like the He I multiplets) and a selection of
-arbitrary systematic effects like telluric lines or fringes.
-
-The code is written in Python with the most computationally heavy parts coded in Fortran 90. 
-It can be controlled from a user-friendly configuration file, but it can also
-be called programmatically. It can be used in synthesis mode for obtaining emerging
-Stokes parameters from a given atmosphere. It can also be used in inversion mode
-to infer the model parameters from a set of observed Stokes parameters.
-Graphical front-ends are also provided.
-
 Basic usage
 ===========
 
@@ -39,17 +12,28 @@ parameters.
 ::
     
     import hazel
+    import matplotlib.pyplot as plt
     mod = hazel.Model(working_mode='synthesis')
     mod.add_spectral({'Name': 'spec1', 'Wavelength': [10826, 10833, 150], 'topology': 'ch1'})
     mod.add_chromosphere({'Name': 'ch1', 'Spectral region': 'spec1', 'Height': 3.0, 'Line': '10830', 'Wavelength': [10826, 10833]})
     mod.setup()
 
-    mod.atmospheres['ch1'].set_parameters([0.0,0.0,100.0*j,1.0,0.0,8.0,1.0,0.0,1.0])
-    mod.synthesize()
+    f, ax = plt.subplots(nrows=2, ncols=2)
+    ax = ax.flatten()
+
+    for j in range(5):
+        mod.atmospheres['ch1'].set_parameters([0.0,0.0,100.0*j,1.0,0.0,8.0,1.0,0.0,1.0])
+        mod.synthesize()
+
+        for i in range(4):
+            ax[i].plot(mod.spectrum['spec1'].stokes[i,:])
+    plt.show()
+    
 
 As you see, we first generate the Hazel model for synthesis. We then create a spectral window with parameters
 passed as a dictionary. Then we add a chromosphere and finally call `setup` to finalize the model setup.
 We then change the model parameters of the chromosphere and synthesize the spectrum.
+Access to the synthesized spectra is done on the ``stokes`` key of the ``mod.spectrum`` dictionary.
 All the details of the dictionaries to pass and how to generate more complicated
 atmospheres can be found in :ref:`programmatically`.
 
@@ -130,21 +114,3 @@ configuration file, and it will be broadcasted to all slaves internally.
         iterator.use_model()
 
     iterator.run_all_pixels()
-
-
-.. toctree::
-   :hidden:
-   :maxdepth: 2
-
-   installation
-   configuration
-   programmatically
-   inputOutput
-   prepareData
-   equations
-   ambiguities
-   photospheric
-   refsys
-   acknowledgements
-   disclaimer
-

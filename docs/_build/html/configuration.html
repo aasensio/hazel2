@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -30,9 +32,12 @@
   
 
   
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="Hazel 2.0beta1 documentation" href="index.html"/>
         <link rel="next" title="Programmatically" href="programmatically.html"/>
-        <link rel="prev" title="Installation" href="installation.html"/> 
+        <link rel="prev" title="Basic usage" href="basic.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -41,6 +46,7 @@
 
 <body class="wy-body-for-nav" role="document">
 
+   
   <div class="wy-grid-for-nav">
 
     
@@ -81,8 +87,12 @@
           
             
             
-                <ul class="current">
+              
+            
+            
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic.html">Basic usage</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#example">Example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#working-mode">Working mode</a></li>
@@ -97,11 +107,13 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="programmatically.html">Programmatically</a></li>
-<li class="toctree-l1"><a class="reference internal" href="inputOutput.html">Input/output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input.html">Input files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output.html">Output files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="prepareData.html">Data preparation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="equations.html">Basic Equations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ambiguities.html">Ambiguities in the Hanle effect in the saturation regime</a></li>
 <li class="toctree-l1"><a class="reference internal" href="photospheric.html">List of photospheric lines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="refsys.html">The reference system</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="disclaimer.html">Disclaimer</a></li>
@@ -117,8 +129,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">Hazel</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Hazel</a>
+        
       </nav>
 
 
@@ -127,23 +141,40 @@
         <div class="rst-content">
           
 
- 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Configuration</li>
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Configuration</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
         
-          
-            <a href="_sources/configuration.txt" rel="nofollow"> View page source</a>
+            
+            <a href="_sources/configuration.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -156,7 +187,7 @@ file.</p>
 <div class="section" id="example">
 <h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
 <p>In the following we paste a typical configuration file and then later describe all sections.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Hazel configuration File</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Hazel configuration File</span>
 
 <span class="p">[</span><span class="n">Working</span> <span class="n">mode</span><span class="p">]</span>
 <span class="n">Action</span> <span class="o">=</span> <span class="s1">&#39;inversion&#39;</span>                                            <span class="c1"># &#39;synthesis&#39; or &#39;inversion&#39;</span>
@@ -282,14 +313,14 @@ file.</p>
 <div class="section" id="working-mode">
 <h2>Working mode<a class="headerlink" href="#working-mode" title="Permalink to this headline">¶</a></h2>
 <p>The first part of the configuration file represents very general properties.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Working</span> <span class="n">mode</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Working</span> <span class="n">mode</span><span class="p">]</span>
 <span class="n">Output</span> <span class="n">file</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">h5</span>
 <span class="n">Number</span> <span class="n">of</span> <span class="n">cycles</span> <span class="o">=</span> <span class="mi">1</span>
 </pre></div>
 </div>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">Ouput</span> <span class="pre">file</span></code>: defines the output file, which is usually an HDF5 or FITS file. It should always be present, otherwise you won&#8217;t get any output.</li>
-<li><code class="docutils literal"><span class="pre">Number</span> <span class="pre">of</span> <span class="pre">cycles</span></code> (optional) : is a global variable to select the number of cycles to carry out during inversion. It can be</li>
+<li><code class="docutils literal notranslate"><span class="pre">Ouput</span> <span class="pre">file</span></code>: defines the output file, which is usually an HDF5 or FITS file. It should always be present, otherwise you won’t get any output.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Number</span> <span class="pre">of</span> <span class="pre">cycles</span></code> (optional) : is a global variable to select the number of cycles to carry out during inversion. It can be</li>
 </ul>
 <p>used to neglect the number of cycles that will be described later in the configuration file.</p>
 </div>
@@ -299,7 +330,7 @@ file.</p>
 add any number of spectral regions, which will cover the observed region or the
 region you desire for your synthesis. One also needs to define which topology of
 atmospheres (described below) will produce the synthetic profiles for this region.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Spectral</span> <span class="n">regions</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Spectral</span> <span class="n">regions</span><span class="p">]</span>
     <span class="p">[[</span><span class="n">Region</span> <span class="mi">1</span><span class="p">]]</span>
     <span class="n">Name</span> <span class="o">=</span> <span class="n">spec1</span>
     <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">,</span> <span class="mi">150</span>
@@ -313,15 +344,15 @@ atmospheres (described below) will produce the synthetic profiles for this regio
 </pre></div>
 </div>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">Name</span></code>: defines the name of the spectral region. Programmatically, one can have access to the spectrum of each spectral region by using <code class="docutils literal"><span class="pre">mod.spectrum['spec1'].stokes</span></code>. This name is also used in the output file to refer to each region.</li>
-<li><code class="docutils literal"><span class="pre">Wavelength</span></code> (optional) : defines the lower, upper and number of points in the wavelength axis. It can be absent if a file with the wavelength axis is provided.</li>
-<li><code class="docutils literal"><span class="pre">Topology</span></code> defines the combination of atmospheres that are used to synthesize the Stokes parameters in this spectral region. See <a class="reference internal" href="topology.html#topology"><span class="std std-ref">Topology</span></a> for more details on the syntax.</li>
-<li><code class="docutils literal"><span class="pre">Stokes</span> <span class="pre">weights</span></code> (optional) defines the weights for each Stokes parameters to be used during inversions.</li>
-<li><code class="docutils literal"><span class="pre">Wavelength</span> <span class="pre">file</span></code> (optional) defines which wavelength file to be used. See <a class="reference internal" href="inputOutput.html#input"><span class="std std-ref">Input/output files</span></a> for more information about the format.</li>
-<li><code class="docutils literal"><span class="pre">Wavelength</span> <span class="pre">weight</span> <span class="pre">file</span></code> (optional) defines the wavelength weights to be used during inversion, in case one wants to weight parts of the spectrum during the inversion.</li>
-<li><code class="docutils literal"><span class="pre">Observations</span> <span class="pre">file</span></code> (optional) defines the file with the observations. See <a class="reference internal" href="inputOutput.html#input"><span class="std std-ref">Input/output files</span></a> for more information.</li>
-<li><code class="docutils literal"><span class="pre">Straylight</span> <span class="pre">file</span></code> (optional) defines the file with the straylight. See <a class="reference internal" href="inputOutput.html#input"><span class="std std-ref">Input/output files</span></a> for more information.</li>
-<li><code class="docutils literal"><span class="pre">Mask</span> <span class="pre">file</span></code> (optional) defines a mask to invert only a selection of pixels from an input file. See <a class="reference internal" href="inputOutput.html#input"><span class="std std-ref">Input/output files</span></a> for more information.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Name</span></code>: defines the name of the spectral region. Programmatically, one can have access to the spectrum of each spectral region by using <code class="docutils literal notranslate"><span class="pre">mod.spectrum['spec1'].stokes</span></code>. This name is also used in the output file to refer to each region.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Wavelength</span></code> (optional) : defines the lower, upper and number of points in the wavelength axis. It can be absent if a file with the wavelength axis is provided.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Topology</span></code> defines the combination of atmospheres that are used to synthesize the Stokes parameters in this spectral region. See <a class="reference internal" href="topology.html#topology"><span class="std std-ref">Topology</span></a> for more details on the syntax.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Stokes</span> <span class="pre">weights</span></code> (optional) defines the weights for each Stokes parameters to be used during inversions.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Wavelength</span> <span class="pre">file</span></code> (optional) defines which wavelength file to be used. See <a class="reference internal" href="input.html#input"><span class="std std-ref">Input files</span></a> for more information about the format.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Wavelength</span> <span class="pre">weight</span> <span class="pre">file</span></code> (optional) defines the wavelength weights to be used during inversion, in case one wants to weight parts of the spectrum during the inversion.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Observations</span> <span class="pre">file</span></code> (optional) defines the file with the observations. See <a class="reference internal" href="input.html#input"><span class="std std-ref">Input files</span></a> for more information.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Straylight</span> <span class="pre">file</span></code> (optional) defines the file with the straylight. See <a class="reference internal" href="input.html#input"><span class="std std-ref">Input files</span></a> for more information.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Mask</span> <span class="pre">file</span></code> (optional) defines a mask to invert only a selection of pixels from an input file. See <a class="reference internal" href="input.html#input"><span class="std std-ref">Input files</span></a> for more information.</li>
 </ul>
 </div>
 <div class="section" id="atmospheres">
@@ -341,7 +372,7 @@ calculation. We distinguish four types of atmospheres:</p>
 <p>Photospheres are always in the lower part of the atmosphere and so need to be defined
 in the first level of the topology. They are synthesized in local thermodynamic equilibrium
 using SIR.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Atmospheres</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Atmospheres</span><span class="p">]</span>
 
     <span class="p">[[</span><span class="n">Photosphere</span> <span class="mi">1</span><span class="p">]]</span>
     <span class="n">Name</span> <span class="o">=</span> <span class="n">ph1</span>
@@ -378,21 +409,21 @@ using SIR.</p>
 </pre></div>
 </div>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">Name</span></code> : defines the name of the atmosphere. This will be used in the output file to refer to the parameters of this specific atmosphere.</li>
-<li><code class="docutils literal"><span class="pre">Reference</span> <span class="pre">atmospheric</span> <span class="pre">model</span></code> (optional) : defines the input file for this atmosphere. The format is described in <a class="reference internal" href="inputOutput.html#input"><span class="std std-ref">Input/output files</span></a>. If the format is 1D, it will be used for all pixels (in inversion mode). If you want a different model for all pixels, use 3D formats.</li>
-<li><code class="docutils literal"><span class="pre">Spectral</span> <span class="pre">region</span></code> : defines the spectral region associated with this atmosphere.</li>
-<li><code class="docutils literal"><span class="pre">Wavelength</span></code> : defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time.</li>
-<li><code class="docutils literal"><span class="pre">Spectral</span> <span class="pre">lines</span></code> : it is a comma-separated list of lines to synthesize from the <a class="reference internal" href="photospheric.html#photospheric-lines"><span class="std std-ref">List of photospheric lines</span></a>. Note that if you only want one line, you should use a comma at the end. The list of available lines</li>
-<li><code class="docutils literal"><span class="pre">Ranges</span></code> : ranges of variation of each parameter. If <code class="docutils literal"><span class="pre">None</span></code>, consider it unconstrained. If not, it will be constrained to the range.</li>
-<li><code class="docutils literal"><span class="pre">Nodes</span></code> : defines the number of nodes in each cycle when doing inversions</li>
-<li><code class="docutils literal"><span class="pre">Regularization</span></code> : not yet implemented</li>
+<li><code class="docutils literal notranslate"><span class="pre">Name</span></code> : defines the name of the atmosphere. This will be used in the output file to refer to the parameters of this specific atmosphere.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Reference</span> <span class="pre">atmospheric</span> <span class="pre">model</span></code> (optional) : defines the input file for this atmosphere. The format is described in <a class="reference internal" href="input.html#input"><span class="std std-ref">Input files</span></a>. If the format is 1D, it will be used for all pixels (in inversion mode). If you want a different model for all pixels, use 3D formats.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Spectral</span> <span class="pre">region</span></code> : defines the spectral region associated with this atmosphere.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Wavelength</span></code> : defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Spectral</span> <span class="pre">lines</span></code> : it is a comma-separated list of lines to synthesize from the <a class="reference internal" href="photospheric.html#photospheric-lines"><span class="std std-ref">List of photospheric lines</span></a>. Note that if you only want one line, you should use a comma at the end. The list of available lines</li>
+<li><code class="docutils literal notranslate"><span class="pre">Ranges</span></code> : ranges of variation of each parameter. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, consider it unconstrained. If not, it will be constrained to the range.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Nodes</span></code> : defines the number of nodes in each cycle when doing inversions</li>
+<li><code class="docutils literal notranslate"><span class="pre">Regularization</span></code> : not yet implemented</li>
 </ul>
 </div>
 <div class="section" id="chromospheres">
 <h3>Chromospheres<a class="headerlink" href="#chromospheres" title="Permalink to this headline">¶</a></h3>
 <p>Chromospheres are synthesized with slabs of constant physical properties always above photospheres (if any). An arbitrary
 number of chromospheres can be used, either with filling factor or one above the other.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Atmospheres</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Atmospheres</span><span class="p">]</span>
 
     <span class="p">[[</span><span class="n">Chromosphere</span> <span class="mi">1</span><span class="p">]]</span>
     <span class="n">Name</span> <span class="o">=</span> <span class="n">ch1</span>                                              <span class="c1"># Name of the atmosphere component</span>
@@ -427,15 +458,15 @@ number of chromospheres can be used, either with filling factor or one above the
 </pre></div>
 </div>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">Name</span></code> : defines the name of the atmosphere. This will be used in the output file to refer to the parameters of this specific atmosphere.</li>
-<li><code class="docutils literal"><span class="pre">Reference</span> <span class="pre">atmospheric</span> <span class="pre">model</span></code> (optional) : defines the input file for this atmosphere. The format is described in <a class="reference internal" href="inputOutput.html#input"><span class="std std-ref">Input/output files</span></a>. If the format is 1D, it will be used for all pixels (in inversion mode). If you want a different model for all pixels, use 3D formats.</li>
-<li><code class="docutils literal"><span class="pre">Spectral</span> <span class="pre">region</span></code> : defines the spectral region associated with this atmosphere.</li>
-<li><code class="docutils literal"><span class="pre">Wavelength</span></code> : defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time.</li>
-<li><code class="docutils literal"><span class="pre">Line</span></code> : which of the He I lines to consider (5876, 10830, ...)</li>
-<li><code class="docutils literal"><span class="pre">Height</span></code> : height of the slab in arcsec.</li>
-<li><code class="docutils literal"><span class="pre">Ranges</span></code> : ranges of variation of each parameter. If <code class="docutils literal"><span class="pre">None</span></code>, consider it unconstrained. If not, it will be constrained to the range.</li>
-<li><code class="docutils literal"><span class="pre">Nodes</span></code> : defines the number of nodes in each cycle when doing inversions</li>
-<li><code class="docutils literal"><span class="pre">Regularization</span></code> : not yet implemented</li>
+<li><code class="docutils literal notranslate"><span class="pre">Name</span></code> : defines the name of the atmosphere. This will be used in the output file to refer to the parameters of this specific atmosphere.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Reference</span> <span class="pre">atmospheric</span> <span class="pre">model</span></code> (optional) : defines the input file for this atmosphere. The format is described in <a class="reference internal" href="input.html#input"><span class="std std-ref">Input files</span></a>. If the format is 1D, it will be used for all pixels (in inversion mode). If you want a different model for all pixels, use 3D formats.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Spectral</span> <span class="pre">region</span></code> : defines the spectral region associated with this atmosphere.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Wavelength</span></code> : defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Line</span></code> : which of the He I lines to consider (5876, 10830, …)</li>
+<li><code class="docutils literal notranslate"><span class="pre">Height</span></code> : height of the slab in arcsec.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Ranges</span></code> : ranges of variation of each parameter. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, consider it unconstrained. If not, it will be constrained to the range.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Nodes</span></code> : defines the number of nodes in each cycle when doing inversions</li>
+<li><code class="docutils literal notranslate"><span class="pre">Regularization</span></code> : not yet implemented</li>
 </ul>
 </div>
 <div class="section" id="parametric">
@@ -444,7 +475,7 @@ number of chromospheres can be used, either with filling factor or one above the
 observations. Things like telluric lines, fringes, smooth continua form part of this. You can
 always correct from them during data reduction, but Hazel v2.0 allows you to add them
 during the fit. The curently available parametric atmosphere is just a Voigt function.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Atmospheres</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Atmospheres</span><span class="p">]</span>
 
     <span class="p">[[</span><span class="n">Parametric</span> <span class="mi">1</span><span class="p">]]</span>
     <span class="n">Name</span> <span class="o">=</span> <span class="n">te1</span>
@@ -469,20 +500,20 @@ during the fit. The curently available parametric atmosphere is just a Voigt fun
 </pre></div>
 </div>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">Name</span></code> : defines the name of the atmosphere. This will be used in the output file to refer to the parameters of this specific atmosphere.</li>
-<li><code class="docutils literal"><span class="pre">Reference</span> <span class="pre">atmospheric</span> <span class="pre">model</span></code> (optional) : defines the input file for this atmosphere. The format is described in <a class="reference internal" href="inputOutput.html#input"><span class="std std-ref">Input/output files</span></a>. If the format is 1D, it will be used for all pixels (in inversion mode). If you want a different model for all pixels, use 3D formats.</li>
-<li><code class="docutils literal"><span class="pre">Spectral</span> <span class="pre">region</span></code> : defines the spectral region associated with this atmosphere.</li>
-<li><code class="docutils literal"><span class="pre">Wavelength</span></code> : defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time.</li>
-<li><code class="docutils literal"><span class="pre">Type</span></code> : type of parametric atmosphere, from the available selection <code class="docutils literal"><span class="pre">Voigt</span></code>/<code class="docutils literal"><span class="pre">MoVoigt</span></code></li>
-<li><code class="docutils literal"><span class="pre">Ranges</span></code> : ranges of variation of each parameter. If <code class="docutils literal"><span class="pre">None</span></code>, consider it unconstrained. If not, it will be constrained to the range.</li>
-<li><code class="docutils literal"><span class="pre">Nodes</span></code> : defines the number of nodes in each cycle when doing inversions</li>
-<li><code class="docutils literal"><span class="pre">Regularization</span></code> : not yet implemented</li>
+<li><code class="docutils literal notranslate"><span class="pre">Name</span></code> : defines the name of the atmosphere. This will be used in the output file to refer to the parameters of this specific atmosphere.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Reference</span> <span class="pre">atmospheric</span> <span class="pre">model</span></code> (optional) : defines the input file for this atmosphere. The format is described in <a class="reference internal" href="input.html#input"><span class="std std-ref">Input files</span></a>. If the format is 1D, it will be used for all pixels (in inversion mode). If you want a different model for all pixels, use 3D formats.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Spectral</span> <span class="pre">region</span></code> : defines the spectral region associated with this atmosphere.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Wavelength</span></code> : defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Type</span></code> : type of parametric atmosphere, from the available selection <code class="docutils literal notranslate"><span class="pre">Voigt</span></code>/<code class="docutils literal notranslate"><span class="pre">MoVoigt</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">Ranges</span></code> : ranges of variation of each parameter. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, consider it unconstrained. If not, it will be constrained to the range.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Nodes</span></code> : defines the number of nodes in each cycle when doing inversions</li>
+<li><code class="docutils literal notranslate"><span class="pre">Regularization</span></code> : not yet implemented</li>
 </ul>
 </div>
 <div class="section" id="straylight">
 <h3>Straylight<a class="headerlink" href="#straylight" title="Permalink to this headline">¶</a></h3>
 <p>Straylight components are always added to the final spectrum with a filling factor and a possible velocity shift.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Atmospheres</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Atmospheres</span><span class="p">]</span>
 
     <span class="p">[[</span><span class="n">Straylight</span> <span class="mi">1</span><span class="p">]]</span>
     <span class="n">Name</span> <span class="o">=</span> <span class="n">st1</span>
@@ -500,13 +531,13 @@ during the fit. The curently available parametric atmosphere is just a Voigt fun
 </pre></div>
 </div>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">Name</span></code> : defines the name of the atmosphere. This will be used in the output file to refer to the parameters of this specific atmosphere.</li>
-<li><code class="docutils literal"><span class="pre">Reference</span> <span class="pre">atmospheric</span> <span class="pre">model</span></code> (optional) : defines the input file for this atmosphere. The format is described in <a class="reference internal" href="inputOutput.html#input"><span class="std std-ref">Input/output files</span></a>. If the format is 1D, it will be used for all pixels (in inversion mode). If you want a different model for all pixels, use 3D formats.</li>
-<li><code class="docutils literal"><span class="pre">Spectral</span> <span class="pre">region</span></code> : defines the spectral region associated with this atmosphere.</li>
-<li><code class="docutils literal"><span class="pre">Wavelength</span></code> : defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time.</li>
-<li><code class="docutils literal"><span class="pre">Ranges</span></code> : ranges of variation of each parameter. If <code class="docutils literal"><span class="pre">None</span></code>, consider it unconstrained. If not, it will be constrained to the range.</li>
-<li><code class="docutils literal"><span class="pre">Nodes</span></code> : defines the number of nodes in each cycle when doing inversions</li>
-<li><code class="docutils literal"><span class="pre">Regularization</span></code> : not yet implemented</li>
+<li><code class="docutils literal notranslate"><span class="pre">Name</span></code> : defines the name of the atmosphere. This will be used in the output file to refer to the parameters of this specific atmosphere.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Reference</span> <span class="pre">atmospheric</span> <span class="pre">model</span></code> (optional) : defines the input file for this atmosphere. The format is described in <a class="reference internal" href="input.html#input"><span class="std std-ref">Input files</span></a>. If the format is 1D, it will be used for all pixels (in inversion mode). If you want a different model for all pixels, use 3D formats.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Spectral</span> <span class="pre">region</span></code> : defines the spectral region associated with this atmosphere.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Wavelength</span></code> : defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Ranges</span></code> : ranges of variation of each parameter. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, consider it unconstrained. If not, it will be constrained to the range.</li>
+<li><code class="docutils literal notranslate"><span class="pre">Nodes</span></code> : defines the number of nodes in each cycle when doing inversions</li>
+<li><code class="docutils literal notranslate"><span class="pre">Regularization</span></code> : not yet implemented</li>
 </ul>
 </div>
 </div>
@@ -514,15 +545,18 @@ during the fit. The curently available parametric atmosphere is just a Voigt fun
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="programmatically.html" class="btn btn-neutral float-right" title="Programmatically" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="programmatically.html" class="btn btn-neutral float-right" title="Programmatically" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="installation.html" class="btn btn-neutral" title="Installation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="basic.html" class="btn btn-neutral" title="Basic usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -556,13 +590,14 @@ during the fit. The curently available parametric atmosphere is just a Voigt fun
             VERSION:'2.0beta1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

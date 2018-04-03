@@ -218,7 +218,7 @@ class Model(object):
         ----------
         spectral : dict
             Dictionary containing the following data
-            'Name', 'Lower, upper, n.wavelengths', 'Topology', 'Stokes weights', 'Wavelength file', 'Wavelength weight file',
+            'Name', 'Wavelength', 'Topology', 'Stokes weights', 'Wavelength file', 'Wavelength weight file',
             'Observations file', 'Straylight file', 'Mask file'
 
         Returns
@@ -421,7 +421,7 @@ class Model(object):
         ----------
         atmosphere : dict
             Dictionary containing the following data
-            'Name', 'Spectral region', 'Height', 'Line', 'Wavelength', 'Reference atmospheric model',
+            'Name', 'Spectral region', 'Wavelength', 'Reference atmospheric model', 'Type',
             'Ranges', 'Nodes'
 
         Returns
@@ -476,7 +476,7 @@ class Model(object):
         ----------
         atmosphere : dict
             Dictionary containing the following data
-            'Name', 'Spectral region', 'Height', 'Line', 'Wavelength', 'Reference atmospheric model',
+            'Name', 'Spectral region', 'Reference atmospheric model',
             'Ranges', 'Nodes'
 
         Returns

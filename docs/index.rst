@@ -1,10 +1,9 @@
-.. Hazel documentation master file, created by
-   sphinx-quickstart on Tue Apr  5 19:26:23 2016.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Hazel v2.0
 =================================
+
+Introduction
+------------
+
 Hazel (an acronym for HAnle and ZEeman Light) is a computer program for the 
 synthesis and inversion of Stokes profiles caused by the joint action of atomic 
 level polarization and the Hanle and Zeeman effects. It is based on the quantum 
@@ -25,11 +24,11 @@ Stokes parameters from a given atmosphere. It can also be used in inversion mode
 to infer the model parameters from a set of observed Stokes parameters.
 Graphical front-ends are also provided.
 
-Basic usage
-===========
+Quick tour
+-----------
 
 Programmatically
-----------------
+^^^^^^^^^^^^^^^^
 
 For simple calculations, like synthesizing spectral lines in simple models,
 Hazel v2.0 can be used in programmatic mode. For instance, let us generate a spectral
@@ -54,13 +53,13 @@ All the details of the dictionaries to pass and how to generate more complicated
 atmospheres can be found in :ref:`programmatically`.
 
 With configuration file
------------------------
+^^^^^^^^^^^^^^^^
 
 Perhaps the easiest way of running Hazel v2.0 is through the human-friendly configuration
 files described in :ref:`configuration`.
 
 Single pixel mode
-^^^^^^^^^^^^^^^^^
+"""""""""""""""""
 
 Calculations in single-pixel mode (only one pixel synthesis/inversion) are very easy
 to do. The following code uses a configuration file that can be found in `<https://github.com/aasensio/hazel2/test>`_
@@ -90,7 +89,7 @@ we want to generate a file with the synthetic profiles or the model
 parameters of the inversion.
 
 Serial mode
-^^^^^^^^^^^
+"""""""""""
 
 When many pixels need to be synthesized/inverted, one can pass appropriate input
 multidimensional files that can deal with many pixels. They can be synthesized
@@ -110,7 +109,7 @@ not to use MPI. The, we instantiate the model and pass it to the iterator, which
 then used to run through all pixels.
 
 MPI mode
-^^^^^^^^
+""""""""
 
 When working with many pixels, many-core computers can be used. This will use a
 master-slave approach, in which the master sends pixels to each one of the available
@@ -131,19 +130,22 @@ configuration file, and it will be broadcasted to all slaves internally.
 
     iterator.run_all_pixels()
 
-
 .. toctree::
    :hidden:
    :maxdepth: 2
 
+   hazel
    installation
+   basic
    configuration
    programmatically
-   inputOutput
+   input
+   output
    prepareData
    equations
    ambiguities
    photospheric
+   api
    refsys
    acknowledgements
    disclaimer

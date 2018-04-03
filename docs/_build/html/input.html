@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -30,8 +32,11 @@
   
 
   
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="Hazel 2.0beta1 documentation" href="index.html"/>
-        <link rel="next" title="Data preparation" href="prepareData.html"/>
+        <link rel="next" title="Output files" href="output.html"/>
         <link rel="prev" title="Programmatically" href="programmatically.html"/> 
 
   
@@ -41,6 +46,7 @@
 
 <body class="wy-body-for-nav" role="document">
 
+   
   <div class="wy-grid-for-nav">
 
     
@@ -81,8 +87,12 @@
           
             
             
-                <ul class="current">
+              
+            
+            
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic.html">Basic usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="programmatically.html">Programmatically</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Input files</a><ul>
@@ -113,10 +123,12 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="output.html">Output files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="prepareData.html">Data preparation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="equations.html">Basic Equations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ambiguities.html">Ambiguities in the Hanle effect in the saturation regime</a></li>
 <li class="toctree-l1"><a class="reference internal" href="photospheric.html">List of photospheric lines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="refsys.html">The reference system</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="disclaimer.html">Disclaimer</a></li>
@@ -132,8 +144,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">Hazel</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Hazel</a>
+        
       </nav>
 
 
@@ -142,23 +156,40 @@
         <div class="rst-content">
           
 
- 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Input files</li>
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Input files</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
         
-          
-            <a href="_sources/inputOutput.txt" rel="nofollow"> View page source</a>
+            
+            <a href="_sources/input.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -174,7 +205,7 @@ for Hazel, but 3D formats are defined in standard HDF5 or FITS formats.</p>
 <h3>Wavelength<a class="headerlink" href="#wavelength" title="Permalink to this headline">¶</a></h3>
 <p>Wavelength files are defined with a text file with a single column and a header, and
 defines the wavelength axis in Angstrom of each spectral region.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># lambda</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># lambda</span>
 <span class="mf">1.082600000000000000e+04</span>
 <span class="mf">1.082604697986577230e+04</span>
 <span class="mf">1.082609395973154278e+04</span>
@@ -199,7 +230,7 @@ many-pixels inversions.</p>
 <h3>1D files<a class="headerlink" href="#d-files" title="Permalink to this headline">¶</a></h3>
 <p>These are text files with a header and the value of the Stokes parameters and the standard deviation of the
 noise for each wavelength and Stokes parameter. An example follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># SI SQ SU SV sigmaI sigmaQ sigmaU sigmaV</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># SI SQ SU SV sigmaI sigmaQ sigmaU sigmaV</span>
 <span class="mf">9.398283088919315853e-01</span> <span class="mf">2.307830414199267630e-04</span> <span class="o">-</span><span class="mf">5.121676330588738812e-05</span> <span class="mf">1.457157835263802345e-04</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span>
 <span class="mf">9.354598051184511709e-01</span> <span class="mf">1.898170981935559632e-04</span> <span class="o">-</span><span class="mf">1.157160550018296303e-04</span> <span class="o">-</span><span class="mf">8.932093956208153021e-05</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span>
 <span class="mf">9.304626067718699822e-01</span> <span class="mf">3.837834915890673399e-05</span> <span class="mf">1.166320038345326575e-04</span> <span class="mf">1.087068643459882281e-04</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span>
@@ -209,10 +240,10 @@ noise for each wavelength and Stokes parameter. An example follows:</p>
 </div>
 <div class="section" id="hdf5-3d-files">
 <h3>HDF5 3D files<a class="headerlink" href="#hdf5-3d-files" title="Permalink to this headline">¶</a></h3>
-<p>HDF5 files with observations are defined with two double-precision datasets: <code class="docutils literal"><span class="pre">stokes</span></code> and <code class="docutils literal"><span class="pre">sigma</span></code>, each one of size <code class="docutils literal"><span class="pre">(n_pixel,n_lambda,4)</span></code>,
+<p>HDF5 files with observations are defined with two double-precision datasets: <code class="docutils literal notranslate"><span class="pre">stokes</span></code> and <code class="docutils literal notranslate"><span class="pre">sigma</span></code>, each one of size <code class="docutils literal notranslate"><span class="pre">(n_pixel,n_lambda,4)</span></code>,
 containing the four Stokes parameters and standard deviation of the noises for all pixels. In the following we show how to
 create a sample file:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">n_pixel</span> <span class="o">=</span> <span class="mi">100</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n_pixel</span> <span class="o">=</span> <span class="mi">100</span>
 <span class="n">n_lambda</span> <span class="o">=</span> <span class="mi">150</span>
 
 <span class="n">stokes_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_pixel</span><span class="p">,</span><span class="n">n_lambda</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -251,7 +282,7 @@ be perturbed with nodes until a fit is obtained for the observed Stokes paramete
 of the temperature [K], electron pressure [cgs],
 microturbulent velocity [cm/s], bulk velocity [cm/s], and the cartesian components of the magnetic field,
 Bx, By and Bz [G]. Additionally, the filling factor is given in the header. An example follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ff</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ff</span>
 <span class="mf">1.0</span>
 
 <span class="n">logtau</span>     <span class="n">T</span>        <span class="n">Pe</span>           <span class="n">vmic</span>        <span class="n">v</span>            <span class="n">Bx</span>           <span class="n">By</span>         <span class="n">Bz</span>
@@ -267,11 +298,11 @@ Bx, By and Bz [G]. Additionally, the filling factor is given in the header. An e
 </div>
 <div class="section" id="id2">
 <h3>HDF5 3D files<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<p>HDF5 files with model photospheres are defined with two double-precision datasets: <code class="docutils literal"><span class="pre">model</span></code> and <code class="docutils literal"><span class="pre">ff</span></code>. The first
-one has size <code class="docutils literal"><span class="pre">(n_pixel,nz,8)</span></code>, containing the depth dependence of the 8 variables for all pixels. The second
-one has size <code class="docutils literal"><span class="pre">(n_pixel,)</span></code>, containing the filling factor for each pixel. In the following we show how to
+<p>HDF5 files with model photospheres are defined with two double-precision datasets: <code class="docutils literal notranslate"><span class="pre">model</span></code> and <code class="docutils literal notranslate"><span class="pre">ff</span></code>. The first
+one has size <code class="docutils literal notranslate"><span class="pre">(n_pixel,nz,8)</span></code>, containing the depth dependence of the 8 variables for all pixels. The second
+one has size <code class="docutils literal notranslate"><span class="pre">(n_pixel,)</span></code>, containing the filling factor for each pixel. In the following we show how to
 create a sample file:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">n_pixel</span> <span class="o">=</span> <span class="mi">100</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n_pixel</span> <span class="o">=</span> <span class="mi">100</span>
 <span class="n">nz</span> <span class="o">=</span> <span class="mi">50</span>
 
 <span class="n">model_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_pixel</span><span class="p">,</span><span class="n">nz</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -301,18 +332,18 @@ be perturbed with nodes until a fit is obtained for the observed Stokes paramete
 <p>These are text files which tabulates the three cartesian components of the magnetic field [G],
 the optical depth of the slab, the bulk velocity [km/s], the Doppler width of the line [km/s],
 the enhancement factor beta, the damping a and the filling factor. An example follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Bx</span>    <span class="n">By</span>   <span class="n">Bz</span>   <span class="n">tau</span>    <span class="n">v</span>     <span class="n">deltav</span>    <span class="n">beta</span>    <span class="n">a</span>     <span class="n">ff</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Bx</span>    <span class="n">By</span>   <span class="n">Bz</span>   <span class="n">tau</span>    <span class="n">v</span>     <span class="n">deltav</span>    <span class="n">beta</span>    <span class="n">a</span>     <span class="n">ff</span>
 <span class="mf">0.0</span>   <span class="mf">0.0</span>   <span class="mf">0.0</span>  <span class="mf">1.0</span>   <span class="mf">0.0</span>     <span class="mf">8.0</span>      <span class="mf">1.0</span>    <span class="mf">0.0</span>    <span class="mf">1.0</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="id5">
 <h3>HDF5 3D files<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
-<p>HDF5 files with model chromospheres are defined with two double-precision datasets: <code class="docutils literal"><span class="pre">model</span></code> and <code class="docutils literal"><span class="pre">ff</span></code>. The first
-one has size <code class="docutils literal"><span class="pre">(n_pixel,8)</span></code>, containing the depth dependence of the 8 variables for all pixels. The second
-one has size <code class="docutils literal"><span class="pre">(n_pixel,)</span></code>, containing the filling factor for each pixel. In the following we show how to
+<p>HDF5 files with model chromospheres are defined with two double-precision datasets: <code class="docutils literal notranslate"><span class="pre">model</span></code> and <code class="docutils literal notranslate"><span class="pre">ff</span></code>. The first
+one has size <code class="docutils literal notranslate"><span class="pre">(n_pixel,8)</span></code>, containing the depth dependence of the 8 variables for all pixels. The second
+one has size <code class="docutils literal notranslate"><span class="pre">(n_pixel,)</span></code>, containing the filling factor for each pixel. In the following we show how to
 create a sample file:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">n_pixel</span> <span class="o">=</span> <span class="mi">100</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n_pixel</span> <span class="o">=</span> <span class="mi">100</span>
 
 <span class="n">model_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_pixel</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 <span class="n">ff_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_pixel</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -329,26 +360,29 @@ create a sample file:</p>
 <div class="section" id="parametric">
 <h3>Parametric<a class="headerlink" href="#parametric" title="Permalink to this headline">¶</a></h3>
 <blockquote>
-<div>Wavelength weight file = &#8216;observations/10830.weights&#8217;
-Observations file = &#8216;observations/10830_stokes.h5&#8217;
-Straylight file = &#8216;observations/10830_stray.1d&#8217;
+<div>Wavelength weight file = ‘observations/10830.weights’
+Observations file = ‘observations/10830_stokes.h5’
+Straylight file = ‘observations/10830_stray.1d’
 Mask file = None
-Reference atmospheric model = &#8216;photospheres/model_photosphere.1d&#8217;</div></blockquote>
+Reference atmospheric model = ‘photospheres/model_photosphere.1d’</div></blockquote>
 </div>
 </div>
 </div>
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="prepareData.html" class="btn btn-neutral float-right" title="Data preparation" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="output.html" class="btn btn-neutral float-right" title="Output files" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="programmatically.html" class="btn btn-neutral" title="Programmatically" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="programmatically.html" class="btn btn-neutral" title="Programmatically" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -382,13 +416,14 @@ Reference atmospheric model = &#8216;photospheres/model_photosphere.1d&#8217;</d
             VERSION:'2.0beta1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

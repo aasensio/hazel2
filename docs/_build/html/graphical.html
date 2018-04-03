@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -30,6 +32,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="Hazel 2.0beta1 documentation" href="index.html"/> 
 
   
@@ -39,6 +44,7 @@
 
 <body class="wy-body-for-nav" role="document">
 
+   
   <div class="wy-grid-for-nav">
 
     
@@ -79,14 +85,21 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic.html">Basic usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="programmatically.html">Programmatically</a></li>
-<li class="toctree-l1"><a class="reference internal" href="inputOutput.html">Input/output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input.html">Input files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output.html">Output files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="prepareData.html">Data preparation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="equations.html">Basic Equations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ambiguities.html">Ambiguities in the Hanle effect in the saturation regime</a></li>
+<li class="toctree-l1"><a class="reference internal" href="photospheric.html">List of photospheric lines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="refsys.html">The reference system</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="disclaimer.html">Disclaimer</a></li>
@@ -102,8 +115,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">Hazel</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Hazel</a>
+        
       </nav>
 
 
@@ -112,23 +127,40 @@
         <div class="rst-content">
           
 
- 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Graphical front-ends</li>
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Graphical front-ends</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
         
-          
-            <a href="_sources/graphical.txt" rel="nofollow"> View page source</a>
+            
+            <a href="_sources/graphical.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -138,16 +170,16 @@
 <h1>Graphical front-ends<a class="headerlink" href="#graphical-front-ends" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="python">
 <h2>Python<a class="headerlink" href="#python" title="Permalink to this headline">¶</a></h2>
-<p>The Python GUI requires <code class="docutils literal"><span class="pre">PyQT4</span></code> to be installed in your system. We recommend
+<p>The Python GUI requires <code class="docutils literal notranslate"><span class="pre">PyQT4</span></code> to be installed in your system. We recommend
 the wonderful Anaconda Python distribution.
-Once you have all packages installed, go to <code class="docutils literal"><span class="pre">runPy</span></code> and type</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build_ext</span> <span class="o">--</span><span class="n">inplace</span>
+Once you have all packages installed, go to <code class="docutils literal notranslate"><span class="pre">runPy</span></code> and type</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build_ext</span> <span class="o">--</span><span class="n">inplace</span>
 </pre></div>
 </div>
 <p>The code should compile and a dynamic library should be generated, that is
-copied to the directory <code class="docutils literal"><span class="pre">pyGUI</span></code>.
-Go to <code class="docutils literal"><span class="pre">pyGUI</span></code> and type</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">hazel</span><span class="o">.</span><span class="n">py</span>
+copied to the directory <code class="docutils literal notranslate"><span class="pre">pyGUI</span></code>.
+Go to <code class="docutils literal notranslate"><span class="pre">pyGUI</span></code> and type</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">hazel</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div>
@@ -156,7 +188,7 @@ Go to <code class="docutils literal"><span class="pre">pyGUI</span></code> and t
 <p>Although the code can be run in command line by modifying by hand the
 input files, &nbsp;contains also two user friendly front-ends (GUI) for the
 simple execution and analysis of the results. Note that the directory
-<code class="docutils literal"><span class="pre">IDL_routines</span></code> has to be in your IDL path.</p>
+<code class="docutils literal notranslate"><span class="pre">IDL_routines</span></code> has to be in your IDL path.</p>
 <div class="figure" id="id1">
 <img alt="_images/f5.png" src="_images/f5.png" />
 <p class="caption"><span class="caption-text">Screen dump of the graphical front-end used for the synthesis.</span></p>
@@ -170,9 +202,9 @@ simple execution and analysis of the results. Note that the directory
 <p class="caption"><span class="caption-text">Screen dump of the graphical front-end used for the inversion.</span></p>
 </div>
 <p>### Synthesis</p>
-<p>It is placed in the directory <code class="docutils literal"><span class="pre">Widget_Synth</span></code> and it is invoked with
+<p>It is placed in the directory <code class="docutils literal notranslate"><span class="pre">Widget_Synth</span></code> and it is invoked with
 the following commands:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">IDL</span><span class="o">&gt;</span> <span class="o">.</span><span class="n">r</span> <span class="n">hazel</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IDL</span><span class="o">&gt;</span> <span class="o">.</span><span class="n">r</span> <span class="n">hazel</span>
 <span class="n">IDL</span><span class="o">&gt;</span> <span class="n">hazel</span>
 </pre></div>
 </div>
@@ -180,28 +212,28 @@ the following commands:</p>
 the parameters explained in the previous sections (fundamentally those
 in §[sec:init_parameters]) are present in the GUI. All the parameters
 are very simple to modify (when changing numerical values in the GUI,
-always remember to press <code class="docutils literal"><span class="pre">Return</span></code> to activate the change) and clicking
+always remember to press <code class="docutils literal notranslate"><span class="pre">Return</span></code> to activate the change) and clicking
 on <strong>Calculate</strong>, the window is updated with the new Stokes profiles.
 The GUI also shows the value of the solar radiation field when the
 inclination of the line-of-sight and the wavelength of the multiplet is
-changed. The value (which can be introduced in the value of <span class="math">\(I_0\)</span>
+changed. The value (which can be introduced in the value of <span class="math notranslate">\(I_0\)</span>
 as a boundary condition) is given next to the height of the slab and
 indicated with the label “Allen”. In case of crashes, the GUI can be
 restarted with the following command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">IDL</span><span class="o">&gt;</span> <span class="o">.</span><span class="n">r</span> <span class="n">hazel</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IDL</span><span class="o">&gt;</span> <span class="o">.</span><span class="n">r</span> <span class="n">hazel</span>
 <span class="n">IDL</span><span class="o">&gt;</span> <span class="n">hazel</span><span class="p">,</span> <span class="o">/</span><span class="n">reset</span>
 </pre></div>
 </div>
 <p>### Inversion</p>
-<p>It is placed in the directory <code class="docutils literal"><span class="pre">Widget_Inv</span></code> and it is invoked with the
+<p>It is placed in the directory <code class="docutils literal notranslate"><span class="pre">Widget_Inv</span></code> and it is invoked with the
 following commands:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">IDL</span><span class="o">&gt;</span> <span class="o">.</span><span class="n">r</span> <span class="n">hazel_inv</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IDL</span><span class="o">&gt;</span> <span class="o">.</span><span class="n">r</span> <span class="n">hazel_inv</span>
 <span class="n">IDL</span><span class="o">&gt;</span> <span class="n">hazel_inv</span>
 </pre></div>
 </div>
 <p>Again, in case of crashes, the GUI can be restarted with the following
 command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">IDL</span><span class="o">&gt;</span> <span class="o">.</span><span class="n">r</span> <span class="n">hazel_inv</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IDL</span><span class="o">&gt;</span> <span class="o">.</span><span class="n">r</span> <span class="n">hazel_inv</span>
 <span class="n">IDL</span><span class="o">&gt;</span> <span class="n">hazel_inv</span><span class="p">,</span> <span class="o">/</span><span class="n">reset</span>
 </pre></div>
 </div>
@@ -215,7 +247,7 @@ plot window.</p>
 <p>The second page is used simply to load the file with the observed Stokes
 profile. A button is also available to plot the observed data.</p>
 <p>The third page controls the behavior of the DIRECT algorithm. It is
-essentially a graphical representation of the <code class="docutils literal"><span class="pre">direct_range.dat</span></code> file.</p>
+essentially a graphical representation of the <code class="docutils literal notranslate"><span class="pre">direct_range.dat</span></code> file.</p>
 <p>Finally, the fourth page controls the behavior of the cycles, the value
 of the fixed parameters, the weights for each Stokes parameter and the
 level of physical realism introduced in the simulation.</p>
@@ -223,6 +255,9 @@ level of physical realism introduced in the simulation.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -257,13 +292,14 @@ level of physical realism introduced in the simulation.</p>
             VERSION:'2.0beta1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

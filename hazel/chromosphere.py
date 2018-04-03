@@ -122,6 +122,18 @@ class Hazel_atmosphere(General_atmosphere):
         self.reference = copy.deepcopy(self.parameters)
 
     def set_parameters(self, pars):
+        """
+        Set the parameters of this model chromosphere
+
+        Parameters
+        ----------
+        pars : list of float
+            This list contains the following parameters in order: Bx, By, Bz, tau, v, delta, beta, a, ff
+
+        Returns
+        -------
+        None
+        """
         self.parameters['Bx'] = pars[0]
         self.parameters['By'] = pars[1]
         self.parameters['Bz'] = pars[2]        

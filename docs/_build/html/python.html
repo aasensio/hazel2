@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -30,6 +32,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="Hazel 2.0beta1 documentation" href="index.html"/> 
 
   
@@ -39,6 +44,7 @@
 
 <body class="wy-body-for-nav" role="document">
 
+   
   <div class="wy-grid-for-nav">
 
     
@@ -79,14 +85,21 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic.html">Basic usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="programmatically.html">Programmatically</a></li>
-<li class="toctree-l1"><a class="reference internal" href="inputOutput.html">Input/output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input.html">Input files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output.html">Output files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="prepareData.html">Data preparation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="equations.html">Basic Equations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ambiguities.html">Ambiguities in the Hanle effect in the saturation regime</a></li>
+<li class="toctree-l1"><a class="reference internal" href="photospheric.html">List of photospheric lines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="refsys.html">The reference system</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="disclaimer.html">Disclaimer</a></li>
@@ -102,8 +115,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">Hazel</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Hazel</a>
+        
       </nav>
 
 
@@ -112,23 +127,40 @@
         <div class="rst-content">
           
 
- 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Python wrapper</li>
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Python wrapper</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
         
-          
-            <a href="_sources/python.txt" rel="nofollow"> View page source</a>
+            
+            <a href="_sources/python.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -138,16 +170,16 @@
 <h1>Python wrapper<a class="headerlink" href="#python-wrapper" title="Permalink to this headline">¶</a></h1>
 <p>We have developed a wrapper so that the code can be called from Python easily
 and synthesize Stokes profiles using a simple interface.
-The wrapper is installed by going to the <code class="docutils literal"><span class="pre">runPy</span></code> directory and
+The wrapper is installed by going to the <code class="docutils literal notranslate"><span class="pre">runPy</span></code> directory and
 typing</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build_ext</span> <span class="o">--</span><span class="n">inplace</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build_ext</span> <span class="o">--</span><span class="n">inplace</span>
 </pre></div>
 </div>
-<p>It will generate a <code class="docutils literal"><span class="pre">pyhazel.so</span></code> file appropriate for your architecture, that
-can be imported from Python. The <code class="docutils literal"><span class="pre">test.py</span></code> file shows how to call the
+<p>It will generate a <code class="docutils literal notranslate"><span class="pre">pyhazel.so</span></code> file appropriate for your architecture, that
+can be imported from Python. The <code class="docutils literal notranslate"><span class="pre">test.py</span></code> file shows how to call the
 wrapper to synthesize the Stokes profiles. In the following we describe the
 inputs:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Args</span><span class="p">:</span> <span class="p">(</span><span class="n">see</span> <span class="n">the</span> <span class="n">manual</span> <span class="k">for</span> <span class="n">the</span> <span class="n">meaning</span> <span class="n">of</span> <span class="nb">all</span> <span class="n">of</span> <span class="n">them</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Args</span><span class="p">:</span> <span class="p">(</span><span class="n">see</span> <span class="n">the</span> <span class="n">manual</span> <span class="k">for</span> <span class="n">the</span> <span class="n">meaning</span> <span class="n">of</span> <span class="nb">all</span> <span class="n">of</span> <span class="n">them</span><span class="p">)</span>
     <span class="n">synModeInput</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="n">synthesis</span> <span class="n">mode</span>
     <span class="n">nSlabsInput</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="n">number</span> <span class="n">of</span> <span class="n">slabs</span>
     <span class="n">B1Input</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="n">vector</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">3</span> <span class="k">with</span> <span class="n">the</span> <span class="n">magnetic</span> <span class="n">field</span> <span class="n">vector</span> <span class="ow">in</span> <span class="n">spherical</span> <span class="n">coordinates</span> <span class="k">for</span> <span class="n">the</span> <span class="n">first</span> <span class="n">component</span>
@@ -186,6 +218,9 @@ inputs:</p>
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
@@ -219,13 +254,14 @@ inputs:</p>
             VERSION:'2.0beta1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

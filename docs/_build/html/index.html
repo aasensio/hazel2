@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -30,6 +32,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="Hazel 2.0beta1 documentation" href="#"/>
         <link rel="next" title="Installation" href="installation.html"/> 
 
@@ -40,6 +45,7 @@
 
 <body class="wy-body-for-nav" role="document">
 
+   
   <div class="wy-grid-for-nav">
 
     
@@ -80,15 +86,21 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic.html">Basic usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="programmatically.html">Programmatically</a></li>
-<li class="toctree-l1"><a class="reference internal" href="inputOutput.html">Input files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input.html">Input files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output.html">Output files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="prepareData.html">Data preparation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="equations.html">Basic Equations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ambiguities.html">Ambiguities in the Hanle effect in the saturation regime</a></li>
 <li class="toctree-l1"><a class="reference internal" href="photospheric.html">List of photospheric lines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="refsys.html">The reference system</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="disclaimer.html">Disclaimer</a></li>
@@ -104,8 +116,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="#">Hazel</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Hazel</a>
+        
       </nav>
 
 
@@ -114,23 +128,40 @@
         <div class="rst-content">
           
 
- 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="#">Docs</a> &raquo;</li>
-      
-    <li>Hazel v2.0</li>
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>Hazel v2.0</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
         
-          
-            <a href="_sources/index.txt" rel="nofollow"> View page source</a>
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -138,6 +169,8 @@
             
   <div class="section" id="hazel-v2-0">
 <h1>Hazel v2.0<a class="headerlink" href="#hazel-v2-0" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>Hazel (an acronym for HAnle and ZEeman Light) is a computer program for the
 synthesis and inversion of Stokes profiles caused by the joint action of atomic
 level polarization and the Hanle and Zeeman effects. It is based on the quantum
@@ -156,15 +189,15 @@ Stokes parameters from a given atmosphere. It can also be used in inversion mode
 to infer the model parameters from a set of observed Stokes parameters.
 Graphical front-ends are also provided.</p>
 </div>
-<div class="section" id="basic-usage">
-<h1>Basic usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="quick-tour">
+<h2>Quick tour<a class="headerlink" href="#quick-tour" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="programmatically">
-<h2>Programmatically<a class="headerlink" href="#programmatically" title="Permalink to this headline">¶</a></h2>
+<h3>Programmatically<a class="headerlink" href="#programmatically" title="Permalink to this headline">¶</a></h3>
 <p>For simple calculations, like synthesizing spectral lines in simple models,
 Hazel v2.0 can be used in programmatic mode. For instance, let us generate a spectral
 window in the near-infrared and synthesize the He I 10830 A line with some
 parameters.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">hazel</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">hazel</span>
 <span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;synthesis&#39;</span><span class="p">)</span>
 <span class="n">mod</span><span class="o">.</span><span class="n">add_spectral</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">,</span> <span class="mi">150</span><span class="p">],</span> <span class="s1">&#39;topology&#39;</span><span class="p">:</span> <span class="s1">&#39;ch1&#39;</span><span class="p">})</span>
 <span class="n">mod</span><span class="o">.</span><span class="n">add_chromosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ch1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Height&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s1">&#39;Line&#39;</span><span class="p">:</span> <span class="s1">&#39;10830&#39;</span><span class="p">,</span> <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">]})</span>
@@ -181,23 +214,23 @@ All the details of the dictionaries to pass and how to generate more complicated
 atmospheres can be found in <a class="reference internal" href="programmatically.html#programmatically"><span class="std std-ref">Programmatically</span></a>.</p>
 </div>
 <div class="section" id="with-configuration-file">
-<h2>With configuration file<a class="headerlink" href="#with-configuration-file" title="Permalink to this headline">¶</a></h2>
+<h3>With configuration file<a class="headerlink" href="#with-configuration-file" title="Permalink to this headline">¶</a></h3>
 <p>Perhaps the easiest way of running Hazel v2.0 is through the human-friendly configuration
 files described in <a class="reference internal" href="configuration.html#configuration"><span class="std std-ref">Configuration</span></a>.</p>
 <div class="section" id="single-pixel-mode">
-<h3>Single pixel mode<a class="headerlink" href="#single-pixel-mode" title="Permalink to this headline">¶</a></h3>
+<h4>Single pixel mode<a class="headerlink" href="#single-pixel-mode" title="Permalink to this headline">¶</a></h4>
 <p>Calculations in single-pixel mode (only one pixel synthesis/inversion) are very easy
 to do. The following code uses a configuration file that can be found in <a class="reference external" href="https://github.com/aasensio/hazel2/test">https://github.com/aasensio/hazel2/test</a>
-which uses <cite>1d</cite> inputs files, whose format is described in <a class="reference internal" href="inputOutput.html#input"><span class="std std-ref">Input files</span></a>. The following one
+which uses <cite>1d</cite> inputs files, whose format is described in <a class="reference internal" href="input.html#input"><span class="std std-ref">Input files</span></a>. The following one
 carries out synthesis:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_single_syn.ini&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_single_syn.ini&#39;</span><span class="p">)</span>
 <span class="n">mod</span><span class="o">.</span><span class="n">open_output</span><span class="p">()</span>
 <span class="n">mod</span><span class="o">.</span><span class="n">synthesize</span><span class="p">()</span>
 <span class="n">mod</span><span class="o">.</span><span class="n">close_output</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>and this one carries out the inversion:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_single_inv.ini&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_single_inv.ini&#39;</span><span class="p">)</span>
 <span class="n">mod</span><span class="o">.</span><span class="n">read_observation</span><span class="p">()</span>
 <span class="n">mod</span><span class="o">.</span><span class="n">open_output</span><span class="p">()</span>
 <span class="n">mod</span><span class="o">.</span><span class="n">invert</span><span class="p">()</span>
@@ -210,13 +243,13 @@ we want to generate a file with the synthetic profiles or the model
 parameters of the inversion.</p>
 </div>
 <div class="section" id="serial-mode">
-<h3>Serial mode<a class="headerlink" href="#serial-mode" title="Permalink to this headline">¶</a></h3>
+<h4>Serial mode<a class="headerlink" href="#serial-mode" title="Permalink to this headline">¶</a></h4>
 <p>When many pixels need to be synthesized/inverted, one can pass appropriate input
 multidimensional files that can deal with many pixels. They can be synthesized
 in serial mode (using only one CPU) with the following code. It makes use of
 an <cite>iterator</cite>, an object that  carries out the work for all the pixels in the
 input files.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">iterator</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">iterator</span><span class="p">(</span><span class="n">use_mpi</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">iterator</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">iterator</span><span class="p">(</span><span class="n">use_mpi</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_nonmpi_syn1d.ini&#39;</span><span class="p">)</span>
 <span class="n">iterator</span><span class="o">.</span><span class="n">use_model</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">mod</span><span class="p">)</span>
 <span class="n">iterator</span><span class="o">.</span><span class="n">run_all_pixels</span><span class="p">()</span>
@@ -227,13 +260,13 @@ not to use MPI. The, we instantiate the model and pass it to the iterator, which
 then used to run through all pixels.</p>
 </div>
 <div class="section" id="mpi-mode">
-<h3>MPI mode<a class="headerlink" href="#mpi-mode" title="Permalink to this headline">¶</a></h3>
+<h4>MPI mode<a class="headerlink" href="#mpi-mode" title="Permalink to this headline">¶</a></h4>
 <p>When working with many pixels, many-core computers can be used. This will use a
 master-slave approach, in which the master sends pixels to each one of the available
 slaves to do the work. In this case, we tell the iterator to use MPI and act differently
 for the master (rank=0) or the salves (rank&gt;0). Note that only the master reads the
 configuration file, and it will be broadcasted to all slaves internally.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">iterator</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">iterator</span><span class="p">(</span><span class="n">use_mpi</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">iterator</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">iterator</span><span class="p">(</span><span class="n">use_mpi</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">rank</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span>
 
 <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
@@ -250,15 +283,19 @@ configuration file, and it will be broadcasted to all slaves internally.</p>
 </div>
 </div>
 </div>
+</div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>
@@ -293,13 +330,14 @@ configuration file, and it will be broadcasted to all slaves internally.</p>
             VERSION:'2.0beta1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

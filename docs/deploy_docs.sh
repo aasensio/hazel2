@@ -31,6 +31,6 @@ git commit -m "Deploy to GitHub Pages"
 # Force push from the current repo's master branch to the remote
 # repo's gh-pages branch. (All previous history on the gh-pages branch
 # will be lost, since we are overwriting it.)
-git push -f git@github.com:aasensio/hazel.git master:gh-pages
+git push -f git@github.com:aasensio/hazel2.git master:gh-pages
 
 rm -rf _build
