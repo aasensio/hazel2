@@ -4,7 +4,7 @@ from enum import IntEnum
 import h5py
 from hazel.codes import hazel_code
 from tqdm import tqdm
-from ipdb import set_trace as stop
+# from ipdb import set_trace as stop
 
 class tags(IntEnum):
     READY = 0

@@ -6,7 +6,7 @@ from hazel.util import fvoigt
 from hazel.hsra import hsra_continuum
 from hazel.io import Generic_parametric_file
 import copy
-from ipdb import set_trace as stop
+# from ipdb import set_trace as stop
 
 __all__ = ['Parametric_atmosphere']
 

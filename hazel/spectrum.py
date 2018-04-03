@@ -1,6 +1,6 @@
 import numpy as np
 from hazel.io import Generic_observed_file, Generic_stray_file
-from ipdb import set_trace as stop
+# from ipdb import set_trace as stop
 
 __all__ = ['Spectrum']
 

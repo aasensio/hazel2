@@ -5,7 +5,7 @@ from hazel.util import i0_allen, fvoigt
 from hazel.codes import hazel_code, sir_code
 from hazel.hsra import hsra_continuum
 from hazel.io import Generic_hazel_file, Generic_SIR_file, Generic_parametric_file
-from ipdb import set_trace as stop
+# from ipdb import set_trace as stop
 from hazel.sir import Sir
 
 

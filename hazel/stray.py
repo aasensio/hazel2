@@ -7,7 +7,7 @@ from hazel.hsra import hsra_continuum
 from hazel.io import Generic_stray_file
 import copy
 import scipy.constants as constants
-from ipdb import set_trace as stop
+# from ipdb import set_trace as stop
 
 __all__ = ['Straylight_atmosphere']
 

@@ -7,7 +7,7 @@ from hazel.codes import sir_code
 from hazel.hsra import hsra_continuum
 from hazel.io import Generic_SIR_file
 import scipy.interpolate as interp
-from ipdb import set_trace as stop
+# from ipdb import set_trace as stop
 import copy
 
 __all__ = ['SIR_atmosphere']
