@@ -10,7 +10,6 @@ from hazel.spectrum import Spectrum
 from hazel.transforms import transformed_to_physical, physical_to_transformed
 import hazel.util
 import numpy as np
-import matplotlib.pyplot as pl
 import copy
 import os
 from pathlib import Path
@@ -1184,10 +1183,3 @@ class Model(object):
         for k, v in self.spectrum.items():
             v.read_observation(pixel=0)
             v.read_straylight(pixel=0)
-
-    def plot_stokes(self):        
-        for atmospheres in self.order_atmospheres:
-            f, ax = pl.subplots(nrows=2, ncols=2)
-            ax = ax.flatten()
-            for i in range(4):
-                ax[i].plot(atmospheres[0][-1].spectrum.stokes[i,:])

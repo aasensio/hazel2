@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as pl
 from configobj import ConfigObj
 # from ipdb import set_trace as stop
 __all__ = ['Configuration']
