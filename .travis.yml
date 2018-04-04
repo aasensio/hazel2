@@ -1,0 +1,39 @@
+sudo: false
+language: python
+python:
+  - 3.5
+  - 3.6
+cache: apt
+addons:
+  apt:
+    packages:
+      - gfortran
+
+env:
+  global:
+    # List package dependencies for conda
+    - CONDA_DEPS="cython numpy scipy h5py mpi4py sphinx"
+    # package name for test invocation
+    - PACKAGENAME="hazel"
+
+before_install:
+  - export MINICONDA=$HOME/miniconda
+  - export PATH="$MINICONDA/bin:$PATH"
+  - hash -r
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -f -p $MINICONDA
+  - conda config --set always_yes yes
+  - conda update conda
+  - conda info -a
+  - conda create -n testenv python=$TRAVIS_PYTHON_VERSION
+  - source activate testenv
+  - conda install $CONDA_DEPS
+  
+install:
+  - python setup.py install
+
+# script:
+  # - bash ./deploy_docs.sh
+  # - nosetests -v --with-coverage --cover-package=pyiacsun
+# after_success:
+  # - coveralls
