@@ -1,7 +1,7 @@
 # Hazel v2.0
 
 
-![https://github.com/aasensio/hazel2](https://img.shields.io/badge/GitHub-aasensio%2Fhazel2-blue.svg?style=flat)
+[![github](https://github.com/aasensio/hazel2)](https://img.shields.io/badge/GitHub-aasensio%2Fhazel2-blue.svg?style=flat)
 
 .. image:: https://img.shields.io/badge/GitHub-aasensio%2Fhazel2-blue.svg?style=flat
     :target: https://github.com/aasensio/hazel2
