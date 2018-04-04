@@ -11,8 +11,6 @@ from hazel.sir import Sir
 
 __all__ = ['General_atmosphere']
     
-
-
 class General_atmosphere(object):
     def __init__(self, atm_type):
         self.ff = 1.0

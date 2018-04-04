@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 """
 Hazel v2.0
+
+Hazel synthesis and inversion code. It can invert both photospheric lines and chromospheric lines.
+
+For more information see: https://github.com/aasensio/hazel2
 ::
     Main Changes in 0.1
     ---------------------
@@ -9,7 +13,7 @@ Hazel v2.0
 :copyright:
     A. Asensio Ramos    
 :license:
-    GNU General Public License (GPL)
+    The MIT License (MIT)
 """
 from distutils.ccompiler import CCompiler
 from distutils.errors import DistutilsExecError, CompileError
@@ -24,6 +28,9 @@ import sys
 import numpy
 import glob
 
+with open("VERSION.txt", "rt") as fh:
+  VERSION = fh.read().strip()
+DOCSTRING = __doc__.strip().split("\n")
 
 def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
     compiler_so = self.compiler_so
@@ -91,11 +98,9 @@ UnixCCompiler.src_extensions.append(".f90")
 CCompiler.language_map['.f'] = "c"
 UnixCCompiler.src_extensions.append(".f")
 
-with open("VERSION.txt", "rt") as fh:
-    VERSION = fh.read().strip()
-DOCSTRING = __doc__.strip().split("\n")
 
-# Milne-Eddington
+
+# SIR
 path = pathGlobal+"sir"
 list_files = glob.glob(path+'/*.f*')
 list_files.append(path+'/sir_code.pyx')
@@ -121,16 +126,16 @@ lib_hazel = MyExtension('hazel.codes.hazel_code',
 
 
 setup_config = dict(
-    name='hazel',
+    name='hazelinv',
     version=VERSION,
     description=DOCSTRING[0],
     long_description="\n".join(DOCSTRING[2:]),
     author=' A. Asensio Ramos',
     author_email='aasensio@iac.es',
-    url='https://github.com/aasensio/hazel_v2',
+    url='https://github.com/aasensio/hazel2',
     license='GNU General Public License, version 3 (GPLv3)',
     platforms='OS Independent',
-    install_requires=['numpy','scipy','configobj'],
+    install_requires=['numpy','scipy','configobj','h5py'],
     # packages=["pyiacsun.atlas"], #, "pyiacsun.linalg", "pyiacsun.plot", "pyiacsun.sparse", "pyiacsun.util"], #.radtran.milne", "pyiacsun.radtran.lte"],
     ext_modules=[lib_sir, lib_hazel],
     classifiers=[

@@ -1,5 +1,14 @@
 # Hazel v2.0
 
+.. image:: https://img.shields.io/badge/GitHub-aasensio%2Fhazel2-blue.svg?style=flat
+    :target: https://github.com/aasensio/hazel2
+.. image:: http://img.shields.io/badge/license-MIT-blue.svg?style=flat
+    :target: https://github.com/aasensio/hazel2/blob/master/LICENSE
+.. image:: http://img.shields.io/badge/arXiv-0804.2695-orange.svg?style=flat
+    :target: https://arxiv.org/abs/0804.2695
+.. image:: https://readthedocs.org/projects/emcee/badge/?version=latest
+    :target: http://emcee.readthedocs.io/en/latest/?badge=latest
+
 ## Introduction
 
 
