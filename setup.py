@@ -135,7 +135,7 @@ setup_config = dict(
     url='https://github.com/aasensio/hazel2',
     license='GNU General Public License, version 3 (GPLv3)',
     platforms='OS Independent',
-    install_requires=['numpy','scipy','configobj','h5py'],
+    install_requires=['numpy','scipy','configobj','h5py','astropy','mpi4py','tqdm'],
     # packages=["pyiacsun.atlas"], #, "pyiacsun.linalg", "pyiacsun.plot", "pyiacsun.sparse", "pyiacsun.util"], #.radtran.milne", "pyiacsun.radtran.lte"],
     ext_modules=[lib_sir, lib_hazel],
     classifiers=[
@@ -156,8 +156,7 @@ setup_config = dict(
     keywords=['hazel', 'radiative transfer'],
     packages=find_packages(),
     zip_safe=False,
-    include_package_data=True,
-    package_data = {'hazel': [os.path.join('data', '*')]}
+    include_package_data=True
 )
 
 if __name__ == "__main__":

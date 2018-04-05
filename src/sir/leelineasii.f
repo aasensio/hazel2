@@ -22,13 +22,14 @@ c  Basilio 22 Junio 1994
 c  Basilio 23 Junio 1994 modificacion oam semienteros
 c ...................................................................
 
-        subroutine leelineasii(iln,atom,istage,wlengt,zeff,energy,
+        subroutine leelineasii(filelineas,iln,atom,istage,wlengt,zeff,energy,
      &                       loggf,mult,design,tam,alfa,sigma)
         integer mult(2)
         real tam(2),loggf,wlengt,zeff,alfa,sigma
         character design(2)*1,atom*2,linea*100  
         character*1 code1(21)
-        character*100 nomlineas
+        character*200 nomlineas
+        character*200 filelineas
         character*33 mensaje
 c       character*20 cadena
         common/ficlineas/nomlineas
@@ -40,7 +41,7 @@ c       character*20 cadena
         ican=1
         mensaje=' containing the atomic parameters' 
 
-        call cabecera(ican,nomlineas,mensaje,ifail)
+        call cabecera(ican,filelineas,mensaje,ifail)
         if(ifail.eq.1)goto 999
 
 c contamos las lineas
@@ -53,7 +54,7 @@ c contamos las lineas
            num=num+1
         end do
         close(ican)
-        call cabecera(ican,nomlineas,mensaje,ifail)
+        call cabecera(ican,filelineas,mensaje,ifail)
 
 c saltamos las num-1 primeras lineas
 

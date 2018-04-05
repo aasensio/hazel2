@@ -1,5 +1,5 @@
 module sirMod
-use iso_c_binding, only: c_int, c_float, c_double
+use iso_c_binding, only: c_int, c_float, c_double, c_char
 
 implicit none
 
@@ -35,9 +35,11 @@ type(configuration) :: conf(10)
 
 contains
 
-	subroutine c_init(index, nLambda) bind(c)
-	integer(c_int), intent(in) :: index
+	subroutine c_init(index, nchar, file_lines, nLambda) bind(c)
+	integer(c_int), intent(in) :: index, nchar
+	character(c_char), intent(in) :: file_lines(nchar)
 	integer(c_int), intent(out) :: nLambda
+
 
 	integer :: i, j, ifiltro
 	integer ntl,nlin(kl),npas(kl),nble(kl)
@@ -62,7 +64,8 @@ contains
     common/Malla4/ntls,nlins,npass,dlamdas  !common para StokesFRsub
 	common/ifiltro/ifiltro
 	common/abundances/eps
-	
+
+
 
 		call leyendo
 
@@ -89,6 +92,7 @@ contains
 		conf(index)%dlamdas = dlamdas
 		conf(index)%abu = eps
 
+
         ixx=0
         do iln=1,ntl 
            do ible=1,nble(iln)
@@ -96,11 +100,11 @@ contains
              nxx=nlin(ixx) 
              if(nxx.eq.0)then
                 nxx=nlin(ixx-1)
-                call leelineasii(nxx,atom,istage,wlengt,zeff,energy,loggf,mult,design,tam,alfa,sigma)
+                call leelineasii(file_lines(1:nchar),nxx,atom,istage,wlengt,zeff,energy,loggf,mult,design,tam,alfa,sigma)
                 loggf=-20.
                 wlengt=5000.
              else
-                call leelineasii(nxx,atom,istage,wlengt,zeff,energy,loggf,mult,design,tam,alfa,sigma)
+                call leelineasii(file_lines(1:nchar),nxx,atom,istage,wlengt,zeff,energy,loggf,mult,design,tam,alfa,sigma)
              endif 
              
              conf(index)%atom_all(ixx)=atom

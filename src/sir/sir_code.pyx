@@ -3,17 +3,20 @@ from numpy import empty, ascontiguousarray
 import numpy as np
 
 cdef extern:
-	void c_init(int *index, int *nLambda)
+	void c_init(int *index, int *nchar, char *file_lines, int *nLambda)
 	void c_setpsf(int *nPSF, float *xPSF, float *yPSF)
 	void c_synthrf(int *index, int *nDepth, int *nLambda, float *macroturbulence, float *model, float *stokes, float *rt, float *rp, float *rh,
 		float *rv, float *rf, float *rg, float *rm, float *rmac)
 	void c_synth(int *index, int *nDepth, int *nLambda, double *macroturbulence, double *model, double *stokes)
 
-def init(int index):
+def init(int index, str file):
 	cdef:
 		int nLambda
-	
-	c_init(&index, &nLambda)
+		ftmp = file.encode('UTF-8')
+		cdef char* file_lines = ftmp
+		cdef int   nchar      = len(file)
+		
+	c_init(&index, &nchar, file_lines, &nLambda)
 
 	return nLambda
 

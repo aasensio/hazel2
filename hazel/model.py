@@ -576,7 +576,8 @@ class Model(object):
                 top = v.spectrum.wavelength_axis[ind_top] + 1e-3
                 delta = (v.spectrum.wavelength_axis[1] - v.spectrum.wavelength_axis[0])
 
-                ff = open('LINEAS', 'r')
+                filename = os.path.join(os.path.dirname(__file__),'data/LINEAS')
+                ff = open(filename, 'r')
                 flines = ff.readlines()
                 ff.close()
 
@@ -590,7 +591,7 @@ class Model(object):
                 f.write("{0}            :  {1}, {2}, {3}\n".format(str(v.lines)[1:-1], 1e3*(low-wvl), 1e3*delta, 1e3*(top-wvl)))
                 f.close()
                 
-                v.n_lambda = sir_code.init(v.index)
+                v.n_lambda = sir_code.init(v.index, filename)
 
                 try:
                     os.remove('malla.grid')
