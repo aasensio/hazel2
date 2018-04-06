@@ -36,7 +36,7 @@ script:
   # - cd docs
   # - bash ./deploy_docs.sh
   - cd test
-  - pytest
+  - pytest -v
 
   # - bash ./deploy_docs.sh
   # - nosetests -v --with-coverage --cover-package=hazelinv
