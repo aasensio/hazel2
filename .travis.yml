@@ -33,8 +33,8 @@ install:
   - python setup.py develop
 
 script:
-  - cd docs
-  - bash ./deploy_docs.sh
+  # - cd docs
+  # - bash ./deploy_docs.sh
   - cd ../test
   - pytest
 
