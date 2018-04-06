@@ -1,5 +1,4 @@
- - GUI for analysis of inversions and synthesis of models
-
+ - Coupling of parameters
  - Quasi-Newton methods
 
  - Sparse regularization of maps
@@ -7,8 +6,9 @@
  - Regularization of parameters
 
  - In synthesis, all atmospheres have to have the same number of pixels
+ 
  - In inversion, we can use 1D models for the atmospheres and the number of
    pixels is controlled by the observations
- - Add input parameters (geometry, boundary, etc.) for inversions. Separate Stokes parameters
-   from the rest of parameters. 
+
+ - Separate Stokes parameters from the rest of parameters. ???
 

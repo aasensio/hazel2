@@ -43,7 +43,7 @@ parameters.
     mod.add_chromosphere({'Name': 'ch1', 'Spectral region': 'spec1', 'Height': 3.0, 'Line': '10830', 'Wavelength': [10826, 10833]})
     mod.setup()
 
-    mod.atmospheres['ch1'].set_parameters([0.0,0.0,100.0*j,1.0,0.0,8.0,1.0,0.0,1.0])
+    mod.atmospheres['ch1'].set_parameters([0.0,0.0,100.0,1.0,0.0,8.0,1.0,0.0,1.0])
     mod.synthesize()
 
 As you see, we first generate the Hazel model for synthesis. We then create a spectral window with parameters
