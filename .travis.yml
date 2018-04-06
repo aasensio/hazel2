@@ -32,7 +32,12 @@ before_install:
 install:
   - python setup.py install
 
-# script:
+script:
+  - cd docs
+  - bash ./deplot_docs.sh
+  - cd ../test
+  - pytest
+
   # - bash ./deploy_docs.sh
   # - nosetests -v --with-coverage --cover-package=hazelinv
 # after_success:
