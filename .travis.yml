@@ -34,7 +34,7 @@ install:
 
 script:
   - cd docs
-  - bash ./deplot_docs.sh
+  - bash ./deploy_docs.sh
   - cd ../test
   - pytest
 

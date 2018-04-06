@@ -1,3 +1,5 @@
+__version__ = "1.9.0"
+
 from .atmosphere import *
 from .model import *
 from .configuration import *

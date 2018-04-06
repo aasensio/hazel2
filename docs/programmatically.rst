@@ -32,7 +32,8 @@ in inversion mode.
 
 ::
 
-    dict = {'Name': 'spec1', 'Wavelength': [10826, 10833, 150], 'topology': 'ch1'}
+    dict = {'Name': 'spec1', 'Wavelength': [10826, 10833, 150], 'topology': 'ch1', 
+        'LOS': [0.0,0.0,90.0], 'Boundary condition': [1.0,0.0,0.0,0.0]}
     mod.add_spectral(dict)
     
 The explanation for all keys of the dictionary are the same as those explained in :ref:`configuration`:
