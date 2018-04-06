@@ -35,7 +35,7 @@ install:
 script:
   # - cd docs
   # - bash ./deploy_docs.sh
-  - cd ../test
+  - cd test
   - pytest
 
   # - bash ./deploy_docs.sh
