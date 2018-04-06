@@ -12,7 +12,7 @@ addons:
 env:
   global:
     # List package dependencies for conda
-    - CONDA_DEPS="cython numpy scipy h5py mpi4py sphinx"
+    - CONDA_DEPS="cython numpy scipy h5py mpi4py sphinx sphinx_rtd_theme tqdm astropy configobj"
     # package name for test invocation
     - PACKAGENAME="hazel"
 
@@ -30,7 +30,7 @@ before_install:
   - conda install $CONDA_DEPS
   
 install:
-  - python setup.py install
+  - python setup.py develop
 
 script:
   - cd docs
