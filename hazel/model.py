@@ -13,8 +13,9 @@ import numpy as np
 import copy
 import os
 from pathlib import Path
+import matplotlib.pyplot as pl
 
-# from ipdb import set_trace as stop
+from ipdb import set_trace as stop
 
 __all__ = ['Model']
 
@@ -235,31 +236,40 @@ class Model(object):
             print('Adding spectral region {0}'.format(value['name']))
 
         if ('wavelength file' not in value):
-            value['wavelength file'] = 'None'
+            value['wavelength file'] = None
         if ('wavelength weight file' not in value):
-            value['wavelength weight file'] = 'None'
+            value['wavelength weight file'] = None
         if ('observations file' not in value):
-            value['observations file'] = 'None'
+            value['observations file'] = None
         if ('straylight file' not in value):
-            value['straylight file'] = 'None'
+            value['straylight file'] = None
         if ('stokes weights' not in value):
-            value['stokes weights'] = 'None'
+            value['stokes weights'] = None
         if ('mask file' not in value):
-            value['mask file'] = 'None'
+            value['mask file'] = None
+        if ('los' not in value):
+            value['los'] = None
+        if ('boundary condition' not in value):
+            value['boundary condition'] = None
 
 
-        if (value['wavelength file'] == 'None'):
+        # Wavelength file is not present
+        if (value['wavelength file'] is None):
+
+            # If the wavelength is defined
             if ('wavelength' in value):
                 axis = value['wavelength']
                 wvl = np.linspace(float(axis[0]), float(axis[1]), int(axis[2]))
                 print('  - Using wavelength axis from {0} to {1} with {2} steps'.format(float(axis[0]), float(axis[1]), int(axis[2])))
+            else:
+                raise Exception('Wavelength range is not defined. Please, use "Wavelength" or "Wavelength file"')
         else:
             if (self.verbose):
                 print('  - Reading wavelength axis from {0}'.format(value['wavelength file']))
             wvl = np.loadtxt(value['wavelength file'])
-
-        if (value['wavelength weight file'] == 'None'):
-            if (self.verbose):
+                
+        if (value['wavelength weight file'] is None):
+            if (self.verbose and self.working_mode == 'inversion'):
                 print('  - Setting all weights to 1')
             weights = np.ones(len(wvl))
         else:
@@ -267,16 +277,17 @@ class Model(object):
                 print('  - Reading wavelength weights from {0}'.format(value['wavelength weight file']))
             weights = np.loadtxt(value['wavelength weight file'])
 
-        if (value['observations file'] == 'None'):
-            if (self.verbose):
-                print('  - Not using observations')
+        # Observations file not present
+        if (value['observations file'] is None):
+            if (self.working_mode == 'inversion'):
+                raise Exception("Inversion mode without observations is not allowed.")            
             obs_file = None
         else:
             if (self.verbose):
                 print('  - Using observations from {0}'.format(value['observations file']))
             obs_file = value['observations file']
 
-        if (value['straylight file'] == 'None'):
+        if (value['straylight file'] is None):
             if (self.verbose):
                 print('  - Not using straylight')
             stray_file = None
@@ -285,7 +296,8 @@ class Model(object):
                 print('  - Using straylight from {0}'.format(value['straylight file']))
             stray_file = value['straylight file']
 
-        if (value['stokes weights'] == 'None'):
+        # Stokes weights
+        if (value['stokes weights'] is None):
             if (self.verbose):
                 print('  - All Stokes parameters weighted the same')
             stokes_weights = np.ones(4)
@@ -293,10 +305,30 @@ class Model(object):
             if (self.verbose):
                 print('  - Using weights {0}'.format(value['stokes weights']))
             stokes_weights = np.asarray(hazel.util.tofloat(value['stokes weights']))
-                    
-        self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, stray=stray_file, name=value['name'], stokes_weights=stokes_weights)
 
-        self.topologies.append(value['topology'])            
+        if (value['los'] is None):
+            if (self.working_mode == 'synthesis'):
+                raise Exception("You need to provide the LOS for spectral region {0}".format(value['name']))
+            los = None
+        else:
+            los = np.array(value['los']).astype('float64')
+            if (self.verbose):
+                print('  - Using LOS {0}'.format(value['los']))
+
+        if (value['boundary condition'] is None):
+            if (self.verbose):
+                print('  - Using default boundary conditions in spectral region {0}. Check carefully!'.format(value['name']))
+            boundary = np.array([1.0,0.0,0.0,0.0])
+        else:
+            boundary = np.array(value['boundary condition']).astype('float64')
+            if (self.verbose):
+                print('  - Using boundary condition {0}'.format(value['los']))
+
+
+        self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, stray=stray_file, 
+            name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary)
+
+        self.topologies.append(value['topology'])
         
     
     def add_photosphere(self, atmosphere):
@@ -598,6 +630,11 @@ class Model(object):
                 except OSError:
                     pass
 
+    def exit_hazel(self):
+        for k, v in self.atmospheres.items():            
+            if (v.type == 'chromosphere'):
+                hazel_code.exit(v.index)
+
     def add_topology(self, atmosphere_order):
         """
         Add a new topology
@@ -669,7 +706,7 @@ class Model(object):
 
     def synthesize_spectral_region(self, spectral_region, perturbation=False):
         """
-        Synthesize all atmospheres for a single spectral region
+        Synthesize all atmospheres for a single spectral region and normalize to the continuum of the quiet Sun at disk center
 
         Parameters
         ----------
@@ -699,15 +736,15 @@ class Model(object):
                         if (n > 0):
                             ind_low, ind_top = self.atmospheres[atm].wvl_range
                             if (perturbation):
-                                stokes_out = self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top]
+                                stokes_out = self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top] * hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
                             else:
-                                stokes_out = self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top]
+                                stokes_out = self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top] * hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
 
                         if (self.atmospheres[atm].type == 'straylight'):
                             stokes = self.atmospheres[atm].synthesize()
                             stokes += (1.0 - self.atmospheres[atm].parameters['ff']) * stokes_out                            
                         else:
-                            if (k == 0):
+                            if (k == 0):                                
                                 stokes = self.atmospheres[atm].synthesize(stokes_out)
                             else:                        
                                 stokes += self.atmospheres[atm].synthesize(stokes_out)
@@ -715,13 +752,10 @@ class Model(object):
                         ind_low, ind_top = self.atmospheres[atm].wvl_range
                         
                         if (perturbation):
-                            self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top+1] = stokes
+                            self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top+1] = stokes / hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
                         else:
-                            self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top+1] = stokes
-
-            # stop()
-            # if (self.straylight[i] is not None):
-                # self.atmospheres[self.straylight[i]].synthesize()
+                            self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top+1] = stokes / hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
+    
 
     def synthesize(self, perturbation=False):
         """
@@ -741,9 +775,8 @@ class Model(object):
 
         self.normalize_ff()
         for k, v in self.spectrum.items():
-            self.synthesize_spectral_region(k, perturbation=perturbation)
-
-
+            self.synthesize_spectral_region(k, perturbation=perturbation)        
+            
     def find_active_parameters(self, cycle):
         """
         Find all active parameters in all active atmospheres in the current cycle
@@ -964,7 +997,7 @@ class Model(object):
         dchi2 = np.zeros(n)
         ddchi2 = np.zeros((n,n))
         for k, v in self.spectrum.items():
-            residual = (v.stokes - v.obs)
+            residual = (v.stokes - v.obs)            
             chi2 += np.sum(v.stokes_weights[:,None] * residual**2 * v.factor_chi2)
             
             if (not only_chi2):

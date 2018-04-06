@@ -26,7 +26,9 @@ In the following we paste a typical configuration file and then later describe a
         Name = spec1
         Wavelength = 10826, 10833, 150
         Topology = ph2 -> ch1 -> te1 #-> st1    
-        Stokes weights = 1.0, 1.0, 1.0, 1.0    
+        Stokes weights = 1.0, 1.0, 1.0, 1.0
+        LOS = 0.0, 0.0, 90.0
+        Boundary condition = 1.0, 0.0, 0.0, 0.0       # I/Ic(mu=1), Q/Ic(mu=1), U/Ic(mu=1), V/Ic(mu=1)
         Wavelength file = 'observations/10830.wavelength'
         Wavelength weight file = 'observations/10830.weights'
         Observations file = 'observations/10830_stokes.h5'
@@ -165,6 +167,8 @@ atmospheres (described below) will produce the synthetic profiles for this regio
         Wavelength = 10826, 10833, 150
         Topology = ph2 -> ch1 -> te1 #-> st1    
         Stokes weights = 1.0, 1.0, 1.0, 1.0    
+        LOS = 0.0, 0.0, 90.0
+        Boundary condition = 1.0, 0.0, 0.0, 0.0       # I/Ic(mu=1), Q/Ic(mu=1), U/Ic(mu=1), V/Ic(mu=1)
         Wavelength file = 'observations/10830.wavelength'
         Wavelength weight file = 'observations/10830.weights'
         Observations file = 'observations/10830_stokes.h5'
@@ -175,6 +179,8 @@ atmospheres (described below) will produce the synthetic profiles for this regio
 * ``Wavelength`` (optional) : defines the lower, upper and number of points in the wavelength axis. It can be absent if a file with the wavelength axis is provided.
 * ``Topology`` defines the combination of atmospheres that are used to synthesize the Stokes parameters in this spectral region. See :ref:`topology` for more details on the syntax.
 * ``Stokes weights`` (optional) defines the weights for each Stokes parameters to be used during inversions.
+* ``LOS`` (mandatory for synthesis) defines the line-of-sight angles: :math:`\theta_\mathrm{LOS}`, :math:`\phi_\mathrm{LOS}` and :math:`\gamma_\mathrm{LOS}`
+* ``Boundary condition`` (mandatory for synthesis) defines the boundary condition normalized to the continuum intensity on the quiet Sun at disk center
 * ``Wavelength file`` (optional) defines which wavelength file to be used. See :ref:`input` for more information about the format.
 * ``Wavelength weight file`` (optional) defines the wavelength weights to be used during inversion, in case one wants to weight parts of the spectrum during the inversion.
 * ``Observations file`` (optional) defines the file with the observations. See :ref:`input` for more information.

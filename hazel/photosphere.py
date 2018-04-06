@@ -327,4 +327,4 @@ class SIR_atmosphere(General_atmosphere):
                 self.parameters['Pe'], self.parameters['vmic'], self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
                 self.parameters['Bz'], self.macroturbulence[0])
             
-            return self.parameters['ff'] * stokes[1:,:]
+            return self.parameters['ff'] * stokes[1:,:] * hsra_continuum(np.mean(self.wvl_axis))

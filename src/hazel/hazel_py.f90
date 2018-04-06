@@ -33,6 +33,7 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
 
     recompute_see_rtcoef = .True.
 
+    ! If the parameters on which the RT coefficients depend on change, then recompute the coefficients
     if (dopplerVelocityInput_old == dopplerVelocityInput .and. dopplerWidthInput_old == dopplerWidthInput .and. dampingInput_old == dampingInput .and. all(B1Input_old == B1Input)) then
         recompute_see_rtcoef = .False.
     endif
@@ -169,7 +170,43 @@ subroutine c_init() bind(c)
     
 ! Read the atomic model 
     call read_model_file(input_model_file)
+
+    ! Force recomputation of RT coefficients by using an absurd velocity
+    dopplerVelocityInput_old = -1e10
     
 end subroutine c_init
+
+subroutine c_exit(index) bind(c)
+integer(c_int), intent(in) :: index
+
+    deallocate(observation(index)%wl)
+    deallocate(inversion(index)%stokes_unperturbed)
+    deallocate(fixed(index)%stokes_boundary)
+    deallocate(fixed(index)%epsI)
+    deallocate(fixed(index)%epsQ)
+    deallocate(fixed(index)%epsU)
+    deallocate(fixed(index)%epsV)
+    deallocate(fixed(index)%etaI)
+    deallocate(fixed(index)%etaQ)
+    deallocate(fixed(index)%etaU)
+    deallocate(fixed(index)%etaV)
+    deallocate(fixed(index)%rhoQ)
+    deallocate(fixed(index)%rhoU)
+    deallocate(fixed(index)%rhoV)           
+    deallocate(fixed(index)%dtau)
+
+    deallocate(fixed(index)%epsilon)
+    deallocate(fixed(index)%epsilon_zeeman)
+    deallocate(fixed(index)%eta)
+    deallocate(fixed(index)%eta_zeeman)
+    deallocate(fixed(index)%eta_stim)
+    deallocate(fixed(index)%eta_stim_zeeman)
+    deallocate(fixed(index)%mag_opt)
+    deallocate(fixed(index)%mag_opt_zeeman)
+    deallocate(fixed(index)%mag_opt_stim)
+    deallocate(fixed(index)%mag_opt_stim_zeeman)
+
+    
+end subroutine c_exit
 
 end module pyHazelMod

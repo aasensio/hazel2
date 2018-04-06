@@ -2,12 +2,11 @@ import numpy as np
 import h5py
 from astropy.io import fits
 import os
-# from ipdb import set_trace as stop
+from ipdb import set_trace as stop
 
-__all__ = ['Generic_observed_file', 'Generic_hazel_file', 'Generic_SIR_file', 'Generic_parametric_file', 'Generic_stray_file', 
-    'Generic_output_file']
+__all__ = ['Generic_output_file', 'Generic_observed_file', 'Generic_hazel_file', 'Generic_SIR_file', 'Generic_parametric_file', 'Generic_stray_file']
 
-class Generic_output_file(object):
+class Generic_output_file(object):    
 
     def __init__(self, filename):
         self.extension = os.path.splitext(filename)[1][1:]
@@ -100,11 +99,32 @@ class Generic_observed_file(object):
 
     def read(self, pixel=None):
         if (self.extension == '1d'):
-            tmp = np.loadtxt(self.filename, skiprows=1).T
-            return tmp[0:4,:], tmp[4:,:]
+            f = open(self.filename, 'r')
+            f.readline()
+            los = np.array(f.readline().split()).astype('float64')
+            f.readline()
+            f.readline()
+            boundary = np.array(f.readline().split()).astype('float64')
+            f.readline()
+            f.readline()
+            tmp = f.readlines()
+            f.close()
+            n_lambda = len(tmp)
+            stokes = np.zeros((4,n_lambda))
+            noise = np.zeros((4,n_lambda))
+            for i, l in enumerate(tmp):
+                t = np.array(l.split()).astype('float64')
+                stokes[:,i] = t[0:4]
+                noise[:,i] = t[4:]
+
+            mu = np.cos(los[0] * np.pi / 180.0)
+
+            return stokes, noise, los, mu, boundary
 
         if (self.extension == 'h5'):
-            return self.handler['stokes'][pixel,...].T, self.handler['sigma'][pixel,...].T
+            los = self.handler['LOS'][pixel,...]
+            mu = np.cos(los[0] * np.pi / 180.0)
+            return self.handler['stokes'][pixel,...].T, self.handler['sigma'][pixel,...].T, los, mu, self.handler['boundary'][pixel,...].T
 
         # if (self.extension == 'fits'):
         #     return self.handler[0]fits.open(self.filename, memmap=True)

@@ -5,11 +5,10 @@ print('backend = ',matplotlib.get_backend())
 import sys, os, random
 import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-import i0Allen
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from hazel import hazel
+import hazel
 from ipdb import set_trace as stop
 # from IPython.core.debugger import Pdb
 # ipdb = Pdb()
@@ -74,9 +73,33 @@ class AppForm(QMainWindow):
         self.create_menu()
         self.create_main_frame()
         self.create_status_bar()
-        
-        # self.on_draw()
 
+
+    def init_hazel(self):
+
+        try:
+            self.model.exit()
+        except:
+            pass        
+
+        self.model = hazel.Model(working_mode='synthesis')                
+        l0 = self.multiplet_lambda[self.transInput-1]
+
+        if (self.nSlabsInput == 1):
+            topology = 'ch1'
+        if (self.nSlabsInput == 2):
+            topology = 'ch1 -> ch2'
+        if (self.nSlabsInput == -2):
+            topology = 'ch1 + ch2'
+        
+        self.model.add_spectral({'Name': 'spec1', 'Wavelength': [self.lambdaAxisInput[0] + l0, self.lambdaAxisInput[1] + l0, self.nLambdaInput], 'topology': topology, 
+            'LOS': self.anglesInput, 'boundary condition': self.boundaryInput})
+        self.model.add_chromosphere({'Name': 'ch1', 'Spectral region': 'spec1', 'Height': self.hInput, 'Line': self.multiplets[self.transInput-1], 
+            'Wavelength': [self.lambdaAxisInput[0] + l0, self.lambdaAxisInput[1] + l0]})
+        self.model.add_chromosphere({'Name': 'ch2', 'Spectral region': 'spec1', 'Height': self.hInput, 'Line': self.multiplets[self.transInput-1], 
+            'Wavelength': [self.lambdaAxisInput[0] + l0, self.lambdaAxisInput[1] + l0]})
+        self.model.setup()
+                
     def saveConfig(self):
         d = {'synModeInput' : self.synModeInput, 'nSlabsInput' : self.nSlabsInput, 'B1Input' : self.B1Input,
             'B2Input' : self.B2Input, 'hInput' : self.hInput, 'tau1Input' : self.tau1Input,
@@ -174,6 +197,8 @@ class AppForm(QMainWindow):
             self.omegaInput = np.asarray([0.0,0.0,0.0,0.0])
             self.obsFile = ''
             self.normalization = 0            
+
+            
         
     
 #######################################################################
@@ -187,63 +212,68 @@ class AppForm(QMainWindow):
         """
         QMessageBox.about(self, "About hazel", msg.strip())
     
-    # def on_pick(self, event):
-    #     # The event received here is of the type
-    #     # matplotlib.backend_bases.PickEvent
-    #     #
-    #     # It carries lots of information, of which we're using
-    #     # only a small amount here.
-    #     # 
-    #     box_points = event.artist.get_bbox().get_points()
-    #     msg = "You've clicked on a bar with coords:\n %s" % box_points
-        
-    #     QMessageBox.information(self, "Click!", msg)
-    
-    # def on_draw(self):
-    #     """ Redraws the figure
-    #     """
-    #     self.data = np.arange(10)
-        
-    #     x = np.arange(10)
-
-    #     # clear the axes and redraw the plot anew
-    #     #
-    #     self.axes.clear()        
-    #     # self.axes.grid(self.grid_cb.isChecked())
-        
-    #     self.axes.bar(
-    #         left=x, 
-    #         height=self.data, 
-    #         width=self.slider.value() / 100.0, 
-    #         align='center', 
-    #         alpha=0.44,
-    #         picker=5)
-        
-    #     self.canvas.draw()
 
     def redrawProfiles(self):
         self.status_text.setText("Computing")
-        self.lambdaAxisInputA = np.linspace(self.lambdaAxisInput[0],self.lambdaAxisInput[1],self.nLambdaInput)
-        self.boundary = np.zeros((self.nLambdaInput,4))
-        for i in range(4):
-            self.boundary[:,i] = self.boundaryInput[i]
-        [l, stokes, etaOutput, epsOutput] = self.hazel.synth(self.synModeInput, self.nSlabsInput, self.B1Input, self.B2Input, self.hInput, 
-                        self.tau1Input, self.tau2Input, self.boundary, self.transInput, self.atomicPolInput,self.magoptInput, self.anglesInput, 
-                        self.nLambdaInput, self.lambdaAxisInputA, self.dopplerWidthInput, self.dopplerWidth2Input, self.dampingInput, 
-                        self.dopplerVelocityInput, self.dopplerVelocity2Input, self.ffInput, self.betaInput, self.beta2Input, self.nbarInput, self.omegaInput,
-                        self.normalization)
+        
+        if (np.abs(self.nSlabsInput) == 1):
+            Bx = self.B1Input[0] * np.sin(self.B1Input[1] * np.pi / 180.0) * np.cos(self.B1Input[2] * np.pi / 180.0)
+            By = self.B1Input[0] * np.sin(self.B1Input[1] * np.pi / 180.0) * np.sin(self.B1Input[2] * np.pi / 180.0)
+            Bz = self.B1Input[0] * np.cos(self.B1Input[1] * np.pi / 180.0)
 
-                
+            self.model.atmospheres['ch1'].set_parameters([Bx, By, Bz, self.tau1Input, self.dopplerVelocityInput, self.dopplerWidthInput, self.betaInput, self.dampingInput, 1.0])
+        
+
+        if (np.abs(self.nSlabsInput) == 2):
+
+            Bx = self.B1Input[0] * np.sin(self.B1Input[1] * np.pi / 180.0) * np.cos(self.B1Input[2] * np.pi / 180.0)
+            By = self.B1Input[0] * np.sin(self.B1Input[1] * np.pi / 180.0) * np.sin(self.B1Input[2] * np.pi / 180.0)
+            Bz = self.B1Input[0] * np.cos(self.B1Input[1] * np.pi / 180.0)
+            self.model.atmospheres['ch1'].set_parameters([Bx, By, Bz, self.tau1Input, self.dopplerVelocityInput, self.dopplerWidthInput, self.betaInput, self.dampingInput, 1.0])
+
+            Bx = self.B2Input[0] * np.sin(self.B2Input[1] * np.pi / 180.0) * np.cos(self.B2Input[2] * np.pi / 180.0)
+            By = self.B2Input[0] * np.sin(self.B2Input[1] * np.pi / 180.0) * np.sin(self.B2Input[2] * np.pi / 180.0)
+            Bz = self.B2Input[0] * np.cos(self.B2Input[1] * np.pi / 180.0)
+           
+            self.model.atmospheres['ch2'].set_parameters([Bx, By, Bz, self.tau2Input, self.dopplerVelocity2Input, self.dopplerWidth2Input, self.beta2Input, self.dampingInput, 1.0])
+
+        if (np.abs(self.nSlabsInput) == -2):
+
+            Bx = self.B1Input[0] * np.sin(self.B1Input[1] * np.pi / 180.0) * np.cos(self.B1Input[2] * np.pi / 180.0)
+            By = self.B1Input[0] * np.sin(self.B1Input[1] * np.pi / 180.0) * np.sin(self.B1Input[2] * np.pi / 180.0)
+            Bz = self.B1Input[0] * np.cos(self.B1Input[1] * np.pi / 180.0)
+            self.model.atmospheres['ch1'].set_parameters([Bx, By, Bz, self.tau1Input, self.dopplerVelocityInput, self.dopplerWidthInput, self.betaInput, self.dampingInput, self.ffInput])
+
+            Bx = self.B2Input[0] * np.sin(self.B2Input[1] * np.pi / 180.0) * np.cos(self.B2Input[2] * np.pi / 180.0)
+            By = self.B2Input[0] * np.sin(self.B2Input[1] * np.pi / 180.0) * np.sin(self.B2Input[2] * np.pi / 180.0)
+            Bz = self.B2Input[0] * np.cos(self.B2Input[1] * np.pi / 180.0)           
+            self.model.atmospheres['ch2'].set_parameters([Bx, By, Bz, self.tau2Input, self.dopplerVelocity2Input, self.dopplerWidth2Input, self.beta2Input, self.dampingInput, 1.0 - self.ffInput])
+            
+        
+        # self.boundary = np.zeros((self.nLambdaInput,4))
+        # for i in range(4):
+        #     self.boundary[:,i] = self.boundaryInput[i]
+
+        self.model.synthesize()
+
+        stokes = self.model.spectrum['spec1'].stokes
+        l = self.model.spectrum['spec1'].wavelength_axis
+                        
         label = ['I', 'Q', 'U', 'V']
-        for i in range(4):         
+        for i in range(4):
+            # self.stokes_plot[i].set_xdata(l - self.multiplet_lambda[self.transInput-1])
+            # self.stokes_plot[i].set_ydata(stokes[i,:])
+
             self.axes[i].clear()
-            self.axes[i].plot(l - self.multiplet_lambda[self.transInput-1],stokes[i,:])            
+            self.axes[i].plot(l - self.multiplet_lambda[self.transInput-1],stokes[i,:])
             if (self.obsFile != ''):
                 self.axes[i].plot(self.obsStokes[:,0], self.obsStokes[:,i+1], 'r.')                
             for item in ([self.axes[i].title, self.axes[i].xaxis.label, self.axes[i].yaxis.label] +
                 self.axes[i].get_xticklabels() + self.axes[i].get_yticklabels()):
                 item.set_fontsize(10)
+
             self.axes[i].set_xlim(self.lambdaAxisInput)
+            
             self.axes[i].set_xlabel(u'\u03BB [\u00C5]')
             self.axes[i].set_ylabel('{0}/Ic'.format(label[i]))
         
@@ -622,9 +652,14 @@ class AppForm(QMainWindow):
         if (self.checkAllen.isChecked()):
             theta = float(self.sliderValuetheta.text())
             mu = np.cos(theta * np.pi / 180.0)
-            i0 = i0Allen.i0Allen(self.multiplet_lambda[self.transInput-1], mu)
+            i0 = hazel.util.i0_allen(self.multiplet_lambda[self.transInput-1], mu) / hazel.util.i0_allen(self.multiplet_lambda[self.transInput-1], 1.0)
             self.I0.setText(str(i0))
+            self.boundaryInput[0] = float(self.I0.text())
+
         self.anglesInput[0] = self.slidertheta.value()
+
+        self.init_hazel()
+
         self.redrawProfiles()
 
     def onSliderValueTheta(self):
@@ -633,12 +668,18 @@ class AppForm(QMainWindow):
             self.slidertheta.setValue(float(text))
             self.sliderValuetheta.setText(str(text))
             self.anglesInput[0] = self.slidertheta.value()
+
+            self.init_hazel()
+
             self.redrawProfiles()
 
 # phi
     def onSliderPhi(self):
         self.sliderValuephi.setText(str(self.sliderphi.value()))
         self.anglesInput[1] = self.sliderphi.value()
+
+        self.init_hazel()
+
         self.redrawProfiles()
 
     def onSliderValuePhi(self):
@@ -647,12 +688,18 @@ class AppForm(QMainWindow):
             self.sliderphi.setValue(float(text))
             self.sliderValuephi.setText(str(text))
             self.anglesInput[1] = self.sliderphi.value()
+
+            self.init_hazel()
+
             self.redrawProfiles()
 
 # gamma
     def onSliderGamma(self):
         self.sliderValuegamma.setText(str(self.slidergamma.value()))
         self.anglesInput[2] = self.slidergamma.value()
+
+        self.init_hazel()
+
         self.redrawProfiles()
 
     def onSliderValueGamma(self):
@@ -661,12 +708,18 @@ class AppForm(QMainWindow):
             self.slidergamma.setValue(float(text))
             self.sliderValuegamma.setText(str(text))
             self.anglesInput[2] = self.slidergamma.value()
+
+            self.init_hazel()
+
             self.redrawProfiles()
 
 # height
     def onSliderHeight(self):
         self.sliderValueheight.setText(str(self.sliderheight.value()))
-        self.hInput = self.sliderheight.value()
+        self.hInput = self.sliderheight.value()        
+
+        self.init_hazel()
+
         self.redrawProfiles()
 
     def onSliderValueHeight(self):
@@ -675,6 +728,9 @@ class AppForm(QMainWindow):
             self.sliderheight.setValue(float(text))
             self.sliderValueheight.setText(str(text))
             self.hInput = self.sliderheight.value()
+
+            self.init_hazel()
+            
             self.redrawProfiles()
 
 # damping
@@ -739,15 +795,15 @@ class AppForm(QMainWindow):
         self.sliderValuemultiplet.setText(self.multiplets[self.slidermultiplet.value()-1])
 
 # thin
-    def onRadioThin(self):     
-        self.synModeInput = 0
-        self.redrawProfiles()
+#     def onRadioThin(self):     
+#         self.synModeInput = 0
+#         self.redrawProfiles()
 
-# exact
-    def onRadioExact(self):     
-        self.synModeInput = 5
-        self.atomicPolInput = 1
-        self.redrawProfiles()
+# # exact
+#     def onRadioExact(self):     
+#         self.synModeInput = 5
+#         self.atomicPolInput = 1
+#         self.redrawProfiles()
 # atompol
     def onRadioAtompol(self):
         self.synModeInput = 5    
@@ -770,7 +826,7 @@ class AppForm(QMainWindow):
             if (self.checkAllen.isChecked()):
                 theta = float(self.sliderValuetheta.text())
                 mu = np.cos(theta * np.pi / 180.0)
-                i0 = i0Allen.i0Allen(self.multiplet_lambda[self.transInput-1], mu)
+                i0 = hazel.util.i0_allen(self.multiplet_lambda[self.transInput-1], mu) / hazel.util.i0_allen(self.multiplet_lambda[self.transInput-1], 1.0)
                 self.I0.setText('{0:10.3e}'.format(i0))
             self.anglesInput[0] = self.slidertheta.value()
             self.I0.setEnabled(False)
@@ -781,6 +837,11 @@ class AppForm(QMainWindow):
             self.boundaryInput[1] = float(self.Q0.text())
             self.boundaryInput[2] = float(self.U0.text())
             self.boundaryInput[3] = float(self.V0.text())
+
+            self.init_hazel()
+        
+            self.redrawProfiles()
+
             self.redrawProfiles()
         else:
             self.I0.setEnabled(True)
@@ -792,25 +853,50 @@ class AppForm(QMainWindow):
     def onChangeI0(self):        
         self.boundaryInput[0] = float(self.I0.text())
 
+        self.init_hazel()
+        
+        self.redrawProfiles()
+
     def onChangeQ0(self):     
         self.boundaryInput[1] = float(self.I0.text())
+
+        self.init_hazel()
+        
+        self.redrawProfiles()
 
     def onChangeU0(self):     
         self.boundaryInput[2] = float(self.I0.text())
 
+        self.init_hazel()
+        
+        self.redrawProfiles()
+
     def onChangeV0(self):     
         self.boundaryInput[3] = float(self.I0.text())
 
+        self.init_hazel()
+        
+        self.redrawProfiles()
+
     def onChangeleftWave(self):
-        self.lambdaAxisInput[0] = float(self.leftWave.text())
+        self.lambdaAxisInput[0] = float(self.leftWave.text()) 
+        
+        self.init_hazel()
+        
         self.redrawProfiles()
 
     def onChangerightWave(self):
         self.lambdaAxisInput[1] = float(self.rightWave.text())
+
+        self.init_hazel()
+        
         self.redrawProfiles()
 
     def onChangestepWave(self):
         self.nLambdaInput = int(self.stepWave.text())
+
+        self.init_hazel()
+
         self.redrawProfiles()
 
     def onChangenSlabs(self, index):
@@ -820,6 +906,8 @@ class AppForm(QMainWindow):
             self.nSlabsInput = 2
         if (index == 2):
             self.nSlabsInput = -2
+        
+        self.init_hazel()
         self.redrawProfiles()
 
     def onClickCanvas(self, event):
@@ -846,10 +934,9 @@ class AppForm(QMainWindow):
         
 # Hazel configuration
         self.loadConfig()
-        self.hazel = hazel()
 
-        
-        
+        self.init_hazel()
+                
         # Create the mpl Figure and FigCanvas objects. 
         # 5x4 inches, 100 dots-per-inch
         #
@@ -871,9 +958,11 @@ class AppForm(QMainWindow):
         layout.addWidget(self.canvas)
 
         self.axes = [None]*4
+        # self.stokes_plot = [None]*4
 
         for i in range(4):
-            self.axes[i] = self.fig.add_subplot(2,2,i+1)        
+            self.axes[i] = self.fig.add_subplot(2,2,i+1)
+            # self.stokes_plot[i], = self.axes[i].plot([0], [0])
         
         self.canvas.mpl_connect('button_release_event', self.onClickCanvas)
 
@@ -1206,11 +1295,11 @@ class AppForm(QMainWindow):
 
         # Radiative transfer
         # 
-        radTranGroup = QGroupBox("Radiative transfer")
-        self.radioThin = QRadioButton("Optically thin")
-        self.radioExact = QRadioButton("Exact")
-        self.radioExact.setChecked(True)
-        self.radioAtompol = QRadioButton("Exact Without Atompol")
+        # radTranGroup = QGroupBox("Radiative transfer")
+        # self.radioThin = QRadioButton("Optically thin")
+        # self.radioExact = QRadioButton("Exact")
+        # self.radioExact.setChecked(True)
+        # self.radioAtompol = QRadioButton("Exact Without Atompol")
 
         normalizationGroup = QGroupBox("Normalization")
         self.radioMaxNorm = QRadioButton("Normalize maximum")
@@ -1224,20 +1313,20 @@ class AppForm(QMainWindow):
         #~ self.connect(self.radioMaxNorm, SIGNAL('clicked()'), self.onRadioMaxNorm)
         #~ self.connect(self.radioPeakNorm, SIGNAL('clicked()'), self.onRadioPeakNorm)
         
-        self.radioThin.clicked.connect(self.onRadioThin)
-        self.radioExact.clicked.connect(self.onRadioExact)
-        self.radioAtompol.clicked.connect(self.onRadioAtompol)
+        # self.radioThin.clicked.connect(self.onRadioThin)
+        # self.radioExact.clicked.connect(self.onRadioExact)
+        # self.radioAtompol.clicked.connect(self.onRadioAtompol)
         
         self.radioMaxNorm.clicked.connect(self.onRadioMaxNorm)
         self.radioPeakNorm.clicked.connect(self.onRadioPeakNorm)
 
         
-        vboxRadTran = QHBoxLayout()
-        vboxRadTran.addWidget(self.radioThin)
-        vboxRadTran.addWidget(self.radioExact)
-        vboxRadTran.addWidget(self.radioAtompol)        
-        vboxRadTran.addStretch(1)
-        radTranGroup.setLayout(vboxRadTran)        
+        # vboxRadTran = QHBoxLayout()
+        # vboxRadTran.addWidget(self.radioThin)
+        # vboxRadTran.addWidget(self.radioExact)
+        # vboxRadTran.addWidget(self.radioAtompol)        
+        # vboxRadTran.addStretch(1)
+        # radTranGroup.setLayout(vboxRadTran)        
 
         vboxRadTran = QHBoxLayout()
         vboxRadTran.addWidget(self.radioMaxNorm)
@@ -1333,7 +1422,7 @@ class AppForm(QMainWindow):
         self.stepWave.editingFinished.connect(self.onChangestepWave)
 
         vboxR = QVBoxLayout()        
-        vboxR.addWidget(radTranGroup)
+        # vboxR.addWidget(radTranGroup)
         vboxR.addWidget(normalizationGroup)
         vboxR.addLayout(boundary)
         # vboxR.addLayout(wave)
@@ -1364,7 +1453,7 @@ class AppForm(QMainWindow):
         if (self.checkAllen.isChecked()):
             theta = float(self.sliderValuetheta.text())
             mu = np.cos(theta * np.pi / 180.0)            
-            i0 = i0Allen.i0Allen(self.multiplet_lambda[self.transInput-1], mu)
+            i0 = hazel.util.i0_allen(self.multiplet_lambda[self.transInput-1], mu) / hazel.util.i0_allen(self.multiplet_lambda[self.transInput-1], 1.0)
             self.I0.setText('{0:10.3e}'.format(i0))
             self.boundaryInput[0] = i0
 

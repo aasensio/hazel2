@@ -40,10 +40,19 @@ many-pixels inversions.
 1D files
 ^^^^^^^^
 
-These are text files with a header and the value of the Stokes parameters and the standard deviation of the
+These are text files giving the necessary information for the inversion. The first data line
+is the line-of-sight angles :math:`\theta_\mathrm{LOS}`, :math:`\phi_\mathrm{LOS}` and :math:`\gamma_\mathrm{LOS}`.
+The second line gives the boundary condition in units of the continuum intensity of the quiet Sun at disk center.
+Finally, one has to list the value of the Stokes parameters and the standard deviation of the
 noise for each wavelength and Stokes parameter. An example follows:
 
 ::
+
+    # LOS theta_LOS, phi_LOS, gamma_LOS
+    0.0 0.0 90.0
+
+    # Boundary condition I/Ic(mu=1), Q/Ic(mu=1), U/Ic(mu=1), V/Ic(mu=1)
+    1.0 0.0 0.0 0.0
 
     # SI SQ SU SV sigmaI sigmaQ sigmaU sigmaV
     9.398283088919315853e-01 2.307830414199267630e-04 -5.121676330588738812e-05 1.457157835263802345e-04 1.000000000000000048e-04 1.000000000000000048e-04 1.000000000000000048e-04 1.000000000000000048e-04
@@ -55,8 +64,12 @@ noise for each wavelength and Stokes parameter. An example follows:
 HDF5 3D files
 ^^^^^^^^^^^^^
 
-HDF5 files with observations are defined with two double-precision datasets: ``stokes`` and ``sigma``, each one of size ``(n_pixel,n_lambda,4)``, 
-containing the four Stokes parameters and standard deviation of the noises for all pixels. In the following we show how to
+HDF5 files with observations are defined with four double-precision datasets: ``stokes``, ``sigma``, ``LOS`` and ``boundary``.
+The first two and the boundary conditions have size ``(n_pixel,n_lambda,4)``, 
+and contain the four Stokes parameters and standard deviation of the noises for all pixels, together with the
+boundary conditions for each pixel. The LOS is of size ``(n_pixel,3)`` and contains the 
+:math:`\theta_\mathrm{LOS}`, :math:`\phi_\mathrm{LOS}` and :math:`\gamma_\mathrm{LOS}` angles for
+each pixel. In the following we show how to
 create a sample file:
 
 ::
@@ -66,12 +79,18 @@ create a sample file:
 
     stokes_3d = np.zeros((n_pixel,n_lambda,4), dtype=np.float64)
     sigma_3d = np.zeros((n_pixel,n_lambda,4), dtype=np.float64))
+    los_3d = np.zeros((n_pixel,3), dtype=np.float64)
+    boundary_3d = np.zeros((n_pixel,n_lambda,4), dtype=np.float64)
 
     f = h5py.File('observations/10830_stokes.h5', 'w')
     db_stokes = f.create_dataset('stokes', stokes_3d.shape, dtype=np.float64)
     db_sigma = f.create_dataset('sigma', sigma_3d.shape, dtype=np.float64)
+    db_los = f.create_dataset('LOS', los_3d.shape, dtype=np.float64)
+    db_boundary = f.create_dataset('boundary', boundary_3d.shape, dtype=np.float64)
     db_stokes[:] = stokes_3d
     db_sigma[:] = sigma_3d
+    db_los[:] = los_3d
+    db_boundary[:] = boundary_3d
     f.close()
 
 FITS 3D files

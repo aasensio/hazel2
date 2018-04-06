@@ -9,6 +9,7 @@ cdef extern:
 		double* wavelengthOutput, double* stokesOutput)
 		
 	void c_init()
+	void c_exit(int *index)
 
 def _synth(int index=1, ar[double,ndim=1] B1Input=zeros(3), double hInput=3.0, 
 	double tau1Input=1.0, 
@@ -65,3 +66,8 @@ def _init():
         None
 	"""
 	c_init()
+
+def exit(int index):
+		
+	c_exit(&index)
+

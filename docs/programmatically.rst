@@ -41,6 +41,8 @@ The explanation for all keys of the dictionary are the same as those explained i
 * ``Wavelength`` (optional if a wavelength file is passed)
 * ``Topology``
 * ``Stokes weights`` (optional)
+* ``LOS`` (mandatory for synthesis)
+* ``Boundary condition`` (mandatory for synthesis)
 * ``Wavelength file`` (optional if a wavelength axis is passed
 * ``Wavelength weight file`` (optional)
 * ``Observations file`` (optional)

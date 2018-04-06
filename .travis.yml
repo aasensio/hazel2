@@ -34,6 +34,6 @@ install:
 
 # script:
   # - bash ./deploy_docs.sh
-  # - nosetests -v --with-coverage --cover-package=pyiacsun
+  # - nosetests -v --with-coverage --cover-package=hazelinv
 # after_success:
   # - coveralls

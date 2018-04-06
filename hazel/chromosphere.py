@@ -7,7 +7,7 @@ from hazel.codes import hazel_code
 from hazel.hsra import hsra_continuum
 from hazel.io import Generic_hazel_file
 import copy
-# from ipdb import set_trace as stop
+from ipdb import set_trace as stop
 
 __all__ = ['Hazel_atmosphere']
 
@@ -227,15 +227,18 @@ class Hazel_atmosphere(General_atmosphere):
         hInput = self.height
         tau1Input = self.parameters['tau']
         transInput = 1
-        anglesInput = np.asarray([0.0,0.0,90.0])
+        anglesInput = self.spectrum.los
         lambdaAxisInput = self.wvl_axis - self.multiplets[self.active_line]
         nLambdaInput = len(lambdaAxisInput)
-        
+                
         if (stokes is None):
             boundaryInput  = np.asfortranarray(np.zeros((4,nLambdaInput)))
-            boundaryInput[0,:] = hsra_continuum(self.multiplets[self.active_line]) #i0_allen(self.multiplets[self.active_line],1.0)            
+            # boundaryInput[0,:] = hsra_continuum(self.multiplets[self.active_line]) #i0_allen(self.multiplets[self.active_line],1.0)            
+            boundaryInput[0,:] = i0_allen(self.multiplets[self.active_line], self.spectrum.mu)
+            boundaryInput *= self.spectrum.boundary
         else:            
-            boundaryInput = np.asfortranarray(stokes * hsra_continuum(self.multiplets[self.active_line])) #i0_allen(self.multiplets[self.active_line],1.0)
+            # boundaryInput = np.asfortranarray(stokes * hsra_continuum(self.multiplets[self.active_line])) #i0_allen(self.multiplets[self.active_line],1.0)
+            boundaryInput = np.asfortranarray(stokes)
                     
         dopplerWidthInput = self.parameters['deltav']
         dampingInput = self.parameters['a']
@@ -248,9 +251,9 @@ class Hazel_atmosphere(General_atmosphere):
             anglesInput, nLambdaInput, lambdaAxisInput, dopplerWidthInput, 
             dampingInput, dopplerVelocityInput, 
             betaInput, nbarInput, omegaInput)
-        
+
         l, stokes = hazel_code._synth(*args)
 
         ff = self.parameters['ff']
         
-        return ff * stokes / hsra_continuum(self.multiplets[self.active_line])
+        return ff * stokes #/ hsra_continuum(self.multiplets[self.active_line])

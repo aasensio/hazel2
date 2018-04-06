@@ -5,13 +5,14 @@ from hazel.io import Generic_observed_file, Generic_stray_file
 __all__ = ['Spectrum']
 
 class Spectrum(object):
-    def __init__(self, wvl=None, weights=None, observed_file=None, stray=None, name=None, stokes_weights=None):
+    def __init__(self, wvl=None, weights=None, observed_file=None, stray=None, name=None, stokes_weights=None, los=None, boundary=None):
         
         self.wavelength_axis = None
         self.stokes = None
         self.stokes_perturbed = None
         self.pixel = 0
-
+        self.boundary_single = boundary
+        
         if (wvl is not None):
             self.add_spectrum(wvl)
 
@@ -30,6 +31,11 @@ class Spectrum(object):
 
         if (stokes_weights is not None):
             self.add_stokes_weights(stokes_weights)
+
+        if (los is not None):
+            self.los = los
+            self.mu = np.cos(self.los[0] * np.pi / 180.0)
+    
 
     def add_spectrum(self, wvl):
         """
@@ -52,6 +58,8 @@ class Spectrum(object):
         self.obs = np.zeros((4,len(wvl)))
         self.noise = np.zeros((4,len(wvl)))
         self.dof = 4.0 * len(wvl)
+        if (self.boundary_single is not None):
+            self.boundary = self.boundary_single[:,None] * np.ones((1,len(wvl)))        
 
     def add_weights(self, weights):
         """
@@ -179,8 +187,7 @@ class Spectrum(object):
         None
     
         """          
-        self.obs, self.noise = self.observed_handle.read(pixel=pixel)
-        stop()
+        self.obs, self.noise, self.los, self.mu, self.boundary = self.observed_handle.read(pixel=pixel)        
 
     def read_straylight(self, pixel=None):
         """

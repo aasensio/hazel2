@@ -10,3 +10,5 @@ mod.read_observation()
 mod.open_output()
 mod.invert()
 mod.close_output()
+
+stop()

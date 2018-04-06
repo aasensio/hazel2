@@ -148,7 +148,7 @@ class iterator(object):
                             for k, v in self.model.spectrum.items():
                                 v.read_observation(pixel=task_index)
                                 v.read_straylight(pixel=task_index)
-                                data_to_send[k] = [v.obs, v.noise, v.stray]
+                                data_to_send[k] = [v.obs, v.noise, v.stray, v.los, v.boundary]
                         else:
                             for k, v in self.model.atmospheres.items():
                                 m = v.model_handler.read(pixel=task_index)
@@ -198,7 +198,7 @@ class iterator(object):
                 if (self.model.working_mode == 'inversion'):
                     
                     for k, v in self.model.spectrum.items():
-                        v.obs, v.noise, v.stray = data_received[k]
+                        v.obs, v.noise, v.stray, v.los, v.boundary = data_received[k]
 
                     self.model.invert()
                 else:
