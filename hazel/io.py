@@ -2,7 +2,7 @@ import numpy as np
 import h5py
 from astropy.io import fits
 import os
-from ipdb import set_trace as stop
+# from ipdb import set_trace as stop
 
 __all__ = ['Generic_output_file', 'Generic_observed_file', 'Generic_hazel_file', 'Generic_SIR_file', 'Generic_parametric_file', 'Generic_stray_file']
 
