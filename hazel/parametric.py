@@ -97,20 +97,6 @@ class Parametric_atmosphere(General_atmosphere):
         self.parameters['a'] = pars[3]
         self.parameters['ff'] = ff
 
-    def set_reference(self):
-        """
-        Set reference model to that of the current parameters
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        None
-        """
-        self.reference = copy.deepcopy(self.parameters)
-
     def load_reference_model(self, model_file, verbose):
         """
         Load a reference model or a model for every pixel for synthesis/inversion
@@ -133,20 +119,22 @@ class Parametric_atmosphere(General_atmosphere):
                 print('    * Reading 1D model {0} as reference'.format(model_file))
             self.model_type = '1d'
             self.model_filename = model_file
-            self.model_handler = Generic_parametric_file(model_file)
-            self.model_handler.open()
-            out, ff = self.model_handler.read()
-            self.model_handler.close()
-
-            # out = np.loadtxt(model_file, skiprows=1)
-            self.set_parameters(out, ff)
-            self.reference = copy.deepcopy(self.parameters)
+            
         
         if (extension == 'h5'):
             if (verbose >= 1):
                 print('    * Reading 3D model {0} as reference'.format(model_file))
             self.model_type = '3d'
-            self.model_handler = Generic_parametric_file(model_file)
+            
+        self.model_handler = Generic_parametric_file(model_file)
+        self.model_handler.open()
+        out, ff = self.model_handler.read()
+        self.model_handler.close()
+
+        # out = np.loadtxt(model_file, skiprows=1)
+        self.set_parameters(out, ff)
+        
+        self.init_reference()
 
     def nodes_to_model(self):
         """
@@ -163,6 +151,8 @@ class Parametric_atmosphere(General_atmosphere):
         for k, v in self.nodes.items():
             if (self.n_nodes[k] > 0):
                 self.parameters[k] = self.reference[k] + self.nodes[k]
+            else:
+                self.parameters[k] = self.reference[k]
 
     
     def synthesize(self, stokes=None):
@@ -181,7 +171,9 @@ class Parametric_atmosphere(General_atmosphere):
                                     containing I, Q, U and V. Size (4,nLambda)        
         """
         
-        self.nodes_to_model()
+        if (self.working_mode == 'inversion'):
+            self.nodes_to_model()
+            self.to_physical()
 
         lambda0 = self.parameters['lambda0']
         sigma = self.parameters['sigma']

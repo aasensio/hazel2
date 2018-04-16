@@ -27,7 +27,7 @@ class iterator(object):
         else:
             self.rank = 0            
 
-        self.logger = logging.getLogger("model")
+        self.logger = logging.getLogger("iterator")
         self.logger.setLevel(logging.DEBUG)
         self.logger.handlers = []
 
@@ -103,11 +103,11 @@ class iterator(object):
                 # Read current spectrum and stray light
                 for k, v in self.model.spectrum.items():
                     v.read_observation(pixel=i)
-                    if (v.stray_present):
-                        v.read_straylight(pixel=i)
+
                 self.model.invert()
             else:
                 self.model.synthesize()
+                self.model.flatten_parameters_to_reference(cycle=0)
 
             self.model.output_handler.write(self.model, pixel=i)
 
@@ -169,22 +169,21 @@ class iterator(object):
                                 args, ff = v.model_handler.read(pixel=task_index)
                                 v.set_parameters(args, ff)
                                 v.init_reference()
-                                data_to_send[k] = [v.reference, v.parameters]
+                                data_to_send[k] = [v.reference, v.parameters, v.stray_profile]
 
                             # Read current spectrum and stray light
                             for k, v in self.model.spectrum.items():
                                 v.read_observation(pixel=task_index)
-                                if (v.stray_present):
-                                    v.read_straylight(pixel=task_index)
-                                data_to_send[k] = [v.obs, v.noise, v.stray, v.los, v.boundary, v.mu]
+                                
+                                data_to_send[k] = [v.obs, v.noise, v.los, v.boundary, v.mu]
                         else:
                             for k, v in self.model.atmospheres.items():
-                                m = v.model_handler.read(pixel=task_index)
-                                data_to_send[k] = m
+                                args, ff = v.model_handler.read(pixel=task_index)
+                                data_to_send[k] = [args, ff]
 
                         self.comm.send(data_to_send, dest=source, tag=tags.START)
 
-                        self.logger.info('Sent {0}->{1}'.format(task_index, source))
+                        # self.logger.info('Sent {0}->{1}'.format(task_index, source))
 
                         task_index += 1
                         pbar.update(1)
@@ -206,7 +205,7 @@ class iterator(object):
                                                         
                     self.last_received = '{0}->{1}'.format(index, source)
                     pbar.set_postfix(sent=self.last_sent, received=self.last_received)
-                    self.logger.info('Received {0}->{1}'.format(index, source))
+                    # self.logger.info('Received {0}->{1}'.format(index, source))
 
                 elif tag == tags.EXIT:                    
                     closed_workers += 1
@@ -238,17 +237,18 @@ class iterator(object):
                 if (self.model.working_mode == 'inversion'):
                     
                     for k, v in self.model.spectrum.items():
-                        v.obs, v.noise, v.stray, v.los, v.boundary, v.mu = data_received[k]
+                        v.obs, v.noise, v.los, v.boundary, v.mu = data_received[k]
 
                     for k, v in self.model.atmospheres.items():
-                        v.reference, v.parameters = data_received[k]
+                        v.reference, v.parameters, v.stray_profile = data_received[k]
                         
                     self.model.invert()
                 else:
                     for k, v in self.model.atmospheres.items():                    
-                        v.set_parameters(data_received[k])
+                        v.set_parameters(data_received[k][0], data_received[k][1])
                         
                     self.model.synthesize()
+                    self.model.flatten_parameters_to_reference(cycle=0)
 
                 data_to_send = {'index': task_index}
 

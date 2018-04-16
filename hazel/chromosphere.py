@@ -184,8 +184,7 @@ class Hazel_atmosphere(General_atmosphere):
         
         self.set_parameters(out, ff)
 
-        self.init_reference()
-        
+        self.init_reference()        
 
     def nodes_to_model(self):
         """

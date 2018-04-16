@@ -7,7 +7,7 @@ from hazel.codes import sir_code
 from hazel.hsra import hsra_continuum
 from hazel.io import Generic_SIR_file
 import scipy.interpolate as interp
-# from ipdb import set_trace as stop
+from ipdb import set_trace as stop
 import copy
 
 __all__ = ['SIR_atmosphere']
@@ -62,12 +62,12 @@ class SIR_atmosphere(General_atmosphere):
         self.cycles['Bz'] = None
         self.cycles['ff'] = None
 
-        self.epsilon['T'] = 1000.0
+        self.epsilon['T'] = 1.0
         self.epsilon['vmic'] = 1.0
         self.epsilon['v'] = 1.0
-        self.epsilon['Bx'] = 200.0
-        self.epsilon['By'] = 200.0
-        self.epsilon['Bz'] = 200.0
+        self.epsilon['Bx'] = 1.0
+        self.epsilon['By'] = 1.0
+        self.epsilon['Bz'] = 1.0
         self.epsilon['ff'] = 1.0
         
     def list_lines(self):
@@ -178,42 +178,23 @@ class SIR_atmosphere(General_atmosphere):
             if (verbose >= 1):
                 print('    * Reading 1D model {0} as reference'.format(model_file))
             self.model_type = '1d'
-            self.model_handler = Generic_SIR_file(model_file)
-            self.model_handler.open()
-            out, ff = self.model_handler.read()
-            self.model_handler.close()
-            
-            if (np.min(out[:,2]) > 0.0):
-                self.pe_present = True
-            else:
-                self.pe_present = False
-                        
-            self.set_parameters(out, ff)
-            self.reference = copy.deepcopy(self.parameters)
+            self.model_filename = model_file
         
         if (extension == 'h5'):
             if (verbose >= 1):
                 print('    * Reading 3D model {0} as reference'.format(model_file))
             self.model_type = '3d'
-            self.model_handler = Generic_SIR_file(model_file)
-            self.pe_present = True
-            # self.model_file = model_file
+                        
 
-    def set_reference(self):
-        """
-        Set reference model to that of the current parameters
+        self.model_handler = Generic_SIR_file(model_file)
+        self.model_handler.open()
+        out, ff = self.model_handler.read(pixel=0)
+        self.model_handler.close()
 
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        None
-        """
-        self.nodes_to_model()
-        self.reference = copy.deepcopy(self.parameters)
-            
+        self.set_parameters(out, ff)
+        
+        self.init_reference()
+                        
     def set_parameters(self, model, ff):
         """
         Set the parameters of the current model to those passed as argument
@@ -230,7 +211,7 @@ class SIR_atmosphere(General_atmosphere):
         None
         """
         
-        self.parameters['log_tau'] = model[:,0]
+        self.log_tau = model[:,0]
         self.parameters['T'] = model[:,1]
         self.parameters['vmic'] = model[:,3]
         self.parameters['v'] = model[:,4]
@@ -238,11 +219,11 @@ class SIR_atmosphere(General_atmosphere):
         self.parameters['By'] = model[:,6]
         self.parameters['Bz'] = model[:,7]
 
-        if (self.pe_present):
-            self.parameters['Pe'] = model[:,2]
+        if (np.min(model[:,2]) > 0.0):
+            self.Pe = model[:,2]
         else:
-            self.parameters['Pe'] = -np.ones(len(self.parameters['log_tau']))
-            self.parameters['Pe'][-1] = 1.11634e-1        
+            self.Pe = -np.ones(len(self.log_tau))
+            self.Pe[-1] = 1.11634e-1        
         
         self.parameters['ff'] = ff
 
@@ -258,10 +239,11 @@ class SIR_atmosphere(General_atmosphere):
         -------
         None
         """        
-        for k, v in self.nodes.items():
-            if (k is not 'log_tau'):
-                if (self.n_nodes[k] > 0):
-                    self.parameters[k] = self.interpolate_nodes(self.parameters['log_tau'], self.reference[k], self.nodes[k])
+        for k, v in self.nodes.items():            
+            if (self.n_nodes[k] > 0):
+                self.parameters[k] = self.interpolate_nodes(self.log_tau, self.reference[k], self.nodes[k])
+            else:
+                self.parameters[k] = self.reference[k]
                     
     def model_to_nodes(self):
         """
@@ -313,16 +295,18 @@ class SIR_atmosphere(General_atmosphere):
                             It is not returned if returnRF=False
         """
 
-        self.nodes_to_model()
+        if (self.working_mode == 'inversion'):
+            self.nodes_to_model()
+            self.to_physical()
         
         if (returnRF):
-            stokes, rf = sir_code.synthRF(self.index, self.n_lambda, self.parameters['log_tau'], self.parameters['T'], 
-                self.parameters['Pe'], self.parameters['vmic'], self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
+            stokes, rf = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
+                self.Pe, self.parameters['vmic'], self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
                 self.parameters['Bz'], self.macroturbulence)
             return self.parameters['ff'] * stokes[1:,:], rf
         else:
-            stokes = sir_code.synth(self.index, self.n_lambda, self.parameters['log_tau'], self.parameters['T'], 
-                self.parameters['Pe'], self.parameters['vmic'], self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
+            stokes = sir_code.synth(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
+                self.Pe, self.parameters['vmic'], self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
                 self.parameters['Bz'], self.macroturbulence[0])
             
             return self.parameters['ff'] * stokes[1:,:] * hsra_continuum(np.mean(self.wvl_axis))

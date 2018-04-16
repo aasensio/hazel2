@@ -13,7 +13,12 @@ import numpy as np
 import copy
 import os
 from pathlib import Path
-import matplotlib.pyplot as pl
+
+try:
+    import matplotlib.pyplot as pl
+except:
+    pass
+
 import logging
 
 # from ipdb import set_trace as stop
@@ -21,7 +26,7 @@ import logging
 __all__ = ['Model']
 
 class Model(object):
-    def __init__(self, config=None, working_mode='synthesis', verbose=0):
+    def __init__(self, config=None, working_mode='synthesis', verbose=0, debug=False):
         
         self.photospheres = []
         self.chromospheres = []
@@ -38,6 +43,7 @@ class Model(object):
         self.straylights = []
         self.working_mode = working_mode
         self.pixel = 0
+        self.debug = debug
 
         self.epsilon = 1e-2
 
@@ -115,6 +121,8 @@ class Model(object):
                     self.logger.info('Using {0} max. iterations'.format(self.max_iterations))
             else:
                 self.max_iterations = 10
+        else:
+            self.max_iterations = 10
 
         # Set number of maximum iterations
         if ('relative error' in config_dict['working mode']):
@@ -124,6 +132,8 @@ class Model(object):
                     self.logger.info('Stopping when relative error is below {0}'.format(self.relative_error))
             else:
                 self.relative_error = 1e-4
+        else:
+            self.relative_error = 1e-4
         
         # Deal with the atmospheres
         tmp = config_dict['atmospheres']
@@ -284,7 +294,7 @@ class Model(object):
         spectral : dict
             Dictionary containing the following data
             'Name', 'Wavelength', 'Topology', 'Weights Stokes', 'Wavelength file', 'Wavelength weight file',
-            'Observations file', 'Straylight file', 'Mask file'
+            'Observations file', 'Mask file'
 
         Returns
         -------
@@ -315,10 +325,10 @@ class Model(object):
         elif (value['observations file'] == 'None'):
             value['observations file'] = None
 
-        if ('straylight file' not in value):
-            value['straylight file'] = None
-        elif (value['straylight file'] == 'None'):
-            value['straylight file'] = None
+        # if ('straylight file' not in value):
+        #     value['straylight file'] = None
+        # elif (value['straylight file'] == 'None'):
+        #     value['straylight file'] = None
 
         if ('stokes weights' not in value):
             value['stokes weights'] = None
@@ -382,14 +392,14 @@ class Model(object):
                 self.logger.info('  - Using observations from {0}'.format(value['observations file']))
             obs_file = value['observations file']
 
-        if (value['straylight file'] is None):
-            if (self.verbose >= 1):
-                self.logger.info('  - Not using straylight')
-            stray_file = None
-        else:
-            if (self.verbose >= 1):
-                self.logger.info('  - Using straylight from {0}'.format(value['straylight file']))
-            stray_file = value['straylight file']
+        # if (value['straylight file'] is None):
+        #     if (self.verbose >= 1):
+        #         self.logger.info('  - Not using straylight')
+        #     stray_file = None
+        # else:
+        #     if (self.verbose >= 1):
+        #         self.logger.info('  - Using straylight from {0}'.format(value['straylight file']))
+        #     stray_file = value['straylight file']
 
         if (value['los'] is None):
             if (self.working_mode == 'synthesis'):
@@ -418,7 +428,7 @@ class Model(object):
         
         stokes_weights = np.array(stokes_weights)
 
-        self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, stray=stray_file, 
+        self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, 
             name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary)
 
         self.topologies.append(value['topology'])
@@ -647,7 +657,6 @@ class Model(object):
                 for k2, v2 in self.atmospheres[atm['name']].parameters.items():
                     if (k.lower() == k2.lower()):                            
                         self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)
-
         
 
     def remove_unused_atmosphere(self):
@@ -1023,8 +1032,9 @@ class Model(object):
         None
 
         """                
-        for k, v in self.atmospheres.items():
-            v.set_reference(cycle=cycle)
+        if (self.working_mode == 'inversion'):
+            for k, v in self.atmospheres.items():                
+                v.set_reference(cycle=cycle)
             
         for k, v in self.spectrum.items():
             v.stokes_cycle[cycle] = v.stokes
@@ -1259,11 +1269,12 @@ class Model(object):
         
         # self.synthesize_and_compute_rf()
         
-        f, ax = pl.subplots(nrows=2, ncols=2)
-        ax = ax.flatten()
-        for i in range(4):
-            ax[i].plot(self.spectrum['spec1'].wavelength_axis, self.spectrum['spec1'].obs[i,:], '--')
-        #     ax[i].plot(self.spectrum['spec1'].wavelength_axis, self.spectrum['spec1'].stokes[i,:], '.')
+        if (self.debug):
+            f, ax = pl.subplots(nrows=2, ncols=2)
+            ax = ax.flatten()
+            for i in range(4):
+                ax[i].plot(self.spectrum['spec1'].wavelength_axis, self.spectrum['spec1'].obs[i,:], '--')
+                ax[i].plot(self.spectrum['spec1'].wavelength_axis, self.spectrum['spec1'].stokes[i,:], '.')
 
 
         lambdaLM = 10.0
@@ -1326,8 +1337,9 @@ class Model(object):
 
                 rel = 2.0 * (chi2 - bestchi2) / (chi2 + bestchi2)
 
-                for i in range(4):
-                    ax[i].plot(self.spectrum['spec1'].wavelength_axis, self.spectrum['spec1'].stokes[i,:])
+                if (self.debug):
+                    for i in range(4):
+                        ax[i].plot(self.spectrum['spec1'].wavelength_axis, self.spectrum['spec1'].stokes[i,:])
 
                 if (self.verbose >= 2):
                     self.logger.info('It: {0} - chi2: {1} - lambda: {2} - rel: {3}'.format(iteration, chi2, lambda_opt, rel))

@@ -81,6 +81,22 @@ db_boundary[:] = boundary_3d
 f.close()
 
 
+model = np.loadtxt('chromospheres/model_chromosphere.1d', skiprows=1)
+
+model_3d = np.zeros((n_pixel,8), dtype=np.float64)
+ff_3d = np.zeros((n_pixel,), dtype=np.float64)
+
+for i in range(n_pixel):    
+    model_3d[i,:] = model[0:-1]
+    ff_3d[i] = model[-1]
+
+f = h5py.File('photospheres/model_chromosphere.h5', 'w')
+db_model = f.create_dataset('model', model_3d.shape, dtype=np.float64)
+db_ff = f.create_dataset('ff', ff_3d.shape, dtype=np.float64)
+db_model[:] = model_3d
+db_ff[:] = ff_3d
+f.close()
+
 # model = np.loadtxt('chromospheres/model_chromosphere.1d', skiprows=1)
 
 # model_3d = np.zeros((n_pixel,8), dtype=np.float64)

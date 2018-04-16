@@ -7,7 +7,7 @@ from hazel.hsra import hsra_continuum
 from hazel.io import Generic_stray_file
 import copy
 import scipy.constants as constants
-# from ipdb import set_trace as stop
+from ipdb import set_trace as stop
 
 __all__ = ['Straylight_atmosphere']
 
@@ -59,27 +59,13 @@ class Straylight_atmosphere(General_atmosphere):
         self.wvl_range = [ind_low, ind_top+1]
         self.avg_wavelength = np.mean(self.wvl_axis)
         self.stokes = np.zeros((4,len(self.wvl_axis)))
-
         
         
-    def set_parameters(self, pars):
-        self.parameters['v'] = pars[0]
-        self.parameters['ff'] = pars[1]
-
-    def set_reference(self):
-        """
-        Set reference model to that of the current parameters
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        None
-        """
-        self.reference = copy.deepcopy(self.parameters)
-
+    def set_parameters(self, pars, ff):
+        self.stray_profile = pars[0]
+        self.parameters['v'] = pars[1]
+        self.parameters['ff'] = ff
+    
     def set_straylight(self, stokes):
         """
         Load a reference model or a model for every pixel for synthesis/inversion
@@ -121,20 +107,20 @@ class Straylight_atmosphere(General_atmosphere):
                 print('    * Reading 1D model {0} as reference'.format(model_file))
             self.model_type = '1d'
             self.model_filename = model_file
-            self.model_handler = Generic_stray_file(model_file)
-            self.model_handler.open()
-            out = self.model_handler.read()
-            self.model_handler.close()
-
-            # out = np.loadtxt(model_file, skiprows=1)
-            self.set_parameters(out)
-            self.reference = copy.deepcopy(self.parameters)
-        
+                    
         if (extension == 'h5'):
             if (verbose >= 1):
                 print('    * Reading 3D model {0} as reference'.format(model_file))
-            self.model_type = '3d'
-            self.model_handler = Generic_stray_file(model_file)
+            self.model_type = '3d'            
+
+        self.model_handler = Generic_stray_file(model_file)
+        self.model_handler.open()
+        out, ff = self.model_handler.read(pixel=0)
+        self.model_handler.close()
+        
+        self.set_parameters(out, ff)
+
+        self.init_reference()
 
     def nodes_to_model(self):
         """
@@ -151,6 +137,8 @@ class Straylight_atmosphere(General_atmosphere):
         for k, v in self.nodes.items():
             if (self.n_nodes[k] > 0):
                 self.parameters[k] = self.reference[k] + self.nodes[k]
+            else:
+                self.parameters[k] = self.reference[k]
 
     
     def synthesize(self):
@@ -172,6 +160,6 @@ class Straylight_atmosphere(General_atmosphere):
         
         dlambda = self.parameters['v'] * 1e5 / (100.0 * constants.c) * self.avg_wavelength
         
-        self.stokes[0,:] = np.interp(self.wvl_axis - dlambda, self.wvl_axis, self.spectrum.stray[self.wvl_range[0]:self.wvl_range[1]])
+        self.stokes[0,:] = np.interp(self.wvl_axis - dlambda, self.wvl_axis, self.stray_profile[self.wvl_range[0]:self.wvl_range[1]])
                                 
         return self.parameters['ff'] * self.stokes

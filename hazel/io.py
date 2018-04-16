@@ -2,7 +2,7 @@ import numpy as np
 import h5py
 from astropy.io import fits
 import os
-# from ipdb import set_trace as stop
+from ipdb import set_trace as stop
 
 __all__ = ['Generic_output_file', 'Generic_observed_file', 'Generic_hazel_file', 'Generic_SIR_file', 'Generic_parametric_file', 'Generic_stray_file']
 
@@ -53,8 +53,7 @@ class Generic_output_file(object):
 
             if (model.working_mode == 'inversion'):
                 for k, v in model.atmospheres.items():
-                    for cycle in range(model.n_cycles):                
-                        stop()
+                    for cycle in range(model.n_cycles):
                         for k2, v2 in v.reference_cycle[cycle].items():
                             self.out_model[k][k2][pixel,cycle,...] = v2
 
@@ -172,11 +171,17 @@ class Generic_stray_file(object):
 
     def read(self, pixel=None):
         if (self.extension == '1d'):
-            tmp = np.loadtxt(self.filename, skiprows=1)
-            return tmp
+            f = open(self.filename, 'r')
+            f.readline()
+            v, ff = np.array(f.readline().split()).astype('float64')
+            f.readline()
+            f.readline()
+                        
+            stray_profile = np.loadtxt(self.filename, skiprows=4)
+            return [stray_profile, v], ff
 
         if (self.extension == 'h5'):
-            return self.handler['model'][pixel,...]
+            return self.handler['model'][pixel,...], self.handler['ff'][pixel]
 
         # if (self.extension == 'fits'):
         #     return self.handler[0]fits.open(self.filename, memmap=True)
@@ -225,7 +230,7 @@ class Generic_parametric_file(object):
             return tmp[0:-1], tmp[-1]
 
         if (self.extension == 'h5'):
-            return self.handler['model'][pixel,...]
+            return self.handler['model'][pixel,...], self.handler['ff'][pixel]
 
         # if (self.extension == 'fits'):
         #     return self.handler[0]fits.open(self.filename, memmap=True)
@@ -323,7 +328,7 @@ class Generic_SIR_file(object):
             f.close()
             return np.loadtxt(self.filename, skiprows=4), ff
 
-        if (self.extension == 'h5'):
+        if (self.extension == 'h5'):            
             return self.handler['model'][pixel,...], self.handler['ff'][pixel]
 
     def close(self):

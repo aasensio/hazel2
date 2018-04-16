@@ -44,8 +44,8 @@ inside the group. Using ``h5py``, they can be easily accessed using:
     f = h5py.File('output.h5', 'r')
     T = f['ph1']['T']
 
-The shape of the output is (n_pixel,nz) for each specific parameter of a photospheric model
-and (n_pixel,1) for each parameter of the remaining model atmospheres.
+The shape of the output is (n_pixel,n_cycles,nz) for each specific parameter of a photospheric model
+and (n_pixel,n_cycles,1) for each parameter of the remaining model atmospheres.
 
 FITS files
 ^^^^^^^^^^

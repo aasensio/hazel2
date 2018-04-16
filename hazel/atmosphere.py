@@ -26,6 +26,7 @@ class General_atmosphere(object):
         self.spectrum = dict()
         self.active = False
         self.n_pixel = 1
+        self.stray_profile = None
         
 
         self.multiplets = {'10830': 10829.0911, '3888': 3888.6046, '7065': 7065.7085, '5876': 5875.9663}
@@ -75,7 +76,7 @@ class General_atmosphere(object):
             upper = self.ranges[k][1]
             self.parameters[k] = transformed_to_physical(v, lower, upper)
             self.jacobian[k] = jacobian_transformation(v, lower, upper)
-            
+                        
     def to_transformed(self):
         """
         Transform the atmospheric parameters from transformed domain to physical domain given the ranges.
@@ -94,6 +95,7 @@ class General_atmosphere(object):
             lower = self.ranges[k][0]
             upper = self.ranges[k][1]            
             self.parameters[k] = physical_to_transformed(v, lower, upper)
+            
 
     def set_reference(self, cycle=None):
         """
@@ -132,3 +134,4 @@ class General_atmosphere(object):
             self.to_transformed()            
 
         self.reference = copy.deepcopy(self.parameters)
+        

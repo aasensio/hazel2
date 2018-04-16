@@ -1,18 +1,17 @@
 import numpy as np
 from hazel.io import Generic_observed_file, Generic_stray_file
-# from ipdb import set_trace as stop
+from ipdb import set_trace as stop
 
 __all__ = ['Spectrum']
 
 class Spectrum(object):
-    def __init__(self, wvl=None, weights=None, observed_file=None, stray=None, name=None, stokes_weights=None, los=None, boundary=None):
+    def __init__(self, wvl=None, weights=None, observed_file=None, name=None, stokes_weights=None, los=None, boundary=None):
         
         self.wavelength_axis = None
         self.stokes = None
         self.stokes_perturbed = None
         self.pixel = 0
         self.boundary_single = boundary
-        self.stray_present = False
         
         if (wvl is not None):
             self.add_spectrum(wvl)
@@ -23,9 +22,9 @@ class Spectrum(object):
         if (observed_file is not None):
             self.add_observed_file(observed_file)
 
-        if (stray is not None):
-            self.add_stray_file(stray)
-            self.read_straylight()
+        # if (stray is not None):
+            # self.add_stray_file(stray)
+            # self.read_straylight()
 
         if (name is not None):
             self.add_name(name)
@@ -111,23 +110,23 @@ class Spectrum(object):
         self.observed_handle = Generic_observed_file(observed_file)
         self.n_pixel = self.observed_handle.get_npixel()
 
-    def add_stray_file(self, stray_file):        
-        """
-        Add a new file with straylight and open it
+    # def add_stray_file(self, stray_file):        
+    #     """
+    #     Add a new file with straylight and open it
         
-        Parameters
-        ----------        
-        straylight_file : str
-            File with the straylight
+    #     Parameters
+    #     ----------        
+    #     straylight_file : str
+    #         File with the straylight
         
-        Returns
-        -------
-        None
+    #     Returns
+    #     -------
+    #     None
     
-        """
-        self.stray_present = True
-        self.stray_handle = Generic_stray_file(stray_file)
-        self.stray_handle.open()
+    #     """
+    #     self.stray_present = True
+    #     self.stray_handle = Generic_stray_file(stray_file)
+    #     self.stray_handle.open()
 
     def add_name(self, name):
         """
@@ -236,4 +235,5 @@ class Spectrum(object):
         None
     
         """          
+        stop()
         self.stray = self.stray_handle.read(pixel=pixel)
