@@ -44,6 +44,8 @@ def isint(str):
         return False
 
 def isfloat(str):
+    if (str is None):
+        return False
     try:
         float(str)
         return True
@@ -54,7 +56,7 @@ def toint(l):
     return [int(x) if isint(x) else x for x in l]
 
 def tofloat(l):
-    return [float(x) if isfloat(x) else x for x in l]
+    return [float(x) if isfloat(x) else None for x in l]
 
 
 def fvoigt(damp,v):

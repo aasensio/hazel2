@@ -14,13 +14,14 @@ import copy
 import os
 from pathlib import Path
 import matplotlib.pyplot as pl
+import logging
 
 # from ipdb import set_trace as stop
 
 __all__ = ['Model']
 
 class Model(object):
-    def __init__(self, config=None, working_mode='synthesis', verbose=True):
+    def __init__(self, config=None, working_mode='synthesis', verbose=0):
         
         self.photospheres = []
         self.chromospheres = []
@@ -31,15 +32,25 @@ class Model(object):
         self.parametric = []
         self.spectrum = []
         self.configuration = None
-        self.n_cycles = None
+        self.n_cycles = 1
         self.spectrum = {}
         self.topologies = []
         self.straylights = []
         self.working_mode = working_mode
+        self.pixel = 0
 
-        self.epsilon = 1e-1
+        self.epsilon = 1e-2
 
         self.verbose = verbose
+        
+        self.logger = logging.getLogger("model")
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.handlers = []
+
+        ch = logging.StreamHandler()
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        ch.setFormatter(formatter)
+        self.logger.addHandler(ch)
 
         if (config is not None):
             self.configuration = Configuration(config)
@@ -47,8 +58,19 @@ class Model(object):
             self.use_configuration(self.configuration.config_dict)
         
         # Initialize pyhazel
-        hazel_code._init()
+        hazel_code._init()        
 
+    def __getstate__(self):
+        d = self.__dict__.copy()
+        if 'logger' in d:
+            d['logger'] = d['logger'].name
+        return d
+
+    def __setstate__(self, d):
+        if 'logger' in d:
+            d['logger'] = logging.getLogger(d['logger'])
+        self.__dict__.update(d)
+            
     def use_configuration(self, config_dict):
         """
         Use a configuration file
@@ -70,6 +92,7 @@ class Model(object):
         # Output file
         self.output_file = config_dict['working mode']['output file']
         
+        
         # Working mode
         # self.working_mode = config_dict['working mode']['action']
 
@@ -81,40 +104,58 @@ class Model(object):
         if ('number of cycles' in config_dict['working mode']):
             if (config_dict['working mode']['number of cycles'] != 'None'):
                 self.n_cycles = int(config_dict['working mode']['number of cycles'])
-                if (self.verbose):
-                    print('Using {0} cycles'.format(self.n_cycles))
+                if (self.verbose >= 1):
+                    self.logger.info('Using {0} cycles'.format(self.n_cycles))
+
+        # Set number of maximum iterations
+        if ('maximum iterations' in config_dict['working mode']):
+            if (config_dict['working mode']['number of cycles'] != 'None'):
+                self.max_iterations = int(config_dict['working mode']['maximum iterations'])
+                if (self.verbose >= 1):
+                    self.logger.info('Using {0} max. iterations'.format(self.max_iterations))
+            else:
+                self.max_iterations = 10
+
+        # Set number of maximum iterations
+        if ('relative error' in config_dict['working mode']):
+            if (config_dict['working mode']['relative error'] != 'None'):
+                self.relative_error = float(config_dict['working mode']['relative error'])
+                if (self.verbose >= 1):
+                    self.logger.info('Stopping when relative error is below {0}'.format(self.relative_error))
+            else:
+                self.relative_error = 1e-4
         
         # Deal with the atmospheres
         tmp = config_dict['atmospheres']
 
         self.atmospheres = {}
 
-        if (self.verbose):
-            print('Adding atmospheres')
+        if (self.verbose >= 1):
+            self.logger.info('Adding atmospheres')
 
         for key, value in tmp.items():
             
             if ('photosphere' in key):
-                if (self.verbose):
-                    print('  - New available photosphere : {0}'.format(value['name']))
+                if (self.verbose >=1):
+                    self.logger.info('  - New available photosphere : {0}'.format(value['name']))
 
                 self.add_photosphere(value)
                                                             
             if ('chromosphere' in key):
-                if (self.verbose):
-                    print('  - New available chromosphere : {0}'.format(value['name']))
+                if (self.verbose >= 1):
+                    self.logger.info('  - New available chromosphere : {0}'.format(value['name']))
 
                 self.add_chromosphere(value)
                                             
             if ('parametric' in key):
-                if (self.verbose):
-                    print('  - New available parametric : {0}'.format(value['name']))
+                if (self.verbose >= 1):
+                    self.logger.info('  - New available parametric : {0}'.format(value['name']))
 
                 self.add_parametric(value)
 
             if ('straylight' in key):
-                if (self.verbose):
-                    print('  - New available straylight : {0}'.format(value['name']))
+                if (self.verbose >= 1):
+                    self.logger.info('  - New available straylight : {0}'.format(value['name']))
 
                 self.add_straylight(value)
 
@@ -135,14 +176,14 @@ class Model(object):
         """
                             
         # Adding topologies
-        if (self.verbose):
-            print("Adding topologies") 
+        if (self.verbose >= 1):
+            self.logger.info("Adding topologies") 
         for value in self.topologies:
             self.add_topology(value)
 
         # Remove unused atmospheres defined in the configuration file and not in the topology
-        if (self.verbose):
-            print("Removing unused atmospheres")
+        if (self.verbose >= 1):
+            self.logger.info("Removing unused atmospheres")
         self.remove_unused_atmosphere()        
 
         # Calculate indices for atmospheres
@@ -162,11 +203,11 @@ class Model(object):
             all_equal = all(x == n_pixels[0] for x in n_pixels)
             if (not all_equal):
                 for k, v in self.atmospheres.items():
-                    print('{0} -> {1}'.format(k, v.n_pixel))
+                    self.logger.info('{0} -> {1}'.format(k, v.n_pixel))
                 raise Exception("Files with model atmospheres do not contain the same number of pixels")
             else:
-                if (self.verbose):
-                    print('Number of pixels to read : {0}'.format(n_pixels[0]))
+                if (self.verbose >= 1):
+                    self.logger.info('Number of pixels to read : {0}'.format(n_pixels[0]))
                 self.n_pixels = n_pixels[0]
 
         if (self.working_mode == 'inversion'):
@@ -174,11 +215,11 @@ class Model(object):
             all_equal = all(x == n_pixels[0] for x in n_pixels)
             if (not all_equal):
                 for k, v in self.spectrum.items():
-                    print('{0} -> {1}'.format(k, v.n_pixel))
+                    self.logger.info('{0} -> {1}'.format(k, v.n_pixel))
                 raise Exception("Files with spectral regions do not contain the same number of pixels")
             else:
-                if (self.verbose):
-                    print('Number of pixels to invert : {0}'.format(n_pixels[0]))
+                if (self.verbose >= 1):
+                    self.logger.info('Number of pixels to invert : {0}'.format(n_pixels[0]))
                 self.n_pixels = n_pixels[0]
         
 
@@ -201,8 +242,32 @@ class Model(object):
                 if (self.n_cycles is None):
                     self.n_cycles = cycles[0]
 
+        
+        # if (self.working_mode == 'inversion'):
+        #     cycles = []
+        #     for tmp in ['I', 'Q', 'U', 'V']:
+        #         if ( cycles.append
+        #     for k, v in self.atmospheres.items():
+        #         for k2, v2 in v.cycles.items():                    
+        #             cycles.append(len(v2))
+
+        #     all_equal = all(x == cycles[0] for x in cycles)
+        #     if (not all_equal):
+        #         raise Exception("Number of cycles in the nodes of active atmospheres is not always the same")
+        #     else:
+        #         if (self.n_cycles is None):
+        #             self.n_cycles = cycles[0]
+
+        
+
         self.init_sir()        
 
+        for k, v in self.spectrum.items():            
+            v.allocate_info_cycles(n_cycles=self.n_cycles)
+
+        for k, v in self.atmospheres.items():
+            v.allocate_info_cycles(n_cycles=self.n_cycles)
+        
     def open_output(self):
         self.output_handler = Generic_output_file(self.output_file)
         self.output_handler.open(self)
@@ -218,7 +283,7 @@ class Model(object):
         ----------
         spectral : dict
             Dictionary containing the following data
-            'Name', 'Wavelength', 'Topology', 'Stokes weights', 'Wavelength file', 'Wavelength weight file',
+            'Name', 'Wavelength', 'Topology', 'Weights Stokes', 'Wavelength file', 'Wavelength weight file',
             'Observations file', 'Straylight file', 'Mask file'
 
         Returns
@@ -232,24 +297,53 @@ class Model(object):
         value = hazel.util.lower_dict_keys(spectral)
 
     
-        if (self.verbose):            
-            print('Adding spectral region {0}'.format(value['name']))
+        if (self.verbose >= 1):            
+            self.logger.info('Adding spectral region {0}'.format(value['name']))        
 
         if ('wavelength file' not in value):
             value['wavelength file'] = None
+        elif (value['wavelength file'] == 'None'):
+            value['wavelength file'] = None
+
         if ('wavelength weight file' not in value):
             value['wavelength weight file'] = None
+        elif (value['wavelength weight file'] == 'None'):
+            value['wavelength weight file'] = None
+
         if ('observations file' not in value):
             value['observations file'] = None
+        elif (value['observations file'] == 'None'):
+            value['observations file'] = None
+
         if ('straylight file' not in value):
             value['straylight file'] = None
+        elif (value['straylight file'] == 'None'):
+            value['straylight file'] = None
+
         if ('stokes weights' not in value):
             value['stokes weights'] = None
+        elif (value['stokes weights'] == 'None'):
+            value['stokes weights'] = None
+
         if ('mask file' not in value):
             value['mask file'] = None
+        elif (value['mask file'] == 'None'):
+            value['mask file'] = None
+
         if ('los' not in value):
             value['los'] = None
+        elif (value['los'] == 'None'):
+            value['los'] = None
+
+        for tmp in ['i', 'q', 'u', 'v']:
+            if ('weights stokes {0}'.format(tmp) not in value):
+                value['weights stokes {0}'.format(tmp)] = [None]*10
+            elif (value['weights stokes {0}'.format(tmp)] == 'None'):
+                value['weights stokes {0}'.format(tmp)] = [None]*10
+
         if ('boundary condition' not in value):
+            value['boundary condition'] = None
+        elif (value['boundary condition'] == 'None'):
             value['boundary condition'] = None
 
 
@@ -260,21 +354,22 @@ class Model(object):
             if ('wavelength' in value):
                 axis = value['wavelength']
                 wvl = np.linspace(float(axis[0]), float(axis[1]), int(axis[2]))
-                print('  - Using wavelength axis from {0} to {1} with {2} steps'.format(float(axis[0]), float(axis[1]), int(axis[2])))
+                if (self.verbose >= 1):
+                    self.logger.info('  - Using wavelength axis from {0} to {1} with {2} steps'.format(float(axis[0]), float(axis[1]), int(axis[2])))
             else:
                 raise Exception('Wavelength range is not defined. Please, use "Wavelength" or "Wavelength file"')
         else:
-            if (self.verbose):
-                print('  - Reading wavelength axis from {0}'.format(value['wavelength file']))
+            if (self.verbose >= 1):
+                self.logger.info('  - Reading wavelength axis from {0}'.format(value['wavelength file']))
             wvl = np.loadtxt(value['wavelength file'])
                 
         if (value['wavelength weight file'] is None):
-            if (self.verbose and self.working_mode == 'inversion'):
-                print('  - Setting all weights to 1')
+            if (self.verbose >= 1 and self.working_mode == 'inversion'):
+                self.logger.info('  - Setting all wavelength weights to 1')
             weights = np.ones(len(wvl))
         else:
-            if (self.verbose):
-                print('  - Reading wavelength weights from {0}'.format(value['wavelength weight file']))
+            if (self.verbose >= 1):
+                self.logger.info('  - Reading wavelength weights from {0}'.format(value['wavelength weight file']))
             weights = np.loadtxt(value['wavelength weight file'])
 
         # Observations file not present
@@ -283,28 +378,18 @@ class Model(object):
                 raise Exception("Inversion mode without observations is not allowed.")            
             obs_file = None
         else:
-            if (self.verbose):
-                print('  - Using observations from {0}'.format(value['observations file']))
+            if (self.verbose >= 1):
+                self.logger.info('  - Using observations from {0}'.format(value['observations file']))
             obs_file = value['observations file']
 
         if (value['straylight file'] is None):
-            if (self.verbose):
-                print('  - Not using straylight')
+            if (self.verbose >= 1):
+                self.logger.info('  - Not using straylight')
             stray_file = None
         else:
-            if (self.verbose):
-                print('  - Using straylight from {0}'.format(value['straylight file']))
+            if (self.verbose >= 1):
+                self.logger.info('  - Using straylight from {0}'.format(value['straylight file']))
             stray_file = value['straylight file']
-
-        # Stokes weights
-        if (value['stokes weights'] is None):
-            if (self.verbose):
-                print('  - All Stokes parameters weighted the same')
-            stokes_weights = np.ones(4)
-        else:
-            if (self.verbose):
-                print('  - Using weights {0}'.format(value['stokes weights']))
-            stokes_weights = np.asarray(hazel.util.tofloat(value['stokes weights']))
 
         if (value['los'] is None):
             if (self.working_mode == 'synthesis'):
@@ -312,18 +397,26 @@ class Model(object):
             los = None
         else:
             los = np.array(value['los']).astype('float64')
-            if (self.verbose):
-                print('  - Using LOS {0}'.format(value['los']))
+            if (self.verbose >= 1):
+                self.logger.info('  - Using LOS {0}'.format(value['los']))
 
         if (value['boundary condition'] is None):
-            if (self.verbose):
-                print('  - Using default boundary conditions in spectral region {0}. Check carefully!'.format(value['name']))
+            if (self.verbose >= 1):
+                self.logger.info('  - Using default boundary conditions in spectral region {0}. Check carefully!'.format(value['name']))
             boundary = np.array([1.0,0.0,0.0,0.0])
         else:
             boundary = np.array(value['boundary condition']).astype('float64')
-            if (self.verbose):
-                print('  - Using boundary condition {0}'.format(value['los']))
+            if (self.verbose >= 1):
+                self.logger.info('  - Using boundary condition {0}'.format(value['los']))
 
+
+        stokes_weights = []
+        for st in ['i', 'q', 'u', 'v']:
+            tmp = hazel.util.tofloat(value['weights stokes {0}'.format(st)])
+            tmp = [i if i is not None else 1.0 for i in tmp]
+            stokes_weights.append(tmp)
+        
+        stokes_weights = np.array(stokes_weights)
 
         self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, stray=stray_file, 
             name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary)
@@ -352,12 +445,21 @@ class Model(object):
         # already done
         atm = hazel.util.lower_dict_keys(atmosphere)
 
-        self.atmospheres[atm['name']] = SIR_atmosphere()
+        self.atmospheres[atm['name']] = SIR_atmosphere(working_mode=self.working_mode)
         lines = [int(k) for k in list(atm['spectral lines'])]
         wvl_range = [float(k) for k in atm['wavelength']]
                     
         self.atmospheres[atm['name']].add_active_line(lines=lines, spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
+
+        if ('ranges' in atm):
+            for k, v in atm['ranges'].items():
+                for k2, v2 in self.atmospheres[atm['name']].parameters.items():
+                    if (k.lower() == k2.lower()):
+                        if (v == 'None'):
+                            self.atmospheres[atm['name']].ranges[k2] = None
+                        else:
+                            self.atmospheres[atm['name']].ranges[k2] = hazel.util.tofloat(v)
 
         if ('reference atmospheric model' in atm):
             my_file = Path(atm['reference atmospheric model'])
@@ -373,16 +475,7 @@ class Model(object):
             for k, v in atm['nodes'].items():
                 for k2, v2 in self.atmospheres[atm['name']].parameters.items():
                     if (k.lower() == k2.lower()):
-                        self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)
-
-        if ('ranges' in atm):
-            for k, v in atm['ranges'].items():
-                for k2, v2 in self.atmospheres[atm['name']].parameters.items():
-                    if (k.lower() == k2.lower()):
-                        if (v == 'None'):
-                            self.atmospheres[atm['name']].ranges[k2] = None
-                        else:
-                            self.atmospheres[atm['name']].ranges[k2] = hazel.util.tofloat(v)
+                        self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)        
 
 
     def add_chromosphere(self, atmosphere):
@@ -406,15 +499,24 @@ class Model(object):
         # already done
         atm = hazel.util.lower_dict_keys(atmosphere)
         
-        self.atmospheres[atm['name']] = Hazel_atmosphere()
+        self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode)
                 
         wvl_range = [float(k) for k in atm['wavelength']]
 
         self.atmospheres[atm['name']].add_active_line(line=atm['line'], spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
 
-        if (self.verbose):
-            print("    * Adding line : {0}".format(atm['line']))
+        if (self.verbose >= 1):
+            self.logger.info("    * Adding line : {0}".format(atm['line']))
+
+        if ('ranges' in atm):
+            for k, v in atm['ranges'].items():
+                for k2, v2 in self.atmospheres[atm['name']].parameters.items():
+                    if (k.lower() == k2.lower()):
+                        if (v == 'None'):
+                            self.atmospheres[atm['name']].ranges[k2] = None
+                        else:
+                            self.atmospheres[atm['name']].ranges[k2] = hazel.util.tofloat(v)
 
         if ('reference atmospheric model' in atm):
             my_file = Path(atm['reference atmospheric model'])
@@ -434,16 +536,7 @@ class Model(object):
                 for k2, v2 in self.atmospheres[atm['name']].parameters.items():
                     if (k.lower() == k2.lower()):                            
                         self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)
-
-        if ('ranges' in atm):
-            for k, v in atm['ranges'].items():
-                for k2, v2 in self.atmospheres[atm['name']].parameters.items():
-                    if (k.lower() == k2.lower()):
-                        if (v == 'None'):
-                            self.atmospheres[atm['name']].ranges[k2] = None
-                        else:
-                            self.atmospheres[atm['name']].ranges[k2] = hazel.util.tofloat(v)
-
+    
     def add_parametric(self, atmosphere):
         """
         Programmatically add a parametric atmosphere
@@ -465,12 +558,21 @@ class Model(object):
         # already done
         atm = hazel.util.lower_dict_keys(atmosphere)
 
-        self.atmospheres[atm['name']] = Parametric_atmosphere()
+        self.atmospheres[atm['name']] = Parametric_atmosphere(working_mode=self.working_mode)
                 
         wvl_range = [float(k) for k in atm['wavelength']]
 
         self.atmospheres[atm['name']].add_active_line(spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
+
+        if ('ranges' in atm):
+            for k, v in atm['ranges'].items():
+                for k2, v2 in self.atmospheres[atm['name']].parameters.items():
+                    if (k.lower() == k2.lower()):
+                        if (v == 'None'):
+                            self.atmospheres[atm['name']].ranges[k2] = None
+                        else:
+                            self.atmospheres[atm['name']].ranges[k2] = hazel.util.tofloat(v)
 
         if ('reference atmospheric model' in atm):
             my_file = Path(atm['reference atmospheric model'])
@@ -489,14 +591,7 @@ class Model(object):
                     if (k.lower() == k2.lower()):                            
                         self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)
 
-        if ('ranges' in atm):
-            for k, v in atm['ranges'].items():
-                for k2, v2 in self.atmospheres[atm['name']].parameters.items():
-                    if (k.lower() == k2.lower()):
-                        if (v == 'None'):
-                            self.atmospheres[atm['name']].ranges[k2] = None
-                        else:
-                            self.atmospheres[atm['name']].ranges[k2] = hazel.util.tofloat(v)
+        
 
     
     def add_straylight(self, atmosphere):
@@ -520,12 +615,21 @@ class Model(object):
         # already done
         atm = hazel.util.lower_dict_keys(atmosphere)
 
-        self.atmospheres[atm['name']] = Straylight_atmosphere()
+        self.atmospheres[atm['name']] = Straylight_atmosphere(working_mode=self.working_mode)
                 
         wvl_range = [float(k) for k in atm['wavelength']]
 
         self.atmospheres[atm['name']].add_active_line(spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
+
+        if ('ranges' in atm):
+            for k, v in atm['ranges'].items():
+                for k2, v2 in self.atmospheres[atm['name']].parameters.items():
+                    if (k.lower() == k2.lower()):
+                        if (v == 'None'):
+                            self.atmospheres[atm['name']].ranges[k2] = None
+                        else:
+                            self.atmospheres[atm['name']].ranges[k2] = hazel.util.tofloat(v)        
 
         my_file = Path(atm['reference atmospheric model'])
         if (not my_file.exists()):
@@ -544,14 +648,7 @@ class Model(object):
                     if (k.lower() == k2.lower()):                            
                         self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)
 
-        if ('ranges' in atm):
-            for k, v in atm['ranges'].items():
-                for k2, v2 in self.atmospheres[atm['name']].parameters.items():
-                    if (k.lower() == k2.lower()):
-                        if (v == 'None'):
-                            self.atmospheres[atm['name']].ranges[k2] = None
-                        else:
-                            self.atmospheres[atm['name']].ranges[k2] = hazel.util.tofloat(v)        
+        
 
     def remove_unused_atmosphere(self):
         """
@@ -571,8 +668,8 @@ class Model(object):
         for k, v in self.atmospheres.items():
             if (not v.active):
                 to_remove.append(k)
-                if (self.verbose):
-                    print('  - Atmosphere {0} deleted.'.format(k))
+                if (self.verbose >= 1):
+                    self.logger.info('  - Atmosphere {0} deleted.'.format(k))
                 
         for k in to_remove:
             self.atmospheres.pop(k)
@@ -651,8 +748,8 @@ class Model(object):
         """
 
         # Transform the order to a list of lists
-        if (self.verbose):
-            print('  - {0}'.format(atmosphere_order))
+        if (self.verbose >= 1):
+            self.logger.info('  - {0}'.format(atmosphere_order))
 
         vertical_order = atmosphere_order.split('->')        
         order = []
@@ -756,7 +853,6 @@ class Model(object):
                         else:
                             self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top+1] = stokes / hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
     
-
     def synthesize(self, perturbation=False):
         """
         Synthesize all atmospheres
@@ -773,9 +869,19 @@ class Model(object):
 
         """
 
+        # print(self.atmospheres['ch1'].nodes)
+
+        # if (self.working_mode == 'inversion'):
+            # self.nodes_to_physical()
+
+        # print(self.atmospheres['ch1'].nodes)
+
         self.normalize_ff()
         for k, v in self.spectrum.items():
             self.synthesize_spectral_region(k, perturbation=perturbation)        
+
+        # if (self.working_mode == 'inversion'):
+            # self.physical_to_nodes()
             
     def find_active_parameters(self, cycle):
         """
@@ -799,7 +905,6 @@ class Model(object):
             for n, order in enumerate(atmospheres):
                 for k, atm in enumerate(order):                    
                     for l, par in self.atmospheres[atm].cycles.items():
-                        #print(l, par)
                         if (par is not None):
                             if (hazel.util.isint(par[cycle])):
                                 if (par[cycle] > 0):
@@ -819,6 +924,8 @@ class Model(object):
                                     left = copy.copy(right)
                                                                                                             
                                     pars.append(tmp)
+                                else:
+                                    self.atmospheres[atm].nodes[l] = 0.0
                             else:
                                 self.atmospheres[atm].nodes[l] = np.zeros(par[cycle])
                                 self.atmospheres[atm].n_nodes[l] = par[cycle]
@@ -838,6 +945,7 @@ class Model(object):
 
         self.active_meta = pars        
         self.nodes = np.concatenate(self.nodes).ravel()
+
         
     def synthesize_and_compute_rf(self, compute_rf=False):
         """
@@ -845,8 +953,8 @@ class Model(object):
 
         Parameters
         ----------
-        cycle : int
-            Cycle to consider
+        compute_rf : bool (optional, default False)
+            If True, then compute the response functions. If not, just compute the synthesis.
         
         Returns
         -------
@@ -866,8 +974,11 @@ class Model(object):
         for par in self.active_meta:
             nodes = self.nodes[par['left']:par['right']]
 
-            if (self.verbose):
-                print(" * RF to {0} - {1} - nodes={2}".format(par['atm'], par['parameter'], par['n_nodes']))
+            lower = par['ranges'][0]
+            upper = par['ranges'][1]
+
+            if (self.verbose >= 3):
+                self.logger.info(" * RF to {0} - {1} - nodes={2}".format(par['atm'], par['parameter'], par['n_nodes']))
                         
             for i in range(par['n_nodes']):
                 perturbation = np.zeros(par['n_nodes'])
@@ -878,38 +989,46 @@ class Model(object):
 
                 # Perturb this parameter
                 self.atmospheres[par['atm']].nodes[par['parameter']] = nodes + perturbation
-                
+                                
                 # Synthesize
                 self.synthesize(perturbation=True)
-
+                                                
                 # And come back to the original value of the nodes
                 self.atmospheres[par['atm']].nodes[par['parameter']] = nodes
 
                 rf = np.expand_dims((self.spectrum['spec1'].stokes - self.spectrum['spec1'].stokes_perturbed) / perturbation[i], 0)
-                
+
+                # jacobian = self.atmospheres[par['atm']].jacobian[par['parameter']]
+                # rf *= jacobian
+                                                
                 if (loop == 0):
                     self.response = rf
                 else:
                     self.response = np.vstack([self.response, rf])
 
                 loop += 1
-
-    def flatten_parameters_to_reference(self):
+        
+        
+    def flatten_parameters_to_reference(self, cycle):
         """
         Flatten all current parameters to the reference atmosphere
 
         Parameters
         ----------
-        None
+        cycle : int
+            Current cycle
         
         Returns
         -------
         None
 
-        """
+        """                
         for k, v in self.atmospheres.items():
-            v.set_reference()            
-
+            v.set_reference(cycle=cycle)
+            
+        for k, v in self.spectrum.items():
+            v.stokes_cycle[cycle] = v.stokes
+        
     def set_new_model(self, nodes):
         """
         Set the nodes of the current model to the values passed on the arguments
@@ -925,7 +1044,7 @@ class Model(object):
 
         """
 
-        n_active_pars = len(self.active_meta)
+        n_active_pars = len(self.active_meta)        
                 
         for par in self.active_meta:
             left = par['left']
@@ -933,7 +1052,8 @@ class Model(object):
 
             self.atmospheres[par['atm']].nodes[par['parameter']] = nodes[left:right]
 
-    def modified_svd_inverse(self, H, tol=1e-6):
+
+    def modified_svd_inverse(self, H, tol=1e-8):
         """
         Compute the inverse of the Hessian matrix using a modified SVD, by thresholding each subpsace separately
 
@@ -998,19 +1118,20 @@ class Model(object):
         ddchi2 = np.zeros((n,n))
         for k, v in self.spectrum.items():
             residual = (v.stokes - v.obs)            
-            chi2 += np.sum(v.stokes_weights[:,None] * residual**2 * v.factor_chi2)
+            weights = v.stokes_weights[:,self.cycle]            
+            chi2 += np.sum(weights[:,None] * residual**2 * v.factor_chi2)
             
             if (not only_chi2):
-                dchi2 += -2.0 / v.dof * np.sum(v.stokes_weights[None,:,None] * self.response * residual[None,:,:] * v.factor_chi2[None,:,:], axis=(1,2))
-                ddchi2 += 2.0 / v.dof * np.sum(v.stokes_weights[None,None,:,None] * self.response[None,:,:,:] * self.response[:,None,:,:] * v.factor_chi2[None,None,:,:], axis=(2,3))                
+                dchi2 += -2.0 / v.dof * np.sum(weights[None,:,None] * self.response * residual[None,:,:] * v.factor_chi2[None,:,:], axis=(1,2))
+                ddchi2 += 2.0 / v.dof * np.sum(weights[None,None,:,None] * self.response[None,:,:,:] * self.response[:,None,:,:] * v.factor_chi2[None,None,:,:], axis=(2,3))                
                 return chi2, dchi2, ddchi2
             else:
                 return chi2
 
-        if (not only_chi2):            
-            return chi2, dchi2, ddchi2
-        else:
-            return chi2
+        # if (not only_chi2):            
+        #     return chi2, dchi2, ddchi2
+        # else:
+        #     return chi2
 
     def backtracking(self, dchi2, ddchi2, direction='down', max_iter=5, lambda_init=1e-3, current_chi2=1e10):
         """
@@ -1066,17 +1187,17 @@ class Model(object):
             sols.append(new_solution)
         
             self.set_new_model(new_solution)
-
+            
             self.synthesize_and_compute_rf()
 
             chi2_arr.append(self.compute_chi2(only_chi2=True))
             lambdas.append(lambdaLM)
 
-            if (self.verbose):
+            if (self.verbose >= 3):
                 if (direction == 'down'):
-                    print('  - Backtracking: {0:2d} - lambda: {1:7.5f} - chi2: {2:7.5f}'.format(loop, lambdaLM, chi2_arr[-1]))
+                    self.logger.info('  - Backtracking: {0:2d} - lambda: {1:7.5f} - chi2: {2:7.5f}'.format(loop, lambdaLM, chi2_arr[-1]))
                 else:
-                    print('  * Backtracking: {0:2d} - lambda: {1:7.5f} - chi2: {2:7.5f}'.format(loop, lambdaLM, chi2_arr[-1]))
+                    self.logger.info('  * Backtracking: {0:2d} - lambda: {1:7.5f} - chi2: {2:7.5f}'.format(loop, lambdaLM, chi2_arr[-1]))
             
             # If we improve the chi2
             if (chi2_arr[-1] < best_chi2):
@@ -1126,30 +1247,42 @@ class Model(object):
 
         """
 
+        # Transform all parameters to 
+        first = True
+
         for k, v in self.spectrum.items():
             v.factor_chi2 = 1.0 / (v.noise**2 * v.dof)
+            # v.allocate_info_cycles(n_cycles=self.n_cycles)
+
+        # for k, v in self.atmospheres.items():
+            # v.allocate_info_cycles(n_cycles=self.n_cycles)
         
-        self.synthesize_and_compute_rf()
+        # self.synthesize_and_compute_rf()
         
         f, ax = pl.subplots(nrows=2, ncols=2)
         ax = ax.flatten()
         for i in range(4):
-            ax[i].plot(self.spectrum['spec1'].obs[i,:], '--')
-            ax[i].plot(self.spectrum['spec1'].stokes[i,:], '.')
+            ax[i].plot(self.spectrum['spec1'].wavelength_axis, self.spectrum['spec1'].obs[i,:], '--')
+        #     ax[i].plot(self.spectrum['spec1'].wavelength_axis, self.spectrum['spec1'].stokes[i,:], '.')
 
 
         lambdaLM = 10.0
         lambda_opt = 10.0
-        bestchi2 = 1e10        
+        bestchi2 = 1e10
     
-        for cycle in range(self.n_cycles):
-            if (self.verbose):
-                print('-------------')
-                print('  Cycle {0}  '.format(cycle))
-                print('-------------')
+        for self.cycle in range(self.n_cycles):
+            if (self.verbose >= 2):
+                self.logger.info('-------------')
+                self.logger.info('  Cycle {0}  '.format(self.cycle))
+                
+                for k, v in self.spectrum.items():
+                    self.logger.info('  Weights for region {0} : SI={1} - SQ={2} - SU={3} - SV={4}'.format(k, v.stokes_weights[0,self.cycle], v.stokes_weights[1,self.cycle],
+                        v.stokes_weights[2,self.cycle], v.stokes_weights[3,self.cycle]))
+
+                self.logger.info('-------------')
                 
 
-            self.find_active_parameters(cycle)
+            self.find_active_parameters(self.cycle)
 
             keepon = True
             iteration = 0
@@ -1169,51 +1302,55 @@ class Model(object):
                     if (best_chi2_up < best_chi2):
                         lambda_opt = lambda_opt_up
                                                 
-                if (self.verbose):
-                    print('  * Optimal lambda: {0}'.format(lambda_opt))
+                if (self.verbose >= 3):
+                    self.logger.info('  * Optimal lambda: {0}'.format(lambda_opt))
 
                 # Give the final step
                 H = 0.5 * ddchi2
                 H += np.diag(lambda_opt * np.diag(H))
-                gradF = 0.5 * dchi2
+                gradF = 0.5 * dchi2                
 
-                U, w_inv, VT = self.modified_svd_inverse(H, tol=1e-8)
+                U, w_inv, VT = self.modified_svd_inverse(H, tol=1e-12)
 
                 # xnew = xold - H^-1 * grad F
                 delta = -VT.T.dot(np.diag(w_inv)).dot(U.T).dot(gradF)
 
                 # New solution
-                new_solution = self.nodes + delta                
+                new_solution = self.nodes + delta
                 self.set_new_model(new_solution)
 
                 self.nodes += delta
 
                 self.synthesize_and_compute_rf(compute_rf=True)
-                chi2, dchi2, ddchi2 = self.compute_chi2()                              
+                chi2, dchi2, ddchi2 = self.compute_chi2()
 
                 rel = 2.0 * (chi2 - bestchi2) / (chi2 + bestchi2)
 
                 for i in range(4):
-                    ax[i].plot(self.spectrum['spec1'].stokes[i,:])
+                    ax[i].plot(self.spectrum['spec1'].wavelength_axis, self.spectrum['spec1'].stokes[i,:])
 
-                if (self.verbose):
-                    print('It: {0} - chi2: {1} - lambda: {2} - rel: {3}'.format(iteration, chi2, lambda_opt, rel))
+                if (self.verbose >= 2):
+                    self.logger.info('It: {0} - chi2: {1} - lambda: {2} - rel: {3}'.format(iteration, chi2, lambda_opt, rel))
 
                 # Increase the optimal by 100 to find again the optimal value
                 lambdaLM = 100.0 * lambda_opt
 
                 bestchi2 = copy.copy(chi2)
 
-                if (np.abs(rel) < 1e-4 or iteration > 10):
+                if (np.abs(rel) < self.relative_error or iteration > self.max_iterations):
                     keepon = False
 
                 iteration += 1
+
+                if (self.verbose >= 2):
+                    self.atmospheres['ch1'].print_parameters(first=first)
+                    first = False
                 
             self.set_new_model(self.nodes)
 
-            self.flatten_parameters_to_reference()            
-
+            self.flatten_parameters_to_reference(self.cycle)
+            
     def read_observation(self):
         for k, v in self.spectrum.items():
-            v.read_observation(pixel=0)
-            v.read_straylight(pixel=0)
+            v.read_observation(pixel=self.pixel)
+            v.read_straylight(pixel=self.pixel)

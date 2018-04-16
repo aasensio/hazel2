@@ -15,11 +15,12 @@ __all__ = ['SIR_atmosphere']
 # sir_parameters = OrderedDict.fromkeys('T B thetaB phiB v')
 
 class SIR_atmosphere(General_atmosphere):
-    def __init__(self):
+    def __init__(self, working_mode):
         
         super().__init__('photosphere')
         self.ff = 1.0        
         self.macroturbulence = np.zeros(1)
+        self.working_mode = working_mode
         
         self.parameters['T'] = None
         self.parameters['vmic'] = None
@@ -174,7 +175,7 @@ class SIR_atmosphere(General_atmosphere):
         """
         extension = os.path.splitext(model_file)[1][1:]
         if (extension == '1d'):
-            if (verbose):
+            if (verbose >= 1):
                 print('    * Reading 1D model {0} as reference'.format(model_file))
             self.model_type = '1d'
             self.model_handler = Generic_SIR_file(model_file)
@@ -187,11 +188,11 @@ class SIR_atmosphere(General_atmosphere):
             else:
                 self.pe_present = False
                         
-            self.set_parameters([out, ff])
+            self.set_parameters(out, ff)
             self.reference = copy.deepcopy(self.parameters)
         
         if (extension == 'h5'):
-            if (verbose):
+            if (verbose >= 1):
                 print('    * Reading 3D model {0} as reference'.format(model_file))
             self.model_type = '3d'
             self.model_handler = Generic_SIR_file(model_file)
@@ -213,7 +214,7 @@ class SIR_atmosphere(General_atmosphere):
         self.nodes_to_model()
         self.reference = copy.deepcopy(self.parameters)
             
-    def set_parameters(self, model_in):
+    def set_parameters(self, model, ff):
         """
         Set the parameters of the current model to those passed as argument
 
@@ -228,10 +229,7 @@ class SIR_atmosphere(General_atmosphere):
         -------
         None
         """
-
-        model = model_in[0]
-        ff = model_in[1]
-
+        
         self.parameters['log_tau'] = model[:,0]
         self.parameters['T'] = model[:,1]
         self.parameters['vmic'] = model[:,3]

@@ -3,30 +3,85 @@
 Configuration
 =============
 
-The configuration of the specific run is controlled by a human-readable
-file.
+There is a single human-readable configuration file that controls the behavior of the code. It can be
+used both for synthesis and inversion.
 
-Example
+
+Example for synthesis
 -------
 
-In the following we paste a typical configuration file and then later describe all sections.
+In the following we paste a typical configuration file that can be used for synthesis. Later we describe all sections.
+As you can see, you first need to define the working mode, then the spectral regions of interest and finally the
+specific details for each atmosphere.
 
 ::
 
     # Hazel configuration File
 
     [Working mode]
-    Action = 'inversion'                                            # 'synthesis' or 'inversion'
+    Output file = output.h5
+    
+
+    [Spectral regions]
+        [[Region 1]]
+        Name = spec1
+        Wavelength = 10826, 10833, 150
+        Topology = ph2 -> ch1 -> te1 -> st1    
+        LOS = 0.0, 0.0, 90.0
+        Boundary condition = 1.0, 0.0, 0.0, 0.0       # I/Ic(mu=1), Q/Ic(mu=1), U/Ic(mu=1), V/Ic(mu=1)
+        Wavelength file = 'observations/10830.wavelength'
+        Wavelength weight file = 'observations/10830.weights'
+    
+    [Atmospheres]
+
+        [[Photosphere 2]]
+        Name = ph2
+        Reference atmospheric model = 'photospheres/model_photosphere.1d'
+        Spectral region = spec1
+        Wavelength = 10826, 10833
+        Spectral lines = 300,
+    
+        [[Chromosphere 1]]
+        Name = ch1                                              # Name of the atmosphere component
+        Spectral region = spec1                                 # Spectral region to be used for synthesis
+        Height = 3.0                                            # Height of the slab
+        Line = 10830                                            # 10830, 5876
+        Wavelength = 10826, 10833                         # Wavelength range used for synthesis
+        Reference atmospheric model = 'chromospheres/model_chromosphere.1d'    # File with model parameters
+
+        [[Parametric 1]]
+        Name = te1
+        Spectral region = spec1
+        Wavelength = 10826, 10833
+        Reference atmospheric model = 'telluric/model_telluric.1d'    # File with model parameters
+        Type = Gaussian           # Gaussian, Voigt, MoGaussian, MoVoigt 
+
+        [[Straylight 1]]
+        Name = st1
+        Spectral region = spec1
+        Wavelength = 10826, 10833    
+        Reference atmospheric model = 'straylight/model_stray.1d'    # File with model parameters
+
+Example for inversion
+-------
+
+In the following we paste a typical configuration file for the inversion mode.
+
+::
+
+    # Hazel configuration File
+
+    [Working mode]
     Output file = output.h5
     Number of cycles = 1
-
+    Maximum iterations = 10
+    Relative error = 1e-4
 
     [Spectral regions]
         [[Region 1]]
         Name = spec1
         Wavelength = 10826, 10833, 150
         Topology = ph2 -> ch1 -> te1 #-> st1    
-        Stokes weights = 1.0, 1.0, 1.0, 1.0
         LOS = 0.0, 0.0, 90.0
         Boundary condition = 1.0, 0.0, 0.0, 0.0       # I/Ic(mu=1), Q/Ic(mu=1), U/Ic(mu=1), V/Ic(mu=1)
         Wavelength file = 'observations/10830.wavelength'
@@ -34,6 +89,10 @@ In the following we paste a typical configuration file and then later describe a
         Observations file = 'observations/10830_stokes.h5'
         Straylight file = 'observations/10830_stray.1d'
         Mask file = None
+        Weights Stokes I = 1.0, 1.0, 1.0, 1.0
+        Weights Stokes Q = 0.0, 1.0, 1.0, 1.0
+        Weights Stokes U = 0.0, 1.0, 1.0, 1.0
+        Weights Stokes V = 1.0, 1.0, 1.0, 1.0
 
     [Atmospheres]
 
@@ -146,10 +205,13 @@ The first part of the configuration file represents very general properties.
     [Working mode]
     Output file = output.h5
     Number of cycles = 1
+    Maximum iterations = 10
+    Relative error = 1e-4
 
 * ``Ouput file``: defines the output file, which is usually an HDF5 or FITS file. It should always be present, otherwise you won't get any output.
-* ``Number of cycles`` (optional) : is a global variable to select the number of cycles to carry out during inversion. It can be
-used to neglect the number of cycles that will be described later in the configuration file.
+* ``Number of cycles`` (optional) : is a global variable to select the number of cycles to carry out during inversion. It can be used to neglect the number of cycles that will be described later in the configuration file.
+* ``Maximum iterations`` (optional, default is 10) : maximum number of iterations per cycle to carry out
+* ``Relative error`` (optional, default is 1e-4) : relative error when to stop iterating
 
 Spectral regions
 ----------------
@@ -166,7 +228,6 @@ atmospheres (described below) will produce the synthetic profiles for this regio
         Name = spec1
         Wavelength = 10826, 10833, 150
         Topology = ph2 -> ch1 -> te1 #-> st1    
-        Stokes weights = 1.0, 1.0, 1.0, 1.0    
         LOS = 0.0, 0.0, 90.0
         Boundary condition = 1.0, 0.0, 0.0, 0.0       # I/Ic(mu=1), Q/Ic(mu=1), U/Ic(mu=1), V/Ic(mu=1)
         Wavelength file = 'observations/10830.wavelength'
@@ -174,11 +235,14 @@ atmospheres (described below) will produce the synthetic profiles for this regio
         Observations file = 'observations/10830_stokes.h5'
         Straylight file = 'observations/10830_stray.1d'
         Mask file = None
+        Weights Stokes I = 1.0, 1.0, 1.0, 1.0
+        Weights Stokes Q = 0.0, 1.0, 1.0, 1.0
+        Weights Stokes U = 0.0, 1.0, 1.0, 1.0
+        Weights Stokes V = 1.0, 1.0, 1.0, 1.0
 
 * ``Name``: defines the name of the spectral region. Programmatically, one can have access to the spectrum of each spectral region by using ``mod.spectrum['spec1'].stokes``. This name is also used in the output file to refer to each region.
 * ``Wavelength`` (optional) : defines the lower, upper and number of points in the wavelength axis. It can be absent if a file with the wavelength axis is provided.
 * ``Topology`` defines the combination of atmospheres that are used to synthesize the Stokes parameters in this spectral region. See :ref:`topology` for more details on the syntax.
-* ``Stokes weights`` (optional) defines the weights for each Stokes parameters to be used during inversions.
 * ``LOS`` (mandatory for synthesis) defines the line-of-sight angles: :math:`\theta_\mathrm{LOS}`, :math:`\phi_\mathrm{LOS}` and :math:`\gamma_\mathrm{LOS}`
 * ``Boundary condition`` (mandatory for synthesis) defines the boundary condition normalized to the continuum intensity on the quiet Sun at disk center
 * ``Wavelength file`` (optional) defines which wavelength file to be used. See :ref:`input` for more information about the format.
@@ -186,6 +250,7 @@ atmospheres (described below) will produce the synthetic profiles for this regio
 * ``Observations file`` (optional) defines the file with the observations. See :ref:`input` for more information.
 * ``Straylight file`` (optional) defines the file with the straylight. See :ref:`input` for more information.
 * ``Mask file`` (optional) defines a mask to invert only a selection of pixels from an input file. See :ref:`input` for more information.
+* ``Weights Stokes`` (optional) defines the weights for all Stokes parameters and cycles. If absent, they will be considered to be 1.
 
 Atmospheres
 -----------

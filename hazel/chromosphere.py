@@ -12,39 +12,12 @@ import copy
 __all__ = ['Hazel_atmosphere']
 
 class Hazel_atmosphere(General_atmosphere):
-    def __init__(self):
+    def __init__(self, working_mode):
     
         super().__init__('chromosphere')
 
-        
-    def add_active_line(self, line, spectrum, wvl_range):
-        """
-        Add an active lines in this atmosphere
-        
-        Parameters
-        ----------        
-        lines : str
-            Line to activate: ['10830','5876']
-        spectrum : Spectrum
-            Spectrum object
-        wvl_range : float
-            Vector containing wavelength range over which to synthesize this line
-        
-        Returns
-        -------
-        None
-    
-        """        
-        self.active_line = line
-        self.wavelength_range = wvl_range
-        ind_low = (np.abs(spectrum.wavelength_axis - wvl_range[0])).argmin()
-        ind_top = (np.abs(spectrum.wavelength_axis - wvl_range[1])).argmin()
-
-        self.spectrum = spectrum
-        self.wvl_axis = spectrum.wavelength_axis[ind_low:ind_top+1]
-        self.wvl_range = [ind_low, ind_top+1]
-
         self.height = 3.0
+        self.working_mode = working_mode
 
         self.parameters['Bx'] = 0.0
         self.parameters['By'] = 0.0
@@ -96,44 +69,72 @@ class Hazel_atmosphere(General_atmosphere):
         self.cycles['a'] = None
         self.cycles['ff'] = None
 
-        self.epsilon['Bx'] = 500.0
-        self.epsilon['By'] = 500.0
-        self.epsilon['Bz'] = 500.0      
+        self.epsilon['Bx'] = 1.0
+        self.epsilon['By'] = 1.0
+        self.epsilon['Bz'] = 1.0      
         self.epsilon['tau'] = 1.0
-        self.epsilon['v'] = 5.0
-        self.epsilon['deltav'] = 5.0
+        self.epsilon['v'] = 1.0
+        self.epsilon['deltav'] = 1.0
         self.epsilon['beta'] = 1.0
-        self.epsilon['a'] = 0.5
+        self.epsilon['a'] = 1.0
         self.epsilon['ff'] = 1.0
 
-    def set_reference(self):
+        self.jacobian['Bx'] = 1.0
+        self.jacobian['By'] = 1.0
+        self.jacobian['Bz'] = 1.0      
+        self.jacobian['tau'] = 1.0
+        self.jacobian['v'] = 1.0
+        self.jacobian['deltav'] = 1.0
+        self.jacobian['beta'] = 1.0
+        self.jacobian['a'] = 1.0
+        self.jacobian['ff'] = 1.0
+
+        
+    def add_active_line(self, line, spectrum, wvl_range):
         """
-        Set reference model to that of the current parameters
-
+        Add an active lines in this atmosphere
+        
         Parameters
-        ----------
-        None
-
+        ----------        
+        lines : str
+            Line to activate: ['10830','5876']
+        spectrum : Spectrum
+            Spectrum object
+        wvl_range : float
+            Vector containing wavelength range over which to synthesize this line
+        
         Returns
         -------
         None
-        """
-        self.nodes_to_model()
-        self.reference = copy.deepcopy(self.parameters)
+    
+        """        
+        self.line_to_index = {'10830': 1, '3888': 2, '7065': 3,' 5876': 4}
+        self.active_line = line
+        self.wavelength_range = wvl_range
+        ind_low = (np.abs(spectrum.wavelength_axis - wvl_range[0])).argmin()
+        ind_top = (np.abs(spectrum.wavelength_axis - wvl_range[1])).argmin()
 
-    def set_parameters(self, pars):
+        self.spectrum = spectrum
+        self.wvl_axis = spectrum.wavelength_axis[ind_low:ind_top+1]
+        self.wvl_range = [ind_low, ind_top+1]
+
+    def set_parameters(self, pars, ff):
         """
         Set the parameters of this model chromosphere
 
         Parameters
         ----------
         pars : list of float
-            This list contains the following parameters in order: Bx, By, Bz, tau, v, delta, beta, a, ff
+            This list contains the following parameters in order: Bx, By, Bz, tau, v, delta, beta, a
+
+        ff : float
+            Filling factor
 
         Returns
         -------
         None
         """
+
         self.parameters['Bx'] = pars[0]
         self.parameters['By'] = pars[1]
         self.parameters['Bz'] = pars[2]        
@@ -142,8 +143,8 @@ class Hazel_atmosphere(General_atmosphere):
         self.parameters['deltav'] = pars[5]
         self.parameters['beta'] = pars[6]
         self.parameters['a'] = pars[7]
-        self.parameters['ff'] = pars[8]
-
+        self.parameters['ff'] = ff
+                
     def load_reference_model(self, model_file, verbose):
         """
         Load a reference model or a model for every pixel for synthesis/inversion
@@ -161,26 +162,30 @@ class Hazel_atmosphere(General_atmosphere):
             None
         """
         extension = os.path.splitext(model_file)[1][1:]
+        
         if (extension == '1d'):
-            if (verbose):
+            if (verbose >= 1):
                 print('    * Reading 1D model {0} as reference'.format(model_file))
             self.model_type = '1d'
             self.model_filename = model_file
-            self.model_handler = Generic_hazel_file(model_file)
-            self.model_handler.open()
-            out = self.model_handler.read()
-            self.model_handler.close()
+            
 
-            # out = np.loadtxt(model_file, skiprows=1)
-            self.set_parameters(out)
-            self.reference = copy.deepcopy(self.parameters)
         
         if (extension == 'h5'):
-            if (verbose):
+            if (verbose >= 1):
                 print('    * Reading 3D model {0} as reference'.format(model_file))
             self.model_type = '3d'
-            self.model_handler = Generic_hazel_file(model_file)
             
+
+        self.model_handler = Generic_hazel_file(model_file)
+        self.model_handler.open()
+        out, ff = self.model_handler.read(pixel=0)
+        self.model_handler.close()
+        
+        self.set_parameters(out, ff)
+
+        self.init_reference()
+        
 
     def nodes_to_model(self):
         """
@@ -193,10 +198,18 @@ class Hazel_atmosphere(General_atmosphere):
         Returns
         -------
         None
-        """        
-        for k, v in self.nodes.items():
+        """         
+        for k, v in self.nodes.items():        
             if (self.n_nodes[k] > 0):
                 self.parameters[k] = self.reference[k] + np.squeeze(self.nodes[k])
+            else:
+                self.parameters[k] = self.reference[k]            
+                            
+    def print_parameters(self, first=False):
+        # if (first):
+        print("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}".format('Bx', 'By', 'Bz', 'tau', 'v', 'deltav', 'beta', 'a'), flush=True)
+        print("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.parameters['Bx'], self.parameters['By'], self.parameters['Bz'], self.parameters['tau'], 
+            self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a']), flush=True)
 
     def synthesize(self, stokes=None):
         """
@@ -213,8 +226,11 @@ class Hazel_atmosphere(General_atmosphere):
             Stokes parameters, with the first index containing the wavelength displacement and the remaining
                                     containing I, Q, U and V. Size (4,nLambda)        
         """
+        
 
-        self.nodes_to_model()
+        if (self.working_mode == 'inversion'):
+            self.nodes_to_model()
+            self.to_physical()
                 
         B = np.sqrt(self.parameters['Bx']**2 + self.parameters['By']**2 + self.parameters['Bz']**2)
         if (B == 0):
@@ -226,7 +242,7 @@ class Hazel_atmosphere(General_atmosphere):
 
         hInput = self.height
         tau1Input = self.parameters['tau']
-        transInput = 1
+        transInput = self.line_to_index[self.active_line]
         anglesInput = self.spectrum.los
         lambdaAxisInput = self.wvl_axis - self.multiplets[self.active_line]
         nLambdaInput = len(lambdaAxisInput)

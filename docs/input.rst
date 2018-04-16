@@ -177,8 +177,8 @@ the enhancement factor beta, the damping a and the filling factor. An example fo
 
 ::
 
-    Bx    By   Bz   tau    v     deltav    beta    a     ff
-    0.0   0.0   0.0  1.0   0.0     8.0      1.0    0.0    1.0
+    Bx [G]   By [G]   Bz [G]   tau    v [km/s]     deltav [km/s]   beta    a     ff
+    0.0       0.0     0.0      1.0      0.0             8.0        1.0    0.0    1.0
 
 
 HDF5 3D files
@@ -205,9 +205,4 @@ create a sample file:
 
 Parametric
 ^^^^^^^^^^
-
-        Wavelength weight file = 'observations/10830.weights'
-        Observations file = 'observations/10830_stokes.h5'
-        Straylight file = 'observations/10830_stray.1d'
-        Mask file = None
-        Reference atmospheric model = 'photospheres/model_photosphere.1d'
+TBC

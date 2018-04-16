@@ -5,6 +5,8 @@ from hazel.util import i0_allen, fvoigt
 from hazel.codes import hazel_code, sir_code
 from hazel.hsra import hsra_continuum
 from hazel.io import Generic_hazel_file, Generic_SIR_file, Generic_parametric_file
+from hazel.transforms import transformed_to_physical, physical_to_transformed, jacobian_transformation
+import copy
 # from ipdb import set_trace as stop
 from hazel.sir import Sir
 
@@ -24,6 +26,7 @@ class General_atmosphere(object):
         self.spectrum = dict()
         self.active = False
         self.n_pixel = 1
+        
 
         self.multiplets = {'10830': 10829.0911, '3888': 3888.6046, '7065': 7065.7085, '5876': 5875.9663}
 
@@ -33,3 +36,99 @@ class General_atmosphere(object):
         self.n_nodes = OrderedDict()
         self.nodes = OrderedDict()
         self.epsilon = OrderedDict()
+        self.jacobian = OrderedDict()
+
+    def allocate_info_cycles(self, n_cycles):
+        """
+        Set the appropriate variables to store per-cycle models
+        
+        Parameters
+        ----------        
+        n_cycles : int
+            Number of cycles
+        
+        Returns
+        -------
+        None
+    
+        """
+
+        self.reference_cycle = [None] * n_cycles
+
+    def to_physical(self):
+        """
+        Transform the atmospheric parameters from transformed domain to physical domain given the ranges.
+        This only applies in inversion mode
+        
+        Parameters
+        ----------        
+        None
+        
+        Returns
+        -------
+        None
+    
+        """
+        
+        for k, v in self.parameters.items():
+            lower = self.ranges[k][0]
+            upper = self.ranges[k][1]
+            self.parameters[k] = transformed_to_physical(v, lower, upper)
+            self.jacobian[k] = jacobian_transformation(v, lower, upper)
+            
+    def to_transformed(self):
+        """
+        Transform the atmospheric parameters from transformed domain to physical domain given the ranges.
+        This only applies in inversion mode
+        
+        Parameters
+        ----------        
+        None
+        
+        Returns
+        -------
+        None
+    
+        """
+        for k, v in self.parameters.items():            
+            lower = self.ranges[k][0]
+            upper = self.ranges[k][1]            
+            self.parameters[k] = physical_to_transformed(v, lower, upper)
+
+    def set_reference(self, cycle=None):
+        """
+        Set reference model to that of the current parameters
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        """            
+        self.nodes_to_model()
+        self.reference = copy.deepcopy(self.parameters)
+
+        if (cycle is not None):
+            self.to_physical()        
+            self.reference_cycle[cycle] = copy.deepcopy(self.parameters)
+
+    def init_reference(self):
+        """
+        Initialize the reference atmosphere to the values of the parameters, doing the inverse transformation if in inversion mode
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        """
+
+        # Transform parameters to  unbounded domain
+        if (self.working_mode == 'inversion'):            
+            self.to_transformed()            
+
+        self.reference = copy.deepcopy(self.parameters)

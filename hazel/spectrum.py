@@ -12,6 +12,7 @@ class Spectrum(object):
         self.stokes_perturbed = None
         self.pixel = 0
         self.boundary_single = boundary
+        self.stray_present = False
         
         if (wvl is not None):
             self.add_spectrum(wvl)
@@ -35,7 +36,23 @@ class Spectrum(object):
         if (los is not None):
             self.los = los
             self.mu = np.cos(self.los[0] * np.pi / 180.0)
+
+    def allocate_info_cycles(self, n_cycles):
+        """
+        Set the appropriate variables to store per-cycle spectra
+        
+        Parameters
+        ----------        
+        n_cycles : int
+            Number of cycles
+        
+        Returns
+        -------
+        None
     
+        """
+
+        self.stokes_cycle = [None] * n_cycles    
 
     def add_spectrum(self, wvl):
         """
@@ -107,7 +124,8 @@ class Spectrum(object):
         -------
         None
     
-        """  
+        """
+        self.stray_present = True
         self.stray_handle = Generic_stray_file(stray_file)
         self.stray_handle.open()
 
@@ -140,7 +158,7 @@ class Spectrum(object):
         -------
         None
     
-        """  
+        """    
         self.stokes_weights = weights
 
     def next_pixel(self):
@@ -160,7 +178,7 @@ class Spectrum(object):
 
     def open_observation(self):
         """
-        Open the next pixel with observations
+        Open the file with the observations for this spectrum
         
         Parameters
         ----------        
@@ -172,6 +190,21 @@ class Spectrum(object):
     
         """          
         self.observed_handle.open()
+
+    def close_observation(self):
+        """
+        Close the file with the observations for this spectrum
+        
+        Parameters
+        ----------        
+        None
+        
+        Returns
+        -------
+        None
+    
+        """          
+        self.observed_handle.close()
 
     def read_observation(self, pixel=None):
         """

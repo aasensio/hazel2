@@ -221,7 +221,7 @@ class AppForm(QMainWindow):
             By = self.B1Input[0] * np.sin(self.B1Input[1] * np.pi / 180.0) * np.sin(self.B1Input[2] * np.pi / 180.0)
             Bz = self.B1Input[0] * np.cos(self.B1Input[1] * np.pi / 180.0)
 
-            self.model.atmospheres['ch1'].set_parameters([Bx, By, Bz, self.tau1Input, self.dopplerVelocityInput, self.dopplerWidthInput, self.betaInput, self.dampingInput, 1.0])
+            self.model.atmospheres['ch1'].set_parameters([Bx, By, Bz, self.tau1Input, self.dopplerVelocityInput, self.dopplerWidthInput, self.betaInput, self.dampingInput], 1.0)
         
 
         if (np.abs(self.nSlabsInput) == 2):
@@ -229,25 +229,25 @@ class AppForm(QMainWindow):
             Bx = self.B1Input[0] * np.sin(self.B1Input[1] * np.pi / 180.0) * np.cos(self.B1Input[2] * np.pi / 180.0)
             By = self.B1Input[0] * np.sin(self.B1Input[1] * np.pi / 180.0) * np.sin(self.B1Input[2] * np.pi / 180.0)
             Bz = self.B1Input[0] * np.cos(self.B1Input[1] * np.pi / 180.0)
-            self.model.atmospheres['ch1'].set_parameters([Bx, By, Bz, self.tau1Input, self.dopplerVelocityInput, self.dopplerWidthInput, self.betaInput, self.dampingInput, 1.0])
+            self.model.atmospheres['ch1'].set_parameters([Bx, By, Bz, self.tau1Input, self.dopplerVelocityInput, self.dopplerWidthInput, self.betaInput, self.dampingInput], 1.0)
 
             Bx = self.B2Input[0] * np.sin(self.B2Input[1] * np.pi / 180.0) * np.cos(self.B2Input[2] * np.pi / 180.0)
             By = self.B2Input[0] * np.sin(self.B2Input[1] * np.pi / 180.0) * np.sin(self.B2Input[2] * np.pi / 180.0)
             Bz = self.B2Input[0] * np.cos(self.B2Input[1] * np.pi / 180.0)
            
-            self.model.atmospheres['ch2'].set_parameters([Bx, By, Bz, self.tau2Input, self.dopplerVelocity2Input, self.dopplerWidth2Input, self.beta2Input, self.dampingInput, 1.0])
+            self.model.atmospheres['ch2'].set_parameters([Bx, By, Bz, self.tau2Input, self.dopplerVelocity2Input, self.dopplerWidth2Input, self.beta2Input, self.dampingInput], 1.0)
 
         if (np.abs(self.nSlabsInput) == -2):
 
             Bx = self.B1Input[0] * np.sin(self.B1Input[1] * np.pi / 180.0) * np.cos(self.B1Input[2] * np.pi / 180.0)
             By = self.B1Input[0] * np.sin(self.B1Input[1] * np.pi / 180.0) * np.sin(self.B1Input[2] * np.pi / 180.0)
             Bz = self.B1Input[0] * np.cos(self.B1Input[1] * np.pi / 180.0)
-            self.model.atmospheres['ch1'].set_parameters([Bx, By, Bz, self.tau1Input, self.dopplerVelocityInput, self.dopplerWidthInput, self.betaInput, self.dampingInput, self.ffInput])
+            self.model.atmospheres['ch1'].set_parameters([Bx, By, Bz, self.tau1Input, self.dopplerVelocityInput, self.dopplerWidthInput, self.betaInput, self.dampingInput], self.ffInput)
 
             Bx = self.B2Input[0] * np.sin(self.B2Input[1] * np.pi / 180.0) * np.cos(self.B2Input[2] * np.pi / 180.0)
             By = self.B2Input[0] * np.sin(self.B2Input[1] * np.pi / 180.0) * np.sin(self.B2Input[2] * np.pi / 180.0)
             Bz = self.B2Input[0] * np.cos(self.B2Input[1] * np.pi / 180.0)           
-            self.model.atmospheres['ch2'].set_parameters([Bx, By, Bz, self.tau2Input, self.dopplerVelocity2Input, self.dopplerWidth2Input, self.beta2Input, self.dampingInput, 1.0 - self.ffInput])
+            self.model.atmospheres['ch2'].set_parameters([Bx, By, Bz, self.tau2Input, self.dopplerVelocity2Input, self.dopplerWidth2Input, self.beta2Input, self.dampingInput], 1.0 - self.ffInput)
             
         
         # self.boundary = np.zeros((self.nLambdaInput,4))

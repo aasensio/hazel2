@@ -7,7 +7,7 @@ from ipdb import set_trace as stop
 # Test iterator with a single observation in synthesis
 iterator = hazel.iterator(use_mpi=False)
 rank = iterator.get_rank()
-mod = hazel.Model('conf_nonmpi_inv1d.ini')
+mod = hazel.Model('conf_nonmpi_inv1d.ini', working_mode='inversion')
 iterator.use_model(model=mod)
 iterator.run_all_pixels()
 

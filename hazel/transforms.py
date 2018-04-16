@@ -18,7 +18,7 @@ def logit(x):
     """
     return np.log(x / (1.0 - x))
 
-def inv_logit(self, x):
+def inv_logit(x):
     """
     Inverse logit function
     
@@ -52,7 +52,7 @@ def physical_to_transformed(x, lower, upper):
     out : float
         Transformed parameters
     """
-    return _logit( (x-lower) / (upper - lower))
+    return logit( (x-lower) / (upper - lower))
 
 def transformed_to_physical(x, lower, upper):
     """
@@ -74,7 +74,7 @@ def transformed_to_physical(x, lower, upper):
     """
     return lower + (upper - lower) * inv_logit(x)
 
-def jacobianTransformedParameters(x):
+def jacobian_transformation(x, lower, upper):
     """
     Compute the Jacobian of the transformation from unconstrained parameters to physical parameters
     
@@ -92,5 +92,5 @@ def jacobianTransformedParameters(x):
     out : float
         Transformed parameters
     """
-    temp = self.inv_logit(x)
+    temp = inv_logit(x)
     return (upper - lower) * temp * (1.0 - temp)

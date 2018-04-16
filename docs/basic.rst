@@ -14,7 +14,8 @@ parameters.
     import hazel
     import matplotlib.pyplot as plt
     mod = hazel.Model(working_mode='synthesis')
-    mod.add_spectral({'Name': 'spec1', 'Wavelength': [10826, 10833, 150], 'topology': 'ch1'})
+    mod.add_spectral({'Name': 'spec1', 'Wavelength': [10826, 10833, 150], 'topology': 'ch1',
+	'LOS': [0.0,0.0,90.0], 'Boundary condition': [1.0,0.0,0.0,0.0]})
     mod.add_chromosphere({'Name': 'ch1', 'Spectral region': 'spec1', 'Height': 3.0, 'Line': '10830', 'Wavelength': [10826, 10833]})
     mod.setup()
 
@@ -41,14 +42,15 @@ With configuration file
 -----------------------
 
 Perhaps the easiest way of running Hazel v2.0 is through the human-friendly configuration
-files described in :ref:`configuration`.
+files described in :ref:`configuration`. The configuration files used in this section
+are present in `<https://github.com/aasensio/hazel2/examples>`_
 
 Single pixel mode
 ^^^^^^^^^^^^^^^^^
 
 Calculations in single-pixel mode (only one pixel synthesis/inversion) are very easy
-to do. The following code uses a configuration file that can be found in `<https://github.com/aasensio/hazel2/test>`_
-which uses `1d` inputs files, whose format is described in :ref:`input`. The following one
+to do. The following code uses a configuration file with `1d` inputs files, 
+whose format is described in :ref:`input`. The following one
 carries out synthesis:
 
 ::

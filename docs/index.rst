@@ -135,9 +135,10 @@ configuration file, and it will be broadcasted to all slaves internally.
    :hidden:
    :maxdepth: 2
 
-   hazel
    installation
    basic
+   synthesis
+   inversion
    configuration
    programmatically
    input

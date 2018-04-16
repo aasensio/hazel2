@@ -12,9 +12,29 @@ import scipy.constants as constants
 __all__ = ['Straylight_atmosphere']
 
 class Straylight_atmosphere(General_atmosphere):
-    def __init__(self):
+    def __init__(self, working_mode):
     
         super().__init__('straylight')
+
+        self.working_mode = working_mode
+
+        self.parameters['ff'] = 1.0
+        self.parameters['v'] = 0.0
+
+        self.nodes['ff'] = 0.0
+        self.nodes['v'] = 0.0
+        
+        self.n_nodes['ff'] = 0
+        self.n_nodes['v'] = 0
+        
+        self.epsilon['ff'] = 1.0
+        self.epsilon['v'] = 1.0
+        
+        self.ranges['ff'] = None
+        self.ranges['v'] = None
+        
+        self.cycles['ff'] = None
+        self.cycles['v'] = None
         
 
     def add_active_line(self, spectrum, wvl_range):
@@ -40,23 +60,7 @@ class Straylight_atmosphere(General_atmosphere):
         self.avg_wavelength = np.mean(self.wvl_axis)
         self.stokes = np.zeros((4,len(self.wvl_axis)))
 
-        self.parameters['ff'] = 1.0
-        self.parameters['v'] = 0.0
-
-        self.nodes['ff'] = 0.0
-        self.nodes['v'] = 0.0
         
-        self.n_nodes['ff'] = 0
-        self.n_nodes['v'] = 0
-        
-        self.epsilon['ff'] = 1.0
-        self.epsilon['v'] = 1.0
-        
-        self.ranges['ff'] = None
-        self.ranges['v'] = None
-        
-        self.cycles['ff'] = None
-        self.cycles['v'] = None
         
     def set_parameters(self, pars):
         self.parameters['v'] = pars[0]
@@ -113,7 +117,7 @@ class Straylight_atmosphere(General_atmosphere):
         """
         extension = os.path.splitext(model_file)[1][1:]
         if (extension == '1d'):
-            if (verbose):
+            if (verbose >= 1):
                 print('    * Reading 1D model {0} as reference'.format(model_file))
             self.model_type = '1d'
             self.model_filename = model_file
@@ -127,7 +131,7 @@ class Straylight_atmosphere(General_atmosphere):
             self.reference = copy.deepcopy(self.parameters)
         
         if (extension == 'h5'):
-            if (verbose):
+            if (verbose >= 1):
                 print('    * Reading 3D model {0} as reference'.format(model_file))
             self.model_type = '3d'
             self.model_handler = Generic_stray_file(model_file)

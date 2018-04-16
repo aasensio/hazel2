@@ -11,31 +11,11 @@ import copy
 __all__ = ['Parametric_atmosphere']
 
 class Parametric_atmosphere(General_atmosphere):
-    def __init__(self):
+    def __init__(self, working_mode):
     
         super().__init__('parametric')
-        
 
-    def add_active_line(self, spectrum, wvl_range):
-        """
-        Add an active lines in this atmosphere
-        
-        Parameters
-        ----------        
-        None
-
-        Returns
-        -------
-        None
-        """
-
-        self.wavelength_range = wvl_range
-        ind_low = (np.abs(spectrum.wavelength_axis - wvl_range[0])).argmin()
-        ind_top = (np.abs(spectrum.wavelength_axis - wvl_range[1])).argmin()
-
-        self.spectrum = spectrum
-        self.wvl_axis = spectrum.wavelength_axis[ind_low:ind_top+1]
-        self.wvl_range = [ind_low, ind_top+1]
+        self.working_mode = working_mode
 
         self.parameters['lambda0'] = 0.0
         self.parameters['sigma'] = 0.0
@@ -72,15 +52,40 @@ class Parametric_atmosphere(General_atmosphere):
         self.cycles['depth'] = None        
         self.cycles['a'] = None
         self.cycles['ff'] = None
+        
 
-    def set_parameters(self, pars):
+    def add_active_line(self, spectrum, wvl_range):
+        """
+        Add an active lines in this atmosphere
+        
+        Parameters
+        ----------        
+        None
+
+        Returns
+        -------
+        None
+        """
+
+        self.wavelength_range = wvl_range
+        ind_low = (np.abs(spectrum.wavelength_axis - wvl_range[0])).argmin()
+        ind_top = (np.abs(spectrum.wavelength_axis - wvl_range[1])).argmin()
+
+        self.spectrum = spectrum
+        self.wvl_axis = spectrum.wavelength_axis[ind_low:ind_top+1]
+        self.wvl_range = [ind_low, ind_top+1]
+    
+    def set_parameters(self, pars, ff):
         """
         Set parameters of the model
 
         Parameters
         ----------
         pars : list of floats
-            Values of the parameters: lambda0, sigma, depth, a, ff
+            Values of the parameters: lambda0, sigma, depth, a
+
+        ff : float
+            Filling factor
 
         Returns
         -------
@@ -90,7 +95,7 @@ class Parametric_atmosphere(General_atmosphere):
         self.parameters['sigma'] = pars[1]
         self.parameters['depth'] = pars[2]
         self.parameters['a'] = pars[3]
-        self.parameters['ff'] = pars[4]
+        self.parameters['ff'] = ff
 
     def set_reference(self):
         """
@@ -124,21 +129,21 @@ class Parametric_atmosphere(General_atmosphere):
         """
         extension = os.path.splitext(model_file)[1][1:]
         if (extension == '1d'):
-            if (verbose):
+            if (verbose >= 1):
                 print('    * Reading 1D model {0} as reference'.format(model_file))
             self.model_type = '1d'
             self.model_filename = model_file
             self.model_handler = Generic_parametric_file(model_file)
             self.model_handler.open()
-            out = self.model_handler.read()
+            out, ff = self.model_handler.read()
             self.model_handler.close()
 
             # out = np.loadtxt(model_file, skiprows=1)
-            self.set_parameters(out)
+            self.set_parameters(out, ff)
             self.reference = copy.deepcopy(self.parameters)
         
         if (extension == 'h5'):
-            if (verbose):
+            if (verbose >= 1):
                 print('    * Reading 3D model {0} as reference'.format(model_file))
             self.model_type = '3d'
             self.model_handler = Generic_parametric_file(model_file)
