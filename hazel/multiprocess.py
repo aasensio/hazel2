@@ -94,22 +94,32 @@ class iterator(object):
         
         # Loop over all pixels doing the synthesis and saving the results
         for i in tqdm(range(self.model.n_pixels)):
-            for k, v in self.model.atmospheres.items():
-                args, ff = v.model_handler.read(pixel=i)
-                v.set_parameters(args, ff)
-                v.init_reference()
 
-            if (self.model.working_mode == 'inversion'):
-                # Read current spectrum and stray light
-                for k, v in self.model.spectrum.items():
-                    v.read_observation(pixel=i)
+            mask = []
 
-                self.model.invert()
-            else:
-                self.model.synthesize()
-                self.model.flatten_parameters_to_reference(cycle=0)
+            for k, v in self.model.spectrum.items():
+                v.read_mask(pixel=i)
+                mask.append(v.mask)
 
-            self.model.output_handler.write(self.model, pixel=i)
+            # Do the inversion only if the mask is set to 1
+            if all(x == 1 for x in mask):
+
+                for k, v in self.model.atmospheres.items():
+                    args, ff = v.model_handler.read(pixel=i)
+                    v.set_parameters(args, ff)
+                    v.init_reference()
+
+                if (self.model.working_mode == 'inversion'):
+                    # Read current spectrum and stray light
+                    for k, v in self.model.spectrum.items():
+                        v.read_observation(pixel=i)
+
+                    self.model.invert()
+                else:
+                    self.model.synthesize()
+                    self.model.flatten_parameters_to_reference(cycle=0)
+
+                self.model.output_handler.write(self.model, pixel=i)
 
         self.model.close_output()
 
@@ -162,29 +172,36 @@ class iterator(object):
 
                         data_to_send = {'index': task_index}
 
-                        if (self.model.working_mode == 'inversion'):
+                        mask = []
 
-                            # Read current model atmosphere
-                            for k, v in self.model.atmospheres.items():
-                                args, ff = v.model_handler.read(pixel=task_index)
-                                v.set_parameters(args, ff)
-                                v.init_reference()
-                                data_to_send[k] = [v.reference, v.parameters, v.stray_profile]
+                        for k, v in self.model.spectrum.items():
+                            v.read_mask(pixel=task_index)
+                            mask.append(v.mask)
 
-                            # Read current spectrum and stray light
-                            for k, v in self.model.spectrum.items():
-                                v.read_observation(pixel=task_index)
-                                
-                                data_to_send[k] = [v.obs, v.noise, v.los, v.boundary, v.mu]
-                        else:
-                            for k, v in self.model.atmospheres.items():
-                                args, ff = v.model_handler.read(pixel=task_index)
-                                data_to_send[k] = [args, ff]
+                        # Do the inversion only if the mask is set to 1
+                        if all(x == 1 for x in mask):
 
-                        self.comm.send(data_to_send, dest=source, tag=tags.START)
+                            if (self.model.working_mode == 'inversion'):
 
-                        # self.logger.info('Sent {0}->{1}'.format(task_index, source))
+                                # Read current model atmosphere
+                                for k, v in self.model.atmospheres.items():
+                                    args, ff = v.model_handler.read(pixel=task_index)
+                                    v.set_parameters(args, ff)
+                                    v.init_reference()
+                                    data_to_send[k] = [v.reference, v.parameters, v.stray_profile]
 
+                                # Read current spectrum and stray light
+                                for k, v in self.model.spectrum.items():
+                                    v.read_observation(pixel=task_index)
+                                    
+                                    data_to_send[k] = [v.obs, v.noise, v.los, v.boundary, v.mu]
+                            else:
+                                for k, v in self.model.atmospheres.items():
+                                    args, ff = v.model_handler.read(pixel=task_index)
+                                    data_to_send[k] = [args, ff]
+
+                            self.comm.send(data_to_send, dest=source, tag=tags.START)
+                        
                         task_index += 1
                         pbar.update(1)
                         self.last_sent = '{0}->{1}'.format(task_index, source)

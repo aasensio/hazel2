@@ -7,7 +7,7 @@ from hazel.hsra import hsra_continuum
 from hazel.io import Generic_stray_file
 import copy
 import scipy.constants as constants
-from ipdb import set_trace as stop
+# from ipdb import set_trace as stop
 
 __all__ = ['Straylight_atmosphere']
 
@@ -162,4 +162,4 @@ class Straylight_atmosphere(General_atmosphere):
         
         self.stokes[0,:] = np.interp(self.wvl_axis - dlambda, self.wvl_axis, self.stray_profile[self.wvl_range[0]:self.wvl_range[1]])
                                 
-        return self.parameters['ff'] * self.stokes
+        return self.parameters['ff'] * self.stokes * hsra_continuum(np.mean(self.wvl_axis))

@@ -13,6 +13,8 @@ import numpy as np
 import copy
 import os
 from pathlib import Path
+import scipy.stats
+import scipy.special
 
 try:
     import matplotlib.pyplot as pl
@@ -46,7 +48,7 @@ class Model(object):
         self.debug = debug
 
         self.epsilon = 1e-2
-
+        
         self.verbose = verbose
         
         self.logger = logging.getLogger("model")
@@ -325,11 +327,6 @@ class Model(object):
         elif (value['observations file'] == 'None'):
             value['observations file'] = None
 
-        # if ('straylight file' not in value):
-        #     value['straylight file'] = None
-        # elif (value['straylight file'] == 'None'):
-        #     value['straylight file'] = None
-
         if ('stokes weights' not in value):
             value['stokes weights'] = None
         elif (value['stokes weights'] == 'None'):
@@ -376,11 +373,11 @@ class Model(object):
         if (value['wavelength weight file'] is None):
             if (self.verbose >= 1 and self.working_mode == 'inversion'):
                 self.logger.info('  - Setting all wavelength weights to 1')
-            weights = np.ones(len(wvl))
+            weights = np.ones((4,len(wvl)))
         else:
             if (self.verbose >= 1):
                 self.logger.info('  - Reading wavelength weights from {0}'.format(value['wavelength weight file']))
-            weights = np.loadtxt(value['wavelength weight file'])
+            weights = np.loadtxt(value['wavelength weight file'], skiprows=1)
 
         # Observations file not present
         if (value['observations file'] is None):
@@ -391,6 +388,15 @@ class Model(object):
             if (self.verbose >= 1):
                 self.logger.info('  - Using observations from {0}'.format(value['observations file']))
             obs_file = value['observations file']
+
+        if (value['mask file'] is None):            
+            mask_file = None
+            if (self.verbose >= 1):
+                self.logger.info('  - Not mask for pixels')
+        else:
+            if (self.verbose >= 1):
+                self.logger.info('  - Using mask from {0}'.format(value['mask file']))
+            mask_file = value['mask file']
 
         # if (value['straylight file'] is None):
         #     if (self.verbose >= 1):
@@ -412,7 +418,7 @@ class Model(object):
 
         if (value['boundary condition'] is None):
             if (self.verbose >= 1):
-                self.logger.info('  - Using default boundary conditions in spectral region {0}. Check carefully!'.format(value['name']))
+                self.logger.info('  - Using default boundary conditions in spectral region {0} or read from file. Check carefully!'.format(value['name']))
             boundary = np.array([1.0,0.0,0.0,0.0])
         else:
             boundary = np.array(value['boundary condition']).astype('float64')
@@ -429,7 +435,7 @@ class Model(object):
         stokes_weights = np.array(stokes_weights)
 
         self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, 
-            name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary)
+            name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, mask_file=mask_file)
 
         self.topologies.append(value['topology'])
         
@@ -956,7 +962,7 @@ class Model(object):
         self.nodes = np.concatenate(self.nodes).ravel()
 
         
-    def synthesize_and_compute_rf(self, compute_rf=False):
+    def synthesize_and_compute_rf(self, compute_rf=False, include_jacobian=False):
         """
         Compute response functions for all free parameters according to all active_parameters
 
@@ -1007,8 +1013,12 @@ class Model(object):
 
                 rf = np.expand_dims((self.spectrum['spec1'].stokes - self.spectrum['spec1'].stokes_perturbed) / perturbation[i], 0)
 
-                # jacobian = self.atmospheres[par['atm']].jacobian[par['parameter']]
-                # rf *= jacobian
+                if (include_jacobian):
+                    jacobian = self.atmospheres[par['atm']].jacobian[par['parameter']]                    
+                else:
+                    jacobian = 1.0
+
+                rf *= jacobian
                                                 
                 if (loop == 0):
                     self.response = rf
@@ -1038,6 +1048,7 @@ class Model(object):
             
         for k, v in self.spectrum.items():
             v.stokes_cycle[cycle] = v.stokes
+            v.chi2_cycle[cycle] = v.chi2
         
     def set_new_model(self, nodes):
         """
@@ -1128,20 +1139,58 @@ class Model(object):
         ddchi2 = np.zeros((n,n))
         for k, v in self.spectrum.items():
             residual = (v.stokes - v.obs)            
-            weights = v.stokes_weights[:,self.cycle]            
-            chi2 += np.sum(weights[:,None] * residual**2 * v.factor_chi2)
+            weights = v.stokes_weights[:,self.cycle][:,None] * v.wavelength_weights
+            chi2 += np.sum(weights * residual**2 * v.factor_chi2)
             
             if (not only_chi2):
-                dchi2 += -2.0 / v.dof * np.sum(weights[None,:,None] * self.response * residual[None,:,:] * v.factor_chi2[None,:,:], axis=(1,2))
-                ddchi2 += 2.0 / v.dof * np.sum(weights[None,None,:,None] * self.response[None,:,:,:] * self.response[:,None,:,:] * v.factor_chi2[None,None,:,:], axis=(2,3))                
+                dchi2 += -2.0 / v.dof * np.sum(weights[None,:,:] * self.response * residual[None,:,:] * v.factor_chi2[None,:,:], axis=(1,2))
+                ddchi2 += 2.0 / v.dof * np.sum(weights[None,None,:,:] * self.response[None,:,:,:] * self.response[:,None,:,:] * v.factor_chi2[None,None,:,:], axis=(2,3))
+
+                v.chi2 = chi2
+
                 return chi2, dchi2, ddchi2
             else:
+                
+                v.chi2 = chi2
+
                 return chi2
 
         # if (not only_chi2):            
         #     return chi2, dchi2, ddchi2
         # else:
         #     return chi2
+
+    def compute_uncertainty(self, hessian):
+        """
+        Compute the uncertainty in the parameters at the minimum with the current Hessian
+
+        Parameters
+        ----------
+        hessian : array of floats
+            Current estimation of the Hessian
+        
+        Returns
+        -------
+        None
+
+        """
+        U, w_inv, VT = self.modified_svd_inverse(hessian, tol=1e-12)
+        cov = VT.T.dot(np.diag(w_inv)).dot(U.T)
+
+        for par in self.active_meta:
+            left = par['left']
+            right = par['right']
+
+            dof = self.atmospheres[par['atm']].spectrum.dof
+            rf = scipy.stats.chi2(dof)
+            delta = np.sqrt(rf.isf(1.0 - scipy.special.erf(1.0/np.sqrt(2.0))))
+
+            cov_diagonal = np.abs(np.diagonal(cov[left:right,left:right]))
+
+            error = np.sqrt(cov_diagonal) * delta
+                    
+            self.atmospheres[par['atm']].error[par['parameter']] = error[0]
+
 
     def backtracking(self, dchi2, ddchi2, direction='down', max_iter=5, lambda_init=1e-3, current_chi2=1e10):
         """
@@ -1319,7 +1368,7 @@ class Model(object):
                 # Give the final step
                 H = 0.5 * ddchi2
                 H += np.diag(lambda_opt * np.diag(H))
-                gradF = 0.5 * dchi2                
+                gradF = 0.5 * dchi2
 
                 U, w_inv, VT = self.modified_svd_inverse(H, tol=1e-12)
 
@@ -1357,8 +1406,23 @@ class Model(object):
                 if (self.verbose >= 2):
                     self.atmospheres['ch1'].print_parameters(first=first)
                     first = False
-                
+                        
             self.set_new_model(self.nodes)
+
+            # Calculate final chi2
+            # self.synthesize_and_compute_rf()
+            # chi2 = self.compute_chi2(only_chi2=True)
+
+            
+            
+            # Calculate errors
+            # self.synthesize_and_compute_rf(compute_rf=True, include_jacobian=True)
+            # chi2, dchi2, ddchi2 = self.compute_chi2()
+            # H = 0.5 * ddchi2
+
+            # self.compute_uncertainty(H)
+            # if (self.verbose >= 2):
+            #     self.atmospheres['ch1'].print_parameters(first=first, error=True)
 
             self.flatten_parameters_to_reference(self.cycle)
             

@@ -1,9 +1,10 @@
 .. _input:
+.. include:: hazel_name
 
 Input files
 ===========
 
-Hazel v2.0 can accept several formats for input/output files. 1D formats are specific
+|hazel2| can accept several formats for input/output files. 1D formats are specific
 for Hazel, but 3D formats are defined in standard HDF5 or FITS formats.
 
 Wavelength files
@@ -27,7 +28,17 @@ defines the wavelength axis in Angstrom of each spectral region.
 
 Wavelength weights
 ^^^^^^^^^^^^^^^^^^
-Not defined
+Each wavelength point can be weighted differently in the four Stokes parameters. To this end, you can
+provide a file with the weights in the following format.
+
+::
+    
+    # WeightI WeightQ WeightU WeightV
+       1.0     1.0      1.0    1.0
+       1.0     1.0      1.0    1.0
+       1.0     1.0      1.0    1.0
+       1.0     1.0      1.0    1.0
+       ......
 
 
 Observations files
@@ -97,13 +108,29 @@ FITS 3D files
 ^^^^^^^^^^^^^
 TBD.
 
-Straylight file
-^^^^^^^^^^^^^^^
-TBD
-
 Mask file
 ^^^^^^^^^
-TBD.
+Sometimes it is interesting to reinvert some pixels of a map that, for some reason, did not
+go well in a previous inversion. Instead of rewriting a new file with these pixels, Hazel2
+allows you to use a file with a mask. This mask marks with 1 those pixels that need to be
+inverted and with zero those that will not be inverted. For the moment, we do not have
+the option of merging a previous inversion with a new one, so that the output file
+will be empty in those pixels that are not inverted. You will need to merge the
+two output files yourself. Since this mask is appropriate only for 3D inversions, 
+it needs to be in one of the 3D formats. There is a single dataset ``mask`` of
+type ``np.int8``. For the moment, only 0 and 1 are used, but we prefer to use
+an integer in case more elaborate masks can be used in the future. If the file is
+``None`` or the keyword is absent, all pixels will be inverted.
+
+::
+
+    n_pixel = 100    
+    mask_3d = np.zeros((n_pixel,), dtype=np.int8)
+
+    f = h5py.File('observations/10830_mask.h5', 'w')
+    db_mask = f.create_dataset('mask', mask_3d.shape, dtype=np.int8)    
+    db_mask[:] = mask_3d    
+    f.close()
 
 Photospheric models
 -------------------
@@ -203,6 +230,60 @@ create a sample file:
     db_ff[:] = ff_3d
     f.close()
 
-Parametric
-^^^^^^^^^^
+Parametric models
+-----------------
 TBC
+
+Straylight models
+-------------------
+
+Straylight models contain a velocity [in km/s] and a filling factor. Additionally, one needs to define the 
+intensity spectrum of the stray light contamination, which is given in units of the continuum intensity at
+disk center.
+
+1D files
+^^^^^^^^
+
+::
+
+    v   ff
+    0.0  1.0
+
+    Stokes I
+    0.0
+    0.0
+    0.0
+    1.0
+    1.0
+    1.0
+    1.0
+    ....
+
+
+HDF5 3D files
+^^^^^^^^^^^^^
+
+HDF5 files with model straylight contaminations are defined with three double-precision datasets: ``profile``, ``model`` and ``ff``. The first
+one has size ``(n_pixel,n_wavelength)`` (which needs to conform with the number of wavelength of the spectral region
+associated to this atmosphere) and contains the intensity spectrum in units of the continuum intensity
+at disk center. The second one has size ``(n_pixel,8)`` and contains the model variable, which in this case
+reduces just to the velocity shift. The last one
+has size ``(n_pixel,)`` and contains the filling factor for each pixel. In the following we show how to
+create a sample file:
+
+::
+
+    n_pixel = 100
+    
+    model_3d = np.zeros((n_pixel,8), dtype=np.float64)
+    ff_3d = np.zeros((n_pixel,), dtype=np.float64)
+    profile_3d = np.zeros((n_pixel,150), dtype=np.float64)
+
+    f = h5py.File('straylight/model_straylight.h5', 'w')
+    db_model = f.create_dataset('model', model_3d.shape, dtype=np.float64)
+    db_profile = f.create_dataset('profile', profile_3d.shape, dtype=np.float64)
+    db_ff = f.create_dataset('ff', ff_3d.shape, dtype=np.float64)
+    db_model[:] = model_3d
+    db_profile[:] = profile_3d
+    db_ff[:] = ff_3d
+    f.close()

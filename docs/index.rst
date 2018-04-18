@@ -1,4 +1,6 @@
-Hazel v2.0
+.. include:: hazel_name
+
+|hazel2|
 =================================
 
 Introduction
@@ -11,7 +13,7 @@ theory of spectral line polarization, which takes into account rigorously all th
 relevant physical mechanisms and ingredients: optical pumping, atomic level 
 polarization, level crossings and repulsions, Zeeman, Paschen-Back and Hanle effects. 
 
-The new Hazel v2.0 is a complete rewrite of the code, putting emphasis on its
+The new |hazel2@ is a complete rewrite of the code, putting emphasis on its
 usability. The code is now able to synthesize photospheric lines under the 
 assumption of local thermodynamic equilibrium, chromospheric lines under
 the multi-term approximation (like the He I multiplets) and a selection of
@@ -31,7 +33,7 @@ Programmatically
 ^^^^^^^^^^^^^^^^
 
 For simple calculations, like synthesizing spectral lines in simple models,
-Hazel v2.0 can be used in programmatic mode. For instance, let us generate a spectral
+|hazel2| can be used in programmatic mode. For instance, let us generate a spectral
 window in the near-infrared and synthesize the He I 10830 A line with some
 parameters.
 
@@ -56,7 +58,7 @@ atmospheres can be found in :ref:`programmatically`.
 With configuration file
 ^^^^^^^^^^^^^^^^
 
-Perhaps the easiest way of running Hazel v2.0 is through the human-friendly configuration
+Perhaps the easiest way of running |hazel2| is through the human-friendly configuration
 files described in :ref:`configuration`.
 
 Single pixel mode
@@ -131,6 +133,7 @@ configuration file, and it will be broadcasted to all slaves internally.
 
     iterator.run_all_pixels()
 
+
 .. toctree::
    :hidden:
    :maxdepth: 2
@@ -140,6 +143,7 @@ configuration file, and it will be broadcasted to all slaves internally.
    synthesis
    inversion
    configuration
+   topology
    programmatically
    input
    output
@@ -147,8 +151,8 @@ configuration file, and it will be broadcasted to all slaves internally.
    equations
    ambiguities
    photospheric
-   api
    refsys
+   api   
    acknowledgements
    disclaimer
 

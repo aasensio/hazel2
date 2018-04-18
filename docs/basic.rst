@@ -1,3 +1,4 @@
+.. include:: hazel_name
 Basic usage
 ===========
 
@@ -5,7 +6,7 @@ Programmatically
 ----------------
 
 For simple calculations, like synthesizing spectral lines in simple models,
-Hazel v2.0 can be used in programmatic mode. For instance, let us generate a spectral
+|hazel2| can be used in programmatic mode. For instance, let us generate a spectral
 window in the near-infrared and synthesize the He I 10830 A line with some
 parameters.
 
@@ -23,7 +24,7 @@ parameters.
     ax = ax.flatten()
 
     for j in range(5):
-        mod.atmospheres['ch1'].set_parameters([0.0,0.0,100.0*j,1.0,0.0,8.0,1.0,0.0,1.0])
+        mod.atmospheres['ch1'].set_parameters([0.0,0.0,100.0*j,1.0,0.0,8.0,1.0,0.0],1.0)
         mod.synthesize()
 
         for i in range(4):
@@ -41,7 +42,7 @@ atmospheres can be found in :ref:`programmatically`.
 With configuration file
 -----------------------
 
-Perhaps the easiest way of running Hazel v2.0 is through the human-friendly configuration
+Perhaps the easiest way of running |hazel2| is through the human-friendly configuration
 files described in :ref:`configuration`. The configuration files used in this section
 are present in `<https://github.com/aasensio/hazel2/examples>`_
 

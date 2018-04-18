@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import matplotlib
 #~ print(matplotlib.rcParams['backend'])
 matplotlib.use('Qt5Agg')
@@ -9,7 +10,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import hazel
-from ipdb import set_trace as stop
+# from ipdb import set_trace as stop
 # from IPython.core.debugger import Pdb
 # ipdb = Pdb()
 # stop = ipdb.set_trace

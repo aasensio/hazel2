@@ -94,3 +94,23 @@ def jacobian_transformation(x, lower, upper):
     """
     temp = inv_logit(x)
     return (upper - lower) * temp * (1.0 - temp)
+
+def jacobian_transformed_to_physical(x, lower, upper):
+    """
+    Compute the Jacobian of the transformation from unconstrained parameters to physical parameters
+    
+    Parameters
+    ----------
+    x : float
+        Any array
+    lower : float
+        Lower limit of the parameter
+    upper : float
+        Upper limit of the parameter
+
+    Returns
+    -------
+    out : float
+        Transformed parameters
+    """    
+    return (upper - lower) / ((lower - x) * (x - upper))

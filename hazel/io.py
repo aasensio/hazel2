@@ -2,7 +2,7 @@ import numpy as np
 import h5py
 from astropy.io import fits
 import os
-from ipdb import set_trace as stop
+# from ipdb import set_trace as stop
 
 __all__ = ['Generic_output_file', 'Generic_observed_file', 'Generic_hazel_file', 'Generic_SIR_file', 'Generic_parametric_file', 'Generic_stray_file']
 
@@ -23,8 +23,13 @@ class Generic_output_file(object):
             # Generate all handlers for things we'll write here
             self.out_spectrum = {}
             for k, v in model.spectrum.items():
+                db = self.handler.create_group(k)
+
+                self.out_spectrum[k] = {}
+
                 n_stokes, n_lambda = v.stokes.shape
-                self.out_spectrum[k] = self.handler.create_dataset(k, (model.n_pixels, model.n_cycles, n_stokes, n_lambda))
+                self.out_spectrum[k]['stokes'] = db.create_dataset('stokes', (model.n_pixels, model.n_cycles, n_stokes, n_lambda))
+                self.out_spectrum[k]['chi2'] = db.create_dataset('chi2', (model.n_pixels, model.n_cycles))
 
             if (model.working_mode == 'inversion'):
                 self.out_model = {}
@@ -49,13 +54,15 @@ class Generic_output_file(object):
         if (self.extension == 'h5'):
             for k, v in model.spectrum.items():                
                 for cycle in range(model.n_cycles):                    
-                    self.out_spectrum[k][pixel,cycle,...] = v.stokes_cycle[cycle]
+                    self.out_spectrum[k]['stokes'][pixel,cycle,...] = v.stokes_cycle[cycle]
+                    self.out_spectrum[k]['chi2'][pixel,cycle] = v.chi2_cycle[cycle]
 
             if (model.working_mode == 'inversion'):
                 for k, v in model.atmospheres.items():
                     for cycle in range(model.n_cycles):
                         for k2, v2 in v.reference_cycle[cycle].items():
                             self.out_model[k][k2][pixel,cycle,...] = v2
+                        
 
         # if (self.extension == 'fits'):
         #     return self.handler[0]fits.open(self.filename, memmap=True)
@@ -151,6 +158,50 @@ class Generic_observed_file(object):
             self.close()
             return tmp
 
+class Generic_mask_file(object):
+
+    def __init__(self, filename):            
+        self.filename = filename
+        if (filename is not None):
+            self.extension = os.path.splitext(filename)[1][1:]        
+
+    def open(self):        
+        if (self.extension == '1d'):
+            raise Exception("1D files are not allowed for masks.")
+            return
+
+        if (self.extension == 'h5'):
+            self.handler = h5py.File(self.filename, 'r')
+            return
+
+        if (self.extension == 'fits'):
+            self.handler = fits.open(self.filename, memmap=True)
+            return
+
+    def read(self, pixel=None):        
+        if (self.extension == 'h5'):            
+            return self.handler['mask'][pixel]
+
+        if (self.filename is None):
+            return 1        
+
+        # if (self.extension == 'fits'):
+        #     return self.handler[0]fits.open(self.filename, memmap=True)
+        #     return
+
+    def close(self):        
+        if (self.extension == 'h5'):
+            self.handler.close()
+            del self.handler
+        
+
+    def get_npixel(self):        
+        if (self.extension == 'h5'):
+            self.open()
+            tmp, _, _ = self.handler['mask'].shape
+            self.close()
+            return tmp        
+
 class Generic_stray_file(object):
 
     def __init__(self, filename):
@@ -181,7 +232,7 @@ class Generic_stray_file(object):
             return [stray_profile, v], ff
 
         if (self.extension == 'h5'):
-            return self.handler['model'][pixel,...], self.handler['ff'][pixel]
+            return [self.handler['profile'][pixel,...], self.handler['model'][pixel,...]], self.handler['ff'][pixel]
 
         # if (self.extension == 'fits'):
         #     return self.handler[0]fits.open(self.filename, memmap=True)

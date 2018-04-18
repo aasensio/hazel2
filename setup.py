@@ -156,7 +156,8 @@ setup_config = dict(
     keywords=['hazel', 'radiative transfer'],
     packages=find_packages(),
     zip_safe=False,
-    include_package_data=True
+    include_package_data=True,
+    scripts=['gui/hazelgui'],
 )
 
 if __name__ == "__main__":

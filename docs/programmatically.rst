@@ -1,9 +1,10 @@
 .. _programmatically:
+.. include:: hazel_name
 
 Programmatically
 ================
 
-Hazel v2.0 can be used programmatically, which can be used for simple calculations or
+|hazel2| can be used programmatically, which can be used for simple calculations or
 if more advanced synthesis/inversion strategies are required. 
 
 Creating a model
@@ -85,9 +86,10 @@ method of the atmosphere:
 
 ::
 
-    mod.atmospheres['ch1'].set_parameters([0.0,0.0,100.0,1.0,0.0,8.0,1.0,0.0,1.0])
+    mod.atmospheres['ch1'].set_parameters([0.0,0.0,100.0,1.0,0.0,8.0,1.0,0.0],1.0)
 
-where the parameters are, in order: Bx, By, Bz, :math:`\tau`, v, :math:`\Delta v`, :math:`\beta`, a, ff.
+where the parameters are, in order: Bx, By, Bz, :math:`\tau`, v, :math:`\Delta v`, :math:`\beta`, a. The filling
+factor is passed as the second parameter.
             
 Working with photospheres
 --------------------------

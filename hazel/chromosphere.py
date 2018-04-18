@@ -39,6 +39,16 @@ class Hazel_atmosphere(General_atmosphere):
         self.nodes['a'] = 0.0
         self.nodes['ff'] = 0.0
 
+        self.error['Bx'] = 0.0
+        self.error['By'] = 0.0
+        self.error['Bz'] = 0.0        
+        self.error['tau'] = 0.0
+        self.error['v'] = 0.0
+        self.error['deltav'] = 0.0
+        self.error['beta'] = 0.0
+        self.error['a'] = 0.0
+        self.error['ff'] = 0.0
+
         self.n_nodes['Bx'] = 0
         self.n_nodes['By'] = 0
         self.n_nodes['Bz'] = 0        
@@ -204,11 +214,16 @@ class Hazel_atmosphere(General_atmosphere):
             else:
                 self.parameters[k] = self.reference[k]            
                             
-    def print_parameters(self, first=False):
+    def print_parameters(self, first=False, error=False):
         # if (first):
         print("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}".format('Bx', 'By', 'Bz', 'tau', 'v', 'deltav', 'beta', 'a'), flush=True)
         print("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.parameters['Bx'], self.parameters['By'], self.parameters['Bz'], self.parameters['tau'], 
             self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a']), flush=True)
+        
+        if (error):            
+            print("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.error['Bx'], self.error['By'], self.error['Bz'], self.error['tau'], 
+            self.error['v'], self.error['deltav'], self.error['beta'], self.error['a']), flush=True)
+
 
     def synthesize(self, stokes=None):
         """

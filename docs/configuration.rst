@@ -1,4 +1,5 @@
 .. _configuration:
+.. include:: hazel_name
 
 Configuration
 =============
@@ -16,7 +17,7 @@ specific details for each atmosphere.
 
 ::
 
-    # Hazel configuration File
+    # |hazel2| configuration File
 
     [Working mode]
     Output file = output.h5
@@ -69,7 +70,7 @@ In the following we paste a typical configuration file for the inversion mode.
 
 ::
 
-    # Hazel configuration File
+    # |hazel2| configuration File
 
     [Working mode]
     Output file = output.h5
@@ -216,7 +217,7 @@ The first part of the configuration file represents very general properties.
 Spectral regions
 ----------------
 
-The `spectral regions` are considered as the main objects in Hazel v2.0. You can
+The `spectral regions` are considered as the main objects in |hazel2|. You can
 add any number of spectral regions, which will cover the observed region or the
 region you desire for your synthesis. One also needs to define which topology of
 atmospheres (described below) will produce the synthetic profiles for this region.
@@ -270,7 +271,8 @@ Photospheres
 
 Photospheres are always in the lower part of the atmosphere and so need to be defined
 in the first level of the topology. They are synthesized in local thermodynamic equilibrium
-using SIR.
+using SIR. The magnetic field is always given with respect to the line-of-sight (contrary
+to those of chromospheres).
 
 ::
 
@@ -323,7 +325,9 @@ Chromospheres
 ^^^^^^^^^^^^^
 
 Chromospheres are synthesized with slabs of constant physical properties always above photospheres (if any). An arbitrary
-number of chromospheres can be used, either with filling factor or one above the other.
+number of chromospheres can be used, either with filling factor or one above the other. Note that the magnetic
+field is always given with respect to the local vertical, contrary to photospheres, which are given 
+relative to the line of sight.
 
 ::
 
@@ -375,7 +379,7 @@ Parametric
 
 Parametric atmospheres are used to synthesize any systematics that can be affecting the
 observations. Things like telluric lines, fringes, smooth continua form part of this. You can
-always correct from them during data reduction, but Hazel v2.0 allows you to add them
+always correct from them during data reduction, but |hazel2| allows you to add them
 during the fit. The curently available parametric atmosphere is just a Voigt function.
 
 ::

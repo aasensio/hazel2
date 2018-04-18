@@ -19,9 +19,12 @@ can be easily accessed using:
 
     import h5py
     f = h5py.File('output.h5', 'r')
-    f['spec1'].shape
+    stokes = f['spec1']['stokes']
+    chi2 = f['spec1']['chi2']
 
-The shape of the output is (n_pixel,4,n_lambda) for each specific spectral region.
+Each specific spectral region defines an HDF5 ``Group``, with two different ``Datasets``. The first
+one is ``stokes``, which contains the emergent Stokes profiles for all the cycles and is of size ``(n_pixel,n_cycles,4,n_lambda)``. The
+second is the value of the :math:`\chi^2` merit function for each cycle and is of size ``(n_pixel,n_cycles)``.
 
 FITS files
 ^^^^^^^^^^
@@ -44,8 +47,8 @@ inside the group. Using ``h5py``, they can be easily accessed using:
     f = h5py.File('output.h5', 'r')
     T = f['ph1']['T']
 
-The shape of the output is (n_pixel,n_cycles,nz) for each specific parameter of a photospheric model
-and (n_pixel,n_cycles,1) for each parameter of the remaining model atmospheres.
+The shape of the output is ``(n_pixel,n_cycles,nz)`` for each specific parameter of a photospheric model
+and ``(n_pixel,n_cycles,1)`` for each parameter of the remaining model atmospheres.
 
 FITS files
 ^^^^^^^^^^

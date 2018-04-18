@@ -1,11 +1,11 @@
 import numpy as np
 from hazel.io import Generic_observed_file, Generic_stray_file
-from ipdb import set_trace as stop
+# from ipdb import set_trace as stop
 
 __all__ = ['Spectrum']
 
 class Spectrum(object):
-    def __init__(self, wvl=None, weights=None, observed_file=None, name=None, stokes_weights=None, los=None, boundary=None):
+    def __init__(self, wvl=None, weights=None, observed_file=None, name=None, stokes_weights=None, los=None, boundary=None, mask_file=None):
         
         self.wavelength_axis = None
         self.stokes = None
@@ -21,6 +21,8 @@ class Spectrum(object):
 
         if (observed_file is not None):
             self.add_observed_file(observed_file)
+
+        self.add_mask_file(mask_file)
 
         # if (stray is not None):
             # self.add_stray_file(stray)
@@ -51,7 +53,8 @@ class Spectrum(object):
     
         """
 
-        self.stokes_cycle = [None] * n_cycles    
+        self.stokes_cycle = [None] * n_cycles
+        self.chi2_cycle = [None] * n_cycles
 
     def add_spectrum(self, wvl):
         """
@@ -110,6 +113,28 @@ class Spectrum(object):
         self.observed_handle = Generic_observed_file(observed_file)
         self.n_pixel = self.observed_handle.get_npixel()
 
+    def add_mask_file(self, mask_file):        
+        """
+        Add a new file with a mask
+        
+        Parameters
+        ----------        
+        mask_file : str
+            File with the mask
+        
+        Returns
+        -------
+        None
+    
+        """  
+        if (mask_file is not None):
+            self.mask_handle = Generic_mask_file(mask_file)
+            n_pixel = self.mask_handle.get_npixel()
+            if (n_pixel != self.n_pixel):
+                raise Exception("Number of pixels in mask is different from number of observed pixels")
+        else:
+            self.mask_handle = None
+        
     # def add_stray_file(self, stray_file):        
     #     """
     #     Add a new file with straylight and open it
@@ -219,7 +244,7 @@ class Spectrum(object):
         None
     
         """          
-        self.obs, self.noise, self.los, self.mu, self.boundary = self.observed_handle.read(pixel=pixel)        
+        self.obs, self.noise, self.los, self.mu, self.boundary = self.observed_handle.read(pixel=pixel)
 
     def read_straylight(self, pixel=None):
         """
@@ -235,5 +260,23 @@ class Spectrum(object):
         None
     
         """          
-        stop()
         self.stray = self.stray_handle.read(pixel=pixel)
+
+    def read_mask(self, pixel=None):
+        """
+        Read the next pixel with mask
+        
+        Parameters
+        ----------        
+        pixel : int
+            Pixel to read
+        
+        Returns
+        -------
+        None
+    
+        """                  
+        if (self.mask_handle is not None):
+            self.mask = self.mask_handle.read(pixel=pixel)
+        else:
+            self.mask = 1

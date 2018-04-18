@@ -5,7 +5,7 @@ from hazel.util import i0_allen, fvoigt
 from hazel.codes import hazel_code, sir_code
 from hazel.hsra import hsra_continuum
 from hazel.io import Generic_hazel_file, Generic_SIR_file, Generic_parametric_file
-from hazel.transforms import transformed_to_physical, physical_to_transformed, jacobian_transformation
+from hazel.transforms import transformed_to_physical, physical_to_transformed, jacobian_transformed_to_physical, jacobian_transformation
 import copy
 # from ipdb import set_trace as stop
 from hazel.sir import Sir
@@ -37,6 +37,7 @@ class General_atmosphere(object):
         self.n_nodes = OrderedDict()
         self.nodes = OrderedDict()
         self.epsilon = OrderedDict()
+        self.error = OrderedDict()
         self.jacobian = OrderedDict()
 
     def allocate_info_cycles(self, n_cycles):
@@ -75,7 +76,7 @@ class General_atmosphere(object):
             lower = self.ranges[k][0]
             upper = self.ranges[k][1]
             self.parameters[k] = transformed_to_physical(v, lower, upper)
-            self.jacobian[k] = jacobian_transformation(v, lower, upper)
+            self.jacobian[k] = jacobian_transformed_to_physical(v, lower, upper)
                         
     def to_transformed(self):
         """
