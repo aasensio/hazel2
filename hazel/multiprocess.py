@@ -1,5 +1,9 @@
 import numpy as np
-from mpi4py import MPI
+try:
+    from mpi4py import MPI
+    _mpi_available = True
+except:
+    _mpi_available = False
 
 from enum import IntEnum
 import h5py
@@ -17,10 +21,12 @@ class tags(IntEnum):
 class iterator(object):
     def __init__(self, use_mpi=False):
         
-        # Initializations and preliminaries
+        # Initializations and preliminaries        
         self.use_mpi = use_mpi
         
         if (self.use_mpi):
+            if (not _mpi_available):
+                raise Exception("You need MPI and mpi4py installed in your system to use this option.")
             self.comm = MPI.COMM_WORLD   # get MPI communicator object
             self.size = self.comm.size        # total number of processes
             self.rank = self.comm.rank        # rank of this process
