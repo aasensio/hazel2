@@ -1,5 +1,6 @@
 import numpy as np
 from mpi4py import MPI
+
 from enum import IntEnum
 import h5py
 from hazel.codes import hazel_code
