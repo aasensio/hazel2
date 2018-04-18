@@ -12,7 +12,7 @@ addons:
 env:
   global:
     # List package dependencies for conda
-    - CONDA_DEPS="cython numpy scipy h5py sphinx sphinx_rtd_theme tqdm astropy configobj matplotlib numpydoc mpich mpi4py"
+    - CONDA_DEPS="cython numpy scipy h5py sphinx sphinx_rtd_theme tqdm astropy configobj matplotlib numpydoc mpi4py"
     # package name for test invocation
     - PACKAGENAME="hazel"
 
@@ -28,6 +28,7 @@ before_install:
   - conda create -n testenv python=$TRAVIS_PYTHON_VERSION
   - source activate testenv
   - conda install $CONDA_DEPS  
+  - conda install -c conda-forge mpich
   
 install:
   - python setup.py develop
