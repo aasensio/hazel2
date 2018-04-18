@@ -33,7 +33,7 @@ Graphical front-ends are also provided.
 
 ## Getting started
 
-Read the documentation on http://aasensio.github.io/hazel2 for getting 
+Read the [documentation](http://aasensio.github.io/hazel2) for getting 
 details on how to use the code.
 
 ### Programmatically
@@ -57,19 +57,18 @@ As you see, we first generate the Hazel model for synthesis. We then create a sp
 passed as a dictionary. Then we add a chromosphere and finally call `setup` to finalize the model setup.
 We then change the model parameters of the chromosphere and synthesize the spectrum.
 All the details of the dictionaries to pass and how to generate more complicated
-atmospheres can be found in :ref:`programmatically`.
+atmospheres can be found in the documentation.
 
 ### With configuration file
 
 Perhaps the easiest way of running Hazel v2.0 is through the human-friendly configuration
-files described in :ref:`configuration`.
+files described in the documentation.
 
 #### Single pixel mode
 
 Calculations in single-pixel mode (only one pixel synthesis/inversion) are very easy
-to do. The following code uses a configuration file that can be found in `<https://github.com/aasensio/hazel2/test>`_
-which uses `1d` inputs files, whose format is described in :ref:`input`. The following one
-carries out synthesis:
+to do. The following code uses a configuration file that can be found in the [examples](https://github.com/aasensio/hazel2/test)
+which uses `1d` inputs files. The following one carries out synthesis:
 
 
 
