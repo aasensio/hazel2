@@ -20,7 +20,8 @@ If you also want to use the GUI, you need to add two new dependencies:
 
 ::
 
-    conda create -n hazel_env python=3.6 numpy h5py scipy astropy mpi4py configobj tqdm matplotlib pyqt5
+    conda create -n hazel_env python=3.6 
+    conda install -c conda-forge cython numpy scipy h5py sphinx sphinx_rtd_theme tqdm astropy configobj matplotlib numpydoc mpich mpi4py
     source activate hazel_env
 
 

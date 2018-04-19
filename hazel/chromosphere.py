@@ -29,6 +29,16 @@ class Hazel_atmosphere(General_atmosphere):
         self.parameters['a'] = 0.0
         self.parameters['ff'] = np.log(1.0)
 
+        self.units['Bx'] = 'G'
+        self.units['By'] = 'G'
+        self.units['Bz'] = 'G'        
+        self.units['tau'] = 'none'
+        self.units['v'] = 'km/s'
+        self.units['deltav'] = 'km/s'
+        self.units['beta'] = 'none'
+        self.units['a'] = 'none'
+        self.units['ff'] = 'none'
+
         self.nodes['Bx'] = 0.0
         self.nodes['By'] = 0.0
         self.nodes['Bz'] = 0.0        

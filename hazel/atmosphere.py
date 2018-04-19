@@ -39,6 +39,7 @@ class General_atmosphere(object):
         self.epsilon = OrderedDict()
         self.error = OrderedDict()
         self.jacobian = OrderedDict()
+        self.units = OrderedDict()
 
     def allocate_info_cycles(self, n_cycles):
         """

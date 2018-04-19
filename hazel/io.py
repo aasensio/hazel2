@@ -1,7 +1,9 @@
 import numpy as np
 import h5py
 from astropy.io import fits
+import hazel
 import os
+import datetime
 # from ipdb import set_trace as stop
 
 __all__ = ['Generic_output_file', 'Generic_observed_file', 'Generic_hazel_file', 'Generic_SIR_file', 'Generic_parametric_file', 'Generic_stray_file']
@@ -19,6 +21,8 @@ class Generic_output_file(object):
         if (self.extension == 'h5'):
             # Open the file            
             self.handler = h5py.File(self.filename, 'w')
+            self.handler.attrs['version'] = hazel.__version__
+            self.handler.attrs['date'] = datetime.datetime.today().isoformat(' ')
             
             # Generate all handlers for things we'll write here
             self.out_spectrum = {}
@@ -36,12 +40,14 @@ class Generic_output_file(object):
                 for k, v in model.atmospheres.items():
                     db = self.handler.create_group(k)
                     self.out_model[k] = {}
-                    for k2, v2 in v.reference.items():                    
+                    for k2, v2 in v.reference.items():
                         if (np.isscalar(v2)):
                             n_depth = 1
                         else:
                             n_depth = len(v2)
                         self.out_model[k][k2] = db.create_dataset(k2, (model.n_pixels, model.n_cycles, n_depth))
+                    for k2, v2 in v.units.items():                        
+                        self.out_model[k][k2].attrs['unit'] = v2
                         
             return
 
