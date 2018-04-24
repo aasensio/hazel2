@@ -59,7 +59,7 @@ class Generic_output_file(object):
 
         if (self.extension == 'h5'):
             for k, v in model.spectrum.items():                
-                for cycle in range(model.n_cycles):                    
+                for cycle in range(model.n_cycles):                      
                     self.out_spectrum[k]['stokes'][pixel,cycle,...] = v.stokes_cycle[cycle]
                     self.out_spectrum[k]['chi2'][pixel,cycle] = v.chi2_cycle[cycle]
 

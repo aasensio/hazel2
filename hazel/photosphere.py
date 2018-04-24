@@ -15,9 +15,9 @@ __all__ = ['SIR_atmosphere']
 # sir_parameters = OrderedDict.fromkeys('T B thetaB phiB v')
 
 class SIR_atmosphere(General_atmosphere):
-    def __init__(self, working_mode):
+    def __init__(self, working_mode, name=''):
         
-        super().__init__('photosphere')
+        super().__init__('photosphere', name=name)
         self.ff = 1.0        
         self.macroturbulence = np.zeros(1)
         self.working_mode = working_mode
@@ -193,7 +193,7 @@ class SIR_atmosphere(General_atmosphere):
 
         self.set_parameters(out, ff)
         
-        self.init_reference()
+        self.init_reference(check_borders=True)
                         
     def set_parameters(self, model, ff):
         """

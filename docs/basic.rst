@@ -59,6 +59,7 @@ carries out synthesis:
     mod = hazel.Model('conf_single_syn.ini')
     mod.open_output()
     mod.synthesize()
+    mod.write_output()
     mod.close_output()
 
 and this one carries out the inversion:
@@ -69,6 +70,7 @@ and this one carries out the inversion:
     mod.read_observation()
     mod.open_output()
     mod.invert()
+    mod.write_output()
     mod.close_output()
 
 Summarizing, just create the model using the configuration file and then 

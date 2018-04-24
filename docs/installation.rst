@@ -21,8 +21,8 @@ If you also want to use the GUI, you need to add two new dependencies:
 ::
 
     conda create -n hazel_env python=3.6 
-    conda install -c conda-forge cython numpy scipy h5py sphinx sphinx_rtd_theme tqdm astropy configobj matplotlib numpydoc mpich mpi4py
     source activate hazel_env
+    conda install -c conda-forge cython numpy scipy h5py sphinx sphinx_rtd_theme tqdm astropy configobj matplotlib numpydoc mpich mpi4py    
 
 
 
@@ -32,7 +32,7 @@ It can also be installed from sources by cloning this repository and installing 
 
 ::
     
-    git clone https://github.com/aasensio/hazel
+    git clone https://github.com/aasensio/hazel2
     python setup.py install
 
 Remember that if you want to develop the code, it is useful to use instead:

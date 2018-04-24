@@ -12,6 +12,7 @@ class Spectrum(object):
         self.stokes_perturbed = None
         self.pixel = 0
         self.boundary_single = boundary
+        self.chi2 = -1.0
         
         if (wvl is not None):
             self.add_spectrum(wvl)
@@ -54,7 +55,7 @@ class Spectrum(object):
         """
 
         self.stokes_cycle = [None] * n_cycles
-        self.chi2_cycle = [None] * n_cycles
+        self.chi2_cycle = [-1.0] * n_cycles
 
     def add_spectrum(self, wvl):
         """

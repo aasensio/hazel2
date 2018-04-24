@@ -14,8 +14,9 @@ from hazel.sir import Sir
 __all__ = ['General_atmosphere']
     
 class General_atmosphere(object):
-    def __init__(self, atm_type):
+    def __init__(self, atm_type, name):
         self.ff = 1.0
+        self.name = name
 
         self.active_lines = []
         self.wavelength = dict()
@@ -73,7 +74,7 @@ class General_atmosphere(object):
     
         """
         
-        for k, v in self.parameters.items():
+        for k, v in self.parameters.items():            
             lower = self.ranges[k][0]
             upper = self.ranges[k][1]
             self.parameters[k] = transformed_to_physical(v, lower, upper)
@@ -93,7 +94,7 @@ class General_atmosphere(object):
         None
     
         """
-        for k, v in self.parameters.items():            
+        for k, v in self.parameters.items():                        
             lower = self.ranges[k][0]
             upper = self.ranges[k][1]            
             self.parameters[k] = physical_to_transformed(v, lower, upper)
@@ -118,13 +119,14 @@ class General_atmosphere(object):
             self.to_physical()        
             self.reference_cycle[cycle] = copy.deepcopy(self.parameters)
 
-    def init_reference(self):
+    def init_reference(self, check_borders=False):
         """
         Initialize the reference atmosphere to the values of the parameters, doing the inverse transformation if in inversion mode
 
         Parameters
         ----------
-        None
+        check_borders : bool
+            Check that the input parameters are inside the ranges of parameters
 
         Returns
         -------
@@ -132,7 +134,12 @@ class General_atmosphere(object):
         """
 
         # Transform parameters to  unbounded domain
-        if (self.working_mode == 'inversion'):            
+        if (self.working_mode == 'inversion'):
+            if (check_borders):
+                for k, v in self.parameters.items():                    
+                    if (not np.all(np.logical_and(v >= self.ranges[k][0], v <= self.ranges[k][1]))):
+                        raise Exception("Parameter {0} of atmosphere {1} is outside ranges".format(k, self.name))
+
             self.to_transformed()            
 
         self.reference = copy.deepcopy(self.parameters)

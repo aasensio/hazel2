@@ -12,9 +12,9 @@ import copy
 __all__ = ['Hazel_atmosphere']
 
 class Hazel_atmosphere(General_atmosphere):
-    def __init__(self, working_mode):
+    def __init__(self, working_mode, name=''):
     
-        super().__init__('chromosphere')
+        super().__init__('chromosphere', name=name)
 
         self.height = 3.0
         self.working_mode = working_mode
@@ -204,7 +204,7 @@ class Hazel_atmosphere(General_atmosphere):
         
         self.set_parameters(out, ff)
 
-        self.init_reference()        
+        self.init_reference(check_borders=True)
 
     def nodes_to_model(self):
         """

@@ -11,7 +11,6 @@ mod = hazel.Model('conf_nonmpi_syn1d.ini', working_mode='synthesis', verbose=2)
 iterator.use_model(model=mod)
 iterator.run_all_pixels()
 
-
 if (rank == 0):
     fig, ax = pl.subplots(nrows=2, ncols=2)
     ax = ax.flatten()
@@ -19,7 +18,7 @@ if (rank == 0):
     f = h5py.File('output.h5', 'r')
 
     for i in range(4):
-        ax[i].plot(f['spec1'][0,0,i,:])
+        ax[i].plot(f['spec1']['stokes'][0,0,i,:])
     
     pl.show()
     pl.pause(0.001)

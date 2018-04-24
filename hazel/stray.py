@@ -12,9 +12,9 @@ import scipy.constants as constants
 __all__ = ['Straylight_atmosphere']
 
 class Straylight_atmosphere(General_atmosphere):
-    def __init__(self, working_mode):
+    def __init__(self, working_mode, name=''):
     
-        super().__init__('straylight')
+        super().__init__('straylight', name=name)
 
         self.working_mode = working_mode
 

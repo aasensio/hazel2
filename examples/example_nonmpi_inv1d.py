@@ -7,7 +7,7 @@ from ipdb import set_trace as stop
 # Test iterator with a single observation in synthesis
 iterator = hazel.iterator(use_mpi=False)
 rank = iterator.get_rank()
-mod = hazel.Model('conf_nonmpi_inv1d.ini', working_mode='inversion', verbose=3)
+mod = hazel.Model('conf_nonmpi_inv1d.ini', working_mode='inversion', verbose=2)
 iterator.use_model(model=mod)
 iterator.run_all_pixels()
 
@@ -18,7 +18,7 @@ if (rank == 0):
     f = h5py.File('output.h5', 'r')
 
     for i in range(4):
-        ax[i].plot(f['spec1'][0,0,i,:])
+        ax[i].plot(f['spec1']['stokes'][0,0,i,:])
 
     pl.show()
     pl.pause(0.001)

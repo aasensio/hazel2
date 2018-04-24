@@ -56,7 +56,8 @@ class Model(object):
         self.logger.handlers = []
 
         ch = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        # formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter('%(asctime)s - %(message)s')
         ch.setFormatter(formatter)
         self.logger.addHandler(ch)
 
@@ -287,6 +288,10 @@ class Model(object):
     def close_output(self):        
         self.output_handler.close()
 
+    def write_output(self):
+        self.flatten_parameters_to_reference(cycle=0)
+        self.output_handler.write(self, pixel=0)
+
     def add_spectral(self, spectral):
         """
         Programmatically add a spectral region
@@ -377,7 +382,7 @@ class Model(object):
         else:
             if (self.verbose >= 1):
                 self.logger.info('  - Reading wavelength weights from {0}'.format(value['wavelength weight file']))
-            weights = np.loadtxt(value['wavelength weight file'], skiprows=1)
+            weights = np.loadtxt(value['wavelength weight file'], skiprows=1).T
 
         # Observations file not present
         if (value['observations file'] is None):
@@ -461,7 +466,7 @@ class Model(object):
         # already done
         atm = hazel.util.lower_dict_keys(atmosphere)
 
-        self.atmospheres[atm['name']] = SIR_atmosphere(working_mode=self.working_mode)
+        self.atmospheres[atm['name']] = SIR_atmosphere(working_mode=self.working_mode, name=atm['name'])
         lines = [int(k) for k in list(atm['spectral lines'])]
         wvl_range = [float(k) for k in atm['wavelength']]
                     
@@ -884,19 +889,9 @@ class Model(object):
 
         """
 
-        # print(self.atmospheres['ch1'].nodes)
-
-        # if (self.working_mode == 'inversion'):
-            # self.nodes_to_physical()
-
-        # print(self.atmospheres['ch1'].nodes)
-
         self.normalize_ff()
         for k, v in self.spectrum.items():
-            self.synthesize_spectral_region(k, perturbation=perturbation)        
-
-        # if (self.working_mode == 'inversion'):
-            # self.physical_to_nodes()
+            self.synthesize_spectral_region(k, perturbation=perturbation)
             
     def find_active_parameters(self, cycle):
         """
@@ -1138,7 +1133,8 @@ class Model(object):
         dchi2 = np.zeros(n)
         ddchi2 = np.zeros((n,n))
         for k, v in self.spectrum.items():
-            residual = (v.stokes - v.obs)            
+            residual = (v.stokes - v.obs)
+            
             weights = v.stokes_weights[:,self.cycle][:,None] * v.wavelength_weights
             chi2 += np.sum(weights * residual**2 * v.factor_chi2)
             
@@ -1403,7 +1399,7 @@ class Model(object):
 
                 iteration += 1
 
-                if (self.verbose >= 2):
+                if (self.verbose > 2):
                     self.atmospheres['ch1'].print_parameters(first=first)
                     first = False
                         
@@ -1429,4 +1425,4 @@ class Model(object):
     def read_observation(self):
         for k, v in self.spectrum.items():
             v.read_observation(pixel=self.pixel)
-            v.read_straylight(pixel=self.pixel)
+            # v.read_straylight(pixel=self.pixel)

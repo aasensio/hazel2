@@ -11,9 +11,9 @@ import copy
 __all__ = ['Parametric_atmosphere']
 
 class Parametric_atmosphere(General_atmosphere):
-    def __init__(self, working_mode):
+    def __init__(self, working_mode, name=''):
     
-        super().__init__('parametric')
+        super().__init__('parametric', name=name)
 
         self.working_mode = working_mode
 
