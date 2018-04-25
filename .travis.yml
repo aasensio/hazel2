@@ -12,7 +12,7 @@ addons:
 env:
   global:
     # List package dependencies for conda
-    - CONDA_DEPS="cython numpy scipy h5py sphinx sphinx_rtd_theme tqdm astropy configobj matplotlib numpydoc mpich mpi4py"
+    - CONDA_DEPS="cython numpy scipy h5py sphinx sphinx_rtd_theme tqdm astropy configobj matplotlib numpydoc mpich mpi4py pytest-cov"
     # package name for test invocation
     - PACKAGENAME="hazel"
 
@@ -28,6 +28,7 @@ before_install:
   - conda create -n testenv python=$TRAVIS_PYTHON_VERSION
   - source activate testenv
   - conda install -c conda-forge $CONDA_DEPS  
+  - pip install coveralls
   
 install:
   - python setup.py develop
@@ -35,9 +36,9 @@ install:
 script:
   # - cd docs
   # - bash ./deploy_docs.sh  
-  - pytest -v
+  - py.test -v --cov hazel
+
+after_success:
+  - coveralls
 
   # - bash ./deploy_docs.sh
-  # - nosetests -v --with-coverage --cover-package=hazelinv
-# after_success:
-  # - coveralls
