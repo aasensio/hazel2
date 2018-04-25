@@ -34,11 +34,10 @@ install:
   - python setup.py develop
 
 script:
-  # - cd docs
-  # - bash ./deploy_docs.sh  
   - py.test -v --cov hazel
 
 after_success:
   - coveralls
+  # - cd docs
 
   # - bash ./deploy_docs.sh
