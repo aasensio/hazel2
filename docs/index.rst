@@ -13,13 +13,13 @@ theory of spectral line polarization, which takes into account rigorously all th
 relevant physical mechanisms and ingredients: optical pumping, atomic level 
 polarization, level crossings and repulsions, Zeeman, Paschen-Back and Hanle effects. 
 
-The new |hazel2@ is a complete rewrite of the code, putting emphasis on its
+The new |hazel2| is a complete rewrite of the code, putting emphasis on its
 usability. The code is now able to synthesize photospheric lines under the 
 assumption of local thermodynamic equilibrium, chromospheric lines under
 the multi-term approximation (like the He I multiplets) and a selection of
 arbitrary systematic effects like telluric lines or fringes.
 
-The code is written in Python with the most computationally heavy parts coded in Fortran 90. 
+The code is written in Python 3 with the most computationally heavy parts coded in Fortran 90. 
 It can be controlled from a user-friendly configuration file, but it can also
 be called programmatically. It can be used in synthesis mode for obtaining emerging
 Stokes parameters from a given atmosphere. It can also be used in inversion mode
@@ -149,6 +149,7 @@ configuration file, and it will be broadcasted to all slaves internally.
    programmatically
    input
    output
+   graphical
    prepareData
    equations
    ambiguities

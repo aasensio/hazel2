@@ -128,7 +128,7 @@ class Hazel_atmosphere(General_atmosphere):
         None
     
         """        
-        self.line_to_index = {'10830': 1, '3888': 2, '7065': 3,' 5876': 4}
+        self.line_to_index = {'10830': 1, '3888': 2, '7065': 3,'5876': 4}
         self.active_line = line
         self.wavelength_range = wvl_range
         ind_low = (np.abs(spectrum.wavelength_axis - wvl_range[0])).argmin()

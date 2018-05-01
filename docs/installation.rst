@@ -2,10 +2,10 @@
 Installation
 ============
 
-Hazel v2.0 is a Python module with some wrapped compiled Fortran routines. It should
+|hazel2| is a Python 3 module with some wrapped compiled Fortran routines. It should
 be pretty easy to install once you have a working compiler in your system.
 
-There are different ways to install Hazel v2.0, but the best is to install
+There are different ways to install |hazel2|, but the best is to install
 it into a virtual environment either with `pip <http://www.virtualenv.org/>`_ or `conda <https://conda.io/docs/user-guide/tasks/manage-environments.html/>`_,
 which makes everything much more safer, plus making sure that all packages are installed for the code.
 For example, once you have installed `Miniconda <https://conda.io/miniconda.html/>`_, you can generate
@@ -47,23 +47,24 @@ and when you want to uninstall the development version, type:
     
     python setup.py develop --uninstall
 
-Using pip
----------
+..
+    Using pip
+    ---------
 
-Hazel v2.0 can be easily installed from PyPI by invoking:
+    |hazel2| can be easily installed from PyPI by invoking:
 
-::
+    ::
 
-    pip install hazel
+        pip install hazel
 
-Using conda
------------
+    Using conda
+    -----------
 
-It can also be installed from the Anaconda Cloud by invoking:
+    It can also be installed from the Anaconda Cloud by invoking:
 
-::
+    ::
 
-    conda install hazel
+        conda install hazel
 
 Requirements
 ------------
