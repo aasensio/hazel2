@@ -13,6 +13,7 @@ class Spectrum(object):
         self.pixel = 0
         self.boundary_single = boundary
         self.chi2 = -1.0
+        self.normalization = 'on-disk'
         
         if (wvl is not None):
             self.add_spectrum(wvl)
@@ -79,8 +80,14 @@ class Spectrum(object):
         self.noise = np.zeros((4,len(wvl)))
         self.dof = 4.0 * len(wvl)
         if (self.boundary_single is not None):
-            self.boundary = self.boundary_single[:,None] * np.ones((1,len(wvl)))        
+            
+            self.boundary = self.boundary_single[:,None] * np.ones((1,len(wvl)))
 
+            if (self.boundary_single[0] == 0.0):                
+                self.normalization = 'off-limb'
+            else:
+                self.normalization = 'on-disk'
+            
     def add_weights(self, weights):
         """
         Add new weights for the Stokes parameters
@@ -246,6 +253,10 @@ class Spectrum(object):
     
         """          
         self.obs, self.noise, self.los, self.mu, self.boundary = self.observed_handle.read(pixel=pixel)
+        if (np.all(self.boundary[0,:]) == 0.0):
+            self.normalization = 'off-limb'
+        else:
+            self.normalization = 'on-disk'
 
     def read_straylight(self, pixel=None):
         """

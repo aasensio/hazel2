@@ -58,7 +58,7 @@ c nble  : numero de blends de cada linea
 	      jj=jj+1
               nlin(jj)=nd(j)
 	    end do
-
+		
 	    numeropasos=(difi-dini)/dipa+1
 	    npas(numlin)=int(numeropasos)
 	    errpasos=10*(numeropasos-int(numeropasos))	    

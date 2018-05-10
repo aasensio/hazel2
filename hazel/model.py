@@ -15,11 +15,17 @@ import os
 from pathlib import Path
 import scipy.stats
 import scipy.special
+import warnings
 
 try:
     import matplotlib.pyplot as pl
 except:
     pass
+
+try:
+    import zarr
+except:
+    warnings.warn("zarr module not found. You will not be able to use zarr as input/output.")
 
 import logging
 
@@ -28,7 +34,10 @@ import logging
 __all__ = ['Model']
 
 class Model(object):
-    def __init__(self, config=None, working_mode='synthesis', verbose=0, debug=False):
+    def __init__(self, config=None, working_mode='synthesis', verbose=0, debug=False, rank=0):
+
+        if (rank != 0):
+            return
         
         self.photospheres = []
         self.chromospheres = []
@@ -397,7 +406,7 @@ class Model(object):
         if (value['mask file'] is None):            
             mask_file = None
             if (self.verbose >= 1):
-                self.logger.info('  - Not mask for pixels')
+                self.logger.info('  - No mask for pixels')
         else:
             if (self.verbose >= 1):
                 self.logger.info('  - Using mask from {0}'.format(value['mask file']))
@@ -423,13 +432,16 @@ class Model(object):
 
         if (value['boundary condition'] is None):
             if (self.verbose >= 1):
-                self.logger.info('  - Using default boundary conditions in spectral region {0} or read from file. Check carefully!'.format(value['name']))
-            boundary = np.array([1.0,0.0,0.0,0.0])
+                self.logger.info('  - Using default boundary conditions [1,0,0,0] in spectral region {0} or read from file. Check carefully!'.format(value['name']))
+            boundary = np.array([1.0,0.0,0.0,0.0])            
+            self.normalization = 'on-disk'
         else:
             boundary = np.array(value['boundary condition']).astype('float64')
-            if (self.verbose >= 1):
-                self.logger.info('  - Using boundary condition {0}'.format(value['los']))
+            if (boundary[0] == 0.0):
+                self.logger.info('  - Using off-limb normalization (peak intensity)')
 
+            if (self.verbose >= 1):
+                self.logger.info('  - Using boundary condition {0}'.format(value['boundary condition']))
 
         stokes_weights = []
         for st in ['i', 'q', 'u', 'v']:
@@ -469,6 +481,9 @@ class Model(object):
         self.atmospheres[atm['name']] = SIR_atmosphere(working_mode=self.working_mode, name=atm['name'])
         lines = [int(k) for k in list(atm['spectral lines'])]
         wvl_range = [float(k) for k in atm['wavelength']]
+
+        if (self.verbose >= 1):
+            self.logger.info("    * Adding line : {0}".format(lines))
                     
         self.atmospheres[atm['name']].add_active_line(lines=lines, spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
@@ -520,7 +535,7 @@ class Model(object):
         # already done
         atm = hazel.util.lower_dict_keys(atmosphere)
         
-        self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode)
+        self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, name=atm['name'])
                 
         wvl_range = [float(k) for k in atm['wavelength']]
 
@@ -719,10 +734,10 @@ class Model(object):
                 f.write("-----------------------------------------------------------------------\n")
 
                 ind_low = (np.abs(v.spectrum.wavelength_axis - v.wvl_range_lambda[0])).argmin()
-                ind_top = (np.abs(v.spectrum.wavelength_axis - v.wvl_range_lambda[1])).argmin()
+                ind_top = (np.abs(v.spectrum.wavelength_axis - v.wvl_range_lambda[1] + 1e-3)).argmin()
 
                 low = v.spectrum.wavelength_axis[ind_low]
-                top = v.spectrum.wavelength_axis[ind_top] + 1e-3
+                top = v.spectrum.wavelength_axis[ind_top]         # TODO
                 delta = (v.spectrum.wavelength_axis[1] - v.spectrum.wavelength_axis[0])
 
                 filename = os.path.join(os.path.dirname(__file__),'data/LINEAS')
@@ -847,11 +862,13 @@ class Model(object):
             for n, order in enumerate(atmospheres):
                                                                 
                 for k, atm in enumerate(order):
-                                        
+                    
                     if (self.atmospheres[atm].spectrum.name == spectral_region):
-                                                                                
-                        if (n > 0):
+                        
+                        # Update the boundary condition only for the first atmosphere if several are sharing ff      
+                        if (n > 0 and k == 0):
                             ind_low, ind_top = self.atmospheres[atm].wvl_range
+                            
                             if (perturbation):
                                 stokes_out = self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top] * hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
                             else:
@@ -869,9 +886,9 @@ class Model(object):
                         ind_low, ind_top = self.atmospheres[atm].wvl_range
                         
                         if (perturbation):
-                            self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top+1] = stokes / hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
+                            self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top+1] = stokes / hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top+1], 1.0)[None,:]
                         else:
-                            self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top+1] = stokes / hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
+                            self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top+1] = stokes / hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top+1], 1.0)[None,:]            
     
     def synthesize(self, perturbation=False):
         """
@@ -888,10 +905,15 @@ class Model(object):
         None
 
         """
-
         self.normalize_ff()
         for k, v in self.spectrum.items():
             self.synthesize_spectral_region(k, perturbation=perturbation)
+            if (v.normalization == 'off-limb'):
+                if (perturbation):
+                    v.stokes_perturbed /= np.max(v.stokes_perturbed[0,:])
+                else:
+                    v.stokes /= np.max(v.stokes[0,:])
+                
             
     def find_active_parameters(self, cycle):
         """
@@ -936,6 +958,7 @@ class Model(object):
                                     pars.append(tmp)
                                 else:
                                     self.atmospheres[atm].nodes[l] = 0.0
+                                    self.atmospheres[atm].n_nodes[l] = 0
                             else:
                                 self.atmospheres[atm].nodes[l] = np.zeros(par[cycle])
                                 self.atmospheres[atm].n_nodes[l] = par[cycle]
@@ -988,14 +1011,14 @@ class Model(object):
             upper = par['ranges'][1]
 
             if (self.verbose >= 3):
-                self.logger.info(" * RF to {0} - {1} - nodes={2}".format(par['atm'], par['parameter'], par['n_nodes']))
+                self.logger.info(" * RF to {0} - {1} - nodes={2}".format(par['parameter'], par['atm'], par['n_nodes']))
                         
             for i in range(par['n_nodes']):
                 perturbation = np.zeros(par['n_nodes'])
                 if (nodes[i] == 0):
                     perturbation[i] = self.epsilon * par['delta']
                 else:
-                    perturbation[i] = self.epsilon * nodes[i]
+                    perturbation[i] = self.epsilon * nodes[i]                
 
                 # Perturb this parameter
                 self.atmospheres[par['atm']].nodes[par['parameter']] = nodes + perturbation
@@ -1013,7 +1036,7 @@ class Model(object):
                 else:
                     jacobian = 1.0
 
-                rf *= jacobian
+                # rf *= jacobian
                                                 
                 if (loop == 0):
                     self.response = rf
@@ -1366,7 +1389,7 @@ class Model(object):
                 H += np.diag(lambda_opt * np.diag(H))
                 gradF = 0.5 * dchi2
 
-                U, w_inv, VT = self.modified_svd_inverse(H, tol=1e-12)
+                U, w_inv, VT = self.modified_svd_inverse(H, tol=1e-8)
 
                 # xnew = xold - H^-1 * grad F
                 delta = -VT.T.dot(np.diag(w_inv)).dot(U.T).dot(gradF)

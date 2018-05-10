@@ -18,9 +18,16 @@ class Generic_output_file(object):
             raise Exception("1d files not allowed as output")
 
     def open(self, model):        
-        if (self.extension == 'h5'):
-            # Open the file            
-            self.handler = h5py.File(self.filename, 'w')
+        
+        if (self.extension == 'h5' or self.extension == 'zarr'):
+            
+            # Open the file        
+            if (self.extension == 'h5'):
+                self.handler = h5py.File(self.filename, 'w')
+            
+            if (self.extension == 'zarr'):
+                self.handler = zarr.open(self.filename, 'w')
+
             self.handler.attrs['version'] = hazel.__version__
             self.handler.attrs['date'] = datetime.datetime.today().isoformat(' ')
             
@@ -32,6 +39,7 @@ class Generic_output_file(object):
                 self.out_spectrum[k] = {}
 
                 n_stokes, n_lambda = v.stokes.shape
+                self.out_spectrum[k]['wavelength'] = db.create_dataset('wavelength', (n_lambda,), dtype=np.float64)
                 self.out_spectrum[k]['stokes'] = db.create_dataset('stokes', (model.n_pixels, model.n_cycles, n_stokes, n_lambda))
                 self.out_spectrum[k]['chi2'] = db.create_dataset('chi2', (model.n_pixels, model.n_cycles))
 
@@ -40,12 +48,16 @@ class Generic_output_file(object):
                 for k, v in model.atmospheres.items():
                     db = self.handler.create_group(k)
                     self.out_model[k] = {}
+                    
+                    if (hasattr(v, 'log_tau')):
+                        self.out_model[k]['log_tau'] = db.create_dataset('log_tau', (len(v.log_tau),))
+                    
                     for k2, v2 in v.reference.items():
                         if (np.isscalar(v2)):
                             n_depth = 1
                         else:
-                            n_depth = len(v2)
-                        self.out_model[k][k2] = db.create_dataset(k2, (model.n_pixels, model.n_cycles, n_depth))
+                            n_depth = len(v2)                            
+                        self.out_model[k][k2] = db.create_dataset(k2, (model.n_pixels, model.n_cycles, n_depth))                        
                     for k2, v2 in v.units.items():                        
                         self.out_model[k][k2].attrs['unit'] = v2
                         
@@ -59,12 +71,15 @@ class Generic_output_file(object):
 
         if (self.extension == 'h5'):
             for k, v in model.spectrum.items():                
-                for cycle in range(model.n_cycles):                      
+                for cycle in range(model.n_cycles):
+                    self.out_spectrum[k]['wavelength'][:] = v.wavelength_axis
                     self.out_spectrum[k]['stokes'][pixel,cycle,...] = v.stokes_cycle[cycle]
                     self.out_spectrum[k]['chi2'][pixel,cycle] = v.chi2_cycle[cycle]
 
-            if (model.working_mode == 'inversion'):
+            if (model.working_mode == 'inversion'):                
                 for k, v in model.atmospheres.items():
+                    if (hasattr(v, 'log_tau')):
+                        self.out_model[k]['log_tau'][:] = v.log_tau
                     for cycle in range(model.n_cycles):
                         for k2, v2 in v.reference_cycle[cycle].items():
                             self.out_model[k][k2][pixel,cycle,...] = v2
@@ -108,6 +123,10 @@ class Generic_observed_file(object):
             self.handler = h5py.File(self.filename, 'r')
             return
 
+        if (self.extension == 'zarr'):
+            self.handler = zarr.open(self.filename, 'r')
+            return
+
         if (self.extension == 'fits'):
             self.handler = fits.open(self.filename, memmap=True)
             return
@@ -134,13 +153,14 @@ class Generic_observed_file(object):
 
             mu = np.cos(los[0] * np.pi / 180.0)
 
-            return stokes, noise, los, mu, boundary
+            return stokes, noise, los, mu, boundary[:,None]*np.ones((4,n_lambda))
 
-        if (self.extension == 'h5'):
+        if (self.extension == 'h5' or self.extension == 'zarr'):
             los = self.handler['LOS'][pixel,...]
             mu = np.cos(los[0] * np.pi / 180.0)
             return self.handler['stokes'][pixel,...].T, self.handler['sigma'][pixel,...].T, los, mu, self.handler['boundary'][pixel,...].T
 
+        
         # if (self.extension == 'fits'):
         #     return self.handler[0]fits.open(self.filename, memmap=True)
         #     return
@@ -149,7 +169,7 @@ class Generic_observed_file(object):
         if (self.extension == '1d'):
             return
 
-        if (self.extension == 'h5'):
+        if (self.extension == 'h5' or self.extension == 'zarr'):
             self.handler.close()
             del self.handler
         
@@ -158,7 +178,7 @@ class Generic_observed_file(object):
         if (self.extension == '1d'):
             return 1
 
-        if (self.extension == 'h5'):
+        if (self.extension == 'h5' or self.extension == 'zarr'):
             self.open()
             tmp, _, _ = self.handler['stokes'].shape
             self.close()
@@ -180,12 +200,16 @@ class Generic_mask_file(object):
             self.handler = h5py.File(self.filename, 'r')
             return
 
+        if (self.extension == 'zarr'):
+            self.handler = zarr.open(self.filename, 'r')
+            return
+
         if (self.extension == 'fits'):
             self.handler = fits.open(self.filename, memmap=True)
             return
 
     def read(self, pixel=None):        
-        if (self.extension == 'h5'):            
+        if (self.extension == 'h5' or self.extension == 'zarr'):            
             return self.handler['mask'][pixel]
 
         if (self.filename is None):
@@ -196,13 +220,13 @@ class Generic_mask_file(object):
         #     return
 
     def close(self):        
-        if (self.extension == 'h5'):
+        if (self.extension == 'h5' or self.extension == 'zarr'):
             self.handler.close()
             del self.handler
         
 
     def get_npixel(self):        
-        if (self.extension == 'h5'):
+        if (self.extension == 'h5' or self.extension == 'zarr'):
             self.open()
             tmp, _, _ = self.handler['mask'].shape
             self.close()
@@ -222,6 +246,10 @@ class Generic_stray_file(object):
             self.handler = h5py.File(self.filename, 'r')
             return
 
+        if (self.extension == 'zarr'):
+            self.handler = zarr.open(self.filename, 'r')
+            return
+
         if (self.extension == 'fits'):
             self.handler = fits.open(self.filename, memmap=True)
             return
@@ -237,7 +265,7 @@ class Generic_stray_file(object):
             stray_profile = np.loadtxt(self.filename, skiprows=4)
             return [stray_profile, v], ff
 
-        if (self.extension == 'h5'):
+        if (self.extension == 'h5' or self.extension == 'zarr'):
             return [self.handler['profile'][pixel,...], self.handler['model'][pixel,...]], self.handler['ff'][pixel]
 
         # if (self.extension == 'fits'):
@@ -248,7 +276,7 @@ class Generic_stray_file(object):
         if (self.extension == '1d'):
             return
 
-        if (self.extension == 'h5'):
+        if (self.extension == 'h5' or self.extension == 'zarr'):
             self.handler.close()
             del self.handler
         
@@ -257,7 +285,7 @@ class Generic_stray_file(object):
         if (self.extension == '1d'):
             return 1
 
-        if (self.extension == 'h5'):
+        if (self.extension == 'h5' or self.extension == 'zarr'):
             self.open()
             tmp, _ = self.handler['model'].shape
             self.close()
@@ -277,6 +305,10 @@ class Generic_parametric_file(object):
             self.handler = h5py.File(self.filename, 'r')
             return
 
+        if (self.extension == 'zarr'):
+            self.handler = zarr.open(self.filename, 'r')
+            return
+
         if (self.extension == 'fits'):
             self.handler = fits.open(self.filename, memmap=True)
             return
@@ -286,7 +318,7 @@ class Generic_parametric_file(object):
             tmp = np.loadtxt(self.filename, skiprows=1)
             return tmp[0:-1], tmp[-1]
 
-        if (self.extension == 'h5'):
+        if (self.extension == 'h5' or self.extension == 'zarr'):
             return self.handler['model'][pixel,...], self.handler['ff'][pixel]
 
         # if (self.extension == 'fits'):
@@ -297,7 +329,7 @@ class Generic_parametric_file(object):
         if (self.extension == '1d'):
             return
 
-        if (self.extension == 'h5'):
+        if (self.extension == 'h5' or self.extension == 'zarr'):
             self.handler.close()
             del self.handler
         
@@ -306,7 +338,7 @@ class Generic_parametric_file(object):
         if (self.extension == '1d'):
             return 1
 
-        if (self.extension == 'h5'):
+        if (self.extension == 'h5' or self.extension == 'zarr'):
             self.open()
             tmp, _ = self.handler['model'].shape
             self.close()
@@ -326,6 +358,10 @@ class Generic_hazel_file(object):
             self.handler = h5py.File(self.filename, 'r')
             return
 
+        if (self.extension == 'zarr'):
+            self.handler = zarr.open(self.filename, 'r')
+            return
+
         if (self.extension == 'fits'):
             self.handler = fits.open(self.filename, memmap=True)
             return
@@ -335,7 +371,7 @@ class Generic_hazel_file(object):
             tmp = np.loadtxt(self.filename, skiprows=1)
             return tmp[0:-1], tmp[-1]
 
-        if (self.extension == 'h5'):            
+        if (self.extension == 'h5' or self.extension == 'zarr'):            
             return self.handler['model'][pixel,...], self.handler['ff'][pixel]
 
         # if (self.extension == 'fits'):
@@ -346,7 +382,7 @@ class Generic_hazel_file(object):
         if (self.extension == '1d'):
             return
 
-        if (self.extension == 'h5'):
+        if (self.extension == 'h5' or self.extension == 'zarr'):
             self.handler.close()
             del self.handler
         
@@ -355,7 +391,7 @@ class Generic_hazel_file(object):
         if (self.extension == '1d'):
             return 1
 
-        if (self.extension == 'h5'):
+        if (self.extension == 'h5' or self.extension == 'zarr'):
             self.open()
             tmp, _ = self.handler['model'].shape
             self.close()
@@ -373,6 +409,9 @@ class Generic_SIR_file(object):
         if (self.extension == 'h5'):
             self.handler = h5py.File(self.filename, 'r')
             return
+        if (self.extension == 'zarr'):
+            self.handler = zarr.open(self.filename, 'r')
+            return
         if (self.extension == 'fits'):
             self.handler = fits.open(self.filename, memmap=True)
             return
@@ -385,14 +424,14 @@ class Generic_SIR_file(object):
             f.close()
             return np.loadtxt(self.filename, skiprows=4), ff
 
-        if (self.extension == 'h5'):            
+        if (self.extension == 'h5' or self.extension == 'zarr'):            
             return self.handler['model'][pixel,...], self.handler['ff'][pixel]
 
     def close(self):
         if (self.extension == '1d'):
             return
 
-        if (self.extension == 'h5'):
+        if (self.extension == 'h5' or self.extension == 'zarr'):
             self.handler.close()
             del self.handler
 
@@ -400,7 +439,7 @@ class Generic_SIR_file(object):
         if (self.extension == '1d'):
             return 1
 
-        if (self.extension == 'h5'):
+        if (self.extension == 'h5' or self.extension == 'zarr'):
             self.open()
             tmp, _, _ = self.handler['model'].shape
             self.close()

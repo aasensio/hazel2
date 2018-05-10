@@ -42,6 +42,10 @@ implicit none
 		real(kind=8) :: dtau2, vmacro2, bgauss2, thetabd2, chibd2, ff
 		integer :: n_inverted, n_total, nslabs
 		integer, pointer :: inverted(:)
+		real(kind=8), dimension(3) :: B1Input_old
+    	real(kind=8) :: tau1Input_old, dopplerWidthInput_old
+    	real(kind=8) :: dampingInput_old, dopplerVelocityInput_old, betaInput_old
+		logical :: recompute_see_rtcoef
 	end type variable_parameters
 	
 	type fixed_parameters
@@ -105,8 +109,6 @@ implicit none
 	
 	real(kind=8) :: chi2Level
 
-	real(kind=8), dimension(3) :: B1Input_old
-    real(kind=8) :: tau1Input_old, dopplerWidthInput_old
-    real(kind=8) :: dampingInput_old, dopplerVelocityInput_old, betaInput_old
+	
 	
 end module vars

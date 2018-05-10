@@ -18,6 +18,7 @@ class SIR_atmosphere(General_atmosphere):
     def __init__(self, working_mode, name=''):
         
         super().__init__('photosphere', name=name)
+
         self.ff = 1.0        
         self.macroturbulence = np.zeros(1)
         self.working_mode = working_mode
@@ -176,13 +177,13 @@ class SIR_atmosphere(General_atmosphere):
         extension = os.path.splitext(model_file)[1][1:]
         if (extension == '1d'):
             if (verbose >= 1):
-                print('    * Reading 1D model {0} as reference'.format(model_file))
+                self.logger.info('    * Reading 1D model {0} as reference'.format(model_file))
             self.model_type = '1d'
             self.model_filename = model_file
         
         if (extension == 'h5'):
             if (verbose >= 1):
-                print('    * Reading 3D model {0} as reference'.format(model_file))
+                self.logger.info('    * Reading 3D model {0} as reference'.format(model_file))
             self.model_type = '3d'
                         
 
@@ -239,7 +240,7 @@ class SIR_atmosphere(General_atmosphere):
         -------
         None
         """        
-        for k, v in self.nodes.items():            
+        for k, v in self.nodes.items():
             if (self.n_nodes[k] > 0):
                 self.parameters[k] = self.interpolate_nodes(self.log_tau, self.reference[k], self.nodes[k])
             else:
@@ -301,12 +302,12 @@ class SIR_atmosphere(General_atmosphere):
         
         if (returnRF):
             stokes, rf = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
-                self.Pe, self.parameters['vmic'], self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
+                self.Pe, self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
                 self.parameters['Bz'], self.macroturbulence)
             return self.parameters['ff'] * stokes[1:,:], rf
         else:
             stokes = sir_code.synth(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
-                self.Pe, self.parameters['vmic'], self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
+                self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
                 self.parameters['Bz'], self.macroturbulence[0])
-            
+                        
             return self.parameters['ff'] * stokes[1:,:] * hsra_continuum(np.mean(self.wvl_axis))

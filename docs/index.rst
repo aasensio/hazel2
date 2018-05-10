@@ -26,6 +26,15 @@ Stokes parameters from a given atmosphere. It can also be used in inversion mode
 to infer the model parameters from a set of observed Stokes parameters.
 Graphical front-ends are also provided.
 
+Features
+--------
+
+- |hazel2| can invert photospheric, chromospheric and a variety of systematics (i.e., telluric lines).
+- It can seamlessly handle 1D or 3D input/output files, making it very easy to invert large maps.
+- Large supercomputers can be used to invert large maps. It scales practically linearly with the number of cores.
+- It provides a programmatic access to the SIR synthesis module, which can be handy for many purposes.
+- User-friendly API.
+
 Quick tour
 -----------
 
@@ -46,7 +55,7 @@ parameters.
     mod.add_chromosphere({'Name': 'ch1', 'Spectral region': 'spec1', 'Height': 3.0, 'Line': '10830', 'Wavelength': [10826, 10833]})
     mod.setup()
 
-    mod.atmospheres['ch1'].set_parameters([0.0,0.0,100.0,1.0,0.0,8.0,1.0,0.0,1.0])
+    mod.atmospheres['ch1'].set_parameters([0.0,0.0,100.0,1.0,0.0,8.0,1.0,0.0], 1.0)
     mod.synthesize()
 
 As you see, we first generate the Hazel model for synthesis. We then create a spectral window with parameters
@@ -56,7 +65,7 @@ All the details of the dictionaries to pass and how to generate more complicated
 atmospheres can be found in :ref:`programmatically`.
 
 With configuration file
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Perhaps the easiest way of running |hazel2| is through the human-friendly configuration
 files described in :ref:`configuration`.
@@ -138,24 +147,14 @@ configuration file, and it will be broadcasted to all slaves internally.
 
 .. toctree::
    :hidden:
-   :maxdepth: 2
-
-   installation
-   basic
-   synthesis
-   inversion
-   configuration
-   topology
-   programmatically
-   input
-   output
+   :maxdepth: 3
+   
+   started
+   io_files   
+   preparation
+   examples
    graphical
-   prepareData
-   equations
-   ambiguities
-   photospheric
-   refsys
-   api   
+   api
    acknowledgements
    disclaimer
 

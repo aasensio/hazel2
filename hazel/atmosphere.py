@@ -9,6 +9,7 @@ from hazel.transforms import transformed_to_physical, physical_to_transformed, j
 import copy
 # from ipdb import set_trace as stop
 from hazel.sir import Sir
+import logging
 
 
 __all__ = ['General_atmosphere']
@@ -17,6 +18,14 @@ class General_atmosphere(object):
     def __init__(self, atm_type, name):
         self.ff = 1.0
         self.name = name
+
+        self.logger = logging.getLogger("model")
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.handlers = []
+        ch = logging.StreamHandler()        
+        formatter = logging.Formatter('%(asctime)s - %(message)s')
+        ch.setFormatter(formatter)
+        self.logger.addHandler(ch)
 
         self.active_lines = []
         self.wavelength = dict()
@@ -41,6 +50,17 @@ class General_atmosphere(object):
         self.error = OrderedDict()
         self.jacobian = OrderedDict()
         self.units = OrderedDict()
+
+    def __getstate__(self):
+        d = self.__dict__.copy()
+        if 'logger' in d:
+            d['logger'] = d['logger'].name
+        return d
+
+    def __setstate__(self, d):
+        if 'logger' in d:
+            d['logger'] = logging.getLogger(d['logger'])
+        self.__dict__.update(d)
 
     def allocate_info_cycles(self, n_cycles):
         """
@@ -77,8 +97,9 @@ class General_atmosphere(object):
         for k, v in self.parameters.items():            
             lower = self.ranges[k][0]
             upper = self.ranges[k][1]
+            # print(k, v, lower, upper)
             self.parameters[k] = transformed_to_physical(v, lower, upper)
-            self.jacobian[k] = jacobian_transformed_to_physical(v, lower, upper)
+                        # self.jacobian[k] = jacobian_transformed_to_physical(v, lower, upper)
                         
     def to_transformed(self):
         """

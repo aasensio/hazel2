@@ -1435,7 +1435,7 @@ class AppForm(QMainWindow):
         sliderLabel = QLabel(u'\u03B8 [deg]')
         self.slidertheta = FloatSlider(Qt.Horizontal)
         self.slidertheta.setMinimum(0.0)
-        self.slidertheta.setMaximum(180)
+        self.slidertheta.setMaximum(90)
         self.slidertheta.setValue(self.anglesInput[0])
         self.slidertheta.setTracking(True)
         self.slidertheta.setTickPosition(QSlider.TicksBothSides)

@@ -185,7 +185,7 @@ class Hazel_atmosphere(General_atmosphere):
         
         if (extension == '1d'):
             if (verbose >= 1):
-                print('    * Reading 1D model {0} as reference'.format(model_file))
+                self.logger.info('    * Reading 1D model {0} as reference'.format(model_file))
             self.model_type = '1d'
             self.model_filename = model_file
             
@@ -193,7 +193,7 @@ class Hazel_atmosphere(General_atmosphere):
         
         if (extension == 'h5'):
             if (verbose >= 1):
-                print('    * Reading 3D model {0} as reference'.format(model_file))
+                self.logger.info('    * Reading 3D model {0} as reference'.format(model_file))
             self.model_type = '3d'
             
 
@@ -219,9 +219,9 @@ class Hazel_atmosphere(General_atmosphere):
         None
         """         
         for k, v in self.nodes.items():        
-            if (self.n_nodes[k] > 0):
+            if (self.n_nodes[k] > 0):                
                 self.parameters[k] = self.reference[k] + np.squeeze(self.nodes[k])
-            else:
+            else:                
                 self.parameters[k] = self.reference[k]            
                             
     def print_parameters(self, first=False, error=False):
@@ -253,7 +253,7 @@ class Hazel_atmosphere(General_atmosphere):
         
 
         if (self.working_mode == 'inversion'):
-            self.nodes_to_model()
+            self.nodes_to_model()            
             self.to_physical()
                 
         B = np.sqrt(self.parameters['Bx']**2 + self.parameters['By']**2 + self.parameters['Bz']**2)
@@ -291,7 +291,7 @@ class Hazel_atmosphere(General_atmosphere):
             anglesInput, nLambdaInput, lambdaAxisInput, dopplerWidthInput, 
             dampingInput, dopplerVelocityInput, 
             betaInput, nbarInput, omegaInput)
-
+        
         l, stokes = hazel_code._synth(*args)
 
         ff = self.parameters['ff']

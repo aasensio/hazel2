@@ -76,8 +76,9 @@ contains
 		do i=1,ntl
         	do j=1,npas(i)
 	      		nLambda = nLambda + 1
-	    	end do
+	    	end do			
 		end do
+		
 
 		ifiltro = 0
 
@@ -192,6 +193,8 @@ contains
     common/Malla4/ntls,nlins,npass,dlamdas  !common para StokesFRsub
 	common/Lineas_all/atom_all,istage_all,wlengt_all,zeff_all,energy_all,loggf_all,mult_all,design_all,tam_all,alfa_all,sigma_all
 
+		atmosmodel = 0
+
 		ntl = conf(index)%ntl
 		nlin = conf(index)%nlin
 		npas = conf(index)%npas
@@ -247,10 +250,9 @@ contains
     		call equisubmu(ntau,tau,t,pe,pg,z,ro)
  
         	do i=1,ntau
-            	atmosmodel(i+2*ntau)=pe(i)
+            	atmosmodel(i+2*ntau)=pe(i)				
         	end do
         endif
-
 
 		call StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac)
 				 	

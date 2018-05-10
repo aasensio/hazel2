@@ -31,11 +31,14 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     integer :: i, j
     logical :: recompute_see_rtcoef
 
-    recompute_see_rtcoef = .True.
+    params(index)%recompute_see_rtcoef = .True.
 
     ! If the parameters on which the RT coefficients depend on change, then recompute the coefficients
-    if (dopplerVelocityInput_old == dopplerVelocityInput .and. dopplerWidthInput_old == dopplerWidthInput .and. dampingInput_old == dampingInput .and. all(B1Input_old == B1Input)) then
-        recompute_see_rtcoef = .False.
+    if (params(index)%dopplerVelocityInput_old == dopplerVelocityInput .and. &
+        params(index)%dopplerWidthInput_old == dopplerWidthInput .and. &
+        params(index)%dampingInput_old == dampingInput .and. &
+        all(params(index)%B1Input_old == B1Input)) then
+            params(index)%recompute_see_rtcoef = .False.
     endif
 
     input_model_file = 'helium.mod'
@@ -111,7 +114,7 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     fixed(index)%omax = minval(lambdaAxisInput)
     fixed(index)%omin = maxval(lambdaAxisInput)
 
-    if (recompute_see_rtcoef) then
+    if (params(index)%recompute_see_rtcoef) then
         
         ! Fill the statistical equilibrium equations
         call fill_SEE(params(index), fixed(index), 1, error)
@@ -133,10 +136,10 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     
     wavelengthOutput = observation(index)%wl + fixed(index)%wl
 
-    dopplerVelocityInput_old = dopplerVelocityInput
-    dopplerWidthInput_old = dopplerWidthInput
-    dampingInput_old = dampingInput
-    B1Input_old = B1Input
+    params(index)%dopplerVelocityInput_old = dopplerVelocityInput
+    params(index)%dopplerWidthInput_old = dopplerWidthInput
+    params(index)%dampingInput_old = dampingInput
+    params(index)%B1Input_old = B1Input
 
 
     ! if (allocated(epsilon)) deallocate(epsilon)
@@ -156,6 +159,7 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
 end subroutine c_hazel
 
 subroutine c_init() bind(c)
+integer :: i
         
 ! Initialize the random number generator
     call random_seed
@@ -172,7 +176,9 @@ subroutine c_init() bind(c)
     call read_model_file(input_model_file)
 
     ! Force recomputation of RT coefficients by using an absurd velocity
-    dopplerVelocityInput_old = -1e10
+    do i = 1, 10
+        params(i)%dopplerVelocityInput_old = -1e10
+    enddo
     
 end subroutine c_init
 

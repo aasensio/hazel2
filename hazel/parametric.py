@@ -116,14 +116,14 @@ class Parametric_atmosphere(General_atmosphere):
         extension = os.path.splitext(model_file)[1][1:]
         if (extension == '1d'):
             if (verbose >= 1):
-                print('    * Reading 1D model {0} as reference'.format(model_file))
+                self.logger.info('    * Reading 1D model {0} as reference'.format(model_file))
             self.model_type = '1d'
             self.model_filename = model_file
             
         
         if (extension == 'h5'):
             if (verbose >= 1):
-                print('    * Reading 3D model {0} as reference'.format(model_file))
+                self.logger.info('    * Reading 3D model {0} as reference'.format(model_file))
             self.model_type = '3d'
             
         self.model_handler = Generic_parametric_file(model_file)

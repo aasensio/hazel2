@@ -41,8 +41,8 @@ def synth(int index, int nLambda, ar[double, ndim=1] log_tau, ar[double, ndim=1]
 	model[2,:] = Pe
 	model[3,:] = vmic
 	model[4,:] = np.sqrt(Bx**2 + By**2 + Bz**2)
-	model[5,:] = vlos
-	model[6,:] = 180.0 / np.pi * np.arccos(Bz / model[4,:])
+	model[5,:] = vlos	
+	model[6,:] = 180.0 / np.pi * np.arccos(Bz / (model[4,:] + 1e-8))      # Regularize in case B=0
 	model[7,:] = 180.0 / np.pi * np.arctan2(By, Bx)
 
 	c_synth(&index, &nDepth, &nLambda, &macroturbulence, &model[0,0], <double*> stokes.data)

@@ -1,10 +1,6 @@
 API
 ===
 
-.. toctree::
-
-    hazel.codes
-
 Model
 -----
 
@@ -22,9 +18,34 @@ Photosphere
    :show-inheritance:
 
 Chromosphere
+------------
+
+.. automodule:: hazel.chromosphere
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Parametric
+----------
+
+.. automodule:: hazel.parametric
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Multiprocess
+------------
+
+.. automodule:: hazel.multiprocess
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Stray-light
 -----------
 
-.. automodule:: hazel.photosphere
+.. automodule:: hazel.stray
    :members:
    :undoc-members:
    :show-inheritance:
