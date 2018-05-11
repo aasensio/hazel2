@@ -22,10 +22,7 @@ try:
 except:
     pass
 
-try:
-    import zarr
-except:
-    warnings.warn("zarr module not found. You will not be able to use zarr as input/output.")
+
 
 import logging
 

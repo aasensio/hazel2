@@ -27,9 +27,8 @@ from subprocess import Popen, PIPE
 import sys
 import numpy
 import glob
+import hazel
 
-with open("VERSION.txt", "rt") as fh:
-  VERSION = fh.read().strip()
 DOCSTRING = __doc__.strip().split("\n")
 
 def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
@@ -127,10 +126,10 @@ lib_hazel = MyExtension('hazel.codes.hazel_code',
 
 setup_config = dict(
     name='hazelinv',
-    version=VERSION,
+    version=hazel.__version__,
     description=DOCSTRING[0],
     long_description="\n".join(DOCSTRING[2:]),
-    author=' A. Asensio Ramos',
+    author=hazel.__author__,
     author_email='aasensio@iac.es',
     url='https://github.com/aasensio/hazel2',
     license='GNU General Public License, version 3 (GPLv3)',

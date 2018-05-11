@@ -1,4 +1,5 @@
-__version__ = "1.9.0"
+__version__ = "2018.05.11"
+__author__ = "Andres Asensio Ramos"
 
 from .atmosphere import *
 from .model import *

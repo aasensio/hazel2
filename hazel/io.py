@@ -4,6 +4,12 @@ from astropy.io import fits
 import hazel
 import os
 import datetime
+
+try:
+    import zarr
+except:
+    warnings.warn("zarr module not found. You will not be able to use zarr as input/output.")
+
 # from ipdb import set_trace as stop
 
 __all__ = ['Generic_output_file', 'Generic_observed_file', 'Generic_hazel_file', 'Generic_SIR_file', 'Generic_parametric_file', 'Generic_stray_file']
@@ -39,9 +45,9 @@ class Generic_output_file(object):
                 self.out_spectrum[k] = {}
 
                 n_stokes, n_lambda = v.stokes.shape
-                self.out_spectrum[k]['wavelength'] = db.create_dataset('wavelength', (n_lambda,), dtype=np.float64)
-                self.out_spectrum[k]['stokes'] = db.create_dataset('stokes', (model.n_pixels, model.n_cycles, n_stokes, n_lambda))
-                self.out_spectrum[k]['chi2'] = db.create_dataset('chi2', (model.n_pixels, model.n_cycles))
+                self.out_spectrum[k]['wavelength'] = db.create_dataset('wavelength', shape=(n_lambda,), dtype=np.float64)
+                self.out_spectrum[k]['stokes'] = db.create_dataset('stokes', shape=(model.n_pixels, model.n_cycles, n_stokes, n_lambda), dtype=np.float64)
+                self.out_spectrum[k]['chi2'] = db.create_dataset('chi2', shape=(model.n_pixels, model.n_cycles), dtype=np.float64)
 
             if (model.working_mode == 'inversion'):
                 self.out_model = {}
@@ -50,14 +56,14 @@ class Generic_output_file(object):
                     self.out_model[k] = {}
                     
                     if (hasattr(v, 'log_tau')):
-                        self.out_model[k]['log_tau'] = db.create_dataset('log_tau', (len(v.log_tau),))
+                        self.out_model[k]['log_tau'] = db.create_dataset('log_tau', shape=(len(v.log_tau),), dtype=np.float64)
                     
                     for k2, v2 in v.reference.items():
                         if (np.isscalar(v2)):
                             n_depth = 1
                         else:
                             n_depth = len(v2)                            
-                        self.out_model[k][k2] = db.create_dataset(k2, (model.n_pixels, model.n_cycles, n_depth))                        
+                        self.out_model[k][k2] = db.create_dataset(k2, shape=(model.n_pixels, model.n_cycles, n_depth), dtype=np.float64)
                     for k2, v2 in v.units.items():                        
                         self.out_model[k][k2].attrs['unit'] = v2
                         
