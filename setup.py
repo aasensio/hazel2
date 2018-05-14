@@ -28,8 +28,13 @@ import sys
 import numpy
 import glob
 import hazel
+import re
 
 DOCSTRING = __doc__.strip().split("\n")
+
+tmp = open('hazel/__init__.py', 'r').read()
+author = re.search('__author__ = "([^"]+)"', tmp).group(1)
+version = re.search('__version__ = "([^"]+)"', tmp).group(1)
 
 def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
     compiler_so = self.compiler_so
@@ -126,10 +131,10 @@ lib_hazel = MyExtension('hazel.codes.hazel_code',
 
 setup_config = dict(
     name='hazelinv',
-    version=hazel.__version__,
+    version=version,
     description=DOCSTRING[0],
     long_description="\n".join(DOCSTRING[2:]),
-    author=hazel.__author__,
+    author=author,
     author_email='aasensio@iac.es',
     url='https://github.com/aasensio/hazel2',
     license='GNU General Public License, version 3 (GPLv3)',
