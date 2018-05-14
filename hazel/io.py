@@ -4,6 +4,7 @@ from astropy.io import fits
 import hazel
 import os
 import datetime
+import warnings
 
 try:
     import zarr
