@@ -27,7 +27,6 @@ from subprocess import Popen, PIPE
 import sys
 import numpy
 import glob
-import hazel
 import re
 
 DOCSTRING = __doc__.strip().split("\n")
