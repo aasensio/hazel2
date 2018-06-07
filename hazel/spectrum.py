@@ -193,6 +193,59 @@ class Spectrum(object):
         """    
         self.stokes_weights = weights
 
+    def set_los(self, los):
+        """
+        Set a new value for the LOS
+        
+        Parameters
+        ----------        
+        los : list or array of size 3
+            theta, phi and gamma of the line-of-sight
+        
+        Returns
+        -------
+        None
+    
+        """          
+        self.los = los
+        self.mu = np.cos(self.los[0] * np.pi / 180.0)
+
+    def set_boundary(self, boundary):
+        """
+        Set a new value for the boundary condition
+        
+        Parameters
+        ----------        
+        los : list or array of size 4
+            I0, Q0, U0, V0
+        
+        Returns
+        -------
+        None
+    
+        """          
+        self.boundary = boundary[:,None] * np.ones((1,len(self.wavelength_axis)))
+        if (np.all(self.boundary[0,:]) == 0.0):
+            self.normalization = 'off-limb'
+        else:
+            self.normalization = 'on-disk'
+
+    def set_normalization(self, normalization):
+        """
+        Set a new value for the LOS
+        
+        Parameters
+        ----------        
+        los : str
+            'off-limb' or 'on-disk'
+        
+        Returns
+        -------
+        None
+    
+        """          
+        self.normalization = normalization
+
     def next_pixel(self):
         """
         Skip to next pixel

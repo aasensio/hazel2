@@ -162,7 +162,7 @@ Bx, By and Bz [G]. Additionally, the filling factor is given in the header. An e
     ...
 
 HDF5/zarr 3D files
-^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 HDF5/zarr files with model photospheres are defined with two double-precision datasets: ``model`` and ``ff``. The first
 one has size ``(n_pixel,nz,8)``, containing the depth dependence of the 8 variables for all pixels. The second 
@@ -209,7 +209,7 @@ the enhancement factor beta, the damping a and the filling factor. An example fo
 
 
 HDF5/zarr 3D files
-^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 HDF5/zarr files with model chromospheres are defined with two double-precision datasets: ``model`` and ``ff``. The first
 one has size ``(n_pixel,8)``, containing the depth dependence of the 8 variables for all pixels. The second 
@@ -261,7 +261,7 @@ disk center.
 
 
 HDF5/zarr 3D files
-^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 HDF5/zarr files with model straylight contaminations are defined with three double-precision datasets: ``profile``, ``model`` and ``ff``. The first
 one has size ``(n_pixel,n_wavelength)`` (which needs to conform with the number of wavelength of the spectral region

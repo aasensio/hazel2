@@ -1041,7 +1041,7 @@ class Model(object):
                     self.response = np.vstack([self.response, rf])
 
                 loop += 1
-        
+
         
     def flatten_parameters_to_reference(self, cycle):
         """

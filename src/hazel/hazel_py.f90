@@ -37,6 +37,9 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     if (params(index)%dopplerVelocityInput_old == dopplerVelocityInput .and. &
         params(index)%dopplerWidthInput_old == dopplerWidthInput .and. &
         params(index)%dampingInput_old == dampingInput .and. &
+        fixed(index)%thetad_old == anglesInput(1) .and. &
+        fixed(index)%chid_old == anglesInput(2) .and. &
+        fixed(index)%gammad_old == anglesInput(3) .and. &
         all(params(index)%B1Input_old == B1Input)) then
             params(index)%recompute_see_rtcoef = .False.
     endif
@@ -140,6 +143,9 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     params(index)%dopplerWidthInput_old = dopplerWidthInput
     params(index)%dampingInput_old = dampingInput
     params(index)%B1Input_old = B1Input
+    fixed(index)%thetad_old = anglesInput(1)
+    fixed(index)%chid_old = anglesInput(2)
+    fixed(index)%gammad_old = anglesInput(3)
 
 
     ! if (allocated(epsilon)) deallocate(epsilon)

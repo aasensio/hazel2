@@ -50,6 +50,7 @@ implicit none
 	
 	type fixed_parameters
 		real(kind=8) :: thetad, chid, gammad, omin, omax, wl
+		real(kind=8) :: thetad_old, chid_old, gammad_old
 		real(kind=8) :: Stokes_incident(0:3), Aul, Bul, Blu, nu
 		integer :: no, nemiss, use_atomic_pol, total_forward_modeling
 		integer :: pix_syn_id, col_syn_id, nlambda_syn_id, lambda_syn_id, map_syn_id, syn_id

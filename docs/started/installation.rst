@@ -5,15 +5,16 @@
 be pretty easy to install once you have a working compiler in your system.
 
 There are different ways to install |hazel2|, but the best is to install
-it into a virtual environment either with `pip <http://www.virtualenv.org/>`_ or `conda <https://conda.io/docs/user-guide/tasks/manage-environments.html/>`_,
+it into a virtual environment either with `pip <http://www.virtualenv.org>`_ or `conda <https://conda.io/docs/user-guide/tasks/manage-environments.html>`_,
 which makes everything much more safer, plus making sure that all packages are installed for the code.
-For example, once you have installed `Miniconda <https://conda.io/miniconda.html/>`_, you can generate
+For example, once you have installed `Miniconda <https://conda.io/miniconda.html>`_, you can generate
 a new environment and install the dependencies (you can install whatever version of Python 3 you desire):
 
 ::
 
-    conda create -n hazel_env python=3.6 numpy h5py scipy astropy mpi4py configobj tqdm
+    conda create -n hazel_env python=3.6
     source activate hazel_env
+    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpi4py configobj
 
 If you also want to use the GUI, you need to add two new dependencies:
 
@@ -21,7 +22,7 @@ If you also want to use the GUI, you need to add two new dependencies:
 
     conda create -n hazel_env python=3.6 
     source activate hazel_env
-    conda install -c conda-forge cython numpy scipy h5py sphinx sphinx_rtd_theme tqdm astropy configobj matplotlib numpydoc mpich mpi4py    
+    conda install -c conda-forge cython numpy scipy h5py tqdm astropy configobj matplotlib mpich mpi4py pyqt5
 
 
 

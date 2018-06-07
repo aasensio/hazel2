@@ -129,7 +129,7 @@ lib_hazel = MyExtension('hazel.codes.hazel_code',
 
 
 setup_config = dict(
-    name='hazelinv',
+    name='hazel2',
     version=version,
     description=DOCSTRING[0],
     long_description="\n".join(DOCSTRING[2:]),
@@ -138,7 +138,7 @@ setup_config = dict(
     url='https://github.com/aasensio/hazel2',
     license='GNU General Public License, version 3 (GPLv3)',
     platforms='OS Independent',
-    install_requires=['numpy','scipy','configobj','h5py','astropy','mpi4py','tqdm'],
+    install_requires=['numpy','scipy','configobj','h5py','astropy','tqdm','cython'],
     # packages=["pyiacsun.atlas"], #, "pyiacsun.linalg", "pyiacsun.plot", "pyiacsun.sparse", "pyiacsun.util"], #.radtran.milne", "pyiacsun.radtran.lte"],
     ext_modules=[lib_sir, lib_hazel],
     classifiers=[

@@ -243,17 +243,17 @@ contains
 		fileModel(3) = '1        0               '
 		fileModel(4) = '                    0.00 '
 		fileModel(5) = '2        2        '
-      fileModel(6) = '                    0.00'
-      fileModel(7) = '                   -0.987913'
-      fileModel(8) = '                   -1.064340'
-      fileModel(9) = '3        0       '
-      fileModel(10) = '                    0.00'
-      fileModel(11) = '4        2         '
-      fileModel(12) = '                    0.00'
-      fileModel(13) = '                   -0.270647'
-      fileModel(14) = '                   -0.292616'
-      fileModel(15) = ' 5        4'     
-      fileModel(16) = '                    0.00'
+		fileModel(6) = '                    0.00'
+		fileModel(7) = '                   -0.987913'
+		fileModel(8) = '                   -1.064340'
+		fileModel(9) = '3        0       '
+		fileModel(10) = '                    0.00'
+		fileModel(11) = '4        2         '
+		fileModel(12) = '                    0.00'
+		fileModel(13) = '                   -0.270647'
+		fileModel(14) = '                   -0.292616'
+		fileModel(15) = ' 5        4'     
+		fileModel(16) = '                    0.00'
 		fileModel(17) = '                   -0.044187'
 		fileModel(18) = '                   -0.046722'
 		fileModel(19) = ' 4'
@@ -265,13 +265,19 @@ contains
 		loop = 0
 
 		loop = loop + 1		
-		read(fileModel(loop),*) is2
+		is2 = 2
 
 		loop = loop + 1		
-		read(fileModel(loop),*) n_terms		
+		n_terms = 5
 		
 		if (allocated(lsto2)) deallocate(lsto2)
 		allocate(lsto2(n_terms))
+
+		lsto2(1) = 0
+		lsto2(2) = 2
+		lsto2(3) = 0
+		lsto2(4) = 2
+		lsto2(5) = 4
 		
 		nrhos = 0
 		
@@ -280,13 +286,13 @@ contains
 		jlimit2 = 0
 		do i = 1, n_terms
 			loop = loop + 1		
-			read(fileModel(loop),*) n, lsto2(i)
 			jmin2 = abs(is2-lsto2(i))
 			jmax2 = is2 + lsto2(i)
-			do j2 = jmin2, jmax2, 2
-				loop = loop + 1		
-				read(fileModel(loop),*) 
-			enddo
+			! do j2 = jmin2, jmax2, 2
+			! 	loop = loop + 1		
+			! 	print *, i, j2, fileModel(loop)
+				
+			! enddo
 			if (verbose_mode == 1) then
 				print *, 'Level ', i
 				print *, '         Jmin : ', jmin2/2.d0
@@ -297,21 +303,25 @@ contains
 		
 		if (allocated(energy)) deallocate(energy)
 		allocate(energy(n_terms,0:jlimit2))
+
+		energy(1,2) = 0.0
+        energy(2,0) = 0.0
+        energy(2,2) = -0.987913
+        energy(2,4) = -1.064340
+        energy(3,2) = 0.0
+        energy(4,0) = 0.0
+        energy(4,2) = -0.270647
+        energy(4,4) = -0.292616
+        energy(5,2) = 0.0
+        energy(5,4) = -0.044187
+        energy(5,6) = -0.046722
 		
 		loop = 2
 		
 		do i = 1, n_terms
-			loop = loop + 1		
-			read(fileModel(loop),*) n, lsto2(i)
 			
 			jmin2 = abs(is2-lsto2(i))
 			jmax2 = is2 + lsto2(i)
-			
-			do j2 = jmin2, jmax2, 2
-				loop = loop + 1		
-				read(fileModel(loop),*) energy(i,j2)				
-				
-			enddo
 			
 			do j2 = jmin2, jmax2, 2
 				do jp2 = j2, jmax2, 2
@@ -356,15 +366,10 @@ contains
 		nrhos = 0
 		
 		do i = 1, n_terms
-			loop = loop + 1
-			read(fileModel(loop),*) n, lsto2(i)
+			n = i
+			
 			jmin2 = abs(is2-lsto2(i))
 			jmax2 = is2 + lsto2(i)
-			
-			do j2 = jmin2, jmax2, 2
-				loop = loop + 1
-				read(fileModel(loop),*) energy(i,j2)
-			enddo
 			
 			do j2 = jmin2, jmax2, 2
 				do jp2 = j2, jmax2, 2
@@ -398,8 +403,10 @@ contains
 
 		
 		! Now read transitions
-		loop = loop + 1
-		read(fileModel(loop),*) atom%ntran
+		! loop = loop + 1
+		! read(fileModel(loop),*) atom%ntran
+
+		atom%ntran = 4
 
 		allocate(atom%nterml(atom%ntran))
 		allocate(atom%ntermu(atom%ntran))
@@ -408,12 +415,45 @@ contains
 		allocate(atom%reduction_factor(atom%ntran))
 		allocate(atom%reduction_factor_omega(atom%ntran))
 		allocate(atom%j10(atom%ntran))
-		
-		do i = 1, atom%ntran
-			loop = loop + 1
-			read(fileModel(loop),*) k, atom%nterml(i), atom%ntermu(i), atom%ae(i), atom%wavelength(i), &
-				atom%reduction_factor(i), atom%reduction_factor_omega(i), atom%j10(i)
-		enddo
+
+		atom%nterml(1) = 1
+		atom%ntermu(1) = 2
+		atom%ae(1) = 1.022d7
+		atom%wavelength(1) = 10829.0911d0
+		atom%reduction_factor(1) = 1.d0
+		atom%reduction_factor_omega(1) = 1.d0
+		atom%j10(1) = 0.d0
+
+		atom%nterml(2) = 1
+		atom%ntermu(2) = 4
+		atom%ae(2) = 9.478d6
+		atom%wavelength(2) = 3888.6046d0
+		atom%reduction_factor(2) = 0.2d0
+		atom%reduction_factor_omega(2) = 1.0d0
+		atom%j10(2) = 0.0d0
+
+		atom%nterml(3) = 2
+		atom%ntermu(3) = 3
+		atom%ae(3) = 2.780d7
+		atom%wavelength(3) = 7065.7085d0
+		atom%reduction_factor(3) = 1.0d0
+		atom%reduction_factor_omega(3) = 1.0d0
+		atom%j10(3) = 0.0d0
+
+		atom%nterml(4) = 2
+		atom%ntermu(4) = 5
+		atom%ae(4) = 7.060d7
+		atom%wavelength(4) = 5875.9663d0
+		atom%reduction_factor(4) = 1.0d0
+		atom%reduction_factor_omega(4) = 1.0d0
+		atom%j10(4) = 0.0d0
+
+
+		! do i = 1, atom%ntran
+		! 	loop = loop + 1
+		! 	read(fileModel(loop),*) k, atom%nterml(i), atom%ntermu(i), atom%ae(i), atom%wavelength(i), &
+		! 		atom%reduction_factor(i), atom%reduction_factor_omega(i), atom%j10(i)
+		! enddo
 		
 		if (verbose_mode == 1) then
 			print *, 'Number of unknowns : ', nrhos

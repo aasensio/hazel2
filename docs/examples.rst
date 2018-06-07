@@ -3,8 +3,6 @@
 Examples
 ********
 
-Basic usage
-===========
 
 .. toctree::
 
