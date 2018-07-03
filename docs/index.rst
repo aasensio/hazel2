@@ -145,8 +145,7 @@ configuration file, and it will be broadcasted to all slaves internally.
     iterator.run_all_pixels()
 
 
-.. toctree::
-   :hidden:
+.. toctree::   
    :maxdepth: 3
    
    started

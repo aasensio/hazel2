@@ -129,7 +129,7 @@ lib_hazel = MyExtension('hazel.codes.hazel_code',
 
 
 setup_config = dict(
-    name='hazel2',
+    name='hazel',
     version=version,
     description=DOCSTRING[0],
     long_description="\n".join(DOCSTRING[2:]),

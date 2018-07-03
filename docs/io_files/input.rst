@@ -81,13 +81,14 @@ and contain the four Stokes parameters and standard deviation of the noises for 
 boundary conditions for each pixel. The LOS is of size ``(n_pixel,3)`` and contains the 
 :math:`\theta_\mathrm{LOS}`, :math:`\phi_\mathrm{LOS}` and :math:`\gamma_\mathrm{LOS}` angles for
 each pixel. In the following we show how to
-create a sample file for HDF5, which should be equally simple for ``zarr``:
+create a sample file for HDF5 (with some mock Stokes parameters full of zeros), which should be equally simple for ``zarr``:
 
 ::
 
     n_pixel = 100
     n_lambda = 150
 
+    # Generate mock Stokes parameters full of zeros in this case (so completely useless)
     stokes_3d = np.zeros((n_pixel,n_lambda,4), dtype=np.float64)
     sigma_3d = np.zeros((n_pixel,n_lambda,4), dtype=np.float64))
     los_3d = np.zeros((n_pixel,3), dtype=np.float64)

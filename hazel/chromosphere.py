@@ -292,7 +292,7 @@ class Hazel_atmosphere(General_atmosphere):
             dampingInput, dopplerVelocityInput, 
             betaInput, nbarInput, omegaInput)
         
-        l, stokes = hazel_code._synth(*args)
+        l, stokes = hazel_code._synth(*args)        
 
         ff = self.parameters['ff']
         

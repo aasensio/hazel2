@@ -16,14 +16,6 @@ from pathlib import Path
 import scipy.stats
 import scipy.special
 import warnings
-
-try:
-    import matplotlib.pyplot as pl
-except:
-    pass
-
-
-
 import logging
 
 # from ipdb import set_trace as stop
@@ -1334,13 +1326,6 @@ class Model(object):
         
         # self.synthesize_and_compute_rf()
         
-        if (self.debug):
-            f, ax = pl.subplots(nrows=2, ncols=2)
-            ax = ax.flatten()
-            for i in range(4):
-                ax[i].plot(self.spectrum['spec1'].wavelength_axis, self.spectrum['spec1'].obs[i,:], '--')
-                ax[i].plot(self.spectrum['spec1'].wavelength_axis, self.spectrum['spec1'].stokes[i,:], '.')
-
 
         lambdaLM = 10.0
         lambda_opt = 10.0
@@ -1401,10 +1386,6 @@ class Model(object):
                 chi2, dchi2, ddchi2 = self.compute_chi2()
 
                 rel = 2.0 * (chi2 - bestchi2) / (chi2 + bestchi2)
-
-                if (self.debug):
-                    for i in range(4):
-                        ax[i].plot(self.spectrum['spec1'].wavelength_axis, self.spectrum['spec1'].stokes[i,:])
 
                 if (self.verbose >= 2):
                     self.logger.info('It: {0} - chi2: {1} - lambda: {2} - rel: {3}'.format(iteration, chi2, lambda_opt, rel))
