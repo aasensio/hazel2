@@ -16,7 +16,9 @@ c          c(i,j)=a(i,j)
 	  if ( abs ( a ( i , j ) ) .gt. absmax ) absmax =abs( a ( i , j ))
 5010  continue
 
-      if ( absmax .eq. 0. ) stop 'singularity problem in matinx'
+c      if ( absmax .eq. 0. ) stop 'singularity problem in matinx'
+
+      if ( absmax .eq. 0. ) call exit(123)
 
 
       fabsmx = 1.d00 / absmax

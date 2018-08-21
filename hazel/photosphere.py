@@ -7,8 +7,9 @@ from hazel.codes import sir_code
 from hazel.hsra import hsra_continuum
 from hazel.io import Generic_SIR_file
 import scipy.interpolate as interp
-# from ipdb import set_trace as stop
 import copy
+
+# from ipdb import set_trace as stop
 
 __all__ = ['SIR_atmosphere']
 
@@ -70,6 +71,14 @@ class SIR_atmosphere(General_atmosphere):
         self.epsilon['By'] = 1.0
         self.epsilon['Bz'] = 1.0
         self.epsilon['ff'] = 1.0
+
+        self.regularization['T'] = None
+        self.regularization['vmic'] = None
+        self.regularization['v'] = None
+        self.regularization['Bx'] = None
+        self.regularization['By'] = None
+        self.regularization['Bz'] = None
+        self.regularization['ff'] = None
         
     def list_lines(self):
         """

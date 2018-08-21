@@ -7,9 +7,10 @@ from hazel.hsra import hsra_continuum
 from hazel.io import Generic_hazel_file, Generic_SIR_file, Generic_parametric_file
 from hazel.transforms import transformed_to_physical, physical_to_transformed, jacobian_transformed_to_physical, jacobian_transformation
 import copy
-# from ipdb import set_trace as stop
 from hazel.sir import Sir
 import logging
+
+# from ipdb import set_trace as stop
 
 
 __all__ = ['General_atmosphere']

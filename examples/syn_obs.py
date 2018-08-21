@@ -41,7 +41,7 @@ if __name__ == '__main__':
     # Synthesize a sample profile with some default configuration given in conf_syn.ini
     # The observed files will be used later as observations for the inversions
     #-------------------------------------------
-    mod = hazel.Model('conf_syn.ini')
+    mod = hazel.Model('configurations/conf_syn.ini')
     mod.synthesize()
 
 
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     #-------------------------------------------
     # Now we generate HDF5 files with the same pixel repeated several times
     #-------------------------------------------
-    n_pixel = 5
+    n_pixel = 10
 
     model, ff = read_photosphere('photospheres/model_photosphere.1d')
 
@@ -95,8 +95,7 @@ if __name__ == '__main__':
     db_ff[:] = ff_3d
     f.close()
 
-    # Observations
-    n_pixel = 2
+    # Observations    
     stokes, sigma, los, mu, boundary = read_1d('observations/10830_stokes.1d')
 
     n_lambda, _ = stokes.T.shape

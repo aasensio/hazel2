@@ -7,6 +7,7 @@ from hazel.codes import hazel_code
 from hazel.hsra import hsra_continuum
 from hazel.io import Generic_hazel_file
 import copy
+
 # from ipdb import set_trace as stop
 
 __all__ = ['Hazel_atmosphere']
@@ -109,6 +110,15 @@ class Hazel_atmosphere(General_atmosphere):
         self.jacobian['a'] = 1.0
         self.jacobian['ff'] = 1.0
 
+        self.regularization['Bx'] = None
+        self.regularization['By'] = None
+        self.regularization['Bz'] = None
+        self.regularization['tau'] = None
+        self.regularization['v'] = None
+        self.regularization['deltav'] = None
+        self.regularization['beta'] = None
+        self.regularization['a'] = None
+        self.regularization['ff'] = None
         
     def add_active_line(self, line, spectrum, wvl_range):
         """
@@ -288,7 +298,7 @@ class Hazel_atmosphere(General_atmosphere):
             boundaryInput  = np.asfortranarray(np.zeros((4,nLambdaInput)))
             # boundaryInput[0,:] = hsra_continuum(self.multiplets[self.active_line]) #i0_allen(self.multiplets[self.active_line],1.0)            
             boundaryInput[0,:] = i0_allen(self.multiplets[self.active_line], self.spectrum.mu)
-            boundaryInput *= self.spectrum.boundary
+            boundaryInput *= self.spectrum.boundary[:,self.wvl_range[0]:self.wvl_range[1]]
         else:            
             # boundaryInput = np.asfortranarray(stokes * hsra_continuum(self.multiplets[self.active_line])) #i0_allen(self.multiplets[self.active_line],1.0)
             boundaryInput = np.asfortranarray(stokes)

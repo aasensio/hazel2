@@ -232,9 +232,9 @@ class Iterator(object):
                     # Put the results passed through MPI into self.model for saving
                         for k, v in self.model.spectrum.items():                
                             v.stokes_cycle = data_received[label][k]
-
-                        for k, v in self.model.atmospheres.items():                
-                            v.reference_cycle = data_received[label][k]
+                        
+                        for k, v in self.model.atmospheres.items():
+                            v.reference_cycle, v.error_cycle = data_received[label][k]
 
                         self.model.output_handler.write(self.model, pixel=index, randomization=loop)
                                                         
@@ -298,7 +298,7 @@ class Iterator(object):
                             data_to_send[label][k] = self.model.spectrum[k].stokes_cycle
 
                         for k, v in self.model.atmospheres.items():
-                            data_to_send[label][k] = v.reference_cycle
+                            data_to_send[label][k] = [v.reference_cycle, v.error_cycle]
                 else:
                     for k, v in self.model.atmospheres.items():                    
                         v.set_parameters(data_received[k][0], data_received[k][1])

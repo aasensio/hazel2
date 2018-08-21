@@ -59,9 +59,9 @@ c nble  : numero de blends de cada linea
               nlin(jj)=nd(j)
 	    end do
 		
-	    numeropasos=(difi-dini)/dipa+1
-	    npas(numlin)=int(numeropasos)
-	    errpasos=10*(numeropasos-int(numeropasos))	    
+	    numeropasos=(difi-dini)/dipa
+	    npas(numlin)=nint(numeropasos)+1
+	    errpasos=10*(numeropasos-nint(numeropasos))	    		
             if(errpasos.gt.0.5) npas(numlin)=npas(numlin)+1
             if(nli+npas(numlin).gt.kld)then  !comprobamos numero longitudes onda
 	       men1='STOP: The grid has more points than the limit kld.'

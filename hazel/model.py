@@ -774,7 +774,7 @@ class Model(object):
                 f.write("-----------------------------------------------------------------------\n")
 
                 ind_low = (np.abs(v.spectrum.wavelength_axis - v.wvl_range_lambda[0])).argmin()
-                ind_top = (np.abs(v.spectrum.wavelength_axis - v.wvl_range_lambda[1] + 1e-3)).argmin()
+                ind_top = (np.abs(v.spectrum.wavelength_axis - v.wvl_range_lambda[1])).argmin()
 
                 low = v.spectrum.wavelength_axis[ind_low]
                 top = v.spectrum.wavelength_axis[ind_top]         # TODO
@@ -797,10 +797,10 @@ class Model(object):
                 
                 v.n_lambda = sir_code.init(v.index, filename)
 
-                try:
-                    os.remove('malla.grid')
-                except OSError:
-                    pass
+                # try:
+                #     os.remove('malla.grid')
+                # except OSError:
+                #     pass
 
     def exit_hazel(self):
         for k, v in self.atmospheres.items():            
@@ -926,9 +926,9 @@ class Model(object):
                         ind_low, ind_top = self.atmospheres[atm].wvl_range
                         
                         if (perturbation):
-                            self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top+1] = stokes / hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top+1], 1.0)[None,:]
+                            self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top] = stokes / hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
                         else:
-                            self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top+1] = stokes / hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top+1], 1.0)[None,:]            
+                            self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top] = stokes / hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
     
     def synthesize(self, perturbation=False):
         """
@@ -1016,7 +1016,10 @@ class Model(object):
 
                                 pars.append(tmp)
 
-        self.active_meta = pars        
+        self.active_meta = pars
+
+        if (not self.nodes):
+            raise Exception("No parameters to invert in cycle {0}. Please add them or reduce the number of cycles. ".format(cycle))            
 
         self.nodes = np.concatenate(self.nodes).ravel()
         
