@@ -1,5 +1,7 @@
 .. include:: ../hazel_name
 
+Installation
+============
 
 |hazel2| is a Python 3 module with some wrapped compiled Fortran routines. It should
 be pretty easy to install once you have a working compiler in your system.

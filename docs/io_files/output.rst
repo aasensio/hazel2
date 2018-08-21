@@ -5,7 +5,7 @@
 Output files
 ============
 
-Hazel v2.0 can accept several formats for input/output files. 1D formats are not allowed
+|hazel2| can accept several formats for input/output files. 1D formats are not allowed
 for output and the output is either HDF5 or FITS. 3D files also save some metadata of 
 interest. In the case of HDF5, you can access this metadata using:
 
@@ -33,8 +33,15 @@ can be easily accessed using:
     chi2 = f['spec1']['chi2']
 
 Each specific spectral region defines an HDF5 ``Group``, with two different ``Datasets``. The first
-one is ``stokes``, which contains the emergent Stokes profiles for all the cycles and is of size ``(n_pixel,n_cycles,4,n_lambda)``. The
+one is ``stokes``, which contains the emergent Stokes profiles for all the cycles and is of size ``(n_pixel,n_randomizations,n_cycles,4,n_lambda)``. The
 second is the value of the :math:`\chi^2` merit function for each cycle and is of size ``(n_pixel,n_cycles)``.
+If you do not remember the ordering of the indices, you can check them from the file directly by invoking:
+
+::
+
+    for i in range(len(f['spec1']['stokes'].dims):
+        print(f['spec1']['stokes'].dims[i].label)
+
 
 FITS files
 ^^^^^^^^^^
@@ -57,8 +64,8 @@ inside the group. Using ``h5py``, they can be easily accessed using:
     f = h5py.File('output.h5', 'r')
     T = f['ph1']['T']
 
-The shape of the output is ``(n_pixel,n_cycles,nz)`` for each specific parameter of a photospheric model
-and ``(n_pixel,n_cycles,1)`` for each parameter of the remaining model atmospheres. For the sake of
+The shape of the output is ``(n_pixel,n_randomizations,n_cycles,nz)`` for each specific parameter of a photospheric model
+and ``(n_pixel,n_randomizations,n_cycles,1)`` for each parameter of the remaining model atmospheres. For the sake of
 clarity, the units of the output are saved as attributes. You can watch the units by invoking:
 
 ::
@@ -66,6 +73,13 @@ clarity, the units of the output are saved as attributes. You can watch the unit
     import h5py
     f = h5py.File('output.h5', 'r')
     print(f['ph1']['T'].attrs['unit'])
+
+If you do not remember the ordering of the indices, you can check them from the file directly by invoking:
+
+::
+
+    for i in range(len(f['ph1']['T'].dims):
+        print(f['ph1']['T'].dims[i].label)
 
 FITS files
 ^^^^^^^^^^

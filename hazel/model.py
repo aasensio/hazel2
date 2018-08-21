@@ -7,7 +7,7 @@ from hazel.io import Generic_output_file
 from collections import OrderedDict
 from hazel.codes import hazel_code, sir_code
 from hazel.spectrum import Spectrum
-from hazel.transforms import transformed_to_physical, physical_to_transformed
+from hazel.transforms import transformed_to_physical, physical_to_transformed, jacobian_transformation
 import hazel.util
 import numpy as np
 import copy
@@ -23,7 +23,7 @@ import logging
 __all__ = ['Model']
 
 class Model(object):
-    def __init__(self, config=None, working_mode='synthesis', verbose=0, debug=False, rank=0):
+    def __init__(self, config=None, working_mode='synthesis', verbose=0, debug=False, rank=0, randomization=None):
 
         if (rank != 0):
             return
@@ -58,6 +58,12 @@ class Model(object):
         formatter = logging.Formatter('%(asctime)s - %(message)s')
         ch.setFormatter(formatter)
         self.logger.addHandler(ch)
+
+        # Set randomization
+        if (randomization is None):
+            self.n_randomization = 1        
+        else:
+            self.n_randomization = randomization
 
         if (config is not None):
             self.configuration = Configuration(config)
@@ -124,6 +130,13 @@ class Model(object):
                 self.max_iterations = 10
         else:
             self.max_iterations = 10
+
+        # Randomization
+        if (self.verbose >= 1):
+            if (self.n_randomization == 1):
+                self.logger.info('Not using randomizations')
+            else:
+                self.logger.info('Using a maximum of {0} randomizations'.format(self.n_randomization))
 
         # Set number of maximum iterations
         if ('relative error' in config_dict['working mode']):
@@ -280,15 +293,16 @@ class Model(object):
             v.allocate_info_cycles(n_cycles=self.n_cycles)
         
     def open_output(self):
-        self.output_handler = Generic_output_file(self.output_file)
+        self.output_handler = Generic_output_file(self.output_file)        
         self.output_handler.open(self)
 
     def close_output(self):        
         self.output_handler.close()
 
-    def write_output(self):
-        self.flatten_parameters_to_reference(cycle=0)
-        self.output_handler.write(self, pixel=0)
+    def write_output(self, randomization=0):
+        if (self.working_mode == 'synthesis'):
+            self.flatten_parameters_to_reference(cycle=0)
+        self.output_handler.write(self, pixel=0, randomization=randomization)
 
     def add_spectral(self, spectral):
         """
@@ -471,8 +485,17 @@ class Model(object):
         lines = [int(k) for k in list(atm['spectral lines'])]
         wvl_range = [float(k) for k in atm['wavelength']]
 
+        if ('reference frame' in atm):
+            if ('line-of-sight' in atm['reference frame']):
+                self.atmospheres[atm['name']].reference_frame = 'line-of-sight'
+            if ('vertical' in atm['reference frame']):
+                self.atmospheres[atm['name']].reference_frame = 'vertical'
+        else:
+            self.atmospheres[atm['name']].reference_frame = 'vertical'
+
         if (self.verbose >= 1):
             self.logger.info("    * Adding line : {0}".format(lines))
+            self.logger.info("    * Magnetic field reference frame : {0}".format(self.atmospheres[atm['name']].reference_frame))
                     
         self.atmospheres[atm['name']].add_active_line(lines=lines, spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
@@ -485,6 +508,16 @@ class Model(object):
                             self.atmospheres[atm['name']].ranges[k2] = None
                         else:
                             self.atmospheres[atm['name']].ranges[k2] = hazel.util.tofloat(v)
+        
+        if ('regularization' in atm):
+            for k, v in atm['regularization'].items():                
+                for k2, v2 in self.atmospheres[atm['name']].parameters.items():                    
+                    if (k.lower() == k2.lower()):                        
+                        if (v == 'None'):
+                            self.atmospheres[atm['name']].regularization[k2] = None
+                        else:
+                            self.atmospheres[atm['name']].regularization[k2] = v
+
 
         if ('reference atmospheric model' in atm):
             my_file = Path(atm['reference atmospheric model'])
@@ -531,8 +564,17 @@ class Model(object):
         self.atmospheres[atm['name']].add_active_line(line=atm['line'], spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
 
+        if ('reference frame' in atm):
+            if (atm['reference frame'] == 'line-of-sight'):
+                self.atmospheres[atm['name']].reference_frame = 'line-of-sight'
+            if (atm['reference frame'] == 'vertical'):
+                self.atmospheres[atm['name']].reference_frame = 'vertical'
+        else:
+            self.atmospheres[atm['name']].reference_frame = 'vertical'
+
         if (self.verbose >= 1):
             self.logger.info("    * Adding line : {0}".format(atm['line']))
+            self.logger.info("    * Magnetic field reference frame : {0}".format(self.atmospheres[atm['name']].reference_frame))
 
         if ('ranges' in atm):
             for k, v in atm['ranges'].items():
@@ -542,6 +584,15 @@ class Model(object):
                             self.atmospheres[atm['name']].ranges[k2] = None
                         else:
                             self.atmospheres[atm['name']].ranges[k2] = hazel.util.tofloat(v)
+
+        if ('regularization' in atm):
+            for k, v in atm['regularization'].items():                
+                for k2, v2 in self.atmospheres[atm['name']].parameters.items():                    
+                    if (k.lower() == k2.lower()):                        
+                        if (v == 'None'):
+                            self.atmospheres[atm['name']].regularization[k2] = None
+                        else:
+                            self.atmospheres[atm['name']].regularization[k2] = v
 
         if ('reference atmospheric model' in atm):
             my_file = Path(atm['reference atmospheric model'])
@@ -938,7 +989,7 @@ class Model(object):
                                     n_lambda = len(self.atmospheres[atm].spectrum.wavelength_axis)
                                     tmp = {'atm': atm, 'n_nodes': par[cycle], 'parameter': l, 
                                         'ranges': self.atmospheres[atm].ranges[l], 'delta': self.atmospheres[atm].epsilon[l],
-                                        'left': left, 'right': right}
+                                        'left': left, 'right': right, 'regularization': self.atmospheres[atm].regularization[l]}
 
                                     self.nodes.append(self.atmospheres[atm].nodes[l])
                                         
@@ -957,7 +1008,7 @@ class Model(object):
                                 n_lambda = len(self.atmospheres[atm].spectrum.wavelength_axis)
                                 tmp = {'atm': atm, 'n_nodes': par[cycle], 'parameter': l, 
                                     'ranges': self.atmospheres[atm].ranges[l], 'delta': self.atmospheres[atm].epsilon[l], 
-                                    'left': left, 'right': right}
+                                    'left': left, 'right': right, 'regularization': self.atmospheres[atm].regularization[l]}
 
                                 self.nodes.append(self.atmospheres[atm].nodes[l])
 
@@ -966,8 +1017,9 @@ class Model(object):
                                 pars.append(tmp)
 
         self.active_meta = pars        
-        self.nodes = np.concatenate(self.nodes).ravel()
 
+        self.nodes = np.concatenate(self.nodes).ravel()
+        
         
     def synthesize_and_compute_rf(self, compute_rf=False, include_jacobian=False):
         """
@@ -1050,12 +1102,12 @@ class Model(object):
 
         """                
         if (self.working_mode == 'inversion'):
-            for k, v in self.atmospheres.items():                
+            for k, v in self.atmospheres.items():
                 v.set_reference(cycle=cycle)
             
-        for k, v in self.spectrum.items():
-            v.stokes_cycle[cycle] = v.stokes
-            v.chi2_cycle[cycle] = v.chi2
+        for k, v in self.spectrum.items():            
+            v.stokes_cycle[cycle] = copy.deepcopy(v.stokes)
+            v.chi2_cycle[cycle] = copy.deepcopy(v.chi2)
         
     def set_new_model(self, nodes):
         """
@@ -1072,7 +1124,7 @@ class Model(object):
 
         """
 
-        n_active_pars = len(self.active_meta)        
+        n_active_pars = len(self.active_meta)  
                 
         for par in self.active_meta:
             left = par['left']
@@ -1124,7 +1176,7 @@ class Model(object):
         return U, w_new_inv, VT
         
 
-    def compute_chi2(self, only_chi2=False):
+    def compute_chi2(self, only_chi2=False, weights=None):
         """
         Compute chi2 for all spectral regions
 
@@ -1146,13 +1198,16 @@ class Model(object):
         ddchi2 = np.zeros((n,n))
         for k, v in self.spectrum.items():
             residual = (v.stokes - v.obs)
-            
-            weights = v.stokes_weights[:,self.cycle][:,None] * v.wavelength_weights
-            chi2 += np.sum(weights * residual**2 * v.factor_chi2)
+
+            # Do not use weights. This is used for the computation of errors            
+            if (weights is None):
+                weights = (v.stokes_weights[:,self.cycle][:,None] * v.wavelength_weights) * v.factor_chi2            
+
+            chi2 += np.sum(weights * residual**2)
             
             if (not only_chi2):
-                dchi2 += -2.0 / v.dof * np.sum(weights[None,:,:] * self.response * residual[None,:,:] * v.factor_chi2[None,:,:], axis=(1,2))
-                ddchi2 += 2.0 / v.dof * np.sum(weights[None,None,:,:] * self.response[None,:,:,:] * self.response[:,None,:,:] * v.factor_chi2[None,None,:,:], axis=(2,3))
+                dchi2 += -2.0 * np.sum(weights[None,:,:] * self.response * residual[None,:,:] , axis=(1,2)) #/ v.dof
+                ddchi2 += 2.0 * np.sum(weights[None,None,:,:] * self.response[None,:,:,:] * self.response[:,None,:,:] , axis=(2,3)) #/ v.dof
 
                 v.chi2 = chi2
 
@@ -1168,20 +1223,42 @@ class Model(object):
         # else:
         #     return chi2
 
-    def compute_uncertainty(self, hessian):
+    def compute_uncertainty(self):
         """
         Compute the uncertainty in the parameters at the minimum with the current Hessian
 
         Parameters
         ----------
-        hessian : array of floats
-            Current estimation of the Hessian
-        
+        None
+
         Returns
         -------
         None
 
         """
+    
+        #----------------------------
+        # Recalculate chi2 without weights
+        # chi2 = 0.0
+        # for k, v in self.spectrum.items():
+        #     residual = (v.stokes - v.obs)
+
+        # weights = v.dof / residual**2
+
+        # # Calculate Hessian
+        # self.synthesize_and_compute_rf(compute_rf=True)
+        # chi2, dchi2, ddchi2 = self.compute_chi2(weights=weights)
+        # hessian = 0.5 * ddchi2
+
+
+        #----------------------------
+        # Recalculate chi2 without weights        
+
+        # Calculate Hessian
+        self.synthesize_and_compute_rf(compute_rf=True)
+        chi2, dchi2, ddchi2 = self.compute_chi2()
+        hessian = 0.5 * ddchi2
+        
         U, w_inv, VT = self.modified_svd_inverse(hessian, tol=1e-12)
         cov = VT.T.dot(np.diag(w_inv)).dot(U.T)
 
@@ -1195,10 +1272,14 @@ class Model(object):
 
             cov_diagonal = np.abs(np.diagonal(cov[left:right,left:right]))
 
+            # This gives 1sigma error in the transformed domain
             error = np.sqrt(cov_diagonal) * delta
-                    
-            self.atmospheres[par['atm']].error[par['parameter']] = error[0]
 
+            # Multiply by the Jacobian of the transformation to compute the error in the physical quantities
+            error *= jacobian_transformation(self.nodes[left:right], par['ranges'][0], par['ranges'][1])
+                    
+            self.atmospheres[par['atm']].error[par['parameter']] = error
+            
 
     def backtracking(self, dchi2, ddchi2, direction='down', max_iter=5, lambda_init=1e-3, current_chi2=1e10):
         """
@@ -1300,7 +1381,14 @@ class Model(object):
 
         return lambda_opt, bracketed, best_chi2
 
-    def invert(self):
+    def randomize(self):
+        """
+        Randomize all free parameters to lie uniformly in the interval [-2,2] in the transformed
+        domain
+        """
+        self.nodes = np.random.uniform(low=-2.0, high=2.0, size=self.nodes.shape)
+
+    def invert(self, randomize=False):
         """
         Invert all atmospheres
 
@@ -1313,25 +1401,24 @@ class Model(object):
         None
 
         """
-
-        # Transform all parameters to 
+        
         first = True
 
+
+        # Reset reference model to the one loaded from the file
+        for k, v in self.atmospheres.items():
+            v.reset_reference()
+
+        # Compute normalization factor for the chi^2    
         for k, v in self.spectrum.items():
-            v.factor_chi2 = 1.0 / (v.noise**2 * v.dof)
-            # v.allocate_info_cycles(n_cycles=self.n_cycles)
-
-        # for k, v in self.atmospheres.items():
-            # v.allocate_info_cycles(n_cycles=self.n_cycles)
+            v.factor_chi2 = 1.0 / (v.noise**2 * v.dof)        
         
-        # self.synthesize_and_compute_rf()
-        
-
         lambdaLM = 10.0
         lambda_opt = 10.0
         bestchi2 = 1e10
     
-        for self.cycle in range(self.n_cycles):
+        for self.cycle in range(self.n_cycles):            
+
             if (self.verbose >= 2):
                 self.logger.info('-------------')
                 self.logger.info('  Cycle {0}  '.format(self.cycle))
@@ -1343,11 +1430,17 @@ class Model(object):
                 self.logger.info('-------------')
                 
 
+            # Find all active parameters for this cycle
             self.find_active_parameters(self.cycle)
+
+            # Randomize parameters if necessary
+            if (randomize):
+                self.randomize()
 
             keepon = True
             iteration = 0
 
+            # Mail Levenberg-Marquardt algorithm
             self.synthesize_and_compute_rf(compute_rf=True)
             chi2, dchi2, ddchi2 = self.compute_chi2()
 
@@ -1409,17 +1502,80 @@ class Model(object):
             # Calculate final chi2
             # self.synthesize_and_compute_rf()
             # chi2 = self.compute_chi2(only_chi2=True)
-
             
-            
-            # Calculate errors
-            # self.synthesize_and_compute_rf(compute_rf=True, include_jacobian=True)
-            # chi2, dchi2, ddchi2 = self.compute_chi2()
-            # H = 0.5 * ddchi2
 
-            # self.compute_uncertainty(H)
+            self.compute_uncertainty()
             # if (self.verbose >= 2):
             #     self.atmospheres['ch1'].print_parameters(first=first, error=True)
+
+            self.flatten_parameters_to_reference(self.cycle)
+
+    def _func_grad(self, x):
+        """
+        Auxiliary functions to use with optimization methods that use gradients
+        """
+        self.nodes = x
+        self.set_new_model(self.nodes)
+        self.synthesize_and_compute_rf(compute_rf=True)
+        self.chi2, dchi2, _ = self.compute_chi2()
+        return self.chi2, dchi2
+
+    def _func_nograd(self, x):
+        """
+        Auxiliary functions to use with optimization methods that do not use gradients
+        """        
+        self.nodes = x
+        self.set_new_model(self.nodes)
+        self.synthesize_and_compute_rf(compute_rf=False)
+        self.chi2 = self.compute_chi2(only_chi2=True)
+        return self.chi2
+
+    def _callback_general(self, x):
+        if (self.verbose >= 2):
+            self.logger.info('chi2: {0}'.format(self.chi2))
+
+    def invert_external(self, algorithm, use_jacobian=False, **kwargs):
+        """
+        Invert all atmospheres
+
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+
+        """
+
+        for k, v in self.spectrum.items():
+            v.factor_chi2 = 1.0 / (v.noise**2 * v.dof)
+            
+        for self.cycle in range(self.n_cycles):
+            if (self.verbose >= 2):
+                self.logger.info('-------------')
+                self.logger.info('  Cycle {0}  '.format(self.cycle))
+                
+                for k, v in self.spectrum.items():
+                    self.logger.info('  Weights for region {0} : SI={1} - SQ={2} - SU={3} - SV={4}'.format(k, v.stokes_weights[0,self.cycle], v.stokes_weights[1,self.cycle],
+                        v.stokes_weights[2,self.cycle], v.stokes_weights[3,self.cycle]))
+
+                self.logger.info('-------------')
+                
+
+            self.find_active_parameters(self.cycle)
+
+            n_pars = len(self.nodes)
+
+            if (use_jacobian):
+                tmp = algorithm(self._func_grad, self.nodes, jac=True, callback=self._callback_general, **kwargs)
+            else:
+                tmp = algorithm(self._func_nograd, self.nodes, callback=self._callback_general, **kwargs)
+
+            self._func_grad(tmp['x'])
+            self._callback_general(tmp['x'])
+
+            self.set_new_model(tmp['x'])
 
             self.flatten_parameters_to_reference(self.cycle)
             

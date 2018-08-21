@@ -43,6 +43,7 @@ class General_atmosphere(object):
 
         self.parameters = OrderedDict()
         self.ranges = OrderedDict()
+        self.regularization = OrderedDict()
         self.cycles = OrderedDict()
         self.n_nodes = OrderedDict()
         self.nodes = OrderedDict()
@@ -78,6 +79,7 @@ class General_atmosphere(object):
         """
 
         self.reference_cycle = [None] * n_cycles
+        self.error_cycle = [None] * n_cycles
 
     def to_physical(self):
         """
@@ -139,6 +141,21 @@ class General_atmosphere(object):
         if (cycle is not None):
             self.to_physical()        
             self.reference_cycle[cycle] = copy.deepcopy(self.parameters)
+            self.error_cycle[cycle] = copy.deepcopy(self.error)
+
+    def reset_reference(self):
+        """
+        Reset reference model to the original reference loaded from file
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        """                    
+        self.reference = copy.deepcopy(self.original_reference)
 
     def init_reference(self, check_borders=False):
         """
@@ -164,4 +181,4 @@ class General_atmosphere(object):
             self.to_transformed()            
 
         self.reference = copy.deepcopy(self.parameters)
-        
+        self.original_reference = copy.deepcopy(self.parameters)        

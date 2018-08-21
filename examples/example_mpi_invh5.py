@@ -5,13 +5,8 @@ import h5py
 from ipdb import set_trace as stop
 
 
-iterator = hazel.iterator(use_mpi=True)
+iterator = hazel.Iterator(use_mpi=True)
 rank = iterator.get_rank()
-
-if (rank == 0):    
-    mod = hazel.Model('conf_mpi_invh5.ini', working_mode='inversion')
-    iterator.use_model(model=mod)
-else:
-    iterator.use_model()
-
+mod = hazel.Model('configurations/conf_mpi_invh5.ini', working_mode='inversion', rank=rank, randomization=2)
+iterator.use_model(model=mod)
 iterator.run_all_pixels()

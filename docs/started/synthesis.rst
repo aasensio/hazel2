@@ -71,6 +71,7 @@ is saved on ``conf.ini``:
     mod = hazel.Model('conf.ini')
     mod.open_output()
     mod.synthesize()
+    mod.write_output()
     mod.close_output()
 
 The output is described in :ref:`output`. For 3D cases, we recommend the user to

@@ -18,7 +18,7 @@ class tags(IntEnum):
     EXIT = 2
     START = 3
 
-class iterator(object):
+class Iterator(object):
     def __init__(self, use_mpi=False):
         
         # Initializations and preliminaries        
@@ -116,17 +116,24 @@ class iterator(object):
                     v.set_parameters(args, ff)
                     v.init_reference()
 
-                if (self.model.working_mode == 'inversion'):
-                    # Read current spectrum and stray light
-                    for k, v in self.model.spectrum.items():
-                        v.read_observation(pixel=i)
-
-                    self.model.invert()
+                if (self.model.n_randomization > 1):
+                    randomize = True
                 else:
-                    self.model.synthesize()
-                    self.model.flatten_parameters_to_reference(cycle=0)
+                    randomize = False
 
-                self.model.output_handler.write(self.model, pixel=i)
+                for loop in range(self.model.n_randomization):
+
+                    if (self.model.working_mode == 'inversion'):
+                        # Read current spectrum and stray light
+                        for k, v in self.model.spectrum.items():
+                            v.read_observation(pixel=i)
+
+                        self.model.invert(randomize=randomize)
+                    else:
+                        self.model.synthesize()
+                        self.model.flatten_parameters_to_reference(cycle=0)
+
+                    self.model.output_handler.write(self.model, pixel=i, randomization=loop)
 
         self.model.close_output()
 
@@ -218,14 +225,18 @@ class iterator(object):
                 elif tag == tags.DONE:
                     index = data_received['index']
 
+                    # Loop over randomizations
+                    for loop in range(self.model.n_randomization):                        
+                        label = 'randomization_{0}'.format(loop)
+
                     # Put the results passed through MPI into self.model for saving
-                    for k, v in self.model.spectrum.items():                
-                        v.stokes_cycle = data_received[k]
+                        for k, v in self.model.spectrum.items():                
+                            v.stokes_cycle = data_received[label][k]
 
-                    for k, v in self.model.atmospheres.items():                
-                        v.reference_cycle = data_received[k]
+                        for k, v in self.model.atmospheres.items():                
+                            v.reference_cycle = data_received[label][k]
 
-                    self.model.output_handler.write(self.model, pixel=index)
+                        self.model.output_handler.write(self.model, pixel=index, randomization=loop)
                                                         
                     self.last_received = '{0}->{1}'.format(index, source)
                     pbar.set_postfix(sent=self.last_sent, received=self.last_received)
@@ -257,6 +268,8 @@ class iterator(object):
             
             if tag == tags.START:                                
                 task_index = data_received['index']
+
+                data_to_send = {'index': task_index}
                 
                 if (self.model.working_mode == 'inversion'):
                     
@@ -265,22 +278,33 @@ class iterator(object):
 
                     for k, v in self.model.atmospheres.items():
                         v.reference, v.parameters, v.stray_profile = data_received[k]
-                        
-                    self.model.invert()
+
+                    
+                    # Check for randomization
+                    if (self.model.n_randomization > 1):
+                        randomize = True
+                    else:
+                        randomize = False                                            
+
+                    # Loop over randomizations
+                    for loop in range(self.model.n_randomization):                    
+                        self.model.invert(randomize=randomize)
+
+                        label = 'randomization_{0}'.format(loop)
+
+                        data_to_send[label] = {}
+
+                        for k, v in self.model.spectrum.items():
+                            data_to_send[label][k] = self.model.spectrum[k].stokes_cycle
+
+                        for k, v in self.model.atmospheres.items():
+                            data_to_send[label][k] = v.reference_cycle
                 else:
                     for k, v in self.model.atmospheres.items():                    
                         v.set_parameters(data_received[k][0], data_received[k][1])
                         
                     self.model.synthesize()
-                    self.model.flatten_parameters_to_reference(cycle=0)
-
-                data_to_send = {'index': task_index}
-
-                for k, v in self.model.spectrum.items():
-                    data_to_send[k] = self.model.spectrum[k].stokes_cycle
-
-                for k, v in self.model.atmospheres.items():
-                    data_to_send[k] = v.reference_cycle
+                    self.model.flatten_parameters_to_reference(cycle=0)                
                     
                 self.comm.send(data_to_send, dest=0, tag=tags.DONE)
             elif tag == tags.EXIT:

@@ -29,9 +29,9 @@ class Generic_output_file(object):
         if (self.extension == 'h5' or self.extension == 'zarr'):
             
             # Open the file        
-            if (self.extension == 'h5'):
+            if (self.extension == 'h5'):                
                 self.handler = h5py.File(self.filename, 'w')
-            
+                
             if (self.extension == 'zarr'):
                 self.handler = zarr.open(self.filename, 'w')
 
@@ -41,20 +41,36 @@ class Generic_output_file(object):
             # Generate all handlers for things we'll write here
             self.out_spectrum = {}
             for k, v in model.spectrum.items():
-                db = self.handler.create_group(k)
-
+                db = self.handler.create_group(k)                
+                
                 self.out_spectrum[k] = {}
 
                 n_stokes, n_lambda = v.stokes.shape
-                self.out_spectrum[k]['wavelength'] = db.create_dataset('wavelength', shape=(n_lambda,), dtype=np.float64)
-                self.out_spectrum[k]['stokes'] = db.create_dataset('stokes', shape=(model.n_pixels, model.n_cycles, n_stokes, n_lambda), dtype=np.float64)
-                self.out_spectrum[k]['chi2'] = db.create_dataset('chi2', shape=(model.n_pixels, model.n_cycles), dtype=np.float64)
+                self.out_spectrum[k]['wavelength'] = db.create_dataset('wavelength', shape=(n_lambda,), dtype=np.float64)                
+                
+                self.out_spectrum[k]['stokes'] = db.create_dataset('stokes', shape=(model.n_pixels, model.n_randomization, model.n_cycles, n_stokes, n_lambda), dtype=np.float64)
+                self.out_spectrum[k]['stokes'].dims[0].label = 'pixel'
+                self.out_spectrum[k]['stokes'].dims[1].label = 'randomization'
+                self.out_spectrum[k]['stokes'].dims[2].label = 'cycle'
+                self.out_spectrum[k]['stokes'].dims[3].label = 'stokes_parameter'
+                self.out_spectrum[k]['stokes'].dims[4].label = 'wavelength'
+
+                self.out_spectrum[k]['chi2'] = db.create_dataset('chi2', shape=(model.n_pixels, model.n_randomization, model.n_cycles), dtype=np.float64)
+                self.out_spectrum[k]['chi2'].dims[0].label = 'pixel'
+                self.out_spectrum[k]['chi2'].dims[1].label = 'randomization'
+                self.out_spectrum[k]['chi2'].dims[2].label = 'cycle'                
 
             if (model.working_mode == 'inversion'):
                 self.out_model = {}
+                self.out_error = {}
                 for k, v in model.atmospheres.items():
                     db = self.handler.create_group(k)
                     self.out_model[k] = {}
+                    self.out_error[k] = {}
+
+                    # Save metadata for type of reference for magnetic field components
+                    if (hasattr(v, 'reference_frame')):
+                        db.attrs['reference frame'] = v.reference_frame
                     
                     if (hasattr(v, 'log_tau')):
                         self.out_model[k]['log_tau'] = db.create_dataset('log_tau', shape=(len(v.log_tau),), dtype=np.float64)
@@ -64,7 +80,19 @@ class Generic_output_file(object):
                             n_depth = 1
                         else:
                             n_depth = len(v2)                            
-                        self.out_model[k][k2] = db.create_dataset(k2, shape=(model.n_pixels, model.n_cycles, n_depth), dtype=np.float64)
+                        
+                        self.out_model[k][k2] = db.create_dataset(k2, shape=(model.n_pixels, model.n_randomization, model.n_cycles, n_depth), dtype=np.float64)
+                        self.out_model[k][k2].dims[0].label = 'pixel'
+                        self.out_model[k][k2].dims[1].label = 'randomization'
+                        self.out_model[k][k2].dims[2].label = 'cycle'
+                        self.out_model[k][k2].dims[3].label = 'depth'
+
+                        d_nodes = h5py.special_dtype(vlen=np.dtype('float64'))
+                        self.out_error[k][k2] = db.create_dataset('{0}_err'.format(k2), shape=(model.n_pixels, model.n_randomization, model.n_cycles,), dtype=d_nodes)
+                        self.out_error[k][k2].dims[0].label = 'pixel'
+                        self.out_error[k][k2].dims[1].label = 'randomization'
+                        self.out_error[k][k2].dims[2].label = 'cycle'                        
+
                     for k2, v2 in v.units.items():                        
                         self.out_model[k][k2].attrs['unit'] = v2
                         
@@ -74,14 +102,14 @@ class Generic_output_file(object):
             self.handler = fits.open(self.filename, memmap=True)
             return
 
-    def write(self, model, pixel=None):
+    def write(self, model, pixel=None, randomization=0):
 
         if (self.extension == 'h5'):
-            for k, v in model.spectrum.items():                
+            for k, v in model.spectrum.items():                            
                 for cycle in range(model.n_cycles):
                     self.out_spectrum[k]['wavelength'][:] = v.wavelength_axis
-                    self.out_spectrum[k]['stokes'][pixel,cycle,...] = v.stokes_cycle[cycle]
-                    self.out_spectrum[k]['chi2'][pixel,cycle] = v.chi2_cycle[cycle]
+                    self.out_spectrum[k]['stokes'][pixel,randomization,cycle,...] = v.stokes_cycle[cycle]
+                    self.out_spectrum[k]['chi2'][pixel,randomization,cycle] = v.chi2_cycle[cycle]
 
             if (model.working_mode == 'inversion'):                
                 for k, v in model.atmospheres.items():
@@ -89,8 +117,11 @@ class Generic_output_file(object):
                         self.out_model[k]['log_tau'][:] = v.log_tau
                     for cycle in range(model.n_cycles):
                         for k2, v2 in v.reference_cycle[cycle].items():
-                            self.out_model[k][k2][pixel,cycle,...] = v2
-                        
+                            self.out_model[k][k2][pixel,randomization,cycle,...] = v2
+
+                        for k2, v2 in v.error_cycle[cycle].items():                            
+                            self.out_error[k][k2][pixel,randomization,cycle] = np.atleast_1d(v2)
+                            
 
         # if (self.extension == 'fits'):
         #     return self.handler[0]fits.open(self.filename, memmap=True)
@@ -100,8 +131,8 @@ class Generic_output_file(object):
         if (self.extension == '1d'):
             return
 
-        if (self.extension == 'h5'):
-            self.handler.close()
+        if (self.extension == 'h5'):            
+            self.handler.close()            
             del self.handler
         
 

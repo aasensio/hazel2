@@ -3,7 +3,7 @@ import matplotlib.pyplot as pl
 import hazel
 
 # Test a single inversion in non-iterator mode
-mod = hazel.Model('conf_single.ini', working_mode='synthesis')
+mod = hazel.Model('configurations/conf_single.ini', working_mode='synthesis', verbose=3)
 mod.open_output()
 mod.synthesize()
 mod.write_output()

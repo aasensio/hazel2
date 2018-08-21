@@ -11,6 +11,9 @@ parameters, the initial configuration, etc. So don't expect to get
 a good inversion on your first run of Hazel. But if you keep insisting, 
 you will get something useful out of the code.
 
+Configuration file
+------------------
+
 A typical configuration file reads something like in the following. Remember that you have
 to adapt it to the specific details of your spectrum.
 
@@ -115,42 +118,143 @@ as the input, and then a different initial atmosphere can be used for every pixe
 
 In inversion mode you need to define the observations and the weighting scheme, which is done 
 through the ``Wavelength file``, ``Wavelength weight file`` and ``Observations file``, all of them explained
-in :ref:`input`. If the files with the observations are 1D, you can simply carry out the inversion
+in :ref:`input`. 
+
+Single inversions
+-----------------
+
+Without randomization
+^^^^^^^^^^^^^^^^^^^^^
+
+If the files with the observations are 1D, you can simply carry out the inversion
 by invoking, assuming that the configuration file is saved on ``conf.ini``:
 
 ::
 
-    mod = hazel.Model('conf.ini')
+    mod = hazel.Model('configurations/conf_single.ini')
     mod.read_observation()
     mod.open_output()
     mod.invert()
+    mod.write_output(
     mod.close_output()
 
-The output is described in :ref:`output`. For 3D cases, we recommend the user to
-use iterators. Otherwise, one needs to manually read the observations at every pixel.
-For instance, one can do the inversion for many pixels using 3D atmospheres in serial
-model by invoking:
+We refer to :ref:`output` for a description of the output. 
+
+With randomization
+^^^^^^^^^^^^^^^^^^
+
+Carrying out robust inversions is a difficult task. Randomization is a technique
+appropriate to capture the sensitivity of the result to the initial conditions.
+In the ideal case, one should obtain the same solution irrespectively of the initial
+values of the parameters. However, this will never be the case. The best one can
+do is to get the sensitivity of the results to the initial conditions. To this end,
+|hazel2| provides a method to randomize the initial conditions. Just pass the maximum
+number of randomizations when instantiating the ``Model`` and then you can
+carry out inversions by looping over randomizations and saving each result to the
+output file. We prefer the user to deal with randomization because of the added
+flexibility.
 
 ::
 
-    iterator = hazel.iterator(use_mpi=False)    
-    mod = hazel.Model('conf.ini')
+    mod = hazel.Model('configurations/conf_single.ini', randomization=2)
+    mod.read_observation()
+    mod.open_output()
+    for loop in range(2):
+        mod.invert(randomize=True)
+        mod.write_output(randomization=loop)
+    mod.close_output()
+
+
+Multiple inversions
+-------------------
+
+For 3D cases, we recommend the user to
+use iterators. Otherwise, one needs to manually read the observations at every pixel.
+
+Serial inversions
+^^^^^^^^^^^^^^^^^
+
+In serial mode, one can do the inversion of many pixels using 3D atmospheres by using the
+following strategy.
+
+Without randomization
+"""""""""""""""""""""
+
+::
+
+    iterator = hazel.Iterator(use_mpi=False)    
+    mod = hazel.Model('configurations/conf_nonmpi_inv1d.ini', working_mode='inversion', verbose=2)
     iterator.use_model(model=mod)
     iterator.run_all_pixels()
 
-or the following piece of code if many cores are to be used. Remember that
-this piece of code needs to be called with a call to the MPI ``mpiexec``
+The first thing to do is to instantiate an ``Iterator`` which will be used to
+iterate over all pixels in the file with the observations. The ``Iterator`` class
+admits a single keyword ``use_mpi``, which is set to ``False`` by default.
+If ``True``, it will use the `Message Passing Interface
+<https://en.wikipedia.org/wiki/Message_Passing_Interface/>`_ machinery, for which
+you need to have the ``mpi4py`` package installed. If ``False``, it will serially
+iterate over all pixels. Then we instantiate the ``Model`` as usual and tell the
+``Iterator`` to use this model. Finally, we run the calculation by calling the 
+``run_all_pixels`` method of the ``Iterator``.
+
+With randomization
+""""""""""""""""""
+
+The serial mode can also be used with randomization. Because of the complexity, the
+iterator takes fully care of randomizations and will simplify your life. It can be
+used simply by passing the ``randomization`` keyword during the ``Model`` instantiation.
+
+::
+
+    iterator = hazel.Iterator(use_mpi=False)    
+    mod = hazel.Model('configurations/conf_nonmpi_inv1d.ini', working_mode='inversion', verbose=2, randomization=2)
+    iterator.use_model(model=mod)
+    iterator.run_all_pixels()
+
+Parallel inversions
+^^^^^^^^^^^^^^^^^^^
+
+Carrying out inversions of maps in serial mode is probably not the way to go. The
+desired strategy is to use computers with several nodes, which can work in parallel.
+The specific paralellization in |hazel2| is such that practically a linear scaling
+with the number of nodes is sure. It uses a master-slave architecture, in which a
+master node reads the input and broadcasts it to the nodes, which are then
+in charge of carrying out the synthesis/inversions. When finished, the results are
+sent back to the master, who saves the results and sends a new observation to the
+available slave.
+
+Without randomization
+"""""""""""""""""""""
+
+Running an MPI work needs to be done by using ``mpiexec``, so that you need
+to define the following lines in a script:
+
+::
+
+    iterator = hazel.Iterator(use_mpi=True)    
+    mod = hazel.Model('configurations/conf_mpi_invh5.ini', rank=iterator.get_rank())
+    iterator.use_model(model=mod)
+    iterator.run_all_pixels()
+
+The only difference with respect to the serial mode is that you need to pass the
+rank of each worker during the instantiation of the ``Model`` because the master and the
+slave will need to do different things with the model. Then just run it with ``mpiexec``, 
+defining the number of nodes used in this work:
 
 ::
 
     mpiexec -n n_nodes python inversion.py
 
-where ``inversion.py`` contains the following piece of code:
+With randomization
+""""""""""""""""""
+
+Randomization can also be used in parallel. For that, just follow the same approach as before and
+pass the ``randomization`` keyword to the ``Model``:
 
 ::
 
-    iterator = hazel.iterator(use_mpi=True)
-    rank = iterator.get_rank()
-    mod = hazel.Model('conf_mpi_invh5.ini', rank=rank)
-    iterator.use_model(model=mod)    
+    iterator = hazel.Iterator(use_mpi=True)    
+    mod = hazel.Model('configurations/conf_mpi_invh5.ini', rank=iterator.get_rank(), randomization=2)
+    iterator.use_model(model=mod)
     iterator.run_all_pixels()
+

@@ -255,13 +255,26 @@ class Hazel_atmosphere(General_atmosphere):
         if (self.working_mode == 'inversion'):
             self.nodes_to_model()            
             self.to_physical()
+
+        
+        # Magnetic field components are entered in Hazel in the vertical reference system
+        # Here we do the transformation from one to the other if fields are given in LOS
+        if (self.reference_frame == 'line-of-sight'):
+            Bx = self.parameters['Bx'] * self.spectrum.mu + self.parameters['Bz'] * np.sqrt(1.0 - self.spectrum.mu**2)
+            By = self.parameters['By']
+            Bz = -self.parameters['Bx'] * np.sqrt(1.0 - self.spectrum.mu**2) + self.parameters['Bz'] * self.spectrum.mu                        
+        else:
+            Bx = self.parameters['Bx']
+            By = self.parameters['By']
+            Bz = self.parameters['Bz']
+        
                 
-        B = np.sqrt(self.parameters['Bx']**2 + self.parameters['By']**2 + self.parameters['Bz']**2)
+        B = np.sqrt(Bx**2 + By**2 + Bz**2)
         if (B == 0):
             thetaB = 0.0
         else:
-            thetaB = 180.0 / np.pi * np.arccos(self.parameters['Bz'] / B)
-        phiB = 180.0 / np.pi * np.arctan2(self.parameters['By'], self.parameters['Bx'])
+            thetaB = 180.0 / np.pi * np.arccos(Bz / B)
+        phiB = 180.0 / np.pi * np.arctan2(By, Bx)
         B1Input = np.asarray([B, thetaB, phiB])
 
         hInput = self.height

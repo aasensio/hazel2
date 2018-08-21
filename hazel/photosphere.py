@@ -241,7 +241,7 @@ class SIR_atmosphere(General_atmosphere):
         None
         """        
         for k, v in self.nodes.items():
-            if (self.n_nodes[k] > 0):
+            if (self.n_nodes[k] > 0):                
                 self.parameters[k] = self.interpolate_nodes(self.log_tau, self.reference[k], self.nodes[k])
             else:
                 self.parameters[k] = self.reference[k]

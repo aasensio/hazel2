@@ -2,6 +2,8 @@ import numpy as np
 
 __all__ = ['physical_to_transformed', 'transformed_to_physical']
 
+_eps = 1e-8
+
 def logit(x):
     """
     Logit function
@@ -15,7 +17,7 @@ def logit(x):
     -------
     logit : float
         Logit transform of the input
-    """
+    """    
     return np.log(x / (1.0 - x))
 
 def inv_logit(x):

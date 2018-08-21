@@ -145,10 +145,14 @@ configuration file, and it will be broadcasted to all slaves internally.
     iterator.run_all_pixels()
 
 
-.. toctree::   
+.. toctree::
+   :numbered:   
    :maxdepth: 3
+   :hidden:
    
+   started/installation
    started
+   config
    io_files   
    preparation
    examples

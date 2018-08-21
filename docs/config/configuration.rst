@@ -42,6 +42,7 @@ specific details for each atmosphere.
         Spectral region = spec1
         Wavelength = 10826, 10833
         Spectral lines = 300,
+        Reference frame = vertical
     
         [[Chromosphere 1]]
         Name = ch1                                              # Name of the atmosphere component
@@ -50,6 +51,7 @@ specific details for each atmosphere.
         Line = 10830                                            # 10830, 5876
         Wavelength = 10826, 10833                         # Wavelength range used for synthesis
         Reference atmospheric model = 'chromospheres/model_chromosphere.1d'    # File with model parameters
+        Reference frame = vertical
 
         [[Parametric 1]]
         Name = te1
@@ -104,6 +106,7 @@ In the following we paste a typical configuration file for the inversion mode.
         Spectral region = spec1
         Wavelength = 10826, 10833
         Spectral lines = 300,
+        Reference frame = vertical
 
             [[[Ranges]]]
             T      = -3000.0, 3000.0
@@ -285,6 +288,7 @@ to those of chromospheres).
         Spectral region = spec1
         Wavelength = 10826, 10833
         Spectral lines = 300, 301
+        Reference frame = vertical
 
             [[[Ranges]]]
             T      = -3000.0, 3000.0
@@ -318,6 +322,7 @@ to those of chromospheres).
 * ``Spectral region`` : defines the spectral region associated with this atmosphere.
 * ``Wavelength`` : defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time.
 * ``Spectral lines`` : it is a comma-separated list of lines to synthesize from the :ref:`photospheric_lines`. Note that if you only want one line, you should use a comma at the end. The list of available lines
+* ``Reference frame`` : it defines the reference system in which the magnetic field is measured. ``line-of-sight`` or ``vertical`` (traditional mode for |hazel2|). If absent, ``vertical`` is used by default.
 * ``Ranges`` : ranges of variation of each parameter. If ``None``, consider it unconstrained. If not, it will be constrained to the range.
 * ``Nodes`` : defines the number of nodes in each cycle when doing inversions
 * ``Regularization`` : not yet implemented
@@ -370,6 +375,7 @@ relative to the line of sight.
 * ``Spectral region`` : defines the spectral region associated with this atmosphere.
 * ``Wavelength`` : defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time.
 * ``Line`` : which of the He I lines to consider (5876, 10830, ...)
+* ``Reference frame`` : it defines the reference system in which the magnetic field is measured. ``line-of-sight`` or ``vertical`` (traditional mode for |hazel2|). If absent, ``vertical`` is used by default.
 * ``Height`` : height of the slab in arcsec.
 * ``Ranges`` : ranges of variation of each parameter. If ``None``, consider it unconstrained. If not, it will be constrained to the range.
 * ``Nodes`` : defines the number of nodes in each cycle when doing inversions
