@@ -10,7 +10,7 @@
  X Randomization
  X Error bars
  X Allow to invert magnetic fields in the LOS or vertical reference frames
- - Instrumental profile
+ X Instrumental profile
  - Output AIC and BIC (N-> ndata, Nvar -> n.variables)
    r_i = (data-model) / sigma
    chi2 = sum(r_i^2)

@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import scipy.stats
 import scipy.special
+import scipy.signal
 import warnings
 import logging
 
@@ -114,11 +115,12 @@ class Model(object):
             self.add_spectral(value)
 
         # Set number of cycles if present
-        if ('number of cycles' in config_dict['working mode']):
-            if (config_dict['working mode']['number of cycles'] != 'None'):
-                self.n_cycles = int(config_dict['working mode']['number of cycles'])
-                if (self.verbose >= 1):
-                    self.logger.info('Using {0} cycles'.format(self.n_cycles))
+        if (self.working_mode == 'inversion'):
+            if ('number of cycles' in config_dict['working mode']):
+                if (config_dict['working mode']['number of cycles'] != 'None'):
+                    self.n_cycles = int(config_dict['working mode']['number of cycles'])
+                    if (self.verbose >= 1):
+                        self.logger.info('Using {0} cycles'.format(self.n_cycles))
 
         # Set number of maximum iterations
         if ('maximum iterations' in config_dict['working mode']):
@@ -301,7 +303,7 @@ class Model(object):
 
     def write_output(self, randomization=0):
         if (self.working_mode == 'synthesis'):
-            self.flatten_parameters_to_reference(cycle=0)
+            self.flatten_parameters_to_reference(cycle=0)        
         self.output_handler.write(self, pixel=0, randomization=randomization)
 
     def add_spectral(self, spectral):
@@ -370,6 +372,10 @@ class Model(object):
         elif (value['boundary condition'] == 'None'):
             value['boundary condition'] = None
 
+        if ('instrumental profile' not in value):
+            value['instrumental profile'] = None
+        elif (value['instrumental profile'] == 'None'):
+            value['instrumental profile'] = None
 
         # Wavelength file is not present
         if (value['wavelength file'] is None):
@@ -415,6 +421,13 @@ class Model(object):
                 self.logger.info('  - Using mask from {0}'.format(value['mask file']))
             mask_file = value['mask file']
 
+        if (value['instrumental profile'] is None):
+            if (self.verbose >= 1):
+                self.logger.info('  - No instrumental profile')
+        else:
+            if (self.verbose >= 1):
+                self.logger.info('  - Instrumental profile : {0}'.format(value['instrumental profile']))
+
         # if (value['straylight file'] is None):
         #     if (self.verbose >= 1):
         #         self.logger.info('  - Not using straylight')
@@ -455,7 +468,7 @@ class Model(object):
         stokes_weights = np.array(stokes_weights)
 
         self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, 
-            name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, mask_file=mask_file)
+            name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, mask_file=mask_file, instrumental_profile=value['instrumental profile'])
 
         self.topologies.append(value['topology'])
         
@@ -953,6 +966,10 @@ class Model(object):
                     v.stokes_perturbed /= np.max(v.stokes_perturbed[0,:])
                 else:
                     v.stokes /= np.max(v.stokes[0,:])
+
+            if (v.psf_spectral is not None):
+                for i in range(4):                    
+                    v.stokes[i,:] = scipy.signal.convolve(v.stokes[i,:], v.psf_spectral, mode='same', method='auto')
                 
             
     def find_active_parameters(self, cycle):

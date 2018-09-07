@@ -11,7 +11,7 @@ try:
 except:
     warnings.warn("zarr module not found. You will not be able to use zarr as input/output.")
 
-# from ipdb import set_trace as stop
+from ipdb import set_trace as stop
 
 __all__ = ['Generic_output_file', 'Generic_observed_file', 'Generic_hazel_file', 'Generic_SIR_file', 'Generic_parametric_file', 'Generic_stray_file']
 
@@ -102,11 +102,12 @@ class Generic_output_file(object):
             self.handler = fits.open(self.filename, memmap=True)
             return
 
-    def write(self, model, pixel=None, randomization=0):
+    def write(self, model, pixel=0, randomization=0):
 
         if (self.extension == 'h5'):
             for k, v in model.spectrum.items():                            
                 for cycle in range(model.n_cycles):
+                    stop()
                     self.out_spectrum[k]['wavelength'][:] = v.wavelength_axis
                     self.out_spectrum[k]['stokes'][pixel,randomization,cycle,...] = v.stokes_cycle[cycle]
                     self.out_spectrum[k]['chi2'][pixel,randomization,cycle] = v.chi2_cycle[cycle]

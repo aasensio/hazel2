@@ -1,17 +1,23 @@
 import numpy as np
 from hazel.io import Generic_observed_file, Generic_stray_file
+import os.path
+from astropy.constants import c
+from scipy import interpolate
+
 # from ipdb import set_trace as stop
 
 __all__ = ['Spectrum']
 
 class Spectrum(object):
-    def __init__(self, wvl=None, weights=None, observed_file=None, name=None, stokes_weights=None, los=None, boundary=None, mask_file=None):
+    def __init__(self, wvl=None, weights=None, observed_file=None, name=None, stokes_weights=None, los=None, boundary=None, mask_file=None, 
+        instrumental_profile=None):
         
         self.wavelength_axis = None
         self.stokes = None
         self.stokes_perturbed = None
         self.pixel = 0
         self.boundary_single = boundary
+        self.psf_spectral = None
         self.chi2 = -1.0
         self.normalization = 'on-disk'
         
@@ -40,6 +46,21 @@ class Spectrum(object):
             self.los = los
             self.mu = np.cos(self.los[0] * np.pi / 180.0)
 
+        if (instrumental_profile is not None):
+
+            n = len(self.wavelength_axis)
+
+            # Instrumental profile given as a file
+            if os.path.exists(instrumental_profile):
+                tmp = np.loadtxt(instrumental_profile)
+                f = interpolate.interp1d(tmp[:,0] + self.wavelength_axis[n//2-1], tmp[:,1], kind='cubic', fill_value=0.0, bounds_error=False)                
+                self.psf_spectral = f(self.wavelength_axis)
+            else:
+                sigma = float(instrumental_profile) * np.mean(self.wavelength_axis) / c.to('km/s').value                
+                self.psf_spectral = np.exp(-(self.wavelength_axis - self.wavelength_axis[n//2-1])**2 / sigma**2)
+
+            self.psf_spectral /= np.sum(self.psf_spectral)
+                
     def allocate_info_cycles(self, n_cycles):
         """
         Set the appropriate variables to store per-cycle spectra

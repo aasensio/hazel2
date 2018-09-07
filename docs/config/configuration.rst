@@ -33,6 +33,7 @@ specific details for each atmosphere.
         Boundary condition = 1.0, 0.0, 0.0, 0.0       # I/Ic(mu=1), Q/Ic(mu=1), U/Ic(mu=1), V/Ic(mu=1)
         Wavelength file = 'observations/10830.wavelength'
         Wavelength weight file = 'observations/10830.weights'
+        Instrumental profile = 3.0
     
     [Atmospheres]
 
@@ -97,6 +98,7 @@ In the following we paste a typical configuration file for the inversion mode.
         Weights Stokes Q = 0.0, 1.0, 1.0, 1.0
         Weights Stokes U = 0.0, 1.0, 1.0, 1.0
         Weights Stokes V = 1.0, 1.0, 1.0, 1.0
+        Instrumental profile = 3.0
 
     [Atmospheres]
 
@@ -244,6 +246,7 @@ atmospheres (described below) will produce the synthetic profiles for this regio
         Weights Stokes Q = 0.0, 1.0, 1.0, 1.0
         Weights Stokes U = 0.0, 1.0, 1.0, 1.0
         Weights Stokes V = 1.0, 1.0, 1.0, 1.0
+        Instrumental profile = 3.0
 
 * ``Name``: defines the name of the spectral region. Programmatically, one can have access to the spectrum of each spectral region by using ``mod.spectrum['spec1'].stokes``. This name is also used in the output file to refer to each region.
 * ``Wavelength`` (optional) : defines the lower, upper and number of points in the wavelength axis. It can be absent if a file with the wavelength axis is provided.
@@ -256,6 +259,7 @@ atmospheres (described below) will produce the synthetic profiles for this regio
 * ``Straylight file`` (optional) defines the file with the straylight. See :ref:`input` for more information.
 * ``Mask file`` (optional) defines a mask to invert only a selection of pixels from an input file. See :ref:`input` for more information.
 * ``Weights Stokes`` (optional) defines the weights for all Stokes parameters and cycles. If absent, they will be considered to be 1.
+* ``Instrumental profile``(optional) defines the instrumental profile. It can be absent, equal to `None`, a float giving the width of a Gaussian PSF or a file with the PSF (given with two columns with wavelength displacement in A and PSF).
 
 Atmospheres
 -----------
