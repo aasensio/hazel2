@@ -19,7 +19,7 @@ import scipy.signal
 import warnings
 import logging
 
-from ipdb import set_trace as stop
+#from ipdb import set_trace as stop
 
 __all__ = ['Model']
 
