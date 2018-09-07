@@ -18,7 +18,7 @@ import scipy.special
 import warnings
 import logging
 
-# from ipdb import set_trace as stop
+from ipdb import set_trace as stop
 
 __all__ = ['Model']
 
@@ -1429,13 +1429,27 @@ class Model(object):
                 for k, v in self.spectrum.items():
                     self.logger.info('  Weights for region {0} : SI={1} - SQ={2} - SU={3} - SV={4}'.format(k, v.stokes_weights[0,self.cycle], v.stokes_weights[1,self.cycle],
                         v.stokes_weights[2,self.cycle], v.stokes_weights[3,self.cycle]))
+                                
 
                 self.logger.info('-------------')
                 
 
-            # Find all active parameters for this cycle
+            # Find all active parameters for this cycle and print them in the output
             self.find_active_parameters(self.cycle)
 
+            tmp = [pars['atm'] for pars in self.active_meta]
+            tmp = list(set(tmp))
+            
+            for k, v in self.atmospheres.items():
+                if (k in tmp):
+                    self.logger.info('Free parameters for {0}'.format(k))
+                    for pars in self.active_meta:
+                        if (pars['atm'] == k):
+                            if (pars['n_nodes'] == 1):
+                                self.logger.info('  - {0} with {1} node'.format(pars['parameter'], pars['n_nodes']))
+                            else:
+                                self.logger.info('  - {0} with {1} nodes'.format(pars['parameter'], pars['n_nodes']))
+            
             # Randomize parameters if necessary
             if (randomize):
                 self.randomize()

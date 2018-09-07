@@ -1,5 +1,4 @@
 .. include:: ../hazel_name
-.. _input:
 
 Input files
 ===========

@@ -6,18 +6,15 @@ Data preparation
 Some data preprocessing has to be done in order to have reliable inversions with		
 Hazel. The process takes the following steps:		
 		
--  **Data normalization**: the data has to be normalized to the local continuum. This		
+-  **Data normalization**: the data has to be normalized to the local quiet Sun continuum. This		
    is sometimes slightly difficult because the nearby Si I line has strong wings and one should		
    use that pseudocontinuum. The very first step would be to remove large scale variations		
    of the continuum, so that it is as flat as possible (perhaps removing fringes if you have		
-   any). Then, you proceed to remove the influence		
-   of the Si I line. What our people typically use is to fit the Si I line using		
-   almost all its blue wing and only part of the red wing. I guess you can do it using		
-   an inversion code like SIR or use a Voigt function. You probably want to get photospheric		
-   information from your observations, so maybe SIR is a better option. Once you have		
-   the Si I line fitted, just extend the synthetic wing towards the He I line and then normalize		
-   the spectrum by the synthetic profile. This way, you'll have the He I triplet correctly		
-   normalized.		
+   any). Then, if you are only inverting He I, you have to deal with the presence of the
+   nearby Si I line because the He I multiplet is in the wings of this photospheric line.
+   In this version of the code you can use SIR to simuultaneously invert the photospheric
+   and chromospheric lines, so you do not have to worry for decontaminating from the
+   Si I line. You can even do that with the telluric contamination nearby.		
    If the data is off-limb, things are typically easier because there is no continuum but		
    sometimes there is some stray-light that can give you a headache. In this case, 		
    the input should be normalized by the peak emission.		
@@ -26,8 +23,7 @@ Hazel. The process takes the following steps:
    on whether you want an absolute calibration of velocities or not. If you want such absolute scale, the best is to do the wavelength		
    calibration using telluric lines and then transform everything to the Sun using the relative		
    velocity between the observed region and the Earth. If not, maybe using some weak 		
-   surrounding photospheric lines is enough. Note that all wavelengths are given with respect 
-   to the center of the multiplet, which is 10829.0911 Angstrom for the 10830 Angstrom one)		
+   surrounding photospheric lines is enough. 
 		
 -  **Computation of the boundary condition and heliocentric angle**: every pixel should be labeled with its heliocentric angle (this is important for		
    observations close to the limb, where mu is changing fast) and its boundary condition.		

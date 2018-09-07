@@ -43,10 +43,10 @@ class Iterator(object):
         ch.setFormatter(formatter)
         self.logger.addHandler(ch)
 
-    def get_rank(self, n_slaves=0):        
+    def get_rank(self, n_agents=0):        
         if (self.use_mpi):
-            if (n_slaves >= self.size):
-                raise Exception("Number of requested slaves {0} is >= number number of available cores ({1})".format(n_slaves, size))        
+            if (n_agents >= self.size):
+                raise Exception("Number of requested agents {0} is >= number number of available cores ({1})".format(n_agents, size))        
         return self.rank
     
     def use_model(self, model=None):
@@ -57,7 +57,7 @@ class Iterator(object):
                 self.model = model
 
                 if (self.model.verbose):
-                    self.logger.info('Broadcasting models to all slaves')
+                    self.logger.info('Broadcasting models to all agents')
 
                 self.comm.Barrier()
                 self.comm.bcast(self.model, root=0)                
@@ -247,9 +247,9 @@ class Iterator(object):
 
         self.model.close_output()
 
-    def mpi_slave_work(self):
+    def mpi_agents_work(self):
         """
-        MPI slave work
+        MPI agents work
 
         Parameters
         ----------
@@ -328,6 +328,6 @@ class Iterator(object):
             if (self.rank == 0):
                 self.mpi_master_work()
             else:
-                self.mpi_slave_work()
+                self.mpi_agents_work()
         else:
             self.nonmpi_work()

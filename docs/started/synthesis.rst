@@ -81,7 +81,7 @@ model by invoking:
 
 ::
 
-    iterator = hazel.iterator(use_mpi=False)    
+    iterator = hazel.Iterator(use_mpi=False)    
     mod = hazel.Model('conf.ini')
     iterator.use_model(model=mod)
     iterator.run_all_pixels()
@@ -97,7 +97,7 @@ where ``inversion.py`` contains the following piece of code:
 
 ::
 
-    iterator = hazel.iterator(use_mpi=True)
+    iterator = hazel.Iterator(use_mpi=True)
     rank = iterator.get_rank()
     mod = hazel.Model('conf_mpi_invh5.ini', rank=rank)
     iterator.use_model(model=mod)    

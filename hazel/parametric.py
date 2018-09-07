@@ -52,6 +52,12 @@ class Parametric_atmosphere(General_atmosphere):
         self.cycles['depth'] = None        
         self.cycles['a'] = None
         self.cycles['ff'] = None
+
+        self.regularization['lambda0'] = None
+        self.regularization['sigma'] = None
+        self.regularization['depth'] = None        
+        self.regularization['a'] = None
+        self.regularization['ff'] = None
         
 
     def add_active_line(self, spectrum, wvl_range):

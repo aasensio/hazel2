@@ -113,7 +113,7 @@ input files.
 
 ::
 
-    iterator = hazel.iterator(use_mpi=False)    
+    iterator = hazel.Iterator(use_mpi=False)    
     mod = hazel.Model('conf_nonmpi_syn1d.ini')
     iterator.use_model(model=mod)
     iterator.run_all_pixels()
@@ -126,14 +126,14 @@ MPI mode
 """"""""
 
 When working with many pixels, many-core computers can be used. This will use a
-master-slave approach, in which the master sends pixels to each one of the available
-slaves to do the work. In this case, we tell the iterator to use MPI and act differently 
+master-agent approach, in which the master sends pixels to each one of the available
+agents to do the work. In this case, we tell the iterator to use MPI and act differently 
 for the master (rank=0) or the salves (rank>0). Note that only the master reads the
-configuration file, and it will be broadcasted to all slaves internally.
+configuration file, and it will be broadcasted to all agents internally.
 
 ::
 
-    iterator = hazel.iterator(use_mpi=True)
+    iterator = hazel.Iterator(use_mpi=True)
     rank = iterator.get_rank()
 
     if (rank == 0):    
