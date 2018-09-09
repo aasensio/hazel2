@@ -107,7 +107,6 @@ class Generic_output_file(object):
         if (self.extension == 'h5'):
             for k, v in model.spectrum.items():                            
                 for cycle in range(model.n_cycles):
-                    stop()
                     self.out_spectrum[k]['wavelength'][:] = v.wavelength_axis
                     self.out_spectrum[k]['stokes'][pixel,randomization,cycle,...] = v.stokes_cycle[cycle]
                     self.out_spectrum[k]['chi2'][pixel,randomization,cycle] = v.chi2_cycle[cycle]

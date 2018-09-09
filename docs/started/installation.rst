@@ -51,8 +51,18 @@ and when you want to uninstall the development version, type:
     
     python setup.py develop --uninstall
 
+If you find errors similar to ``Internal Error: get_unit(): Bad internal unit KIND``, try
+to install the Anaconda ``gfortran``compilers by invoking:
+
+::
+
+    conda install gcc
+
+and then reinstalling |hazel2| with ``python setup.py install``or ``python setup.py develop``.
+
+
 ..
-    Using pip
+    Using pip (not preferred until a stable version is published)
     ---------
 
     |hazel2| can be easily installed from PyPI by invoking:
