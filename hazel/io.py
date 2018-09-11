@@ -58,20 +58,22 @@ class Generic_output_file(object):
                 self.out_spectrum[k]['stokes'].dims[3].label = 'stokes_parameter'
                 self.out_spectrum[k]['stokes'].dims[4].label = 'wavelength'
 
-                self.out_spectrum[k]['chi2'] = db.create_dataset('chi2', shape=(model.n_pixels, model.n_randomization, model.n_cycles), dtype=np.float64)
-                self.out_spectrum[k]['chi2'].dims[0].label = 'pixel'
-                self.out_spectrum[k]['chi2'].dims[1].label = 'randomization'
-                self.out_spectrum[k]['chi2'].dims[2].label = 'cycle'
+                if (model.working_mode == 'inversion'):
 
-                self.out_spectrum[k]['bic'] = db.create_dataset('bic', shape=(model.n_pixels, model.n_randomization, model.n_cycles), dtype=np.float64)
-                self.out_spectrum[k]['bic'].dims[0].label = 'pixel'
-                self.out_spectrum[k]['bic'].dims[1].label = 'randomization'
-                self.out_spectrum[k]['bic'].dims[2].label = 'cycle'
+                    self.out_spectrum[k]['chi2'] = db.create_dataset('chi2', shape=(model.n_pixels, model.n_randomization, model.n_cycles), dtype=np.float64)
+                    self.out_spectrum[k]['chi2'].dims[0].label = 'pixel'
+                    self.out_spectrum[k]['chi2'].dims[1].label = 'randomization'
+                    self.out_spectrum[k]['chi2'].dims[2].label = 'cycle'
+                
+                    self.out_spectrum[k]['bic'] = db.create_dataset('bic', shape=(model.n_pixels, model.n_randomization, model.n_cycles), dtype=np.float64)
+                    self.out_spectrum[k]['bic'].dims[0].label = 'pixel'
+                    self.out_spectrum[k]['bic'].dims[1].label = 'randomization'
+                    self.out_spectrum[k]['bic'].dims[2].label = 'cycle'
 
-                self.out_spectrum[k]['aic'] = db.create_dataset('aic', shape=(model.n_pixels, model.n_randomization, model.n_cycles), dtype=np.float64)
-                self.out_spectrum[k]['aic'].dims[0].label = 'pixel'
-                self.out_spectrum[k]['aic'].dims[1].label = 'randomization'
-                self.out_spectrum[k]['aic'].dims[2].label = 'cycle'
+                    self.out_spectrum[k]['aic'] = db.create_dataset('aic', shape=(model.n_pixels, model.n_randomization, model.n_cycles), dtype=np.float64)
+                    self.out_spectrum[k]['aic'].dims[0].label = 'pixel'
+                    self.out_spectrum[k]['aic'].dims[1].label = 'randomization'
+                    self.out_spectrum[k]['aic'].dims[2].label = 'cycle'
 
             if (model.working_mode == 'inversion'):
                 self.out_model = {}
@@ -126,9 +128,11 @@ class Generic_output_file(object):
                 for cycle in range(model.n_cycles):
                     self.out_spectrum[k]['wavelength'][:] = v.wavelength_axis
                     self.out_spectrum[k]['stokes'][pixel,randomization,cycle,...] = v.stokes_cycle[cycle]
-                    self.out_spectrum[k]['chi2'][pixel,randomization,cycle] = v.chi2_cycle[cycle]
-                    self.out_spectrum[k]['bic'][pixel,randomization,cycle] = v.bic_cycle[cycle]
-                    self.out_spectrum[k]['aic'][pixel,randomization,cycle] = v.aic_cycle[cycle]
+
+                    if (model.working_mode == 'inversion'):
+                        self.out_spectrum[k]['chi2'][pixel,randomization,cycle] = v.chi2_cycle[cycle] 
+                        self.out_spectrum[k]['bic'][pixel,randomization,cycle] = v.bic_cycle[cycle]
+                        self.out_spectrum[k]['aic'][pixel,randomization,cycle] = v.aic_cycle[cycle]
 
             if (model.working_mode == 'inversion'):                
                 for k, v in model.atmospheres.items():

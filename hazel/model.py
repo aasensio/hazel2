@@ -1137,9 +1137,11 @@ class Model(object):
             
         for k, v in self.spectrum.items():            
             v.stokes_cycle[cycle] = copy.deepcopy(v.stokes)
-            v.chi2_cycle[cycle] = copy.deepcopy(v.chi2)            
-            v.bic_cycle[cycle] = copy.deepcopy(self.n_free_parameters * np.log(v.dof) + v.dof * np.log(v.rss))
-            v.aic_cycle[cycle] = copy.deepcopy(2.0 * self.n_free_parameters + v.dof * np.log(v.rss))
+
+            if (self.working_mode == 'inversion'):
+                v.chi2_cycle[cycle] = copy.deepcopy(v.chi2)                        
+                v.bic_cycle[cycle] = copy.deepcopy(self.n_free_parameters * np.log(v.dof) + v.dof * np.log(v.rss))
+                v.aic_cycle[cycle] = copy.deepcopy(2.0 * self.n_free_parameters + v.dof * np.log(v.rss))
         
     def set_new_model(self, nodes):
         """
