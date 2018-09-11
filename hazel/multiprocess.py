@@ -128,7 +128,7 @@ class Iterator(object):
                         for k, v in self.model.spectrum.items():
                             v.read_observation(pixel=i)
 
-                        self.model.invert(randomize=randomize)
+                        self.model.invert(randomize=randomize, randomization_ind=loop)
                     else:
                         self.model.synthesize()
                         self.model.flatten_parameters_to_reference(cycle=0)
@@ -288,7 +288,7 @@ class Iterator(object):
 
                     # Loop over randomizations
                     for loop in range(self.model.n_randomization):                    
-                        self.model.invert(randomize=randomize)
+                        self.model.invert(randomize=randomize, randomization_ind=loop)
 
                         label = 'randomization_{0}'.format(loop)
 

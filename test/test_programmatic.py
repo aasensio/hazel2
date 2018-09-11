@@ -2,7 +2,7 @@ import numpy as np
 import hazel
 
 
-def test_programmatically():
+def test_programmatic():
     # Test a single inversion in non-iterator mode
     mod = hazel.Model(working_mode='synthesis')
     mod.add_spectral({'Name': 'spec1', 'Wavelength': [10826, 10833, 150], 'topology': 'ch1', 'LOS': [0.0,0.0,90.0], 'Boundary condition': [1.0,0.0,0.0,0.0]})

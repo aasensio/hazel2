@@ -259,7 +259,7 @@ atmospheres (described below) will produce the synthetic profiles for this regio
 * ``Straylight file`` (optional) defines the file with the straylight. See :ref:`input` for more information.
 * ``Mask file`` (optional) defines a mask to invert only a selection of pixels from an input file. See :ref:`input` for more information.
 * ``Weights Stokes`` (optional) defines the weights for all Stokes parameters and cycles. If absent, they will be considered to be 1.
-* ``Instrumental profile``(optional) defines the instrumental profile. It can be absent, equal to `None`, a float giving the width of a Gaussian PSF or a file with the PSF (given with two columns with wavelength displacement in A and PSF).
+* ``Instrumental profile`` (optional) defines the instrumental profile. It can be absent, equal to ``None``, a float giving the width of a Gaussian PSF or a file with the PSF (given with two columns with wavelength displacement in A and PSF).
 
 Atmospheres
 -----------
@@ -327,7 +327,7 @@ to those of chromospheres).
 * ``Wavelength`` : defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time.
 * ``Spectral lines`` : it is a comma-separated list of lines to synthesize from the :ref:`photospheric_lines`. Note that if you only want one line, you should use a comma at the end. The list of available lines
 * ``Reference frame`` : it defines the reference system in which the magnetic field is measured. ``line-of-sight`` or ``vertical`` (traditional mode for |hazel2|). If absent, ``vertical`` is used by default.
-* ``Ranges`` : ranges of variation of each parameter. If ``None``, consider it unconstrained. If not, it will be constrained to the range.
+* ``Ranges`` : ranges of variation of each parameter. If ``None``, consider it unconstrained. If not, it will be constrained to the range using a logit transform (with a small :math:`\epsilon` to avoid under/overflow when close to the border).
 * ``Nodes`` : defines the number of nodes in each cycle when doing inversions
 * ``Regularization`` : not yet implemented
 

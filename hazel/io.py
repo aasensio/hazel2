@@ -11,7 +11,7 @@ try:
 except:
     warnings.warn("zarr module not found. You will not be able to use zarr as input/output.")
 
-#from ipdb import set_trace as stop
+# from ipdb import set_trace as stop
 
 __all__ = ['Generic_output_file', 'Generic_observed_file', 'Generic_hazel_file', 'Generic_SIR_file', 'Generic_parametric_file', 'Generic_stray_file']
 
@@ -37,6 +37,9 @@ class Generic_output_file(object):
 
             self.handler.attrs['version'] = hazel.__version__
             self.handler.attrs['date'] = datetime.datetime.today().isoformat(' ')
+
+            # Save configuration file
+            self.handler.attrs['configuration'] = [a.encode('utf8') for a in model.configuration.configuration_txt]
             
             # Generate all handlers for things we'll write here
             self.out_spectrum = {}
@@ -58,7 +61,17 @@ class Generic_output_file(object):
                 self.out_spectrum[k]['chi2'] = db.create_dataset('chi2', shape=(model.n_pixels, model.n_randomization, model.n_cycles), dtype=np.float64)
                 self.out_spectrum[k]['chi2'].dims[0].label = 'pixel'
                 self.out_spectrum[k]['chi2'].dims[1].label = 'randomization'
-                self.out_spectrum[k]['chi2'].dims[2].label = 'cycle'                
+                self.out_spectrum[k]['chi2'].dims[2].label = 'cycle'
+
+                self.out_spectrum[k]['bic'] = db.create_dataset('bic', shape=(model.n_pixels, model.n_randomization, model.n_cycles), dtype=np.float64)
+                self.out_spectrum[k]['bic'].dims[0].label = 'pixel'
+                self.out_spectrum[k]['bic'].dims[1].label = 'randomization'
+                self.out_spectrum[k]['bic'].dims[2].label = 'cycle'
+
+                self.out_spectrum[k]['aic'] = db.create_dataset('aic', shape=(model.n_pixels, model.n_randomization, model.n_cycles), dtype=np.float64)
+                self.out_spectrum[k]['aic'].dims[0].label = 'pixel'
+                self.out_spectrum[k]['aic'].dims[1].label = 'randomization'
+                self.out_spectrum[k]['aic'].dims[2].label = 'cycle'
 
             if (model.working_mode == 'inversion'):
                 self.out_model = {}
@@ -71,6 +84,10 @@ class Generic_output_file(object):
                     # Save metadata for type of reference for magnetic field components
                     if (hasattr(v, 'reference_frame')):
                         db.attrs['reference frame'] = v.reference_frame
+
+                    db.attrs['ranges'] = str(dict(v.ranges))
+                    db.attrs['regularization'] = str(dict(v.regularization))
+                    db.attrs['cycles'] = str(dict(v.cycles))
                     
                     if (hasattr(v, 'log_tau')):
                         self.out_model[k]['log_tau'] = db.create_dataset('log_tau', shape=(len(v.log_tau),), dtype=np.float64)
@@ -110,6 +127,8 @@ class Generic_output_file(object):
                     self.out_spectrum[k]['wavelength'][:] = v.wavelength_axis
                     self.out_spectrum[k]['stokes'][pixel,randomization,cycle,...] = v.stokes_cycle[cycle]
                     self.out_spectrum[k]['chi2'][pixel,randomization,cycle] = v.chi2_cycle[cycle]
+                    self.out_spectrum[k]['bic'][pixel,randomization,cycle] = v.bic_cycle[cycle]
+                    self.out_spectrum[k]['aic'][pixel,randomization,cycle] = v.aic_cycle[cycle]
 
             if (model.working_mode == 'inversion'):                
                 for k, v in model.atmospheres.items():

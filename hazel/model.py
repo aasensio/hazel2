@@ -19,7 +19,7 @@ import scipy.signal
 import warnings
 import logging
 
-#from ipdb import set_trace as stop
+# from ipdb import set_trace as stop
 
 __all__ = ['Model']
 
@@ -97,7 +97,7 @@ class Model(object):
         Returns
         -------
         None
-        """
+        """        
 
         # Deal with the spectral regions        
         tmp = config_dict['spectral regions']
@@ -293,6 +293,17 @@ class Model(object):
 
         for k, v in self.atmospheres.items():
             v.allocate_info_cycles(n_cycles=self.n_cycles)
+
+        # Count total number of free parameters
+        if (self.working_mode == 'inversion'):
+            self.n_free_parameters = 0
+
+            for k, v in self.atmospheres.items():
+                for k2, v2 in v.cycles.items():                
+                    self.n_free_parameters += max(v2[0:self.n_cycles])
+
+            if (self.verbose >= 1):
+                self.logger.info('Total number of free parameters in all cycles : {0}'.format(self.n_free_parameters))
         
     def open_output(self):
         self.output_handler = Generic_output_file(self.output_file)        
@@ -625,7 +636,8 @@ class Model(object):
                 for k2, v2 in self.atmospheres[atm['name']].parameters.items():
                     if (k.lower() == k2.lower()):                            
                         self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)
-    
+
+            
     def add_parametric(self, atmosphere):
         """
         Programmatically add a parametric atmosphere
@@ -679,8 +691,6 @@ class Model(object):
                 for k2, v2 in self.atmospheres[atm['name']].parameters.items():
                     if (k.lower() == k2.lower()):                            
                         self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)
-
-        
 
     
     def add_straylight(self, atmosphere):
@@ -810,10 +820,10 @@ class Model(object):
                 
                 v.n_lambda = sir_code.init(v.index, filename)
 
-                # try:
-                #     os.remove('malla.grid')
-                # except OSError:
-                #     pass
+                try:
+                    os.remove('malla.grid')
+                except OSError:
+                    pass
 
     def exit_hazel(self):
         for k, v in self.atmospheres.items():            
@@ -1127,7 +1137,9 @@ class Model(object):
             
         for k, v in self.spectrum.items():            
             v.stokes_cycle[cycle] = copy.deepcopy(v.stokes)
-            v.chi2_cycle[cycle] = copy.deepcopy(v.chi2)
+            v.chi2_cycle[cycle] = copy.deepcopy(v.chi2)            
+            v.bic_cycle[cycle] = copy.deepcopy(self.n_free_parameters * np.log(v.dof) + v.dof * np.log(v.rss))
+            v.aic_cycle[cycle] = copy.deepcopy(2.0 * self.n_free_parameters + v.dof * np.log(v.rss))
         
     def set_new_model(self, nodes):
         """
@@ -1213,6 +1225,7 @@ class Model(object):
 
         """
         chi2 = 0.0
+        rss = 0.0
         n = len(self.nodes)
         dchi2 = np.zeros(n)
         ddchi2 = np.zeros((n,n))
@@ -1224,17 +1237,20 @@ class Model(object):
                 weights = (v.stokes_weights[:,self.cycle][:,None] * v.wavelength_weights) * v.factor_chi2            
 
             chi2 += np.sum(weights * residual**2)
+            rss += np.sum(residual**2)
             
             if (not only_chi2):
                 dchi2 += -2.0 * np.sum(weights[None,:,:] * self.response * residual[None,:,:] , axis=(1,2)) #/ v.dof
                 ddchi2 += 2.0 * np.sum(weights[None,None,:,:] * self.response[None,:,:,:] * self.response[:,None,:,:] , axis=(2,3)) #/ v.dof
 
                 v.chi2 = chi2
+                v.rss = rss
 
                 return chi2, dchi2, ddchi2
             else:
                 
                 v.chi2 = chi2
+                v.rss = rss
 
                 return chi2
 
@@ -1408,7 +1424,7 @@ class Model(object):
         """
         self.nodes = np.random.uniform(low=-2.0, high=2.0, size=self.nodes.shape)
 
-    def invert(self, randomize=False):
+    def invert(self, randomize=False, randomization_ind=None):
         """
         Invert all atmospheres
 
@@ -1441,7 +1457,10 @@ class Model(object):
 
             if (self.verbose >= 2):
                 self.logger.info('-------------')
-                self.logger.info('  Cycle {0}  '.format(self.cycle))
+                if (randomization_ind):
+                    self.logger.info('  Cycle {0} - Randomization {1} '.format(self.cycle, randomization_ind))
+                else:
+                    self.logger.info('  Cycle {0}  '.format(self.cycle))
                 
                 for k, v in self.spectrum.items():
                     self.logger.info('  Weights for region {0} : SI={1} - SQ={2} - SU={3} - SV={4}'.format(k, v.stokes_weights[0,self.cycle], v.stokes_weights[1,self.cycle],

@@ -43,6 +43,7 @@ def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
             compiler_so = ["gfortran"]
             if (ext == ".f90"):
                 cc_args = ["-O3", "-fPIC", "-c", "-ffree-form", "-ffree-line-length-none"]
+                cc_args = ["-O3", "-fPIC", "-c", "-ffree-form", "-ffree-line-length-none", "-fno-automatic", "-ffast-math", "-funroll-loops"]
             if (ext == ".f"):
                 cc_args = ["-O3", "-fPIC", "-c", "-fno-automatic", "-ffixed-line-length-none"]
             # Force architecture of shared library.

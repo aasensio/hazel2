@@ -19,6 +19,7 @@ class Spectrum(object):
         self.boundary_single = boundary
         self.psf_spectral = None
         self.chi2 = -1.0
+        self.rss = -1.0
         self.normalization = 'on-disk'
         
         if (wvl is not None):
@@ -78,6 +79,8 @@ class Spectrum(object):
 
         self.stokes_cycle = [None] * n_cycles
         self.chi2_cycle = [-1.0] * n_cycles
+        self.bic_cycle = [-1.0] * n_cycles
+        self.aic_cycle = [-1.0] * n_cycles
 
     def add_spectrum(self, wvl):
         """

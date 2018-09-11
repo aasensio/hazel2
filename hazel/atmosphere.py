@@ -53,6 +53,8 @@ class General_atmosphere(object):
         self.jacobian = OrderedDict()
         self.units = OrderedDict()
 
+        self.eps_borders = 1e-5
+
     def __getstate__(self):
         d = self.__dict__.copy()
         if 'logger' in d:
@@ -98,8 +100,8 @@ class General_atmosphere(object):
         """
         
         for k, v in self.parameters.items():            
-            lower = self.ranges[k][0]
-            upper = self.ranges[k][1]
+            lower = self.ranges[k][0] - self.eps_borders
+            upper = self.ranges[k][1] + self.eps_borders
             # print(k, v, lower, upper)
             self.parameters[k] = transformed_to_physical(v, lower, upper)
                         # self.jacobian[k] = jacobian_transformed_to_physical(v, lower, upper)
@@ -119,8 +121,8 @@ class General_atmosphere(object):
     
         """
         for k, v in self.parameters.items():                        
-            lower = self.ranges[k][0]
-            upper = self.ranges[k][1]            
+            lower = self.ranges[k][0] - self.eps_borders
+            upper = self.ranges[k][1] + self.eps_borders
             self.parameters[k] = physical_to_transformed(v, lower, upper)
             
 

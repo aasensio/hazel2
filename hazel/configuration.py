@@ -16,6 +16,8 @@ class Configuration(object):
         tmp = f.readlines()
         f.close()
 
+        self.configuration_txt = tmp
+
         input_lower = ['']
 
         for l in tmp:
