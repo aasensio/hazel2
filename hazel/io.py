@@ -123,8 +123,6 @@ class Generic_output_file(object):
 
     def write(self, model, pixel=0, randomization=0):
 
-        stop()
-
         if (self.extension == 'h5'):
             for k, v in model.spectrum.items():                            
                 for cycle in range(model.n_cycles):
