@@ -11,7 +11,7 @@ try:
 except:
     warnings.warn("zarr module not found. You will not be able to use zarr as input/output.")
 
-# from ipdb import set_trace as stop
+from ipdb import set_trace as stop
 
 __all__ = ['Generic_output_file', 'Generic_observed_file', 'Generic_hazel_file', 'Generic_SIR_file', 'Generic_parametric_file', 'Generic_stray_file']
 
@@ -122,6 +122,8 @@ class Generic_output_file(object):
             return
 
     def write(self, model, pixel=0, randomization=0):
+
+        stop()
 
         if (self.extension == 'h5'):
             for k, v in model.spectrum.items():                            

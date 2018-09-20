@@ -373,7 +373,7 @@ contains
 ! Here we calculate only 7.47e (equivalent to 7.47b of stimulated emission but multiplied by 2*h*nu^3/c^2) 
 ! because we are interested in the emission coefficient
 !-------------------------------------------------------------------------
-		call date_and_time(values=values_start)		
+!		call date_and_time(values=values_start)		
 		nloop = 0
       x0 = dfloat(lu2+1)
 		nfreq = in_fixed%no
@@ -476,12 +476,12 @@ contains
 ! 		deallocate(tmp2)
 ! 		deallocate(prof)
 		
-		call date_and_time(values=values_end)
-		start_time = values_start(5) * 3600 + values_start(6) * 60 + values_start(7) + 0.001 * values_start(8)
-		end_time = values_end(5) * 3600 + values_end(6) * 60 + values_end(7) + 0.001 * values_end(8)
+!		call date_and_time(values=values_end)
+!		start_time = values_start(5) * 3600 + values_start(6) * 60 + values_start(7) + 0.001 * values_start(8)
+!		end_time = values_end(5) * 3600 + values_end(6) * 60 + values_end(7) + 0.001 * values_end(8)
 !		print *, 'Time1 : ', end_time-start_time, nloop
 		
-		call date_and_time(values=values_start)
+!		call date_and_time(values=values_start)
 		
 !-------------------------------------------------------------------------
 ! And we perform the summation given by eq. 7.47 of Landi & Landolfi (2004)
@@ -592,9 +592,9 @@ contains
 		
 		endif
 		
-		call date_and_time(values=values_end)
-		start_time = values_start(5) * 3600 + values_start(6) * 60 + values_start(7) + 0.001 * values_start(8)
-		end_time = values_end(5) * 3600 + values_end(6) * 60 + values_end(7) + 0.001 * values_end(8)
+!		call date_and_time(values=values_end)
+!		start_time = values_start(5) * 3600 + values_start(6) * 60 + values_start(7) + 0.001 * values_start(8)
+!		end_time = values_end(5) * 3600 + values_end(6) * 60 + values_end(7) + 0.001 * values_end(8)
 !		print *, 'Time2 : ', end_time-start_time, nloop
 
 ! Introduce the hnu/4Pi factor
