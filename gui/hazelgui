@@ -110,7 +110,7 @@ class AppForm(QMainWindow):
             'dopplerWidthInput' : self.dopplerWidthInput, 'dopplerWidth2Input' : self.dopplerWidth2Input, 'dampingInput' : self.dampingInput,
             'dopplerVelocityInput' : self.dopplerVelocityInput, 'dopplerVelocity2Input' : self.dopplerVelocity2Input, 'ffInput' : self.ffInput,
             'betaInput' : self.betaInput, 'beta2Input' : self.beta2Input, 'nbarInput' : self.nbarInput, 'omegaInput' : self.omegaInput, 'obsFile' : self.obsFile,
-            'normalization': 0}
+            'normalization': 0, 'wFile' : self.wFile}
         pickle.dump( d, open( "state.pickle", "wb" ) )
 
     def loadConfig(self):
@@ -142,6 +142,7 @@ class AppForm(QMainWindow):
                 self.nbarInput = d['nbarInput']
                 self.omegaInput = d['omegaInput']
                 self.obsFile = d['obsFile']
+                self.wFile = d['wFile']
                 self.normalization = d['normalization']
             except:
                 print('state.pickle from other python version')
@@ -197,6 +198,7 @@ class AppForm(QMainWindow):
             self.nbarInput = np.asarray([0.0,0.0,0.0,0.0])
             self.omegaInput = np.asarray([0.0,0.0,0.0,0.0])
             self.obsFile = ''
+            self.wFile = ''
             self.normalization = 0            
 
             
@@ -268,7 +270,7 @@ class AppForm(QMainWindow):
             self.axes[i].clear()
             self.axes[i].plot(l - self.multiplet_lambda[self.transInput-1],stokes[i,:])
             if (self.obsFile != ''):
-                self.axes[i].plot(self.obsStokes[:,0], self.obsStokes[:,i+1], 'r.')                
+                self.axes[i].plot(self.obsStokes[0,:], self.obsStokes[i+1,:], 'r.')                
             for item in ([self.axes[i].title, self.axes[i].xaxis.label, self.axes[i].yaxis.label] +
                 self.axes[i].get_xticklabels() + self.axes[i].get_yticklabels()):
                 item.set_fontsize(10)
@@ -325,12 +327,23 @@ class AppForm(QMainWindow):
 
     def loadObservation(self):
         self.obsFile = QFileDialog.getOpenFileName(self, 'Open file', '')
-        if (self.obsFile != ''):
-            self.obsStokes = np.loadtxt(str(self.obsFile[0]))
+        if (self.obsFile != ''):            
+            self.observed_handle = hazel.Generic_observed_file(self.obsFile[0])
+            self.observed_handle.open()
+            self.obsStokes, _, _, _, _ = self.observed_handle.read()
+            self.observed_handle.close()
+
+            self.wFile = QFileDialog.getOpenFileName(self, 'Open wavelength file', '')
+            
+            wvl = np.loadtxt(self.wFile[0]) - 10829.0911
+            
+            self.obsStokes = np.vstack([wvl,self.obsStokes])
+
             self.loadedFile.setText('Loaded: {0}'.format(self.obsFile[0]))
 
     def resetObservation(self):
         self.obsFile = ''
+        self.wFile = ''
         self.obsStokes = None
         self.loadedFile.setText('Loaded: none')
 
@@ -1672,7 +1685,16 @@ class AppForm(QMainWindow):
         vbox.addLayout(hbox2)
 
         if (self.obsFile != ''):
-            self.obsStokes = np.loadtxt(self.obsFile)
+            if (os.path.exists(self.obsFile[0])):
+                self.observed_handle = hazel.Generic_observed_file(self.obsFile[0])
+                self.observed_handle.open()
+                self.obsStokes, _, _, _, _ = self.observed_handle.read()
+                self.observed_handle.close()
+                self.loadedFile.setText('Loaded: {0}'.format(self.obsFile[0]))
+
+                wvl = np.loadtxt(self.wFile[0]) - 10829.0911
+            
+                self.obsStokes = np.vstack([wvl,self.obsStokes])
 
 
         # self.textbox = QLineEdit()

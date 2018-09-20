@@ -237,6 +237,31 @@ class SIR_atmosphere(General_atmosphere):
         
         self.parameters['ff'] = ff
 
+    def get_parameters(self):                
+        """
+        Get the curent parameters as a model
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        model: a 6xN photspheric model
+        """
+        
+        model = np.zeros((len(self.log_tau),8))
+        model[:,0] = self.log_tau
+        model[:,1] = self.parameters['T']
+        model[:,2] = self.Pe
+        model[:,3] = self.parameters['vmic']
+        model[:,4] = self.parameters['v']
+        model[:,5] = self.parameters['Bx']
+        model[:,6] = self.parameters['By']
+        model[:,7] = self.parameters['Bz']
+
+        return model        
+
     def nodes_to_model(self):
         """
         Transform from nodes to model
