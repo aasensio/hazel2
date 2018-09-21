@@ -16,6 +16,7 @@ from pathlib import Path
 import scipy.stats
 import scipy.special
 import scipy.signal
+import scipy.linalg
 import warnings
 import logging
 
@@ -1185,7 +1186,10 @@ class Model(object):
 
         """
 
-        U, w, VT = np.linalg.svd(H, full_matrices=False)
+        try:
+            U, w, VT = np.linalg.svd(H, full_matrices=False)
+        except LinAlgError:
+            U, w, VT = scipy.linalg.svd(H, full_matrices=False, lapack_driver='gesvd')   # This calculation should be more robust but slower
 
         w_new = np.zeros_like(w)
         
