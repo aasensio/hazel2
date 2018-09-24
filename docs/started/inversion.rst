@@ -217,11 +217,11 @@ Parallel inversions
 Carrying out inversions of maps in serial mode is probably not the way to go. The
 desired strategy is to use computers with several nodes, which can work in parallel.
 The specific paralellization in |hazel2| is such that practically a linear scaling
-with the number of nodes is sure. It uses a master-agent architecture, in which a
-master node reads the input and broadcasts it to the nodes, which are then
+with the number of nodes is sure. It uses a parent-worker architecture, in which a
+parent node reads the input and broadcasts it to the nodes, which are then
 in charge of carrying out the synthesis/inversions. When finished, the results are
-sent back to the master, who saves the results and sends a new observation to the
-available agent.
+sent back to the parent, who saves the results and sends a new observation to the
+available worker.
 
 Without randomization
 """""""""""""""""""""
@@ -237,8 +237,8 @@ to define the following lines in a script:
     iterator.run_all_pixels()
 
 The only difference with respect to the serial mode is that you need to pass the
-rank of each worker during the instantiation of the ``Model`` because the master and the
-agent will need to do different things with the model. Then just run it with ``mpiexec``, 
+rank of each worker during the instantiation of the ``Model`` because the parent and the
+worker will need to do different things with the model. Then just run it with ``mpiexec``, 
 defining the number of nodes used in this work:
 
 ::

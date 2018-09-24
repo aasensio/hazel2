@@ -7,6 +7,6 @@ from ipdb import set_trace as stop
 
 iterator = hazel.Iterator(use_mpi=True)
 rank = iterator.get_rank()
-mod = hazel.Model('conf_mpi_synh5.ini', working_mode='synthesis', rank=rank)
+mod = hazel.Model('configurations/conf_mpi_synh5.ini', working_mode='synthesis', rank=rank)
 iterator.use_model(model=mod)
 iterator.run_all_pixels()

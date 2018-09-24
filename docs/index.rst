@@ -126,9 +126,9 @@ MPI mode
 """"""""
 
 When working with many pixels, many-core computers can be used. This will use a
-master-agent approach, in which the master sends pixels to each one of the available
+parent-agent approach, in which the parent sends pixels to each one of the available
 agents to do the work. In this case, we tell the iterator to use MPI and act differently 
-for the master (rank=0) or the salves (rank>0). Note that only the master reads the
+for the parent (rank=0) or the salves (rank>0). Note that only the parent reads the
 configuration file, and it will be broadcasted to all agents internally.
 
 ::

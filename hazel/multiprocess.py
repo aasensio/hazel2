@@ -43,10 +43,10 @@ class Iterator(object):
         ch.setFormatter(formatter)
         self.logger.addHandler(ch)
 
-    def get_rank(self, n_agents=0):        
+    def get_rank(self, n_workers=0):        
         if (self.use_mpi):
-            if (n_agents >= self.size):
-                raise Exception("Number of requested agents {0} is >= number number of available cores ({1})".format(n_agents, size))        
+            if (n_workers >= self.size):
+                raise Exception("Number of requested workers {0} is >= number number of available cores ({1})".format(n_workers, size))
         return self.rank
     
     def use_model(self, model=None):
@@ -57,7 +57,7 @@ class Iterator(object):
                 self.model = model
 
                 if (self.model.verbose):
-                    self.logger.info('Broadcasting models to all agents')
+                    self.logger.info('Broadcasting models to all workers')
 
                 self.comm.Barrier()
                 self.comm.bcast(self.model, root=0)                
@@ -142,9 +142,9 @@ class Iterator(object):
                 v.close_observation()
                                             
 
-    def mpi_master_work(self):
+    def mpi_parent_work(self):
         """
-        MPI master work
+        MPI parent work
 
         Parameters
         ----------
@@ -247,9 +247,9 @@ class Iterator(object):
 
         self.model.close_output()
 
-    def mpi_agents_work(self):
+    def mpi_workers_work(self):
         """
-        MPI agents work
+        MPI workers work
 
         Parameters
         ----------
@@ -304,8 +304,18 @@ class Iterator(object):
                         v.set_parameters(data_received[k][0], data_received[k][1])
                         
                     self.model.synthesize()
-                    self.model.flatten_parameters_to_reference(cycle=0)                
+                    self.model.flatten_parameters_to_reference(cycle=0)
+
+                    label = 'randomization_0'
+
+                    data_to_send[label] = {}
                     
+                    for k, v in self.model.spectrum.items():
+                        data_to_send[label][k] = self.model.spectrum[k].stokes_cycle
+
+                    for k, v in self.model.atmospheres.items():
+                        data_to_send[label][k] = [v.reference_cycle, v.error_cycle]
+                                        
                 self.comm.send(data_to_send, dest=0, tag=tags.DONE)
             elif tag == tags.EXIT:
                 break
@@ -326,8 +336,8 @@ class Iterator(object):
         """
         if (self.use_mpi):
             if (self.rank == 0):
-                self.mpi_master_work()
+                self.mpi_parent_work()
             else:
-                self.mpi_agents_work()
+                self.mpi_workers_work()
         else:
             self.nonmpi_work()
