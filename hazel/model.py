@@ -1188,7 +1188,7 @@ class Model(object):
 
         try:
             U, w, VT = np.linalg.svd(H, full_matrices=False)
-        except LinAlgError:
+        except np.linalg.LinAlgError:
             U, w, VT = scipy.linalg.svd(H, full_matrices=False, lapack_driver='gesvd')   # This calculation should be more robust but slower
 
         w_new = np.zeros_like(w)
