@@ -167,8 +167,14 @@ setup_config = dict(
 if __name__ == "__main__":
     setup(**setup_config)
 
-    # Attempt to remove the mod files once again.
-    for filename in glob.glob("*.mod"):
+    # Attempt to remove the mod files
+    for filename in glob.glob("**/*.mod", recursive=True):
+        try:
+            os.remove(filename)
+        except:
+            pass
+
+    for filename in glob.glob("**/*.c", recursive=True):
         try:
             os.remove(filename)
         except:

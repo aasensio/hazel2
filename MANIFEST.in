@@ -2,3 +2,5 @@ include hazel/data/LINEAS
 include src/sir/PARAMETER
 include VERSION.txt
 include test/*.ini
+exclude src/sir/*.c
+exclude src/hazel/*.c 
