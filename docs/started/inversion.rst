@@ -131,7 +131,7 @@ by invoking, assuming that the configuration file is saved on ``conf.ini``:
 
 ::
 
-    mod = hazel.Model('configurations/conf_single.ini')
+    mod = hazel.Model('configurations/conf_single.ini', working_mode='inversion')
     mod.read_observation()
     mod.open_output()
     mod.invert()
@@ -156,7 +156,7 @@ flexibility.
 
 ::
 
-    mod = hazel.Model('configurations/conf_single.ini', randomization=2)
+    mod = hazel.Model('configurations/conf_single.ini', working_mode='inversion', randomization=2)
     mod.read_observation()
     mod.open_output()
     for loop in range(2):

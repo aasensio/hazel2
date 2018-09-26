@@ -58,7 +58,7 @@ carries out synthesis:
 
 ::
 
-    mod = hazel.Model('conf_single_syn.ini')
+    mod = hazel.Model('conf_single_syn.ini', working_mode='synthesis')
     mod.open_output()
     mod.synthesize()
     mod.write_output()
@@ -68,7 +68,7 @@ and this one carries out the inversion:
 
 ::
 
-    mod = hazel.Model('conf_single_inv.ini')
+    mod = hazel.Model('conf_single_inv.ini', working_mode='inversion')
     mod.read_observation()
     mod.open_output()
     mod.invert()

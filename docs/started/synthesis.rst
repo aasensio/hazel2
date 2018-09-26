@@ -68,7 +68,7 @@ is saved on ``conf.ini``:
 
 ::
 
-    mod = hazel.Model('conf.ini')
+    mod = hazel.Model('conf.ini', working_mode='synthesis')
     mod.open_output()
     mod.synthesize()
     mod.write_output()
@@ -82,7 +82,7 @@ model by invoking:
 ::
 
     iterator = hazel.Iterator(use_mpi=False)    
-    mod = hazel.Model('conf.ini')
+    mod = hazel.Model('conf.ini', working_mode='synthesis')
     iterator.use_model(model=mod)
     iterator.run_all_pixels()
 

@@ -81,7 +81,7 @@ def get_libgfortran_dir():
     directories of the Fortran compiler. I don't think it can do any harm on
     Linux.
     """
-    for ending in [".3.dylib", ".dylib", ".3.so", ".so"]:
+    for ending in [".5.dylib", ".3.dylib", ".dylib", ".3.so", ".so"]:
         try:
             p = Popen(['gfortran', "-print-file-name=libgfortran" + ending],
                       stdout=PIPE, stderr=PIPE)
