@@ -66,6 +66,12 @@ class General_atmosphere(object):
             d['logger'] = logging.getLogger(d['logger'])
         self.__dict__.update(d)
 
+    def __str__(self):
+        tmp = ''
+        for l, par in self.parameters.items():
+            tmp += '{0}: {1} {2}\n'.format(l, par, self.units[l])
+        return tmp
+
     def allocate_info_cycles(self, n_cycles):
         """
         Set the appropriate variables to store per-cycle models
@@ -102,9 +108,7 @@ class General_atmosphere(object):
         for k, v in self.parameters.items():            
             lower = self.ranges[k][0] - self.eps_borders
             upper = self.ranges[k][1] + self.eps_borders
-            # print(k, v, lower, upper)
             self.parameters[k] = transformed_to_physical(v, lower, upper)
-                        # self.jacobian[k] = jacobian_transformed_to_physical(v, lower, upper)
                         
     def to_transformed(self):
         """

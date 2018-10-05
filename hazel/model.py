@@ -20,12 +20,14 @@ import scipy.linalg
 import warnings
 import logging
 
-# from ipdb import set_trace as stop
+#from ipdb import set_trace as stop
 
 __all__ = ['Model']
 
 class Model(object):
     def __init__(self, config=None, working_mode='synthesis', verbose=0, debug=False, rank=0, randomization=None):
+
+        np.random.seed(123)
 
         if (rank != 0):
             return
@@ -542,6 +544,8 @@ class Model(object):
                             self.atmospheres[atm['name']].regularization[k2] = None
                         else:
                             self.atmospheres[atm['name']].regularization[k2] = v
+                    else:
+                        self.atmospheres[atm['name']].regularization[k2] = None
 
 
         if ('reference atmospheric model' in atm):
@@ -1076,13 +1080,16 @@ class Model(object):
 
         loop = 0
 
+        self.hessian_regularization = np.zeros(self.n_free_parameters_cycle)
+        self.grad_regularization = np.zeros(self.n_free_parameters_cycle)
+
         for par in self.active_meta:
             nodes = self.nodes[par['left']:par['right']]
 
             lower = par['ranges'][0]
             upper = par['ranges'][1]
 
-            if (self.verbose >= 3):
+            if (self.verbose >= 4):
                 self.logger.info(" * RF to {0} - {1} - nodes={2}".format(par['parameter'], par['atm'], par['n_nodes']))
                         
             for i in range(par['n_nodes']):
@@ -1114,6 +1121,15 @@ class Model(object):
                     self.response = rf
                 else:
                     self.response = np.vstack([self.response, rf])
+
+                if (par['regularization'] is not None):
+                    if (par['regularization'][0] == 'l2-value'):
+                        alpha = float(par['regularization'][1])
+                        lower = par['ranges'][0]
+                        upper = par['ranges'][1]
+                        value = physical_to_transformed(float(par['regularization'][2]), lower, upper)
+                        self.grad_regularization[par['left']:par['right']] = 2.0 * alpha * (self.atmospheres[par['atm']].nodes[par['parameter']] - value)
+                        self.hessian_regularization[par['left']:par['right']] = 2.0 * alpha
 
                 loop += 1
 
@@ -1364,9 +1380,9 @@ class Model(object):
 
         while keepon:
 
-            H = 0.5 * ddchi2
+            H = 0.5 * (ddchi2 + np.diag(self.hessian_regularization))
             H += np.diag(lambdaLM * np.diag(H))
-            gradF = 0.5 * dchi2
+            gradF = 0.5 * (dchi2 + self.grad_regularization)
 
             U, w_inv, VT = self.modified_svd_inverse(H, tol=1e-8)
 
@@ -1383,7 +1399,7 @@ class Model(object):
             chi2_arr.append(self.compute_chi2(only_chi2=True))
             lambdas.append(lambdaLM)
 
-            if (self.verbose >= 3):
+            if (self.verbose >= 4):
                 if (direction == 'down'):
                     self.logger.info('  - Backtracking: {0:2d} - lambda: {1:7.5f} - chi2: {2:7.5f}'.format(loop, lambdaLM, chi2_arr[-1]))
                 else:
@@ -1481,6 +1497,8 @@ class Model(object):
 
             tmp = [pars['atm'] for pars in self.active_meta]
             tmp = list(set(tmp))
+
+            self.n_free_parameters_cycle = 0
             
             for k, v in self.atmospheres.items():
                 if (k in tmp):
@@ -1491,6 +1509,7 @@ class Model(object):
                                 self.logger.info('  - {0} with {1} node'.format(pars['parameter'], pars['n_nodes']))
                             else:
                                 self.logger.info('  - {0} with {1} nodes'.format(pars['parameter'], pars['n_nodes']))
+                            self.n_free_parameters_cycle += pars['n_nodes']
             
             # Randomize parameters if necessary
             if (randomize):
@@ -1519,9 +1538,9 @@ class Model(object):
                     self.logger.info('  * Optimal lambda: {0}'.format(lambda_opt))
 
                 # Give the final step
-                H = 0.5 * ddchi2
+                H = 0.5 * (ddchi2 + np.diag(self.hessian_regularization))
                 H += np.diag(lambda_opt * np.diag(H))
-                gradF = 0.5 * dchi2
+                gradF = 0.5 * (dchi2 + self.grad_regularization)
 
                 U, w_inv, VT = self.modified_svd_inverse(H, tol=1e-8)
 

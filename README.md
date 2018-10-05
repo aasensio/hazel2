@@ -111,7 +111,7 @@ input files.
 
 
 
-    iterator = hazel.iterator(use_mpi=False)    
+    iterator = hazel.Iterator(use_mpi=False)    
     mod = hazel.Model('conf_nonmpi_syn1d.ini')
     iterator.use_model(model=mod)
     iterator.run_all_pixels()
@@ -130,7 +130,7 @@ configuration file, and it will be broadcasted to all slaves internally.
 
 
 
-    iterator = hazel.iterator(use_mpi=True)
+    iterator = hazel.Iterator(use_mpi=True)
     rank = iterator.get_rank()
 
     if (rank == 0):    

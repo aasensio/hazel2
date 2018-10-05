@@ -8,7 +8,7 @@ from hazel.hsra import hsra_continuum
 from hazel.io import Generic_hazel_file
 import copy
 
-# from ipdb import set_trace as stop
+#from ipdb import set_trace as stop
 
 __all__ = ['Hazel_atmosphere']
 
@@ -33,12 +33,12 @@ class Hazel_atmosphere(General_atmosphere):
         self.units['Bx'] = 'G'
         self.units['By'] = 'G'
         self.units['Bz'] = 'G'        
-        self.units['tau'] = 'none'
+        self.units['tau'] = ''
         self.units['v'] = 'km/s'
         self.units['deltav'] = 'km/s'
-        self.units['beta'] = 'none'
-        self.units['a'] = 'none'
-        self.units['ff'] = 'none'
+        self.units['beta'] = ''
+        self.units['a'] = ''
+        self.units['ff'] = ''
 
         self.nodes['Bx'] = 0.0
         self.nodes['By'] = 0.0
@@ -278,7 +278,7 @@ class Hazel_atmosphere(General_atmosphere):
             By = self.parameters['By']
             Bz = self.parameters['Bz']
         
-                
+        
         B = np.sqrt(Bx**2 + By**2 + Bz**2)
         if (B == 0):
             thetaB = 0.0
@@ -315,7 +315,7 @@ class Hazel_atmosphere(General_atmosphere):
             dampingInput, dopplerVelocityInput, 
             betaInput, nbarInput, omegaInput)
         
-        l, stokes = hazel_code._synth(*args)        
+        l, stokes = hazel_code._synth(*args)   
 
         ff = self.parameters['ff']
         

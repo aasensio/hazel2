@@ -4,7 +4,7 @@ import hazel
 import h5py
 
 # Test a single inversion in non-iterator mode without randomization
-mod = hazel.Model('configurations/conf_single.ini', working_mode='inversion', verbose=2)
+mod = hazel.Model('configurations/conf_single.ini', working_mode='inversion', verbose=3)
 mod.read_observation()
 mod.open_output()
 
