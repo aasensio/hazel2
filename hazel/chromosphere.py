@@ -8,7 +8,7 @@ from hazel.hsra import hsra_continuum
 from hazel.io import Generic_hazel_file
 import copy
 
-#from ipdb import set_trace as stop
+# from ipdb import set_trace as stop
 
 __all__ = ['Hazel_atmosphere']
 
@@ -90,15 +90,15 @@ class Hazel_atmosphere(General_atmosphere):
         self.cycles['a'] = None
         self.cycles['ff'] = None
 
-        self.epsilon['Bx'] = 1.0
-        self.epsilon['By'] = 1.0
-        self.epsilon['Bz'] = 1.0      
-        self.epsilon['tau'] = 1.0
-        self.epsilon['v'] = 1.0
-        self.epsilon['deltav'] = 1.0
-        self.epsilon['beta'] = 1.0
-        self.epsilon['a'] = 1.0
-        self.epsilon['ff'] = 1.0
+        self.epsilon['Bx'] = 0.1
+        self.epsilon['By'] = 0.1
+        self.epsilon['Bz'] = 0.1      
+        self.epsilon['tau'] = 0.1
+        self.epsilon['v'] = 0.1
+        self.epsilon['deltav'] = 0.1
+        self.epsilon['beta'] = 0.1
+        self.epsilon['a'] = 0.1
+        self.epsilon['ff'] = 0.1
 
         self.jacobian['Bx'] = 1.0
         self.jacobian['By'] = 1.0
@@ -211,7 +211,7 @@ class Hazel_atmosphere(General_atmosphere):
         self.model_handler.open()
         out, ff = self.model_handler.read(pixel=0)
         self.model_handler.close()
-        
+
         self.set_parameters(out, ff)
 
         self.init_reference(check_borders=True)
@@ -228,11 +228,11 @@ class Hazel_atmosphere(General_atmosphere):
         -------
         None
         """         
-        for k, v in self.nodes.items():        
-            if (self.n_nodes[k] > 0):                
-                self.parameters[k] = self.reference[k] + np.squeeze(self.nodes[k])
-            else:                
-                self.parameters[k] = self.reference[k]            
+        for k, v in self.nodes.items():            
+            # if (self.n_nodes[k] > 0):                
+            self.parameters[k] = self.reference[k] + np.squeeze(self.nodes[k])
+            # else:                
+                # self.parameters[k] = self.reference[k]            
                             
     def print_parameters(self, first=False, error=False):
         # if (first):
@@ -309,13 +309,16 @@ class Hazel_atmosphere(General_atmosphere):
         betaInput = self.parameters['beta']
         nbarInput = np.asarray([0.0,0.0,0.0,0.0])
         omegaInput = np.asarray([0.0,0.0,0.0,0.0])
-        
+
+    
         args = (self.index, B1Input, hInput, tau1Input, boundaryInput, transInput, 
             anglesInput, nLambdaInput, lambdaAxisInput, dopplerWidthInput, 
             dampingInput, dopplerVelocityInput, 
             betaInput, nbarInput, omegaInput)
+
         
         l, stokes = hazel_code._synth(*args)   
+
 
         ff = self.parameters['ff']
         

@@ -139,4 +139,62 @@ if __name__ == '__main__':
     db_ff[:] = ff_3d
     f.close()
 
+    mod.exit_hazel()
+
+
+    #-------------------------------------------
+    # Synthesize a sample profile with some default configuration given in conf_syn_D3_10830.ini
+    # The observed files will be used later as observations for the inversions
+    #-------------------------------------------
+    mod = hazel.Model('configurations/conf_syn_D3_10830.ini')
+    mod.synthesize()
+
+    noise1 = 1e-4 * np.ones((150,4))
+    spec1 = mod.spectrum['spec1'].stokes.T + 1e-4 * np.random.randn(150,4)    
+
+    noise2 = 1e-4 * np.ones((120,4))
+    spec2 = mod.spectrum['spec2'].stokes.T + 1e-4 * np.random.randn(120,4)
+
+    # Generate wavelength axis
+    np.savetxt('observations/multi_10830.wavelength', mod.spectrum['spec1'].wavelength_axis, header='lambda')
+    np.savetxt('observations/multi_D3.wavelength', mod.spectrum['spec2'].wavelength_axis, header='lambda')
+
+    # Generate output Stokes parameters
+    f = open('observations/multi_10830_stokes.1d', 'w')
+    f.write('# LOS theta_LOS, phi_LOS, gamma_LOS\n')
+    f.write('0.0 0.0 90.0\n')
+    f.write('\n')
+    f.write('# Boundary condition I/Ic(mu=1), Q/Ic(mu=1), U/Ic(mu=1), V/Ic(mu=1)\n')
+    f.write('1.0 0.0 0.0 0.0\n')
+    f.write('\n')
+    f.write('# SI SQ SU SV sigmaI sigmaQ sigmaU sigmaV\n')
+    for i in range(150):
+        f.write('{0} {1}\n'.format('  '.join(spec1[i,:].astype('str')), '  '.join(noise[i,:].astype('str'))))
+    f.close()
+
+    f = open('observations/multi_D3_stokes.1d', 'w')
+    f.write('# LOS theta_LOS, phi_LOS, gamma_LOS\n')
+    f.write('0.0 0.0 90.0\n')
+    f.write('\n')
+    f.write('# Boundary condition I/Ic(mu=1), Q/Ic(mu=1), U/Ic(mu=1), V/Ic(mu=1)\n')
+    f.write('1.0 0.0 0.0 0.0\n')
+    f.write('\n')
+    f.write('# SI SQ SU SV sigmaI sigmaQ sigmaU sigmaV\n')
+    for i in range(120):
+        f.write('{0} {1}\n'.format('  '.join(spec2[i,:].astype('str')), '  '.join(noise[i,:].astype('str'))))
+    f.close()
+
+    # Files with wavelength weights
+    f = open('observations/multi_10830.weights', 'w')
+    f.write('# WeightI WeightQ WeightU WeightV\n')
+    for i in range(150):
+        f.write('1.0    1.0   1.0   1.0\n')
+    f.close()
+
+    f = open('observations/multi_D3.weights', 'w')
+    f.write('# WeightI WeightQ WeightU WeightV\n')
+    for i in range(120):
+        f.write('1.0    1.0   1.0   1.0\n')
+    f.close()
+
 

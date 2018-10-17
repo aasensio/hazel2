@@ -1,3 +1,4 @@
+# cython: language_level=3
 from numpy cimport ndarray as ar
 from numpy import empty, ascontiguousarray
 import numpy as np

@@ -9,7 +9,8 @@ import warnings
 try:
     import zarr
 except:
-    warnings.warn("zarr module not found. You will not be able to use zarr as input/output.")
+    pass
+    # warnings.warn("zarr module not found. You will not be able to use zarr as input/output.")
 
 #from ipdb import set_trace as stop
 

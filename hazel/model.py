@@ -20,7 +20,7 @@ import scipy.linalg
 import warnings
 import logging
 
-#from ipdb import set_trace as stop
+# from ipdb import set_trace as stop
 
 __all__ = ['Model']
 
@@ -302,8 +302,8 @@ class Model(object):
             self.n_free_parameters = 0
 
             for k, v in self.atmospheres.items():
-                for k2, v2 in v.cycles.items():                
-                    self.n_free_parameters += max(v2[0:self.n_cycles])
+                for k2, v2 in v.cycles.items():                    
+                    self.n_free_parameters += max(hazel.util.onlyint(v2[0:self.n_cycles+1]))
 
             if (self.verbose >= 1):
                 self.logger.info('Total number of free parameters in all cycles : {0}'.format(self.n_free_parameters))
@@ -1002,6 +1002,7 @@ class Model(object):
 
         """
         pars = []
+        coupled = []
         self.nodes = []
         left = 0
         right = 0
@@ -1012,8 +1013,10 @@ class Model(object):
                         if (par is not None):
                             if (hazel.util.isint(par[cycle])):
                                 if (par[cycle] > 0):
+                                    
                                     # [Atmosphere name, n_nodes, nodes, value, range]
                                     self.atmospheres[atm].nodes[l] = np.zeros(par[cycle])
+
                                     self.atmospheres[atm].n_nodes[l] = par[cycle]
 
                                     right += par[cycle]
@@ -1021,34 +1024,27 @@ class Model(object):
                                     n_lambda = len(self.atmospheres[atm].spectrum.wavelength_axis)
                                     tmp = {'atm': atm, 'n_nodes': par[cycle], 'parameter': l, 
                                         'ranges': self.atmospheres[atm].ranges[l], 'delta': self.atmospheres[atm].epsilon[l],
-                                        'left': left, 'right': right, 'regularization': self.atmospheres[atm].regularization[l]}
+                                        'left': left, 'right': right, 'regularization': self.atmospheres[atm].regularization[l],
+                                        'coupled': False}
 
                                     self.nodes.append(self.atmospheres[atm].nodes[l])
                                         
                                     left = copy.copy(right)
                                                                                                             
                                     pars.append(tmp)
+
                                 else:
                                     self.atmospheres[atm].nodes[l] = 0.0
                                     self.atmospheres[atm].n_nodes[l] = 0
                             else:
-                                self.atmospheres[atm].nodes[l] = np.zeros(par[cycle])
-                                self.atmospheres[atm].n_nodes[l] = par[cycle]
-
-                                right += par[cycle]
-
+                                
                                 n_lambda = len(self.atmospheres[atm].spectrum.wavelength_axis)
-                                tmp = {'atm': atm, 'n_nodes': par[cycle], 'parameter': l, 
-                                    'ranges': self.atmospheres[atm].ranges[l], 'delta': self.atmospheres[atm].epsilon[l], 
-                                    'left': left, 'right': right, 'regularization': self.atmospheres[atm].regularization[l]}
+                                tmp = {'atm': atm, 'n_nodes': par[cycle], 'parameter': l, 'coupled': True}
 
-                                self.nodes.append(self.atmospheres[atm].nodes[l])
-
-                                left = copy.copy(right)
-
-                                pars.append(tmp)
+                                coupled.append(tmp)
 
         self.active_meta = pars
+        self.coupled_meta = coupled
 
         if (not self.nodes):
             raise Exception("No parameters to invert in cycle {0}. Please add them or reduce the number of cycles. ".format(cycle))            
@@ -1073,7 +1069,7 @@ class Model(object):
 
         self.synthesize()
 
-        if (not compute_rf):
+        if (not compute_rf):            
             return
 
         n_active_pars = len(self.active_meta)
@@ -1083,7 +1079,7 @@ class Model(object):
         self.hessian_regularization = np.zeros(self.n_free_parameters_cycle)
         self.grad_regularization = np.zeros(self.n_free_parameters_cycle)
 
-        for par in self.active_meta:
+        for par in self.active_meta:            
             nodes = self.nodes[par['left']:par['right']]
 
             lower = par['ranges'][0]
@@ -1101,6 +1097,14 @@ class Model(object):
 
                 # Perturb this parameter
                 self.atmospheres[par['atm']].nodes[par['parameter']] = nodes + perturbation
+
+                # Also perturb those parameters that are coupled
+                for par2 in self.coupled_meta:
+                    if (par2['coupled'] is True):                            
+                        if (par['atm'] == par2['n_nodes'] and par['parameter'] == par2['parameter']):
+                            if (self.verbose >= 4):
+                                self.logger.info("   * Coupling RF to {0} - {1}".format(par2['parameter'], par2['atm']))
+                            self.atmospheres[par2['atm']].nodes[par2['parameter']] = nodes + perturbation
                                 
                 # Synthesize
                 self.synthesize(perturbation=True)
@@ -1108,7 +1112,16 @@ class Model(object):
                 # And come back to the original value of the nodes
                 self.atmospheres[par['atm']].nodes[par['parameter']] = nodes
 
-                rf = np.expand_dims((self.spectrum['spec1'].stokes - self.spectrum['spec1'].stokes_perturbed) / perturbation[i], 0)
+                for par2 in self.coupled_meta:
+                    if (par2['coupled'] is True):
+                        if (par['atm'] == par2['n_nodes'] and par['parameter'] == par2['parameter']):
+                            self.atmospheres[par2['atm']].nodes[par2['parameter']] = nodes
+                
+                rf = {}
+                for k, v in self.spectrum.items():
+                    rf[k] = np.expand_dims((v.stokes - v.stokes_perturbed) / perturbation[i], 0)
+
+                # rf = np.expand_dims((self.spectrum['spec1'].stokes - self.spectrum['spec1'].stokes_perturbed) / perturbation[i], 0)
 
                 if (include_jacobian):
                     jacobian = self.atmospheres[par['atm']].jacobian[par['parameter']]                    
@@ -1120,7 +1133,9 @@ class Model(object):
                 if (loop == 0):
                     self.response = rf
                 else:
-                    self.response = np.vstack([self.response, rf])
+                    # self.response = np.vstack([self.response, rf])
+                    for k, v in self.spectrum.items():
+                        self.response[k] = np.vstack([self.response[k], rf[k]])
 
                 if (par['regularization'] is not None):
                     if (par['regularization'][0] == 'l2-value'):
@@ -1176,13 +1191,25 @@ class Model(object):
         """
 
         n_active_pars = len(self.active_meta)  
-                
+
+        # Modify all active parameters
         for par in self.active_meta:
             left = par['left']
             right = par['right']
 
             self.atmospheres[par['atm']].nodes[par['parameter']] = nodes[left:right]
 
+        # Modify all coupled parameters accordingly
+        for par in self.coupled_meta:
+            for par2 in self.active_meta:
+                if (par2['atm'] == par['n_nodes'] and par2['parameter'] == par['parameter']):
+                    
+                    left = par2['left']
+                    right = par2['right']
+                    
+                    self.atmospheres[par['atm']].nodes[par['parameter']] = nodes[left:right]
+                    self.atmospheres[par['atm']].parameters[par['parameter']] = copy.copy(self.atmospheres[par2['atm']].parameters[par2['parameter']])
+                    
 
     def modified_svd_inverse(self, H, tol=1e-8):
         """
@@ -1209,7 +1236,7 @@ class Model(object):
 
         w_new = np.zeros_like(w)
         
-        for par in self.active_meta:
+        for par in self.active_meta:            
             left = par['left']
             right = par['right']
 
@@ -1251,30 +1278,30 @@ class Model(object):
         n = len(self.nodes)
         dchi2 = np.zeros(n)
         ddchi2 = np.zeros((n,n))
+
         for k, v in self.spectrum.items():
             residual = (v.stokes - v.obs)
-
+            
             # Do not use weights. This is used for the computation of errors            
-            if (weights is None):
-                weights = (v.stokes_weights[:,self.cycle][:,None] * v.wavelength_weights) * v.factor_chi2            
+            # if (weights is None):
+            weights = (v.stokes_weights[:,self.cycle][:,None] * v.wavelength_weights) * v.factor_chi2            
 
             chi2 += np.sum(weights * residual**2)
+
             rss += np.sum(residual**2)
             
             if (not only_chi2):
-                dchi2 += -2.0 * np.sum(weights[None,:,:] * self.response * residual[None,:,:] , axis=(1,2)) #/ v.dof
-                ddchi2 += 2.0 * np.sum(weights[None,None,:,:] * self.response[None,:,:,:] * self.response[:,None,:,:] , axis=(2,3)) #/ v.dof
+                response = self.response[k]
+                dchi2 += -2.0 * np.sum(weights[None,:,:] * response * residual[None,:,:] , axis=(1,2)) #/ v.dof
+                ddchi2 += 2.0 * np.sum(weights[None,None,:,:] * response[None,:,:,:] * response[:,None,:,:] , axis=(2,3)) #/ v.dof
 
-                v.chi2 = chi2
-                v.rss = rss
-
-                return chi2, dchi2, ddchi2
-            else:
-                
-                v.chi2 = chi2
-                v.rss = rss
-
-                return chi2
+            v.chi2 = chi2
+            v.rss = rss
+            
+        if (not only_chi2):                
+            return chi2, dchi2, ddchi2
+        else:                
+            return chi2
 
         # if (not only_chi2):            
         #     return chi2, dchi2, ddchi2
@@ -1393,10 +1420,11 @@ class Model(object):
             sols.append(new_solution)
         
             self.set_new_model(new_solution)
-            
+                        
             self.synthesize_and_compute_rf()
-
+            
             chi2_arr.append(self.compute_chi2(only_chi2=True))
+            
             lambdas.append(lambdaLM)
 
             if (self.verbose >= 4):
@@ -1443,7 +1471,7 @@ class Model(object):
         """
         Randomize all free parameters to lie uniformly in the interval [-2,2] in the transformed
         domain
-        """
+        """        
         self.nodes = np.random.uniform(low=-2.0, high=2.0, size=self.nodes.shape)
 
     def invert(self, randomize=False, randomization_ind=None):
@@ -1502,14 +1530,20 @@ class Model(object):
             
             for k, v in self.atmospheres.items():
                 if (k in tmp):
-                    self.logger.info('Free parameters for {0}'.format(k))
+                    if (self.verbose >= 2):
+                        self.logger.info('Free parameters for {0}'.format(k))
                     for pars in self.active_meta:
                         if (pars['atm'] == k):
-                            if (pars['n_nodes'] == 1):
-                                self.logger.info('  - {0} with {1} node'.format(pars['parameter'], pars['n_nodes']))
-                            else:
-                                self.logger.info('  - {0} with {1} nodes'.format(pars['parameter'], pars['n_nodes']))
-                            self.n_free_parameters_cycle += pars['n_nodes']
+                            if (self.verbose >= 3):
+                                if (pars['coupled'] is False):
+                                    if (pars['n_nodes'] == 1):
+                                        self.logger.info('  - {0} with {1} node'.format(pars['parameter'], pars['n_nodes']))
+                                    else:
+                                        self.logger.info('  - {0} with {1} nodes'.format(pars['parameter'], pars['n_nodes']))
+                                else:
+                                    self.logger.info('  - {0} coupled to {1} variable'.format(pars['parameter'], pars['n_nodes']))
+                            if (pars['coupled'] is False):
+                                self.n_free_parameters_cycle += pars['n_nodes']
             
             # Randomize parameters if necessary
             if (randomize):
@@ -1573,6 +1607,7 @@ class Model(object):
 
                 if (self.verbose > 2):
                     self.atmospheres['ch1'].print_parameters(first=first)
+                    self.atmospheres['ch2'].print_parameters(first=first)
                     first = False
                         
             self.set_new_model(self.nodes)

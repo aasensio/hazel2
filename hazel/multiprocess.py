@@ -71,6 +71,9 @@ class Iterator(object):
                 # Initialize pyhazel
                 hazel_code._init()
                 self.model.init_sir()
+
+            # In MPI mode, reduce MPI verbosity to a minimum
+            self.model.verbose = 0
                             
         else:
             self.model = model
@@ -179,6 +182,8 @@ class Iterator(object):
                 data_received = self.comm.recv(source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=self.status)
                 source = self.status.Get_source()
                 tag = self.status.Get_tag()
+
+                self.workers = num_workers - closed_workers
                 
                 if tag == tags.READY:
                     # Worker is ready, send a task
@@ -218,8 +223,8 @@ class Iterator(object):
                         
                         task_index += 1
                         pbar.update(1)
-                        self.last_sent = '{0}->{1}'.format(task_index, source)
-                        pbar.set_postfix(sent=self.last_sent, received=self.last_received)
+                        self.last_sent = '{0} to {1}'.format(task_index, source)
+                        pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers=self.workers)
                     else:
                         self.comm.send(None, dest=source, tag=tags.EXIT)
                 elif tag == tags.DONE:
@@ -238,12 +243,13 @@ class Iterator(object):
 
                         self.model.output_handler.write(self.model, pixel=index, randomization=loop)
                                                         
-                    self.last_received = '{0}->{1}'.format(index, source)
-                    pbar.set_postfix(sent=self.last_sent, received=self.last_received)
+                    self.last_received = '{0} from {1}'.format(index, source)
+                    pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers=self.workers)
                     # self.logger.info('Received {0}->{1}'.format(index, source))
 
                 elif tag == tags.EXIT:                    
                     closed_workers += 1
+                    self.logger.info('Worker {0} has finished'.format(source))
 
         self.model.close_output()
 
@@ -337,6 +343,7 @@ class Iterator(object):
         if (self.use_mpi):
             if (self.rank == 0):
                 self.mpi_parent_work()
+                self.logger.info('Finished.')
             else:
                 self.mpi_workers_work()
         else:

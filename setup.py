@@ -173,3 +173,9 @@ if __name__ == "__main__":
             os.remove(filename)
         except:
             pass
+
+    for filename in glob.glob("*.mod", recursive=True):
+        try:
+            os.remove(filename)
+        except:
+            pass

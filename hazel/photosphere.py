@@ -64,13 +64,13 @@ class SIR_atmosphere(General_atmosphere):
         self.cycles['Bz'] = None
         self.cycles['ff'] = None
 
-        self.epsilon['T'] = 1.0
-        self.epsilon['vmic'] = 1.0
-        self.epsilon['v'] = 1.0
-        self.epsilon['Bx'] = 1.0
-        self.epsilon['By'] = 1.0
-        self.epsilon['Bz'] = 1.0
-        self.epsilon['ff'] = 1.0
+        self.epsilon['T'] = 0.1
+        self.epsilon['vmic'] = 0.1
+        self.epsilon['v'] = 0.1
+        self.epsilon['Bx'] = 0.1
+        self.epsilon['By'] = 0.1
+        self.epsilon['Bz'] = 0.1
+        self.epsilon['ff'] = 0.1
 
         self.regularization['T'] = None
         self.regularization['vmic'] = None
