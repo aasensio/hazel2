@@ -8,7 +8,7 @@ cdef extern:
 	void c_setpsf(int *nPSF, float *xPSF, float *yPSF)
 	void c_synthrf(int *index, int *nDepth, int *nLambda, float *macroturbulence, float *model, float *stokes, float *rt, float *rp, float *rh,
 		float *rv, float *rf, float *rg, float *rm, float *rmac)
-	void c_synth(int *index, int *nDepth, int *nLambda, double *macroturbulence, double *model, double *stokes)
+	void c_synth(int *index, int *nDepth, int *nLambda, double *macroturbulence, double *model, double *stokes, int *error)
 
 def init(int index, str file):
 	cdef:
@@ -34,8 +34,9 @@ def synth(int index, int nLambda, ar[double, ndim=1] log_tau, ar[double, ndim=1]
 	double macroturbulence):
 	cdef:
 		int nDepth = len(log_tau)
+		int error
 		ar[double, ndim=2] model = empty((8,nDepth), order='F')
-		ar[double, ndim=2] stokes = empty((5,nLambda), order='F')
+		ar[double, ndim=2] stokes = empty((5,nLambda), order='F')		
 		
 	model[0,:] = log_tau
 	model[1,:] = T
@@ -46,9 +47,9 @@ def synth(int index, int nLambda, ar[double, ndim=1] log_tau, ar[double, ndim=1]
 	model[6,:] = 180.0 / np.pi * np.arccos(Bz / (model[4,:] + 1e-8))      # Regularize in case B=0
 	model[7,:] = 180.0 / np.pi * np.arctan2(By, Bx)
 
-	c_synth(&index, &nDepth, &nLambda, &macroturbulence, &model[0,0], <double*> stokes.data)
+	c_synth(&index, &nDepth, &nLambda, &macroturbulence, &model[0,0], <double*> stokes.data, &error)
 	
-	return stokes
+	return stokes, error
 
 def synthRF(int index, int nLambda, ar[float, ndim=1] log_tau, ar[float, ndim=1] T, ar[float, ndim=1] Pe, ar[float, ndim=1] vmic, 
 	ar[float, ndim=1] vlos, ar[float, ndim=1] Bx, ar[float, ndim=1] By, ar[float, ndim=1] Bz, 

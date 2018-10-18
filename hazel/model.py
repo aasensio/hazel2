@@ -25,7 +25,7 @@ import logging
 __all__ = ['Model']
 
 class Model(object):
-    def __init__(self, config=None, working_mode='synthesis', verbose=0, debug=False, rank=0, randomization=None):
+    def __init__(self, config=None, working_mode='synthesis', verbose=0, debug=False, rank=0, randomization=None, use_mpi=False):
 
         np.random.seed(123)
 
@@ -48,6 +48,7 @@ class Model(object):
         self.working_mode = working_mode
         self.pixel = 0
         self.debug = debug
+        self.use_mpi = use_mpi
 
         self.epsilon = 1e-2
         
@@ -68,8 +69,10 @@ class Model(object):
             self.n_randomization = 1        
         else:
             self.n_randomization = randomization
-
+        
         if (config is not None):
+            if (self.verbose >= 1):
+                self.logger.info('Using configuration from file : {0}'.format(config))
             self.configuration = Configuration(config)
 
             self.use_configuration(self.configuration.config_dict)
@@ -289,7 +292,7 @@ class Model(object):
 
         
 
-        self.init_sir()        
+        self.init_sir()
 
         for k, v in self.spectrum.items():            
             v.allocate_info_cycles(n_cycles=self.n_cycles)
@@ -792,7 +795,7 @@ class Model(object):
         """
         for k, v in self.atmospheres.items():
             if (v.type == 'photosphere'):
-                f = open('malla.grid', 'w')
+                f = open('lte.grid', 'w')
                 f.write("IMPORTANT: a) All items must be separated by commas.                 \n")
                 f.write("           b) The first six characters of the last line                \n")
                 f.write("          in the header (if any) must contain the symbol ---       \n")
@@ -825,10 +828,12 @@ class Model(object):
                 
                 v.n_lambda = sir_code.init(v.index, filename)
 
-                try:
-                    os.remove('malla.grid')
-                except OSError:
-                    pass
+        # Only remove the file if we are in single-node inversion. Otherwise, it will be done by the parent node in multiprocessing
+        # if (not self.use_mpi):
+        #     try:
+        #         os.remove('lte.grid')
+        #     except OSError:
+        #         pass
 
     def exit_hazel(self):
         for k, v in self.atmospheres.items():            
@@ -943,13 +948,14 @@ class Model(object):
                                 stokes_out = self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top] * hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
 
                         if (self.atmospheres[atm].type == 'straylight'):
-                            stokes = self.atmospheres[atm].synthesize()
+                            stokes, error = self.atmospheres[atm].synthesize()
                             stokes += (1.0 - self.atmospheres[atm].parameters['ff']) * stokes_out                            
                         else:
                             if (k == 0):                                
-                                stokes = self.atmospheres[atm].synthesize(stokes_out)
-                            else:                        
-                                stokes += self.atmospheres[atm].synthesize(stokes_out)
+                                stokes, error = self.atmospheres[atm].synthesize(stokes_out)
+                            else:             
+                                tmp, error = self.atmospheres[atm].synthesize(stokes_out)       
+                                stokes += tmp
                                     
                         ind_low, ind_top = self.atmospheres[atm].wvl_range
                         
@@ -1606,8 +1612,10 @@ class Model(object):
                 iteration += 1
 
                 if (self.verbose > 2):
-                    self.atmospheres['ch1'].print_parameters(first=first)
-                    self.atmospheres['ch2'].print_parameters(first=first)
+                    for k, v in self.atmospheres.items():
+                        if (v.type == 'chromosphere'):
+                            v.print_parameters(first=first)
+                    # self.atmospheres['ch2'].print_parameters(first=first)
                     first = False
                         
             self.set_new_model(self.nodes)

@@ -7,7 +7,7 @@ cdef extern:
 		double* boundaryInput, int* transInput, double* anglesInput, int* nLambdaInput, double* lambdaAxisInput,
 		double* dopplerWidthInput, double* dampingInput, double* dopplerVelocityInput, 
 		double* betaInput, double* nbarInput, double* omegaInput, 
-		double* wavelengthOutput, double* stokesOutput)
+		double* wavelengthOutput, double* stokesOutput, int* error)
 		
 	void c_init()
 	void c_exit(int *index)
@@ -43,19 +43,21 @@ def _synth(int index=1, ar[double,ndim=1] B1Input=zeros(3), double hInput=3.0,
     Returns:
         wavelengthOutput: (float) vector of size nLambdaInput with the wavelength axis
         stokesOutput: (float) array of size (4,nLambdaInput) with the emergent Stokes profiles
+		error: (int) zero if everything went OK
 	"""
 	
 	cdef:
 		ar[double,ndim=1] wavelengthOutput = empty(nLambdaInput, order='F')
 		ar[double,ndim=2] stokesOutput = empty((4,nLambdaInput), order='F')
+		int error
 		
 	c_hazel(&index, &B1Input[0], &hInput, &tau1Input,  
 		&boundaryInput[0,0], &transInput, &anglesInput[0], &nLambdaInput, &lambdaAxisInput[0],  
 		&dopplerWidthInput, &dampingInput, &dopplerVelocityInput, 
 		&betaInput, &nbarInput[0], &omegaInput[0], <double*> wavelengthOutput.data, 
-		<double*> stokesOutput.data)
+		<double*> stokesOutput.data, &error)
     
-	return wavelengthOutput, stokesOutput
+	return wavelengthOutput, stokesOutput, error
 	
 def _init():
 	"""

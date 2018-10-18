@@ -13,7 +13,7 @@ contains
 subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     transInput, anglesInput, nLambdaInput, lambdaAxisInput, dopplerWidthInput, dampingInput, &
     dopplerVelocityInput, betaInput, nbarInput, omegaInput, &
-    wavelengthOutput, stokesOutput) bind(c)
+    wavelengthOutput, stokesOutput, error) bind(c)
 
     integer(c_int), intent(in) :: transInput, index
     integer(c_int), intent(in) :: nLambdaInput
@@ -24,14 +24,17 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     real(c_double), intent(in) :: hInput, tau1Input, dopplerWidthInput, dampingInput, dopplerVelocityInput, betaInput
     real(c_double), intent(out), dimension(nLambdaInput) :: wavelengthOutput
     real(c_double), intent(out), dimension(4,nLambdaInput) :: stokesOutput
+    integer(c_int), intent(out) :: error
 
-    integer :: n, nterml, ntermu, error
+    integer :: n, nterml, ntermu
     
     real(c_double) :: ae, wavelength, reduction_factor, reduction_factor_omega, j10
     integer :: i, j
     logical :: recompute_see_rtcoef
 
     params(index)%recompute_see_rtcoef = .True.
+
+    error = 0
 
     ! If the parameters on which the RT coefficients depend on change, then recompute the coefficients
     if (params(index)%dopplerVelocityInput_old == dopplerVelocityInput .and. &

@@ -114,7 +114,7 @@ c nombre del fichero con las abundancias
         eps(92) = -.47
         
 c leemos la malla  
-        mallaobs='malla.grid'
+        mallaobs='lte.grid'
         call lee_malla(mallaobs)     ! carga el common Malla/ntl,nlin,npas,nble,dlamda
                           
 c nombre del fichero de salida con los perfiles de Stokes        

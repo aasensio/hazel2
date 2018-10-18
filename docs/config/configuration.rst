@@ -328,7 +328,7 @@ to those of chromospheres).
 * ``Spectral lines`` : it is a comma-separated list of lines to synthesize from the :ref:`photospheric_lines`. Note that if you only want one line, you should use a comma at the end. The list of available lines
 * ``Reference frame`` : it defines the reference system in which the magnetic field is measured. ``line-of-sight`` or ``vertical`` (traditional mode for |hazel2|). If absent, ``vertical`` is used by default.
 * ``Ranges`` : ranges of variation of each parameter. If ``None``, consider it unconstrained. If not, it will be constrained to the range using a logit transform (with a small :math:`\epsilon` to avoid under/overflow when close to the border).
-* ``Nodes`` : defines the number of nodes in each cycle when doing inversions
+* ``Nodes`` : defines the number of nodes in each cycle when doing inversions. It is possible to couple parameters with those of another atmosphere by using the name of the atmosphere instead of the number of nodes.
 * ``Regularization`` : not yet implemented
 
 Chromospheres
@@ -382,7 +382,7 @@ relative to the line of sight.
 * ``Reference frame`` : it defines the reference system in which the magnetic field is measured. ``line-of-sight`` or ``vertical`` (traditional mode for |hazel2|). If absent, ``vertical`` is used by default.
 * ``Height`` : height of the slab in arcsec.
 * ``Ranges`` : ranges of variation of each parameter. If ``None``, consider it unconstrained. If not, it will be constrained to the range.
-* ``Nodes`` : defines the number of nodes in each cycle when doing inversions
+* ``Nodes`` : defines the number of nodes in each cycle when doing inversions. It is possible to couple parameters with those of another atmosphere by using the name of the atmosphere instead of the number of nodes.
 * ``Regularization`` : not yet implemented
 
 Parametric

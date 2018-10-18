@@ -317,9 +317,8 @@ class Hazel_atmosphere(General_atmosphere):
             betaInput, nbarInput, omegaInput)
 
         
-        l, stokes = hazel_code._synth(*args)   
-
+        l, stokes, error = hazel_code._synth(*args)   
 
         ff = self.parameters['ff']
         
-        return ff * stokes #/ hsra_continuum(self.multiplets[self.active_line])
+        return ff * stokes, error #/ hsra_continuum(self.multiplets[self.active_line])

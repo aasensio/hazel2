@@ -10,6 +10,7 @@ import h5py
 from hazel.codes import hazel_code
 from tqdm import tqdm
 import logging
+import os
 # from ipdb import set_trace as stop
 
 class tags(IntEnum):
@@ -28,8 +29,8 @@ class Iterator(object):
             if (not _mpi_available):
                 raise Exception("You need MPI and mpi4py installed in your system to use this option.")
             self.comm = MPI.COMM_WORLD   # get MPI communicator object
-            self.size = self.comm.size        # total number of processes
-            self.rank = self.comm.rank        # rank of this process
+            self.size = self.comm.Get_size()        # total number of processes
+            self.rank = self.comm.Get_rank()        # rank of this process
             self.status = MPI.Status()   # get MPI status object                        
         else:
             self.rank = 0            
@@ -55,7 +56,7 @@ class Iterator(object):
         if (self.use_mpi):
             if (self.rank == 0):
                 self.model = model
-
+                
                 if (self.model.verbose):
                     self.logger.info('Broadcasting models to all workers')
 
@@ -348,3 +349,9 @@ class Iterator(object):
                 self.mpi_workers_work()
         else:
             self.nonmpi_work()
+
+        if (self.rank == 0):
+            try:
+                os.remove('lte.grid')
+            except OSError:
+                pass

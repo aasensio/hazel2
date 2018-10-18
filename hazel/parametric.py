@@ -195,5 +195,7 @@ class Parametric_atmosphere(General_atmosphere):
         profile, _ = fvoigt(a, (self.wvl_axis - lambda0) / sigma)
 
         stokes[0,:] *= ff * (1.0 - d * profile)
+
+        error = 0
         
-        return stokes
+        return stokes, error

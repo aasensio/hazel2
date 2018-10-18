@@ -149,11 +149,12 @@ contains
 	end subroutine c_setpsf
 
 
-	subroutine c_synth(index, nDepth, nLambda, macroturbulence, model, stokes) bind(c)
+	subroutine c_synth(index, nDepth, nLambda, macroturbulence, model, stokes, error) bind(c)
 	integer(c_int), intent(in) :: index, nDepth, nLambda
 	real(c_double), intent(in) :: model(8,ndepth)
 	real(c_double), intent(in) :: macroturbulence
 	real(c_double), intent(out) :: stokes(5,nLambda)
+	integer(c_int), intent(out) :: error
 	
 	real*4 stok(kld4)
     real*4 rt(kldt4),rp(kldt4),rh(kldt4),rv(kldt4)
@@ -194,6 +195,7 @@ contains
 	common/Lineas_all/atom_all,istage_all,wlengt_all,zeff_all,energy_all,loggf_all,mult_all,design_all,tam_all,alfa_all,sigma_all
 
 		atmosmodel = 0
+		error = 0
 
 		ntl = conf(index)%ntl
 		nlin = conf(index)%nlin
