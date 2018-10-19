@@ -157,6 +157,7 @@ configuration file, and it will be broadcasted to all agents internally.
    preparation
    examples
    graphical
+   changelog
    api
    acknowledgements
    disclaimer

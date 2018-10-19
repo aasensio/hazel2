@@ -35,7 +35,7 @@ type(configuration) :: conf(10)
 
 contains
 
-	subroutine c_init(index, nchar, file_lines, nLambda) bind(c)
+	subroutine c_init_externalfile(index, nchar, file_lines, nLambda) bind(c)
 	integer(c_int), intent(in) :: index, nchar
 	character(c_char), intent(in) :: file_lines(nchar)
 	integer(c_int), intent(out) :: nLambda
@@ -65,8 +65,6 @@ contains
 	common/ifiltro/ifiltro
 	common/abundances/eps
 
-
-
 		call leyendo
 
 		!call lee_all_lines
@@ -91,7 +89,19 @@ contains
 		conf(index)%nlins = nlins
 		conf(index)%npass = npass
 		conf(index)%dlamdas = dlamdas
+
+	
 		conf(index)%abu = eps
+
+		print *, 'ntl ', ntl
+		print *, 'nlin ', nlin
+		print *, 'npas ', npas
+		print *, 'nble ', nble
+		print *, 'dlamda ', dlamda(1:npas(1))
+		print *, 'ntls ', ntls
+		print *, 'nlins ', nlins
+		print *, 'npass ', npass
+		print *, 'dlamdas ', dlamdas
 
 
         ixx=0
@@ -122,9 +132,177 @@ contains
              conf(index)%tam_all(2,ixx)=tam(2)
              conf(index)%alfa_all(ixx)=alfa
              conf(index)%sigma_all(ixx)=sigma
+
+			 print *, iln, ible
+			 print *, 'atom ', atom
+			 print *, 'istage ', istage
+			 print *, 'wlengt ', wlengt
+			 print *, 'zeff ', zeff
+			 print *, 'energy ', energy
+			 print *, 'loggf ', loggf
+			 print *, 'mult1 ', mult(1)
+			 print *, 'mult2 ', mult(2)
+			 print *, 'design1 ', design(1)
+			 print *, 'design2 ', design(2)
+			 print *, 'tam1 ', tam(1)
+			 print *, 'tam2 ', tam(2)
+			 print *, 'alfa ', alfa
+			 print *, 'sigma ', sigma
+
              
            enddo
         enddo   
+
+	end subroutine c_init_externalfile
+
+
+	subroutine c_init(index, n_blend, lines_in, atom_in, istage_in, wlength_in, zeff_in, energy_in, loggf_in, mult1_in, mult2_in, &
+		design1_in, design2_in, tam1_in, tam2_in, alfa_in, sigma_in, lambda0_in, lambda1_in, n_steps_in) bind(c)
+	integer(c_int), intent(in) :: index, n_blend
+	integer(c_int), intent(in) :: atom_in(n_blend), istage_in(n_blend), lines_in(n_blend)
+	integer(c_int), intent(in) :: mult1_in(n_blend), mult2_in(n_blend), design1_in(n_blend), design2_in(n_blend)
+	real(c_double), intent(in) :: zeff_in(n_blend), energy_in(n_blend), loggf_in(n_blend), wlength_in(n_blend)
+	real(c_double), intent(in) :: tam1_in(n_blend), tam2_in(n_blend), alfa_in(n_blend), sigma_in(n_blend)
+	integer(c_int), intent(in) :: n_steps_in
+	real(c_double), intent(in) :: lambda0_in, lambda1_in
+
+	integer :: i, j, k, ifiltro
+	integer ntl,nlin(kl),npas(kl),nble(kl)
+	real*4 dlamda(kld)
+	integer ntls,nlins(kl4),npass(kl4)
+	real*4 dlamdas(kld4)
+	character*2 atom
+	integer istage
+	real*4 wlengt
+	real*4 zeff
+	real*4 energy
+	real*4 loggf
+	integer mult(2)
+	character*1 design(2)
+	real*4 tam(2)
+	real*4 alfa
+	real*4 sigma
+	real*4 lstep
+
+	character(len=1), dimension(6) :: state = (/'S', 'P', 'D', 'F', 'G', 'H'/)
+
+	character(len=2), dimension(92) :: atom_name = (/'H ','HE','LI','BE','B ','C ','N ','O ','F ','NE',&
+     'NA','MG','AL','SI','P ','S ','CL','AR','K ','CA','SC','TI','V ','CR',&
+     'MN','FE','CO','NI','CU','ZN','GA','GE','AS','SE','BR','KR',&
+     'RB','SR','Y ','ZR','NB','MO','TC','RU','RH','PD','AG','CD','IN',&
+     'SN','SB','TE','I ','XE','CS','BA','LA','CE','PR','ND','PM',&
+     'SM','EU','GD','TB','DY','HO','ER','TM','YB','LU','HF','TA','W ',&
+     'RE','OS','IR','PT','AU','HG','TL','PB','BI','PO','AT','RN',&
+     'FR','RA','AC','TH','PA','U '/)
+
+	real(kind=4), dimension(92) :: eps = (/12.00,11.00,1.00,1.15,2.60,8.69,7.99,8.91,4.56 ,8.00 ,6.28 ,7.53,&
+		6.43,7.50 ,5.45 ,7.21 ,5.50 ,6.58 ,5.05 ,6.36 ,2.99 ,4.88 ,3.91 ,5.61 ,5.47 ,7.46 ,4.85 ,6.18 ,4.24,& 
+        4.60 ,2.88 ,3.57 ,2.39 ,3.35 ,2.63 ,3.21 ,2.60 ,2.93 ,2.18 ,2.46 ,1.46 ,2.10 ,0.00 ,1.78 ,1.10 ,1.69,& 
+        0.94 ,1.86 ,1.66 ,2.00 ,1.00 ,2.25 ,1.51 ,2.19 ,1.12 ,2.18 ,1.07 ,1.58 ,0.76 ,1.40 ,0.00 ,0.88 ,0.48,& 
+        1.13 ,0.20 ,1.07 ,0.26 ,0.93 ,0.00 ,1.08 ,0.76 ,0.88 ,-.09 ,0.98 ,0.26 ,1.45 ,1.36 ,1.80 ,1.13 ,1.27,& 
+        0.90 ,1.90 ,0.71 ,-8.0 ,-8.0 ,-8.0 ,-8.0 ,-8.0 ,-8.0 ,0.02 ,-8.0 ,-.47/)
+
+
+	integer :: ixx, iln, ible, nxx
+
+	common/Malla/ntl,nlin,npas,nble,dlamda
+    common/Malla4/ntls,nlins,npass,dlamdas  !common para StokesFRsub
+	common/ifiltro/ifiltro
+	common/abundances/eps
+
+		ntl = 1
+		ntls = 4
+		npas(1) = n_steps_in
+		nble(1) = n_blend
+
+		lstep = (lambda1_in - lambda0_in) / (n_steps_in - 1.0)
+
+		do i = 0, n_steps_in-1
+			dlamda(i+1) = lambda0_in + lstep * i
+		enddo
+				
+		do i = 1, n_blend
+			nlin(i) = lines_in(i)
+		enddo
+
+		k = 1
+		do j = 1, 4				
+			do i = 1, n_blend
+				nlins(k) = nlin(i)				
+				k = k + 1
+			enddo
+		enddo
+		
+		do j = 1, 4				
+			npass(j) = npas(1)
+		enddo
+
+		k = 1
+		do j = 1, 4
+			do i = 1, npas(1)
+				dlamdas(k) = dlamda(i)
+				k = k + 1
+			enddo
+		enddo
+
+		conf(index)%ntl = ntl
+		conf(index)%nlin = nlin
+		conf(index)%npas = npas
+		conf(index)%nble = nble
+		conf(index)%dlamda = dlamda
+		conf(index)%ntls = ntls
+		conf(index)%nlins = nlins
+		conf(index)%npass = npass
+		conf(index)%dlamdas = dlamdas
+		conf(index)%abu = eps
+
+		ifiltro = 0
+
+		! print *, 'ntl ', ntl
+		! print *, 'nlin ', nlin
+		! print *, 'npas ', npas
+		! print *, 'nble ', nble
+		! print *, 'dlamda ', dlamda(1:npas(1))
+		! print *, 'ntls ', ntls
+		! print *, 'nlins ', nlins
+		! print *, 'npass ', npass
+		! print *, 'dlamdas ', dlamdas(1:4*npas(1))
+
+
+
+		do ixx = 1, n_blend
+			conf(index)%atom_all(ixx)=atom_name(atom_in(ixx))
+			conf(index)%istage_all(ixx)=istage_in(ixx)
+			conf(index)%wlengt_all(ixx)=wlength_in(ixx)
+			conf(index)%zeff_all(ixx)=zeff_in(ixx)
+			conf(index)%energy_all(ixx)=energy_in(ixx)
+			conf(index)%loggf_all(ixx)=loggf_in(ixx)
+			conf(index)%mult_all(1,ixx)=mult1_in(ixx)
+			conf(index)%mult_all(2,ixx)=mult2_in(ixx)
+			conf(index)%design_all(1,ixx)=state(design1_in(ixx)+1)
+			conf(index)%design_all(2,ixx)=state(design2_in(ixx)+1)
+			conf(index)%tam_all(1,ixx)=tam1_in(ixx)
+			conf(index)%tam_all(2,ixx)=tam2_in(ixx)
+			conf(index)%alfa_all(ixx)=alfa_in(ixx)
+			conf(index)%sigma_all(ixx)=sigma_in(ixx)
+			
+			! print *, 'atom ', atom_name(atom_in(ixx))
+			! print *, 'istage ', istage_in(ixx)
+			! print *, 'wlengt ', wlength_in(ixx)
+			! print *, 'zeff ', zeff_in(ixx)
+			! print *, 'energy ', energy_in(ixx)
+			! print *, 'loggf ', loggf_in(ixx)
+			! print *, 'mult1 ', mult1_in(ixx)
+			! print *, 'mult2 ', mult2_in(ixx)
+			! print *, 'design1 ', state(design1_in(ixx)+1)
+			! print *, 'design2 ', state(design2_in(ixx)+1)
+			! print *, 'tam1 ', tam1_in(ixx)
+			! print *, 'tam2 ', tam2_in(ixx)
+			! print *, 'alfa ', alfa_in(ixx)
+			! print *, 'sigma ', sigma_in(ixx)
+
+		enddo
+
 
 	end subroutine c_init
 

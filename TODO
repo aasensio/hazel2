@@ -1,18 +1,6 @@
  X Coupling of parameters
  X Use other optimization algorithms
- - Sparse regularization of maps : change order of loops -> 1 LM (x,y) -> regularization
- WIP Regularization of parameters
- - In synthesis, all atmospheres have to have the same number of pixels
  X Check that initial parameters are inside the range if not inverted
- - Add utilities for generating new SIR models
- - Show an example for inverting a random distribution of points to be inverted and then
-   start from an interpolation of these maps to be closer to the solution
- - Develop tools to easily manage input/output models so that multiinversions are easy to do.
- - Check that output and input models are compatible so that reinversions can be easily done
- - Precalculate coefficients for the emission/absorption coefficients using sparse
-   matrices and use them later on the calculation. This will avoid many of the loops
-   that are, by construction, zero.
- - Programmatic inversions
  X Masks
  X Save chi2 for each cycle
  X Comment on virtual environments
@@ -27,3 +15,17 @@
    chi2 = sum(r_i^2)
    aic = N*log(chi2/N) + 2*Nvar
    bic = N*log(chi2/N) + ln(N) * Nvar
+
+ - Sparse regularization of maps : change order of loops -> 1 LM (x,y) -> regularization
+ - Regularization of parameters
+ - In synthesis, all atmospheres have to have the same number of pixels
+
+ - Add utilities for generating new SIR models
+ - Show an example for inverting a random distribution of points to be inverted and then
+   start from an interpolation of these maps to be closer to the solution
+ - Develop tools to easily manage input/output models so that multiinversions are easy to do.
+ - Check that output and input models are compatible so that reinversions can be easily done
+ - Precalculate coefficients for the emission/absorption coefficients using sparse
+   matrices and use them later on the calculation. This will avoid many of the loops
+   that are, by construction, zero.
+ - Programmatic inversions

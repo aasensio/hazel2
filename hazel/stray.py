@@ -161,5 +161,7 @@ class Straylight_atmosphere(General_atmosphere):
         dlambda = self.parameters['v'] * 1e5 / (100.0 * constants.c) * self.avg_wavelength
         
         self.stokes[0,:] = np.interp(self.wvl_axis - dlambda, self.wvl_axis, self.stray_profile[self.wvl_range[0]:self.wvl_range[1]])
+
+        error = 0
                                 
-        return self.parameters['ff'] * self.stokes * hsra_continuum(np.mean(self.wvl_axis))
+        return self.parameters['ff'] * self.stokes * hsra_continuum(np.mean(self.wvl_axis)), error

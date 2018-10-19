@@ -290,7 +290,10 @@ class Model(object):
         #         if (self.n_cycles is None):
         #             self.n_cycles = cycles[0]
 
-        
+        filename = os.path.join(os.path.dirname(__file__),'data/LINEAS')
+        ff = open(filename, 'r')
+        self.LINES = ff.readlines()
+        ff.close()
 
         self.init_sir()
 
@@ -826,7 +829,7 @@ class Model(object):
                 f.write("{0}            :  {1}, {2}, {3}\n".format(str(v.lines)[1:-1], 1e3*(low-wvl), 1e3*delta, 1e3*(top-wvl)))
                 f.close()
                 
-                v.n_lambda = sir_code.init(v.index, filename)
+                v.n_lambda = sir_code.init_externalfile(v.index, filename)
 
         # Only remove the file if we are in single-node inversion. Otherwise, it will be done by the parent node in multiprocessing
         # if (not self.use_mpi):
@@ -834,6 +837,98 @@ class Model(object):
         #         os.remove('lte.grid')
         #     except OSError:
         #         pass
+
+    def init_sir(self):
+        """
+        Initialize SIR for this synthesis. This version does not make use of any external file, which might be
+        not safe when running in MPI mode.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+    
+        """
+        lines = []
+        n_lines = 0
+
+        elements = {'H':1,'HE':2,'LI':3,'BE':4,'B':5,'C':6,'N':7,'O':8,'F':9,'NE':10,
+            'NA':11,'MG':12,'AL':13,'SI':14,'P':15,'S':16,'CL':17,'AR':18,'K':19,'CA':20,'SC':21,'TI':22,'V':23,'CR':24,
+            'MN':25,'FE':26,'CO':27,'NI':28,'CU':29,'ZN':30,'GA':31,'GE':32,'AS':33,'SE':34,'BR':35,'KR':36,
+            'RB':37,'SR':38,'Y':39,'ZR':40,'NB':41,'MO':42,'TC':43,'RU':44,'RH':45,'PD':46,'AG':47,'CD':48,'IN':49,
+            'SN':50,'SB':51,'TE':52,'I':53,'XE':54,'CS':55,'BA':56,'LA':57,'CE':58,'PR':59,'ND':60,'PM':61,
+            'SM':62,'EU':63,'GD':64,'TB':65,'DY':66,'HO':67,'ER':68,'TM':69,'YB':70,'LU':71,'HF':72,'TA':73,'W':74,
+            'RE':75,'OS':76,'IR':77,'PT':78,'AU':79,'HG':80,'TL':81,'PB':82,'BI':83,'PO':84,'AT':85,'RN':86,
+            'FR':87,'RA':88,'AC':89,'TH':90,'PA':91,'U':92}
+        states = {'S': 0, 'P': 1, 'D': 2, 'F': 3, 'G': 4, 'H': 5, 'I': 6}
+
+        for k, v in self.atmospheres.items():
+            if (v.type == 'photosphere'):
+
+                n_lines += 1
+                
+                ind_low = (np.abs(v.spectrum.wavelength_axis - v.wvl_range_lambda[0])).argmin()
+                ind_top = (np.abs(v.spectrum.wavelength_axis - v.wvl_range_lambda[1])).argmin()
+
+                low = v.spectrum.wavelength_axis[ind_low]
+                top = v.spectrum.wavelength_axis[ind_top]         # TODO
+                delta = (v.spectrum.wavelength_axis[1] - v.spectrum.wavelength_axis[0])
+                
+                nblend = len(v.lines)
+
+                lines = np.zeros(len(v.lines), dtype=np.intc)
+                atom = np.zeros(len(v.lines), dtype=np.intc)
+                istage = np.zeros(len(v.lines), dtype=np.intc)
+                wvl = np.zeros(len(v.lines))
+                zeff = np.zeros(len(v.lines))
+                energy = np.zeros(len(v.lines))
+                loggf = np.zeros(len(v.lines))
+                mult1 = np.zeros(len(v.lines), dtype=np.intc)
+                mult2 = np.zeros(len(v.lines), dtype=np.intc)
+                design1 = np.zeros(len(v.lines), dtype=np.intc)
+                design2 = np.zeros(len(v.lines), dtype=np.intc)
+                tam1 = np.zeros(len(v.lines))
+                tam2 = np.zeros(len(v.lines))
+                alfa = np.zeros(len(v.lines))
+                sigma = np.zeros(len(v.lines))
+                
+                for i in range(len(v.lines)):            
+                    lines[i] = v.lines[i]                    
+                    for l in self.LINES:
+                        tmp = l.split()
+                        index = int(tmp[0].split('=')[0])
+                        if (index == v.lines[i]):
+                                                        
+                            atom[i] = elements[tmp[0].split('=')[1]]
+                            istage[i] = tmp[1]
+                            wvl[i] = float(tmp[2])
+                            zeff[i] = float(tmp[3])
+                            energy[i] = float(tmp[4])
+                            loggf[i] = float(tmp[5])
+                            mult1[i] = int(tmp[6][:-1])
+                            mult2[i] = int(tmp[8][:-1])
+                            design1[i] = states[tmp[6][-1]]
+                            design2[i] = states[tmp[8][-1]]
+                            tam1[i] = float(tmp[7].split('-')[0])
+                            tam2[i] = float(tmp[9].split('-')[0])
+                            if (len(tmp) == 12):
+                                alfa[i] = float(tmp[-2])
+                                sigma[i] = float(tmp[-1])
+                            else:
+                                alfa[i] = 0.0
+                                sigma[i] = 0.0
+                
+                lambda0 = 1e3*(low-wvl[0])
+                lambda1 = 1e3*(top-wvl[0])
+                n_steps = len(v.spectrum.wavelength_axis)
+
+                v.n_lambda = len(v.spectrum.wavelength_axis)
+                
+                sir_code.init(v.index, nblend, lines, atom, istage, wvl, zeff, energy, loggf,
+                    mult1, mult2, design1, design2, tam1, tam2, alfa, sigma, lambda0, lambda1, n_steps)
 
     def exit_hazel(self):
         for k, v in self.atmospheres.items():            

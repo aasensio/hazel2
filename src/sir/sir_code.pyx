@@ -2,24 +2,39 @@
 from numpy cimport ndarray as ar
 from numpy import empty, ascontiguousarray
 import numpy as np
+cimport numpy as np
 
 cdef extern:
-	void c_init(int *index, int *nchar, char *file_lines, int *nLambda)
+	void c_init_externalfile(int *index, int *nchar, char *file_lines, int *nLambda)
+	void c_init(int *index, int *nblend, int *lines, int *atom, int *istage, double *wlength, double *zeff, double *energy, double *loggf,
+		int *mult1, int *mult2, int *design1, int *design2, double *tam1, double *tam2, double *alfa, double *sigma,
+		double *lambda0, double *lambda1, int *nsteps)
 	void c_setpsf(int *nPSF, float *xPSF, float *yPSF)
 	void c_synthrf(int *index, int *nDepth, int *nLambda, float *macroturbulence, float *model, float *stokes, float *rt, float *rp, float *rh,
 		float *rv, float *rf, float *rg, float *rm, float *rmac)
 	void c_synth(int *index, int *nDepth, int *nLambda, double *macroturbulence, double *model, double *stokes, int *error)
 
-def init(int index, str file):
+def init_externalfile(int index, str file):
 	cdef:
 		int nLambda
 		ftmp = file.encode('UTF-8')
 		cdef char* file_lines = ftmp
 		cdef int   nchar      = len(file)
 		
-	c_init(&index, &nchar, file_lines, &nLambda)
+	c_init_externalfile(&index, &nchar, file_lines, &nLambda)
 
 	return nLambda
+
+def init(int index, int nblend, ar[int, ndim=1] lines, ar[int, ndim=1] atom, ar[int, ndim=1] istage, ar[double, ndim=1] wlength, ar[double, ndim=1] zeff, 
+	ar[double, ndim=1] energy, ar[double, ndim=1] loggf, ar[int, ndim=1] mult1, ar[int, ndim=1] mult2, 
+	ar[int, ndim=1] design1, ar[int, ndim=1] design2, ar[double, ndim=1] tam1, ar[double, ndim=1] tam2, 
+	ar[double, ndim=1] alfa, ar[double, ndim=1] sigma, double lambda0_in, double lambda1_in, int n_steps_in):
+	
+	
+	c_init(&index, &nblend, &lines[0], &atom[0], &istage[0], &wlength[0], &zeff[0], &energy[0], &loggf[0], &mult1[0], &mult2[0],
+		&design1[0], &design2[0], &tam1[0], &tam2[0], &alfa[0], &sigma[0], &lambda0_in, &lambda1_in, &n_steps_in)
+
+	return 
 
 def setPSF(ar[float, ndim=1] xPSF, ar[float, ndim=1] yPSF):
 	cdef:

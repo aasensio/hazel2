@@ -107,6 +107,14 @@ hazel.stray module
     :undoc-members:
     :show-inheritance:
 
+hazel.tools module
+------------------
+
+.. automodule:: hazel.tools
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 hazel.transforms module
 -----------------------
 

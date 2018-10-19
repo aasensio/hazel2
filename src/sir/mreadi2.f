@@ -300,7 +300,7 @@ c _____________________________________________________________________________
 	      dat(ii:ii)=d
 	   else
               if(ii.eq.0)goto 11                
-              ii=0			  			  
+              ii=0			  			 			  
               read (dat,'(i13)') n(ivar)
 	      ivar=ivar+1
 	      dat(1:13)='             '      
@@ -373,8 +373,6 @@ c           write(icanal,*) '      the file containing the wavelength grid. Chec
 	ini=x(1)
 	paso=x(2)
 	fin=x(3)
-
-
 
 	return
 
