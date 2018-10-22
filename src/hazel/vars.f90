@@ -110,6 +110,8 @@ implicit none
 	
 	real(kind=8) :: chi2Level
 
+	integer :: error_code
+
 	
 	
 end module vars

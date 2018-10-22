@@ -19,10 +19,17 @@ Version 2018.9.19
  - Output AIC and BIC
 
 
+Version 2018.9.22
+-----------------
+
+ - Elapsed time per pixel is now part of the standard output when doing multipixel inversions
+ - Pixels with numerical problems during inversion are now ignored.
+
+
 To do
 -----
 
- - Add even more tests
+ - Add even more tests (avoid warnings)
  - Sparse regularization of maps : change order of loops -> 1 LM (x,y) -> regularization
  - Regularization of parameters
  - In synthesis, all atmospheres have to have the same number of pixels

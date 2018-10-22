@@ -516,7 +516,16 @@ class Model(object):
 
         self.atmospheres[atm['name']] = SIR_atmosphere(working_mode=self.working_mode, name=atm['name'])
         lines = [int(k) for k in list(atm['spectral lines'])]
-        wvl_range = [float(k) for k in atm['wavelength']]
+
+        if ('wavelength' not in atm):
+            atm['wavelength'] = None
+        elif (atm['wavelength'] == 'None'):
+            atm['wavelength'] = None
+
+        if (atm['wavelength'] is not None):
+            wvl_range = [float(k) for k in atm['wavelength']]
+        else:
+            wvl_range = [np.min(self.spectrum[atm['spectral region']].wavelength_axis), np.max(self.spectrum[atm['spectral region']].wavelength_axis)]
 
         if ('reference frame' in atm):
             if ('line-of-sight' in atm['reference frame']):
@@ -557,7 +566,7 @@ class Model(object):
         if ('reference atmospheric model' in atm):
             my_file = Path(atm['reference atmospheric model'])
             if (not my_file.exists()):
-                raise FileExistsError("Input file for atmosphere {0} does not exist.".format(atm['name']))
+                raise FileExistsError("Input file {0} for atmosphere {1} does not exist.".format(my_file, atm['name']))
 
             self.atmospheres[atm['name']].load_reference_model(atm['reference atmospheric model'], self.verbose)
 
@@ -593,8 +602,16 @@ class Model(object):
         atm = hazel.util.lower_dict_keys(atmosphere)
         
         self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, name=atm['name'])
-                
-        wvl_range = [float(k) for k in atm['wavelength']]
+
+        if ('wavelength' not in atm):
+            atm['wavelength'] = None
+        elif (atm['wavelength'] == 'None'):
+            atm['wavelength'] = None
+
+        if (atm['wavelength'] is not None):
+            wvl_range = [float(k) for k in atm['wavelength']]
+        else:
+            wvl_range = [np.min(self.spectrum[atm['spectral region']].wavelength_axis), np.max(self.spectrum[atm['spectral region']].wavelength_axis)]
 
         self.atmospheres[atm['name']].add_active_line(line=atm['line'], spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
@@ -632,7 +649,7 @@ class Model(object):
         if ('reference atmospheric model' in atm):
             my_file = Path(atm['reference atmospheric model'])
             if (not my_file.exists()):
-                raise FileExistsError("Input file for atmosphere {0} does not exist.".format(atm['name']))
+                raise FileExistsError("Input file {0} for atmosphere {1} does not exist.".format(my_file, atm['name']))
 
             self.atmospheres[atm['name']].load_reference_model(atm['reference atmospheric model'], self.verbose)
 
@@ -671,8 +688,16 @@ class Model(object):
         atm = hazel.util.lower_dict_keys(atmosphere)
 
         self.atmospheres[atm['name']] = Parametric_atmosphere(working_mode=self.working_mode)
-                
-        wvl_range = [float(k) for k in atm['wavelength']]
+
+        if ('wavelength' not in atm):
+            atm['wavelength'] = None
+        elif (atm['wavelength'] == 'None'):
+            atm['wavelength'] = None
+
+        if (atm['wavelength'] is not None):
+            wvl_range = [float(k) for k in atm['wavelength']]
+        else:
+            wvl_range = [np.min(self.spectrum[atm['spectral region']].wavelength_axis), np.max(self.spectrum[atm['spectral region']].wavelength_axis)]
 
         self.atmospheres[atm['name']].add_active_line(spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
@@ -689,7 +714,7 @@ class Model(object):
         if ('reference atmospheric model' in atm):
             my_file = Path(atm['reference atmospheric model'])
             if (not my_file.exists()):
-                raise FileExistsError("Input file for atmosphere {0} does not exist.".format(atm['name']))
+                raise FileExistsError("Input file {0} for atmosphere {1} does not exist.".format(my_file, atm['name']))
 
             self.atmospheres[atm['name']].load_reference_model(atm['reference atmospheric model'], self.verbose)
 
@@ -727,7 +752,15 @@ class Model(object):
 
         self.atmospheres[atm['name']] = Straylight_atmosphere(working_mode=self.working_mode)
                 
-        wvl_range = [float(k) for k in atm['wavelength']]
+        if ('wavelength' not in atm):
+            atm['wavelength'] = None
+        elif (atm['wavelength'] == 'None'):
+            atm['wavelength'] = None
+
+        if (atm['wavelength'] is not None):
+            wvl_range = [float(k) for k in atm['wavelength']]
+        else:
+            wvl_range = [np.min(self.spectrum[atm['spectral region']].wavelength_axis), np.max(self.spectrum[atm['spectral region']].wavelength_axis)]
 
         self.atmospheres[atm['name']].add_active_line(spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
@@ -743,7 +776,7 @@ class Model(object):
 
         my_file = Path(atm['reference atmospheric model'])
         if (not my_file.exists()):
-            raise FileExistsError("Input file for atmosphere {0} does not exist.".format(atm['name']))
+            raise FileExistsError("Input file {0} for atmosphere {1} does not exist.".format(my_file, atm['name']))
 
         if ('reference atmospheric model' in atm):
             self.atmospheres[atm['name']].load_reference_model(atm['reference atmospheric model'], self.verbose)
@@ -783,7 +816,7 @@ class Model(object):
         for k in to_remove:
             self.atmospheres.pop(k)
                     
-    def init_sir(self):
+    def init_sir_external(self):
         """
         Initialize SIR for this synthesis
         
@@ -923,9 +956,9 @@ class Model(object):
                 
                 lambda0 = 1e3*(low-wvl[0])
                 lambda1 = 1e3*(top-wvl[0])
-                n_steps = len(v.spectrum.wavelength_axis)
+                n_steps = ind_top - ind_low + 1
 
-                v.n_lambda = len(v.spectrum.wavelength_axis)
+                v.n_lambda = n_steps
                 
                 sir_code.init(v.index, nblend, lines, atom, istage, wvl, zeff, energy, loggf,
                     mult1, mult2, design1, design2, tam1, tam2, alfa, sigma, lambda0, lambda1, n_steps)
@@ -997,12 +1030,25 @@ class Model(object):
 
                 total_ff = 0.0
                 for atm in order:                    
-                    if (self.atmospheres[atm].type is not 'straylight'):                        
-                        total_ff += np.exp(self.atmospheres[atm].parameters['ff'])
+                    if (self.atmospheres[atm].type is not 'straylight'):
+                        if (self.working_mode == 'inversion'):                            
+                            self.atmospheres[atm].parameters['ff'], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1]
+                            ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
+                        else:
+                            ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], -0.00001, 1.00001)
+                        total_ff += ff
 
                 for atm in order:                    
                     if (self.atmospheres[atm].type is not 'straylight'):
-                        self.atmospheres[atm].parameters['ff'] = np.exp(self.atmospheres[atm].parameters['ff']) / total_ff
+                        if (self.working_mode == 'inversion'):
+                            ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
+                            self.atmospheres[atm].parameters['ff'] = ff / total_ff
+                            self.atmospheres[atm].parameters['ff'] = physical_to_transformed(self.atmospheres[atm].parameters['ff'], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
+                        else:
+                            ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], -0.00001, 1.00001)
+                            self.atmospheres[atm].parameters['ff'] = ff / total_ff
+                            self.atmospheres[atm].parameters['ff'] = physical_to_transformed(self.atmospheres[atm].parameters['ff'], -0.00001, 1.00001)
+
 
     def synthesize_spectral_region(self, spectral_region, perturbation=False):
         """
@@ -1044,6 +1090,8 @@ class Model(object):
 
                         if (self.atmospheres[atm].type == 'straylight'):
                             stokes, error = self.atmospheres[atm].synthesize()
+                            if (error == 1):
+                                raise 
                             stokes += (1.0 - self.atmospheres[atm].parameters['ff']) * stokes_out                            
                         else:
                             if (k == 0):                                
@@ -1056,7 +1104,7 @@ class Model(object):
                         
                         if (perturbation):
                             self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top] = stokes / hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
-                        else:
+                        else:                            
                             self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top] = stokes / hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
     
     def synthesize(self, perturbation=False):
@@ -1631,7 +1679,7 @@ class Model(object):
             
             for k, v in self.atmospheres.items():
                 if (k in tmp):
-                    if (self.verbose >= 2):
+                    if (self.verbose >= 3):
                         self.logger.info('Free parameters for {0}'.format(k))
                     for pars in self.active_meta:
                         if (pars['atm'] == k):

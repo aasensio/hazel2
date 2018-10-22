@@ -361,6 +361,9 @@ contains
 	real*4 alfa_all(kl)
 	real*4 sigma_all(kl)
 
+	integer :: error_code
+	common/Error/error_code
+
     common/OutputStokes/Stokesfilename
 
     common/Atmosmodel/atmosmodel,ntau !common para StokesFRsub
@@ -374,6 +377,7 @@ contains
 
 		atmosmodel = 0
 		error = 0
+		error_code = 0
 
 		ntl = conf(index)%ntl
 		nlin = conf(index)%nlin
@@ -428,6 +432,11 @@ contains
 ! Compute hydrostatic equilibrium if necessary
     	if (minval(model(3,:)) == -1) then
     		call equisubmu(ntau,tau,t,pe,pg,z,ro)
+
+			if (error_code == 1) then
+				error = 1
+				return
+			endif
  
         	do i=1,ntau
             	atmosmodel(i+2*ntau)=pe(i)				
@@ -435,6 +444,11 @@ contains
         endif
 
 		call StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac)
+
+		if (error_code == 1) then
+			error = 1
+			return
+		endif
 				 	
 ! contamos el numero de puntos	
 		ntot=0
@@ -476,7 +490,8 @@ contains
 	real*4 dlamda(kld)
 	integer ntls,nlins(kl4),npass(kl4)
 	real*4 dlamdas(kld4)
-
+	
+	
     common/OutputStokes/Stokesfilename
 
     common/Atmosmodel/atmosmodel,ntau !common para StokesFRsub
@@ -486,6 +501,11 @@ contains
 
 	common/Malla/ntl,nlin,npas,nble,dlamda  !common para StokesFRsub
     common/Malla4/ntls,nlins,npass,dlamdas  !common para StokesFRsub
+
+	integer :: error_code
+	common/Error/error_code
+
+		error_code = 0
 
 		ntl = conf(index)%ntl
 		nlin = conf(index)%nlin
@@ -535,7 +555,7 @@ contains
         	end do
         endif
 
-		call StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac)		
+		call StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac)
 		 	
 ! contamos el numero de puntos	
 		ntot=0

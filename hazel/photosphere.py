@@ -7,6 +7,7 @@ from hazel.codes import sir_code
 from hazel.hsra import hsra_continuum
 from hazel.io import Generic_SIR_file
 import scipy.interpolate as interp
+from hazel.exceptions import NumericalErrorSIR
 import copy
 
 # from ipdb import set_trace as stop
@@ -64,13 +65,13 @@ class SIR_atmosphere(General_atmosphere):
         self.cycles['Bz'] = None
         self.cycles['ff'] = None
 
-        self.epsilon['T'] = 0.1
-        self.epsilon['vmic'] = 0.1
-        self.epsilon['v'] = 0.1
-        self.epsilon['Bx'] = 0.1
-        self.epsilon['By'] = 0.1
-        self.epsilon['Bz'] = 0.1
-        self.epsilon['ff'] = 0.1
+        self.epsilon['T'] = 0.01
+        self.epsilon['vmic'] = 0.01
+        self.epsilon['v'] = 0.01
+        self.epsilon['Bx'] = 0.01
+        self.epsilon['By'] = 0.01
+        self.epsilon['Bz'] = 0.01
+        self.epsilon['ff'] = 0.01
 
         self.regularization['T'] = None
         self.regularization['vmic'] = None
@@ -237,6 +238,12 @@ class SIR_atmosphere(General_atmosphere):
         
         self.parameters['ff'] = ff
 
+        # Check that parameters are inside borders by clipping inside the interval with a border of 1e-8
+        if (self.working_mode == 'inversion'):
+            for k, v in self.parameters.items():                        
+                self.parameters[k] = np.clip(v, self.ranges[k][0] + 1e-8, self.ranges[k][1] - 1e-8)
+                
+
     def get_parameters(self):                
         """
         Get the curent parameters as a model
@@ -343,5 +350,8 @@ class SIR_atmosphere(General_atmosphere):
             stokes, error = sir_code.synth(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
                 self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
                 self.parameters['Bz'], self.macroturbulence[0])
+
+            if (error == 1):
+                raise NumericalErrorSIR()
                         
             return self.parameters['ff'] * stokes[1:,:] * hsra_continuum(np.mean(self.wvl_axis)), error

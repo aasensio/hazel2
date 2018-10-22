@@ -544,7 +544,7 @@ contains
 !       - indx is a vector that records the row permutation effected by the partial pivoting
 !       - d takes values +1/-1 depending on whether the number of row interchanges was odd or even
 ! ---------------------------------------------------------
-    subroutine ludcmp(a,indx,d,error)
+    subroutine ludcmp(a,indx,d)
     integer, INTENT(INOUT) :: indx(:)
     real*8, INTENT(INOUT) :: a(:,:), d
     real*8, parameter :: TINY = 1.d-20
@@ -562,9 +562,10 @@ contains
         do i = 1, n
             aamax = 0.d0    
             aamax = maxval(dabs(a(i,:)))
+
             if (aamax == 0.d0) then
-                print *, 'Singular matrix in LU decomposition'
-                error = 1
+                print *, 'Singular matrix in LU decomposition (hazel_code.ludcmp)'
+                error_code = 1
                 return
             endif
             vv(i) = 1.d0 / aamax
@@ -963,7 +964,7 @@ contains
  2    if(m.ne.l) then
       if(iter.eq.30) then
         print *, 'too many iterations'
-        stop
+        error_code = 1
       endif
       iter=iter+1
       g=(d(l+1)-d(l))/(2.d0*e(l))
@@ -1180,7 +1181,7 @@ contains
         fabsmax = 1.d0 / maxim
         if (maxim == 0.d0) then
             print *, 'Singularity in the inversion'
-!           stop
+            error_code = 1
         endif
 
         a = a * fabsmax
@@ -1531,7 +1532,7 @@ contains
     real(kind=8) :: gammq, a, x, gln, gamser, gammcf
       if(x.lt.0..or.a.le.0.) then
         print *, x, a
-        stop
+        error_code = 1
     endif
       if(x.lt.a+1.)then
         call gser(gamser,a,x,gln)

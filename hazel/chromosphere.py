@@ -6,6 +6,7 @@ from hazel.util import i0_allen
 from hazel.codes import hazel_code
 from hazel.hsra import hsra_continuum
 from hazel.io import Generic_hazel_file
+from hazel.exceptions import NumericalErrorHazel
 import copy
 
 # from ipdb import set_trace as stop
@@ -90,15 +91,15 @@ class Hazel_atmosphere(General_atmosphere):
         self.cycles['a'] = None
         self.cycles['ff'] = None
 
-        self.epsilon['Bx'] = 0.1
-        self.epsilon['By'] = 0.1
-        self.epsilon['Bz'] = 0.1      
-        self.epsilon['tau'] = 0.1
-        self.epsilon['v'] = 0.1
-        self.epsilon['deltav'] = 0.1
-        self.epsilon['beta'] = 0.1
-        self.epsilon['a'] = 0.1
-        self.epsilon['ff'] = 0.1
+        self.epsilon['Bx'] = 0.01
+        self.epsilon['By'] = 0.01
+        self.epsilon['Bz'] = 0.01      
+        self.epsilon['tau'] = 0.01
+        self.epsilon['v'] = 0.01
+        self.epsilon['deltav'] = 0.01
+        self.epsilon['beta'] = 0.01
+        self.epsilon['a'] = 0.01
+        self.epsilon['ff'] = 0.01
 
         self.jacobian['Bx'] = 1.0
         self.jacobian['By'] = 1.0
@@ -174,6 +175,11 @@ class Hazel_atmosphere(General_atmosphere):
         self.parameters['beta'] = pars[6]
         self.parameters['a'] = pars[7]
         self.parameters['ff'] = ff
+
+        # Check that parameters are inside borders by clipping inside the interval with a border of 1e-8
+        if (self.working_mode == 'inversion'):
+            for k, v in self.parameters.items():
+                self.parameters[k] = np.clip(v, self.ranges[k][0] + 1e-8, self.ranges[k][1] - 1e-8)
                 
     def load_reference_model(self, model_file, verbose):
         """
@@ -309,7 +315,6 @@ class Hazel_atmosphere(General_atmosphere):
         betaInput = self.parameters['beta']
         nbarInput = np.asarray([0.0,0.0,0.0,0.0])
         omegaInput = np.asarray([0.0,0.0,0.0,0.0])
-
     
         args = (self.index, B1Input, hInput, tau1Input, boundaryInput, transInput, 
             anglesInput, nLambdaInput, lambdaAxisInput, dopplerWidthInput, 
@@ -317,7 +322,10 @@ class Hazel_atmosphere(General_atmosphere):
             betaInput, nbarInput, omegaInput)
 
         
-        l, stokes, error = hazel_code._synth(*args)   
+        l, stokes, error = hazel_code._synth(*args)
+
+        if (error == 1):
+            raise NumericalErrorHazel()
 
         ff = self.parameters['ff']
         

@@ -105,6 +105,9 @@ c para la inclusion de RP en RT
         
 c para hermite
         real*4 deltae(kt),deltai(kt),delt2i(kt)
+
+        integer :: error_code
+	common/Error/error_code
         
 c lugares comunes de memoria
         common/Atmosmodel/atmosmodel,ntau                  !se carga en lee_model.f
@@ -194,7 +197,8 @@ c leemos la atmosfera
               print*,'      Subroutine StokesFRsub: pe(',i,')= ',pe(i)
               print*,' '
               print*,'_______________________________'
-              stop
+              error_code = 1
+              return
            end if
            vtur(i)=atmosmodel(i+3*ntau)
            h(i)=atmosmodel(i+4*ntau)

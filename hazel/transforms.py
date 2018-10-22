@@ -17,7 +17,7 @@ def logit(x):
     -------
     logit : float
         Logit transform of the input
-    """    
+    """
     return np.log(x / (1.0 - x))
 
 def inv_logit(x):

@@ -35,6 +35,7 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     params(index)%recompute_see_rtcoef = .True.
 
     error = 0
+    error_code = 0
 
     ! If the parameters on which the RT coefficients depend on change, then recompute the coefficients
     if (params(index)%dopplerVelocityInput_old == dopplerVelocityInput .and. &
@@ -123,18 +124,33 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     if (params(index)%recompute_see_rtcoef) then
         
         ! Fill the statistical equilibrium equations
-        call fill_SEE(params(index), fixed(index), 1, error)
+        call fill_SEE(params(index), fixed(index), 1)
 
-        ! If the solution of the SEE gives an error, return
-        if (error == 1) return
+        ! If the solution of the SEE gives an error, return        
+        if (error_code == 1) then
+            error = 1
+            return        
+        endif
                 
         ! Calculate the absorption/emission coefficients for a given transition
         call calc_rt_coef(params(index), fixed(index), observation(index), 1)
+
+        ! If the calculation of the RT coefficients gives and error, return
+        if (error_code == 1) then
+            error = 1
+            return        
+        endif
     
     endif
 
 ! Do the synthesis
     call do_synthesis(params(index), fixed(index), observation(index), inversion(index)%stokes_unperturbed, error)
+
+    ! If the synthesis gives an error, return
+    if (error_code == 1) then
+        error = 1
+        return        
+    endif
     
     do i = 1, 4
         stokesOutput(i,:) = inversion(index)%stokes_unperturbed(i-1,:)

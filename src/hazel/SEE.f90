@@ -8,7 +8,7 @@ contains
 !------------------------------------------------------------
 ! Fill and solve the SEE equations
 !------------------------------------------------------------
-    subroutine fill_SEE(in_params, in_fixed, component, error)  
+    subroutine fill_SEE(in_params, in_fixed, component)
     type(variable_parameters) :: in_params
     type(fixed_parameters) :: in_fixed
     integer :: nt, component, error
@@ -902,12 +902,12 @@ contains
             endif
             allocate(indx(nrhos))
 
-            call ludcmp(SEE_A,indx,d,error)
+            call ludcmp(SEE_A,indx,d)
             
-            if (error == 1) then
+            if (error_code == 1) then
+                deallocate(indx)
                 return
-            else
-                error = 0
+            else                
                 call lubksb(SEE_A,indx,SEE_b)
             endif
             

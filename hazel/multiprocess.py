@@ -8,9 +8,11 @@ except:
 from enum import IntEnum
 import h5py
 from hazel.codes import hazel_code
+from hazel.exceptions import NumericalErrorHazel, NumericalErrorSIR
 from tqdm import tqdm
 import logging
 import os
+import time
 # from ipdb import set_trace as stop
 
 class tags(IntEnum):
@@ -177,6 +179,8 @@ class Iterator(object):
             v.model_handler.open()
 
         self.logger.info("Starting calculation with {0} workers".format(num_workers))
+
+        self.elapsed = 0.0
         
         with tqdm(total=self.model.n_pixels, ncols=140) as pbar:
             while (closed_workers < num_workers):
@@ -225,27 +229,41 @@ class Iterator(object):
                         task_index += 1
                         pbar.update(1)
                         self.last_sent = '{0} to {1}'.format(task_index, source)
-                        pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers=self.workers)
+
+                        if (self.elapsed == 'Numerical error'):
+                            pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers=self.workers, elapsed='Numerical error')
+                        else:
+                            pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers=self.workers, elapsed='{0:6.3f} s'.format(self.elapsed))
                     else:
                         self.comm.send(None, dest=source, tag=tags.EXIT)
                 elif tag == tags.DONE:
                     index = data_received['index']
 
+                    if (data_received['error'] == 0):
+
                     # Loop over randomizations
-                    for loop in range(self.model.n_randomization):                        
-                        label = 'randomization_{0}'.format(loop)
+                        for loop in range(self.model.n_randomization):                        
+                            label = 'randomization_{0}'.format(loop)
 
-                    # Put the results passed through MPI into self.model for saving
-                        for k, v in self.model.spectrum.items():                
-                            v.stokes_cycle = data_received[label][k]
+                        # Put the results passed through MPI into self.model for saving
+                            for k, v in self.model.spectrum.items():                
+                                v.stokes_cycle = data_received[label][k]
+                            
+                            for k, v in self.model.atmospheres.items():
+                                v.reference_cycle, v.error_cycle = data_received[label][k]
+
+                            self.model.output_handler.write(self.model, pixel=index, randomization=loop)
                         
-                        for k, v in self.model.atmospheres.items():
-                            v.reference_cycle, v.error_cycle = data_received[label][k]
+                        self.last_received = '{0} from {1}'.format(index, source)
+                        self.elapsed = data_received['elapsed']
+                        pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers=self.workers, elapsed='{0:6.3f} s'.format(self.elapsed))
 
-                        self.model.output_handler.write(self.model, pixel=index, randomization=loop)
-                                                        
-                    self.last_received = '{0} from {1}'.format(index, source)
-                    pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers=self.workers)
+                    else:
+
+                        self.last_received = '{0} from {1}'.format(index, source)
+                        self.elapsed = 'Numerical error'
+                        pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers=self.workers, elapsed='Numerical error')
+                    
                     # self.logger.info('Received {0}->{1}'.format(index, source))
 
                 elif tag == tags.EXIT:                    
@@ -277,6 +295,8 @@ class Iterator(object):
                 task_index = data_received['index']
 
                 data_to_send = {'index': task_index}
+
+                t0 = time.time()
                 
                 if (self.model.working_mode == 'inversion'):
                     
@@ -294,18 +314,38 @@ class Iterator(object):
                         randomize = False                                            
 
                     # Loop over randomizations
-                    for loop in range(self.model.n_randomization):                    
-                        self.model.invert(randomize=randomize, randomization_ind=loop)
+                    for loop in range(self.model.n_randomization):
 
                         label = 'randomization_{0}'.format(loop)
-
                         data_to_send[label] = {}
+                        
+                        # Try to do the inversion
+                        try:
+                            self.model.invert(randomize=randomize, randomization_ind=loop)
+                            data_to_send['error'] = 0
+                            for k, v in self.model.spectrum.items():
+                                data_to_send[label][k] = self.model.spectrum[k].stokes_cycle
 
-                        for k, v in self.model.spectrum.items():
-                            data_to_send[label][k] = self.model.spectrum[k].stokes_cycle
+                            for k, v in self.model.atmospheres.items():
+                                data_to_send[label][k] = [v.reference_cycle, v.error_cycle]
 
-                        for k, v in self.model.atmospheres.items():
-                            data_to_send[label][k] = [v.reference_cycle, v.error_cycle]
+                        # If a numerical problem appeared, send the error code to the parent
+                        except NumericalErrorHazel:                            
+                            data_to_send['error'] = 1
+                            for k, v in self.model.spectrum.items():
+                                data_to_send[label][k] = None
+
+                            for k, v in self.model.atmospheres.items():
+                                data_to_send[label][k] = None
+                        
+                        except NumericalErrorSIR:
+                            data_to_send['error'] = 2
+                            for k, v in self.model.spectrum.items():
+                                data_to_send[label][k] = None
+
+                            for k, v in self.model.atmospheres.items():
+                                data_to_send[label][k] = None
+                        
                 else:
                     for k, v in self.model.atmospheres.items():                    
                         v.set_parameters(data_received[k][0], data_received[k][1])
@@ -323,6 +363,8 @@ class Iterator(object):
                     for k, v in self.model.atmospheres.items():
                         data_to_send[label][k] = [v.reference_cycle, v.error_cycle]
                                         
+                t1 = time.time()
+                data_to_send['elapsed'] = t1 - t0
                 self.comm.send(data_to_send, dest=0, tag=tags.DONE)
             elif tag == tags.EXIT:
                 break

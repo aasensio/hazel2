@@ -1,4 +1,5 @@
 module svd
+use vars, only : error_code
 implicit none
 contains
 	
@@ -191,7 +192,7 @@ contains
           endif
           if(its.eq.30) then
           	print *, 'no convergence in svdcmp'
-          	stop
+          	error_code = 1
           endif
           x=w(l)
           nm=k-1

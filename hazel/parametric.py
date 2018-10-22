@@ -103,6 +103,11 @@ class Parametric_atmosphere(General_atmosphere):
         self.parameters['a'] = pars[3]
         self.parameters['ff'] = ff
 
+        # Check that parameters are inside borders by clipping inside the interval with a border of 1e-8
+        if (self.working_mode == 'inversion'):
+            for k, v in self.parameters.items():            
+                v = np.clip(v, self.ranges[k][0] + 1e-8, self.ranges[k][1] - 1e-8)
+
     def load_reference_model(self, model_file, verbose):
         """
         Load a reference model or a model for every pixel for synthesis/inversion
