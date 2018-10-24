@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as pl
 import hazel
 
 def test_single_syn():
