@@ -1,4 +1,4 @@
-__version__ = "2018.9.19"
+__version__ = "2018.9.22"
 __author__ = "Andres Asensio Ramos"
 
 from .atmosphere import *

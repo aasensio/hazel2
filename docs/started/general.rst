@@ -19,7 +19,7 @@ The class ``Model`` admits the following keywords:
 
 * ``config`` (optional): defines the configuration file to be used. The structure of this file is described in :ref:`configuration` and it is the standard way of usage, specially when doing inversions. If ``None`` or absent, no configuration file will be used.
 * ``working_model`` : ``synthesis`` for synthesis mode and ``inversion`` for inversion mode.
-* ``verbose`` (optional, default is 0) : verbosity level. No verbosity is 0. Increasing levels of verbosity are 1 and 2. Use 0 when doing large scale inversions.
+* ``verbose`` (optional, default is 0) : verbosity level. No verbosity is 0. Increasing levels of verbosity are 1-4, each one giving more information, useful for debugging. Use 0 when doing large scale inversions.
 * ``randomization`` (optional, default is None) : when carrying out inversions, it is useful to carry out several optimizations starting from different regions of the space of parameters and check for convergence. This defines the number of randomizations used.
 
 

@@ -24,6 +24,7 @@ Version 2018.9.22
 
  - Elapsed time per pixel is now part of the standard output when doing multipixel inversions
  - Pixels with numerical problems during inversion are now ignored.
+ - A set of tools for generating observations and model atmospheres for input have been developed.
 
 
 To do

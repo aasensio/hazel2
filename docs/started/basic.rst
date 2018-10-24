@@ -46,7 +46,7 @@ With configuration file
 
 Perhaps the easiest way of running |hazel2| is through the human-friendly configuration
 files described in :ref:`configuration`. The configuration files used in this section
-are present in `<https://github.com/aasensio/hazel2/examples>`_
+are present in `<https://github.com/aasensio/hazel2/tree/master/examples>`_
 
 Single pixel mode
 ^^^^^^^^^^^^^^^^^

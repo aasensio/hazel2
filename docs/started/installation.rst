@@ -3,6 +3,9 @@
 Installation
 ============
 
+Generalities
+------------
+
 |hazel2| is a Python 3 module with some wrapped compiled Fortran routines. It should
 be pretty easy to install once you have a working compiler in your system.
 
@@ -18,6 +21,9 @@ a new environment and install the dependencies (you can install whatever version
     source activate hazel_env
     conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpi4py configobj
 
+Feel free to add `matplotlib` for doing some plots. You will need it if you want to run some of the examples
+shown in this documentation in your computer.
+
 If you also want to use the GUI, you need to add two new dependencies:
 
 ::
@@ -29,26 +35,28 @@ If you also want to use the GUI, you need to add two new dependencies:
 Remember to add `ipython` if you are using this shell to run |hazel2|. Otherwise, it will use
 `ipython` from another environment and you can get confused.
 
-From source
------------
-It can also be installed from sources by cloning this repository and installing it:
+Installation from source
+------------------------
+Since |hazel2| is still in a heavy development phase, the only possible way of
+installing the code is via compilation of the sources.
+Once your environment is activated (or in your base environment if you prefer not to
+use a different environment), the sources can be installed by cloning this repository and installing it:
 
 ::
     
     git clone https://github.com/aasensio/hazel2
     python setup.py install
 
-Remember that if you want to develop the code, it is useful to use instead:
+Do not forget to often pull from the `repository <https://github.com/aasensio/hazel2>`_ and recompile
+the code by typing the following from the location of the sources:
 
 ::
     
-    python setup.py develop
-
-and when you want to uninstall the development version, type:
-
-::
+    git pull
+    python setup.py install
     
-    python setup.py develop --uninstall
+Improvements are pushed all the time in |hazel2|.
+
 
 If you find errors similar to ``Internal Error: get_unit(): Bad internal unit KIND``, try
 to install the Anaconda ``gfortran`` compilers by invoking:
@@ -102,3 +110,19 @@ All of them can be installed in Anaconda with:
 ::
 
     conda install numpy h5py scipy astropy mpi4py configobj tqdm pyqt maplotlib
+
+For developers
+--------------
+Remember that if you want to be involved in the development of the code, it is perhaps more
+useful to install the code using
+
+::
+    
+    python setup.py develop
+
+so that you can immediately test the changes to the code. This development
+version can be uninstalled by typing:
+
+::
+    
+    python setup.py develop --uninstall

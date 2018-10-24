@@ -49,3 +49,11 @@ Stray-light
    :members:
    :undoc-members:
    :show-inheritance:
+
+Tools
+-----
+
+.. automodule:: hazel.tools
+   :members:
+   :undoc-members:
+   :show-inheritance:

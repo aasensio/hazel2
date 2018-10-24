@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as pl
 import hazel
 import h5py
+import os
 
 def test_nonmpi_inv1d():
 # Test iterator with a single observation in synthesis
@@ -18,3 +19,8 @@ def test_nonmpi_inv1d():
         assert f['spec1']['stokes'].shape == (1,2,1,4,150), "incorrect dimensions in inversion"
 
         f.close()
+
+        try:
+            os.remove('output.h5')
+        except:
+            pass

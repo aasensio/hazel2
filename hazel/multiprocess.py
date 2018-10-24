@@ -181,6 +181,7 @@ class Iterator(object):
         self.logger.info("Starting calculation with {0} workers".format(num_workers))
 
         self.elapsed = 0.0
+        self.avg_elapsed = 0.0
         
         with tqdm(total=self.model.n_pixels, ncols=140) as pbar:
             while (closed_workers < num_workers):
@@ -233,7 +234,7 @@ class Iterator(object):
                         if (self.elapsed == 'Numerical error'):
                             pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers=self.workers, elapsed='Numerical error')
                         else:
-                            pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers=self.workers, elapsed='{0:6.3f} s'.format(self.elapsed))
+                            pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers=self.workers, elapsed='{0:6.3f} s <{1:6.3f} s>'.format(self.elapsed, self.avg_elapsed))
                     else:
                         self.comm.send(None, dest=source, tag=tags.EXIT)
                 elif tag == tags.DONE:
@@ -256,7 +257,8 @@ class Iterator(object):
                         
                         self.last_received = '{0} from {1}'.format(index, source)
                         self.elapsed = data_received['elapsed']
-                        pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers=self.workers, elapsed='{0:6.3f} s'.format(self.elapsed))
+                        self.avg_elapsed = self.avg_elapsed + (self.elapsed - self.avg_elapsed) / (index + 1)
+                        pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers=self.workers, elapsed='{0:6.3f} s <{1:6.3f} s>'.format(self.elapsed, self.avg_elapsed))
 
                     else:
 

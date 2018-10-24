@@ -35,6 +35,14 @@ hazel.configuration module
     :undoc-members:
     :show-inheritance:
 
+hazel.exceptions module
+-----------------------
+
+.. automodule:: hazel.exceptions
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 hazel.hsra module
 -----------------
 

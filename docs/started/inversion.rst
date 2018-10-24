@@ -245,6 +245,23 @@ defining the number of nodes used in this work:
 
     mpiexec -n n_nodes python inversion.py
 
+Sometimes you need to let OpenMPI or MPICH use all available cores (this is important
+if your CPUs are using hyperthreading). To this end, write a file (for example `mf`) with the following
+content
+
+::
+
+    localhost max_slots=16
+
+changing the number to the appropriate number of available cores you have. Then run the
+code with:
+
+
+::
+
+    mpiexec -machinefile mf -n n_nodes python inversion.py
+
+
 With randomization
 """"""""""""""""""
 
