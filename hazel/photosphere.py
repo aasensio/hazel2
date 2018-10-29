@@ -353,5 +353,6 @@ class SIR_atmosphere(General_atmosphere):
 
             if (error == 1):
                 raise NumericalErrorSIR()
+
                         
             return self.parameters['ff'] * stokes[1:,:] * hsra_continuum(np.mean(self.wvl_axis)), error

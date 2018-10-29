@@ -142,7 +142,7 @@ class Iterator(object):
                     self.model.output_handler.write(self.model, pixel=i, randomization=loop)
 
         self.model.close_output()
-
+        
         if (self.model.working_mode == 'inversion'):
             for k, v in self.model.spectrum.items():
                 v.close_observation()
@@ -270,9 +270,7 @@ class Iterator(object):
 
                 elif tag == tags.EXIT:                    
                     closed_workers += 1
-                    self.logger.info('Worker {0} has finished'.format(source))
-
-        self.model.close_output()
+                    self.logger.info('Worker {0} has finished'.format(source))        
 
     def mpi_workers_work(self):
         """
@@ -385,6 +383,8 @@ class Iterator(object):
         -------
         None
         """
+
+        # try:
         if (self.use_mpi):
             if (self.rank == 0):
                 self.mpi_parent_work()
@@ -399,3 +399,8 @@ class Iterator(object):
                 os.remove('lte.grid')
             except OSError:
                 pass
+        # except KeyboardInterrupt:
+        #     pass
+        # finally:
+        #     # Always close the output file even if an interruption occured
+        #     self.model.close_output()            

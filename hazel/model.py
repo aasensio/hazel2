@@ -1725,10 +1725,11 @@ class Model(object):
                     self.logger.info('  * Optimal lambda: {0}'.format(lambda_opt))
                                             
                 # If after backtracking the chi2 is larger than the current one, then increase lambda and go to the iteration
-                if (chi2 < backtracking_bestchi2):
-                    lambdaLM *= 100.0
-                    # print('breaking')
-                    continue
+                # print(chi2, backtracking_bestchi2)
+                # if (chi2 < backtracking_bestchi2 and iteration > 1):
+                #     lambdaLM *= 100.0
+                #     # print('breaking')
+                #     continue
 
 
                 # Give the final step

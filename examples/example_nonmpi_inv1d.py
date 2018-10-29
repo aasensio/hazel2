@@ -6,7 +6,7 @@ import h5py
 # Test iterator with a single observation in synthesis
 iterator = hazel.Iterator(use_mpi=False)
 rank = iterator.get_rank()
-mod = hazel.Model('configurations/conf_nonmpi_inv1d.ini', working_mode='inversion', verbose=2, randomization=2)
+mod = hazel.Model('configurations/conf_nonmpi_inv1d.ini', working_mode='inversion', verbose=4, randomization=2)
 iterator.use_model(model=mod)
 iterator.run_all_pixels()
 
