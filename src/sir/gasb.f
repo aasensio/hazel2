@@ -12,6 +12,9 @@ c	...............................................................
 	dimension du0(ncontr),du1(ncontr),du2(ncontr),dcmol(91)
 	real p(99),dp(99),ddp(99)
 
+	integer :: error_code
+	common/Error/error_code
+
 
       t=5040./theta
       if(pe.le.0)then
@@ -103,7 +106,8 @@ c	g1=g1+p(i)*a*ss1
 	   print*,'      Check the atmospheric models.'
 	   print*,' '
 	   print*,'__________________________________________________________________________________'
-	stop
+	   error_code = 1
+c stop
 	end if
 
       call acotasig(g5,1.e-20,1.e20)

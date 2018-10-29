@@ -23,6 +23,9 @@ c internas
 
         common/segunda/tau,taue,deltae,deltai,delt2i
 
+	integer :: error_code
+	common/Error/error_code
+
 
 c se calcula donde poner el contorno
 
@@ -113,6 +116,8 @@ c	   enddo
              
         
 	   call matinx(num)
+
+	   if (error_code == 1) return
 
 	   do jj=1,4
               sum=0.

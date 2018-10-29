@@ -242,6 +242,7 @@ c con respecto a la t (dpg) y, con pe (ddpg)
             ts=t(i)
             theta=5040./ts
             call gasb(theta,ps,pg,dpg,ddpg)
+            if (error_code == 1) return
             do j=1,10
                k=ivar(j)
                pt(i,j)=pg(k)
@@ -954,6 +955,8 @@ c          call lin(bp,dbp,dab,ntau,svec,kt,bt,tk,pk,hk,
 c     &              vk,gk,fk,mk,rt4,rp4,rh4,rv4,rg4,rf4,rm4,mnodos)
            call hermite(bp,dbp,dab,ntau,svec,kt,bt,tk,pk,hk,
      &              vk,gk,fk,mk,rt4,rp4,rh4,rv4,rg4,rf4,rm4,mnodos)
+
+        if (error_code == 1) return
 
 c introducimos el paso en tau para pasar la integral sobre las f. resp.
 c a sumatorio y normalizmos por el continuo

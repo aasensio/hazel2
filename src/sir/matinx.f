@@ -1,5 +1,8 @@
       subroutine matinx ( a )
 
+      integer :: error_code
+	common/Error/error_code
+
 c	'exact' inversion of 4 X 4 matrix
 
       implicit real*4 ( a-h, o-z )
@@ -18,7 +21,11 @@ c          c(i,j)=a(i,j)
 
 c      if ( absmax .eq. 0. ) stop 'singularity problem in matinx'
 
-      if ( absmax .eq. 0. ) call exit(123)
+      if ( absmax .eq. 0. ) then
+            error_code = 1
+            a = 1.0
+            return
+      endif
 
 
       fabsmx = 1.d00 / absmax

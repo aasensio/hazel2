@@ -444,7 +444,7 @@ contains
         endif
 
 		call StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac)
-
+		
 		if (error_code == 1) then
 			error = 1
 			return

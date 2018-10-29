@@ -1614,7 +1614,7 @@ class Model(object):
         else:
             lambda_opt = lambdas[ind_min]
 
-        return lambda_opt, bracketed, best_chi2
+        return lambda_opt, bracketed, best_chi2, np.min(chi2_arr)
 
     def randomize(self):
         """
@@ -1708,17 +1708,28 @@ class Model(object):
             while keepon:                                
                 
                 # Backtracking
-                lambda_opt, bracketed, best_chi2 = self.backtracking(dchi2, ddchi2, direction='down', max_iter=5, lambda_init=lambdaLM, current_chi2=chi2)
+                lambda_opt, bracketed, best_chi2, backtracking_bestchi2_down = self.backtracking(dchi2, ddchi2, direction='down', max_iter=5, lambda_init=lambdaLM, current_chi2=chi2)
+
+                backtracking_bestchi2 = copy.copy(backtracking_bestchi2_down)
 
                 # If solution is not bracketed, then try on the other sense and use the best of the two
                 if (not bracketed):
-                    lambda_opt_up, bracketed, best_chi2_up = self.backtracking(dchi2, ddchi2, direction='up', max_iter=2, lambda_init=lambdaLM)                    
+                    lambda_opt_up, bracketed, best_chi2_up, backtracking_bestchi2_up = self.backtracking(dchi2, ddchi2, direction='up', max_iter=2, lambda_init=lambdaLM)                    
 
                     if (best_chi2_up < best_chi2):
                         lambda_opt = lambda_opt_up
+
+                    backtracking_bestchi2 = np.min([backtracking_bestchi2, backtracking_bestchi2_up])
                                                 
                 if (self.verbose >= 3):
                     self.logger.info('  * Optimal lambda: {0}'.format(lambda_opt))
+                                            
+                # If after backtracking the chi2 is larger than the current one, then increase lambda and go to the iteration
+                if (chi2 < backtracking_bestchi2):
+                    lambdaLM *= 100.0
+                    # print('breaking')
+                    continue
+
 
                 # Give the final step
                 H = 0.5 * (ddchi2 + np.diag(self.hessian_regularization))
