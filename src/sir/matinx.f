@@ -1,8 +1,6 @@
       subroutine matinx ( a )
 
-      integer :: error_code
-	common/Error/error_code
-
+      
 c	'exact' inversion of 4 X 4 matrix
 
       implicit real*4 ( a-h, o-z )
@@ -10,6 +8,9 @@ c	'exact' inversion of 4 X 4 matrix
       dimension a ( 4 , 4 ) , b ( 4 , 4 )
 c      dimension c(4,4)
       integer i , j
+
+      integer :: error_code
+	common/Error/error_code
 
       absmax = 0.
 
