@@ -140,8 +140,6 @@ class Iterator(object):
                         self.model.flatten_parameters_to_reference(cycle=0)
 
                     self.model.output_handler.write(self.model, pixel=i, randomization=loop)
-
-        self.model.close_output()
         
         if (self.model.working_mode == 'inversion'):
             for k, v in self.model.spectrum.items():
@@ -384,23 +382,23 @@ class Iterator(object):
         None
         """
 
-        # try:
-        if (self.use_mpi):
-            if (self.rank == 0):
-                self.mpi_parent_work()
-                self.logger.info('Finished.')
+        try:
+            if (self.use_mpi):
+                if (self.rank == 0):
+                    self.mpi_parent_work()
+                    self.logger.info('Finished.')
+                else:
+                    self.mpi_workers_work()
             else:
-                self.mpi_workers_work()
-        else:
-            self.nonmpi_work()
+                self.nonmpi_work()
 
-        if (self.rank == 0):
-            try:
-                os.remove('lte.grid')
-            except OSError:
-                pass
-        # except KeyboardInterrupt:
-        #     pass
-        # finally:
-        #     # Always close the output file even if an interruption occured
-        #     self.model.close_output()            
+            if (self.rank == 0):
+                try:
+                    os.remove('lte.grid')
+                except OSError:
+                    pass
+        except KeyboardInterrupt:
+            pass
+        finally:
+            # Always close the output file even if an interruption occured
+            self.model.close_output()            
