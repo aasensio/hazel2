@@ -166,24 +166,112 @@ class File_photosphere(object):
         """
         if (self.mode == 'single' and n_pixel > 1):
             raise Exception("Single pixel models cannot contain more than one pixel")
+        
+        print("Setting photosphere to model {0}".format(default))
+        path = str(__file__).split('/')
+        filename = '/'.join(path[0:-1])+'/data/{0}.1d'.format(default)
+        f = open(filename, 'r')
+        f.readline()
+        ff = float(f.readline())
+        f.close()
+        model = np.loadtxt(filename, skiprows=4)
 
-        if (default == 'hsra'):
-            print("Setting HSRA photosphere")
-            path = str(__file__).split('/')
-            filename = '/'.join(path[0:-1])+'/data/hsra.mod'
-            f = open(filename, 'r')
-            f.readline()
-            ff = float(f.readline())
-            f.close()
-            model = np.loadtxt(filename, skiprows=4)
+        nz = model.shape[0]
 
-            nz = model.shape[0]
+        self.model['model'] = np.zeros((n_pixel,nz,8), dtype=np.float64)
+        self.model['ff'] = np.zeros((n_pixel,), dtype=np.float64)
 
-            self.model['model'] = np.zeros((n_pixel,nz,8), dtype=np.float64)
-            self.model['ff'] = np.zeros((n_pixel,), dtype=np.float64)
+        self.model['model'][:] = model[None,:,:]
+        self.model['ff'][:] = ff
 
-            self.model['model'][:] = model[None,:,:]
-            self.model['ff'][:] = ff
+    def list_models(self):
+        docs = """
+        All models have been extracted from SIR (https://github.com/BasilioRuiz/SIR-code/tree/master/models)
+        
+        One-component quiet Sun models:
+
+            holmu11.mod ...  Holweger H., & Muller E.A., 1974, Sol Phys. 39 19
+
+            hsra11.mod   ...  Harvard Smithsonian Reference Atmosphere (Gingerich O.,
+                            Noyes R.W., Kalkofen W., & Cuny Y., 1971. Sol. Phys. 18, 347)
+
+            valc11.mod   ...  Vernaza J.E., Avrett E.H., & Loeser R., 1981, ApJS 45, 635
+
+            mackkl11.mod ...  Maltby P., Avrett E.H., Carlsson M., Kjeldseth-Moe O.,
+                            Kurucz R.L., & Loeser R., 1986 ApJ 306 284
+
+            nelsoncold.mod  Nelson G. P. 1978 Sol. Phys. 60, 5
+
+            nelsonhot.mod   Nelson G. P. 1978 Sol. Phys. 60, 5
+
+            grevesse11.mod .. Grevesse N., Sauval A.J. 1999 A&A 347, 348
+            
+
+        Sunspot Models:
+
+            emaltby11.mod .. (E model) Maltby P., Avrett E.H., Carlsson M., 
+                            Kjeldseth-Moe O., Kurucz R.L., & Loeser R., 1986 ApJ 306 284
+                            
+            mmaltby11.mod ..  (M model) Maltby P., Avrett E.H., Carlsson M., 
+                            Kjeldseth-Moe O., Kurucz R.L., & Loeser R., 1986 ApJ 306 284
+                            
+
+            cool11.mod ...    Collados M., Martínez Pillet V., Ruiz Cobo B., 
+                            Del Toro Iniesta J.C., & Vázquez M. 1994 A&A 291 622 
+                            (Umbral model for a big spot)
+
+            hot11.mod  ...    Collados M., Martínez Pillet V., Ruiz Cobo B., 
+                            Del Toro Iniesta J.C., & Vázquez M. 1994 A&A 291 622 
+                    (Umbral model for a small spot)
+
+            penumjti11.mod .. Del Toro Iniesta J.C., Tarbell T.D., Ruiz Cobo B., 
+                            1994, ApJ 436,400 
+                    (penumbral model)
+
+        Active Regions Models:
+
+            solannt11.mod ..  (network model, S. K. Solanki, private comunication)
+
+            solanpl11.mod ..  (plage model, S. K. Solanki, private comunication)
+
+            Fontenla Models:
+
+        Photospheric models
+            FALB = MODEL1001
+
+            FALC11 - QS model cell center
+            An area with the same intensity as the median in a histogram of a Ca II K image of a quiet area of the Sun. 
+            We find that the median is very   close to the peak of the distribution but is statistically more stable. 
+            These intensities correspond to most of the central area of supergranular cells that are usually known as "quiet-Sun cell interior."
+
+            FALD = MODEL1002  : Network
+            
+            FALE11- QS model network
+            A bright area separating supergranulation (or network) cells, often called "network lane." We describe this category as "quiet-Sun network."
+
+            FALF = MODEL1003 - QS model active network
+                Certain network lane areas that are much brighter than the average. We describe this category as "active network."
+                It spans from logtau=1.3 to -6.8
+
+            FALF11=  FALF but spans from logtau=1.4 to -5.7
+            
+            FALH = MODEL1004-  Plage model
+                It spans from logtau=1.5 to -6.6
+                
+            FALH11= FALH but spans from logtau=1.4 to -5.7
+            
+            FALP= MODEL1005- Facula model
+                    It spans from logtau=1.3 to -6.7
+                    
+            FALP11=FALP but spans from logtau=1.1 to -5.7
+            
+            FALR11 - penumbral model
+            
+            FALS= MODEL1006 - sunspot model spans from logtau=1.4 to -5.4
+            
+            FALS11= FALS  but spans from logtau=1.3 to -4.9
+        """
+        print(docs)
         
     def save(self, file, default=None):
         """

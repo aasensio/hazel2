@@ -51,6 +51,7 @@ class Model(object):
         self.use_mpi = use_mpi
 
         self.epsilon = 1e-2
+        self.step_limiter_inversion = 1.0
         
         self.verbose = verbose
         
@@ -1565,7 +1566,8 @@ class Model(object):
             # xnew = xold - H^-1 * grad F
             delta = -VT.T.dot(np.diag(w_inv)).dot(U.T).dot(gradF)
             
-            new_solution = self.nodes + delta
+            # Clip the new solution so that the step is resaonable
+            new_solution = self.nodes + np.clip(delta, -self.step_limiter_inversion, self.step_limiter_inversion)
             sols.append(new_solution)
         
             self.set_new_model(new_solution)
@@ -1743,10 +1745,12 @@ class Model(object):
                 delta = -VT.T.dot(np.diag(w_inv)).dot(U.T).dot(gradF)
 
                 # New solution
-                new_solution = self.nodes + delta
+                # Clip the new solution so that the step is resaonable
+                new_solution = self.nodes + np.clip(delta, -self.step_limiter_inversion, self.step_limiter_inversion)
                 self.set_new_model(new_solution)
 
-                self.nodes += delta
+                # Clip the new solution so that the step is resaonable
+                self.nodes += np.clip(delta, -self.step_limiter_inversion, self.step_limiter_inversion)
 
                 self.synthesize_and_compute_rf(compute_rf=True)
                 chi2, dchi2, ddchi2 = self.compute_chi2()
@@ -1770,6 +1774,8 @@ class Model(object):
                     for k, v in self.atmospheres.items():
                         if (v.type == 'chromosphere'):
                             v.print_parameters(first=first)
+                        # if (v.type == 'photosphere'):
+                            # v.print_parameters(first=first)
                     # self.atmospheres['ch2'].print_parameters(first=first)
                     first = False
                         

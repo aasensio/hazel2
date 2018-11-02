@@ -69,6 +69,12 @@ the moment, you can just use the HSRA model, but more models will come in the fu
     tmp.set_default(n_pixel=1, default='hsra')
     tmp.save('photosphere')
 
+To get a list of possible models, just type:
+
+::
+
+    tmp.list_models()
+
 
 In the multipixel case, just use:
 

@@ -154,18 +154,21 @@ class SIR_atmosphere(General_atmosphere):
         
         if (n_nodes == 2):
             pos = np.linspace(0, n_depth-1, n_nodes, dtype=int)
+            pos = np.linspace(0, n_depth-1, n_nodes+2, dtype=int)[1:-1]
             # coeff = np.polyfit(log_tau[pos], nodes, 1)            
-            f = interp.interp1d(log_tau[pos], nodes, 'linear')
+            f = interp.interp1d(log_tau[pos], nodes, 'linear', bounds_error=False, fill_value='extrapolate')
             return reference + f(log_tau) #np.polyval(coeff, log_tau)
 
         if (n_nodes == 3):
             pos = np.linspace(0, n_depth-1, n_nodes, dtype=int)
+            pos = np.linspace(0, n_depth-1, n_nodes+2, dtype=int)[1:-1]
             # coeff = np.polyfit(log_tau[pos], nodes, 2)      
-            f = interp.interp1d(log_tau[pos], nodes, 'quadratic')
+            f = interp.interp1d(log_tau[pos], nodes, 'quadratic', bounds_error=False, fill_value='extrapolate')
             return reference + f(log_tau)
 
         if (n_nodes > 3):            
             pos = np.linspace(n_depth-1, 0, n_nodes, dtype=int)
+            pos = np.linspace(n_depth-1, 0, n_nodes+2, dtype=int)[1:-1]
             f = interp.PchipInterpolator(log_tau[pos], nodes, extrapolate=True)            
             return reference + f(log_tau)
 
@@ -310,7 +313,9 @@ class SIR_atmosphere(General_atmosphere):
         # for k, v in self.parameters.items():
             # if (k is not 'log_tau'):
                 
-                
+    def print_parameters(self, first=False, error=False):
+        # if (first):
+        print(self.parameters, flush=True)
 
     def synthesize(self, stokes_in, returnRF=False):
         """
@@ -350,7 +355,7 @@ class SIR_atmosphere(General_atmosphere):
             stokes, error = sir_code.synth(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
                 self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
                 self.parameters['Bz'], self.macroturbulence[0])
-
+            
             if (error == 1):
                 raise NumericalErrorSIR()
 

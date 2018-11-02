@@ -299,23 +299,30 @@ class Hazel_atmosphere(General_atmosphere):
         anglesInput = self.spectrum.los
         lambdaAxisInput = self.wvl_axis - self.multiplets[self.active_line]
         nLambdaInput = len(lambdaAxisInput)
-                
+                        
         if (stokes is None):
             boundaryInput  = np.asfortranarray(np.zeros((4,nLambdaInput)))
             # boundaryInput[0,:] = hsra_continuum(self.multiplets[self.active_line]) #i0_allen(self.multiplets[self.active_line],1.0)            
             boundaryInput[0,:] = i0_allen(self.multiplets[self.active_line], self.spectrum.mu)
             boundaryInput *= self.spectrum.boundary[:,self.wvl_range[0]:self.wvl_range[1]]
+            ratio = 1.0
         else:            
             # boundaryInput = np.asfortranarray(stokes * hsra_continuum(self.multiplets[self.active_line])) #i0_allen(self.multiplets[self.active_line],1.0)
             boundaryInput = np.asfortranarray(stokes)
+            ratio = boundaryInput[0,0] / i0_allen(self.multiplets[self.active_line], self.spectrum.mu)
                     
         dopplerWidthInput = self.parameters['deltav']
         dampingInput = self.parameters['a']
         dopplerVelocityInput = self.parameters['v']
         betaInput = self.parameters['beta']
-        nbarInput = np.asarray([0.0,0.0,0.0,0.0])
-        omegaInput = np.asarray([0.0,0.0,0.0,0.0])
-    
+
+        # Renormalize nbar so that its CLV is the same as that of Allen, but with a decreased I0
+        # If I don't do that, fitting profiles in the umbra is not possible. The lines become in
+        # emission because the value of the source function, a consequence of the pumping radiation,
+        # is too large. In this case, one needs to use beta to reduce the value of the source function.
+        nbarInput = np.ones(4) * ratio
+        omegaInput = np.zeros(4)
+        
         args = (self.index, B1Input, hInput, tau1Input, boundaryInput, transInput, 
             anglesInput, nLambdaInput, lambdaAxisInput, dopplerWidthInput, 
             dampingInput, dopplerVelocityInput, 
