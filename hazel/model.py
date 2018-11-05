@@ -17,10 +17,11 @@ import scipy.stats
 import scipy.special
 import scipy.signal
 import scipy.linalg
+import scipy.optimize
 import warnings
 import logging
 
-# from ipdb import set_trace as stop
+from ipdb import set_trace as stop
 
 __all__ = ['Model']
 
@@ -52,6 +53,7 @@ class Model(object):
 
         self.epsilon = 1e-2
         self.step_limiter_inversion = 1.0
+        self.backtracking = 'brent'
         
         self.verbose = verbose
         
@@ -112,6 +114,14 @@ class Model(object):
 
         # Output file
         self.output_file = config_dict['working mode']['output file']
+
+        # Backtracking mode
+        if ('backtracking' in config_dict['working mode']):
+            self.backtracking = config_dict['working mode']['backtracking']
+        else:
+            self.backtracking = 'brent'
+        if (self.verbose >= 1):
+            self.logger.info('Backtracking mode : {0}'.format(self.backtracking))
         
         
         # Working mode
@@ -1514,9 +1524,40 @@ class Model(object):
             error *= jacobian_transformation(self.nodes[left:right], par['ranges'][0], par['ranges'][1])
                     
             self.atmospheres[par['atm']].error[par['parameter']] = error
-            
 
-    def backtracking(self, dchi2, ddchi2, direction='down', max_iter=5, lambda_init=1e-3, current_chi2=1e10):
+    def _fun_backtracking(self, log_lambda, dchi2, ddchi2):
+        H = 0.5 * (ddchi2 + np.diag(self.hessian_regularization))
+        H += np.diag(10.0**(log_lambda) * np.diag(H))
+        gradF = 0.5 * (dchi2 + self.grad_regularization)
+
+        U, w_inv, VT = self.modified_svd_inverse(H, tol=1e-8)
+
+        # xnew = xold - H^-1 * grad F
+        delta = -VT.T.dot(np.diag(w_inv)).dot(U.T).dot(gradF)
+        
+        # Clip the new solution so that the step is resaonable
+        new_solution = self.nodes + np.clip(delta, -self.step_limiter_inversion, self.step_limiter_inversion)
+    
+        self.set_new_model(new_solution)
+                    
+        self.synthesize_and_compute_rf()
+        
+        chi2 = self.compute_chi2(only_chi2=True)
+
+        if (self.verbose >= 4):
+            self.logger.info('  - Backtracking - lambda: {0:7.5f} - chi2: {1:7.5f}'.format(10.0**log_lambda, chi2))
+                    
+        return chi2
+            
+    
+    def backtracking_brent(self, dchi2, ddchi2, maxiter=10, bounds=[-3.0,3.0], tol=1e-2):
+
+        tmp = scipy.optimize.minimize_scalar(self._fun_backtracking, bounds=bounds, args=(dchi2, ddchi2), 
+            method='bounded', tol=tol, options={'maxiter': maxiter})
+
+        return 10.0**tmp['x']
+        
+    def backtracking_parabolic(self, dchi2, ddchi2, direction='down', maxiter=5, lambda_init=1e-3, current_chi2=1e10):
         """
         Do the backtracking to get an optimal value of lambda in the LM algorithm
 
@@ -1528,7 +1569,7 @@ class Model(object):
             Second order derivatives with which the Hessian is computed
         direction : str, optional
             Direction on which do the backtracking ('down'/'up' for decreasing/increasing lambda)
-        max_iter : int
+        maxiter : int
             Maximum number of iterations
         lambda_init : float
             Initial value of lambda
@@ -1598,7 +1639,7 @@ class Model(object):
                     bracketed = True
 
             # If lambda < 1e-3, then stop
-            if (lambdaLM < 1e-3 or loop > max_iter):
+            if (lambdaLM < 1e-3 or loop > maxiter):
                 keepon = False
                 min_found = False
             
@@ -1709,19 +1750,24 @@ class Model(object):
 
             while keepon:                                
                 
-                # Backtracking
-                lambda_opt, bracketed, best_chi2, backtracking_bestchi2_down = self.backtracking(dchi2, ddchi2, direction='down', max_iter=5, lambda_init=lambdaLM, current_chi2=chi2)
+                # Simple parabolic backtracking
+                if (self.backtracking == 'parabolic'):
+                    lambda_opt, bracketed, best_chi2, backtracking_bestchi2_down = self.backtracking(dchi2, ddchi2, direction='down', maxiter=5, lambda_init=lambdaLM, current_chi2=chi2)
 
-                backtracking_bestchi2 = copy.copy(backtracking_bestchi2_down)
+                    backtracking_bestchi2 = copy.copy(backtracking_bestchi2_down)
 
-                # If solution is not bracketed, then try on the other sense and use the best of the two
-                if (not bracketed):
-                    lambda_opt_up, bracketed, best_chi2_up, backtracking_bestchi2_up = self.backtracking(dchi2, ddchi2, direction='up', max_iter=2, lambda_init=lambdaLM)                    
+                    # If solution is not bracketed, then try on the other sense and use the best of the two
+                    if (not bracketed):
+                        lambda_opt_up, bracketed, best_chi2_up, backtracking_bestchi2_up = self.backtracking(dchi2, ddchi2, direction='up', maxiter=2, lambda_init=lambdaLM)                    
 
-                    if (best_chi2_up < best_chi2):
-                        lambda_opt = lambda_opt_up
+                        if (best_chi2_up < best_chi2):
+                            lambda_opt = lambda_opt_up
 
-                    backtracking_bestchi2 = np.min([backtracking_bestchi2, backtracking_bestchi2_up])
+                        backtracking_bestchi2 = np.min([backtracking_bestchi2, backtracking_bestchi2_up])
+
+                # Bounded Brent backtracking
+                if (self.backtracking == 'brent'):                    
+                    lambda_opt = self.backtracking_brent(dchi2, ddchi2, maxiter=10, bounds=[-4.0,4.0], tol=1e-2)
                                                 
                 if (self.verbose >= 3):
                     self.logger.info('  * Optimal lambda: {0}'.format(lambda_opt))
