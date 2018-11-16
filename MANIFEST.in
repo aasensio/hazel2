@@ -1,3 +1,4 @@
+include hazel/data/*.1d
 include hazel/data/LINEAS
 include src/sir/PARAMETER
 include VERSION.txt
