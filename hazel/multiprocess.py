@@ -401,4 +401,5 @@ class Iterator(object):
             pass
         finally:
             # Always close the output file even if an interruption occured
-            self.model.close_output()            
+            if (self.rank == 0):
+                self.model.close_output()

@@ -1081,14 +1081,14 @@ class Model(object):
         stokes = None
         stokes_out = None
 
-        # Loop over all atmospheres
+        # Loop over all atmospheres        
         for i, atmospheres in enumerate(self.order_atmospheres):
             
             for n, order in enumerate(atmospheres):
                                                                 
-                for k, atm in enumerate(order):
+                for k, atm in enumerate(order):                    
                     
-                    if (self.atmospheres[atm].spectrum.name == spectral_region):
+                    if (self.atmospheres[atm].spectrum.name == spectral_region):                        
                         
                         # Update the boundary condition only for the first atmosphere if several are sharing ff      
                         if (n > 0 and k == 0):
@@ -1134,7 +1134,7 @@ class Model(object):
 
         """
         self.normalize_ff()
-        for k, v in self.spectrum.items():
+        for k, v in self.spectrum.items():            
             self.synthesize_spectral_region(k, perturbation=perturbation)
             if (v.normalization == 'off-limb'):
                 if (perturbation):

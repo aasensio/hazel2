@@ -232,7 +232,7 @@ to define the following lines in a script:
 ::
 
     iterator = hazel.Iterator(use_mpi=True)    
-    mod = hazel.Model('configurations/conf_mpi_invh5.ini', rank=iterator.get_rank())
+    mod = hazel.Model('configurations/conf_mpi_invh5.ini', working_mode='inversion', rank=iterator.get_rank())
     iterator.use_model(model=mod)
     iterator.run_all_pixels()
 
@@ -271,7 +271,7 @@ pass the ``randomization`` keyword to the ``Model``:
 ::
 
     iterator = hazel.Iterator(use_mpi=True)    
-    mod = hazel.Model('configurations/conf_mpi_invh5.ini', rank=iterator.get_rank(), randomization=2)
+    mod = hazel.Model('configurations/conf_mpi_invh5.ini', working_mode='inversion', rank=iterator.get_rank(), randomization=2)
     iterator.use_model(model=mod)
     iterator.run_all_pixels()
 
