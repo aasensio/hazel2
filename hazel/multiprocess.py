@@ -20,6 +20,7 @@ class tags(IntEnum):
     DONE = 1
     EXIT = 2
     START = 3
+    DONOTHING = 4
 
 class Iterator(object):
     def __init__(self, use_mpi=False):
@@ -100,6 +101,7 @@ class Iterator(object):
         if (self.model.working_mode == 'inversion'):
             for k, v in self.model.spectrum.items():
                 v.open_observation()
+                v.mask_handle.open()
         
         # Open all model files
         for k, v in self.model.atmospheres.items():
@@ -164,6 +166,7 @@ class Iterator(object):
         if (self.model.working_mode == 'inversion'):
             for k, v in self.model.spectrum.items():
                 v.open_observation()
+                v.mask_handle.open()
         
         # Loop over all pixels doing the synthesis/inversion and saving the results
         task_index = 0
@@ -203,7 +206,7 @@ class Iterator(object):
 
                         # Do the inversion only if the mask is set to 1
                         if all(x == 1 for x in mask):
-
+                        
                             if (self.model.working_mode == 'inversion'):
 
                                 # Read current model atmosphere
@@ -224,6 +227,9 @@ class Iterator(object):
                                     data_to_send[k] = [args, ff]
 
                             self.comm.send(data_to_send, dest=source, tag=tags.START)
+
+                        else:
+                            self.comm.send(data_to_send, dest=source, tag=tags.DONOTHING)
                         
                         task_index += 1
                         pbar.update(1)
@@ -266,6 +272,9 @@ class Iterator(object):
                     
                     # self.logger.info('Received {0}->{1}'.format(index, source))
 
+                elif tag == tags.DONOTHING:
+                    pass
+
                 elif tag == tags.EXIT:                    
                     closed_workers += 1
                     self.logger.info('Worker {0} has finished'.format(source))        
@@ -289,7 +298,7 @@ class Iterator(object):
 
             tag = self.status.Get_tag()
             
-            if tag == tags.START:                                
+            if tag == tags.START:
                 task_index = data_received['index']
 
                 data_to_send = {'index': task_index}
@@ -364,6 +373,8 @@ class Iterator(object):
                 t1 = time.time()
                 data_to_send['elapsed'] = t1 - t0
                 self.comm.send(data_to_send, dest=0, tag=tags.DONE)
+            elif tag == tags.DONOTHING:
+                self.comm.send({}, dest=0, tag=tags.DONOTHING)
             elif tag == tags.EXIT:
                 break
 

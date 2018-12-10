@@ -1,5 +1,5 @@
 import numpy as np
-from hazel.io import Generic_observed_file, Generic_stray_file
+from hazel.io import Generic_observed_file, Generic_stray_file, Generic_mask_file
 import os.path
 from astropy.constants import c
 from scipy import interpolate
@@ -160,12 +160,12 @@ class Spectrum(object):
     
         """  
         if (mask_file is not None):
-            self.mask_handle = Generic_mask_file(mask_file)
+            self.mask_handle = Generic_mask_file(mask_file)            
             n_pixel = self.mask_handle.get_npixel()
             if (n_pixel != self.n_pixel):
                 raise Exception("Number of pixels in mask is different from number of observed pixels")
         else:
-            self.mask_handle = None
+            self.mask_handle = Generic_mask_file(None)
         
     # def add_stray_file(self, stray_file):        
     #     """

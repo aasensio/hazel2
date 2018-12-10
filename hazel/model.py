@@ -26,7 +26,7 @@ import logging
 __all__ = ['Model']
 
 class Model(object):
-    def __init__(self, config=None, working_mode='synthesis', verbose=0, debug=False, rank=0, randomization=None, use_mpi=False):
+    def __init__(self, config=None, working_mode='synthesis', verbose=0, debug=False, rank=0, randomization=None):
 
         np.random.seed(123)
 
@@ -49,7 +49,6 @@ class Model(object):
         self.working_mode = working_mode
         self.pixel = 0
         self.debug = debug
-        self.use_mpi = use_mpi
 
         self.epsilon = 1e-2
         self.step_limiter_inversion = 1.0
@@ -874,13 +873,6 @@ class Model(object):
                 f.close()
                 
                 v.n_lambda = sir_code.init_externalfile(v.index, filename)
-
-        # Only remove the file if we are in single-node inversion. Otherwise, it will be done by the parent node in multiprocessing
-        # if (not self.use_mpi):
-        #     try:
-        #         os.remove('lte.grid')
-        #     except OSError:
-        #         pass
 
     def init_sir(self):
         """

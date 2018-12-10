@@ -14,7 +14,7 @@ except:
 
 #from ipdb import set_trace as stop
 
-__all__ = ['Generic_output_file', 'Generic_observed_file', 'Generic_hazel_file', 'Generic_SIR_file', 'Generic_parametric_file', 'Generic_stray_file']
+__all__ = ['Generic_output_file', 'Generic_observed_file', 'Generic_hazel_file', 'Generic_SIR_file', 'Generic_parametric_file', 'Generic_stray_file', 'Generic_mask_file']
 
 class Generic_output_file(object):    
 
@@ -254,6 +254,10 @@ class Generic_mask_file(object):
             self.extension = os.path.splitext(filename)[1][1:]        
 
     def open(self):        
+
+        if (self.filename is None):
+            return
+
         if (self.extension == '1d'):
             raise Exception("1D files are not allowed for masks.")
             return
@@ -271,17 +275,17 @@ class Generic_mask_file(object):
             return
 
     def read(self, pixel=None):        
+        if (self.filename is None):
+            return 1
+
         if (self.extension == 'h5' or self.extension == 'zarr'):            
             return self.handler['mask'][pixel]
-
-        if (self.filename is None):
-            return 1        
-
-        # if (self.extension == 'fits'):
-        #     return self.handler[0]fits.open(self.filename, memmap=True)
-        #     return
+        
 
     def close(self):        
+        if (self.filename is None):
+            return
+            
         if (self.extension == 'h5' or self.extension == 'zarr'):
             self.handler.close()
             del self.handler
@@ -290,7 +294,7 @@ class Generic_mask_file(object):
     def get_npixel(self):        
         if (self.extension == 'h5' or self.extension == 'zarr'):
             self.open()
-            tmp, _, _ = self.handler['mask'].shape
+            tmp = len(self.handler['mask'])
             self.close()
             return tmp        
 
