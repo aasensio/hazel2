@@ -6,6 +6,7 @@ Data preparation
 
 .. toctree::
    preparation/prepareData
+   notebooks/boundary_conditions.ipynb
    preparation/equations
    preparation/ambiguities
    preparation/photospheric

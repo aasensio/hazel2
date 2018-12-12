@@ -1032,7 +1032,7 @@ class Model(object):
             for order in atmospheres:
 
                 total_ff = 0.0
-                for atm in order:                    
+                for atm in order:            
                     if (self.atmospheres[atm].type is not 'straylight'):
                         if (self.working_mode == 'inversion'):                            
                             self.atmospheres[atm].parameters['ff'], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1]
@@ -1125,7 +1125,8 @@ class Model(object):
         None
 
         """
-        self.normalize_ff()
+        if (self.working_mode == 'inversion'):
+            self.normalize_ff()
         for k, v in self.spectrum.items():            
             self.synthesize_spectral_region(k, perturbation=perturbation)
             if (v.normalization == 'off-limb'):

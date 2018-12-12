@@ -305,11 +305,13 @@ class Hazel_atmosphere(General_atmosphere):
             # boundaryInput[0,:] = hsra_continuum(self.multiplets[self.active_line]) #i0_allen(self.multiplets[self.active_line],1.0)            
             boundaryInput[0,:] = i0_allen(self.multiplets[self.active_line], self.spectrum.mu)
             boundaryInput *= self.spectrum.boundary[:,self.wvl_range[0]:self.wvl_range[1]]
-            ratio = 1.0
+            # ratio = 1.0
         else:            
             # boundaryInput = np.asfortranarray(stokes * hsra_continuum(self.multiplets[self.active_line])) #i0_allen(self.multiplets[self.active_line],1.0)
             boundaryInput = np.asfortranarray(stokes)
-            ratio = boundaryInput[0,0] / i0_allen(self.multiplets[self.active_line], self.spectrum.mu)
+            # ratio = boundaryInput[0,0] / i0_allen(self.multiplets[self.active_line], self.spectrum.mu)
+
+        ratio = boundaryInput[0,0] / i0_allen(self.multiplets[self.active_line], self.spectrum.mu)
                     
         dopplerWidthInput = self.parameters['deltav']
         dampingInput = self.parameters['a']
@@ -327,8 +329,7 @@ class Hazel_atmosphere(General_atmosphere):
             anglesInput, nLambdaInput, lambdaAxisInput, dopplerWidthInput, 
             dampingInput, dopplerVelocityInput, 
             betaInput, nbarInput, omegaInput)
-
-        
+                
         l, stokes, error = hazel_code._synth(*args)
 
         if (error == 1):
