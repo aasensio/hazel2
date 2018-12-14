@@ -109,7 +109,6 @@ class General_atmosphere(object):
             lower = self.ranges[k][0] #- self.eps_borders
             upper = self.ranges[k][1] #+ self.eps_borders
             self.parameters[k] = transformed_to_physical(v, lower, upper)
-            print(k, v, self.parameters[k])
                         
     def to_transformed(self):
         """
