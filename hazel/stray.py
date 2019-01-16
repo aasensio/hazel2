@@ -2,7 +2,7 @@ from collections import OrderedDict
 import numpy as np
 import os
 from hazel.atmosphere import General_atmosphere
-from hazel.util import fvoigt
+from hazel.util import fvoigt, i0_allen
 from hazel.hsra import hsra_continuum
 from hazel.io import Generic_stray_file
 import copy
@@ -165,8 +165,9 @@ class Straylight_atmosphere(General_atmosphere):
         
         dlambda = self.parameters['v'] * 1e5 / (100.0 * constants.c) * self.avg_wavelength
         
-        self.stokes[0,:] = np.interp(self.wvl_axis - dlambda, self.wvl_axis, self.stray_profile[self.wvl_range[0]:self.wvl_range[1]])
+        # self.stokes[0,:] = np.interp(self.wvl_axis - dlambda, self.wvl_axis, self.stray_profile[self.wvl_range[0]:self.wvl_range[1]])
+        self.stokes[0,:] = np.interp(self.wvl_axis - dlambda, self.wvl_axis, self.stray_profile)
 
         error = 0
                                 
-        return self.parameters['ff'] * self.stokes * hsra_continuum(np.mean(self.wvl_axis)), error
+        return self.parameters['ff'] * self.stokes * i0_allen(np.mean(self.wvl_axis), self.spectrum.mu), error #* hsra_continuum(np.mean(self.wvl_axis)), error

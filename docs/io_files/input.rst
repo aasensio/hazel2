@@ -266,7 +266,7 @@ HDF5/zarr 3D files
 HDF5/zarr files with model straylight contaminations are defined with three double-precision datasets: ``profile``, ``model`` and ``ff``. The first
 one has size ``(n_pixel,n_wavelength)`` (which needs to conform with the number of wavelength of the spectral region
 associated to this atmosphere) and contains the intensity spectrum in units of the continuum intensity
-at disk center. The second one has size ``(n_pixel,8)`` and contains the model variable, which in this case
+at disk center. The second one has size ``(n_pixel,1)`` and contains the model variable, which in this case
 reduces just to the velocity shift. The last one
 has size ``(n_pixel,)`` and contains the filling factor for each pixel. In the following we show how to
 create a sample file:
@@ -275,7 +275,7 @@ create a sample file:
 
     n_pixel = 100
     
-    model_3d = np.zeros((n_pixel,8), dtype=np.float64)
+    model_3d = np.zeros((n_pixel,1), dtype=np.float64)
     ff_3d = np.zeros((n_pixel,), dtype=np.float64)
     profile_3d = np.zeros((n_pixel,150), dtype=np.float64)
 
