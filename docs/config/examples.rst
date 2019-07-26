@@ -141,7 +141,9 @@ In the following we paste a typical configuration file for the inversion mode.
         Height = 3.0                                            # Height of the slab
         Line = 10830                                            # 10830, 5876
         Wavelength = 10826, 10833                         # Wavelength range used for synthesis
-        Reference atmospheric model = 'chromospheres/model_chromosphere.1d'    # File with model parameters
+        Reference atmospheric model = 'chromospheres/model_chromosphere.1d'    #File with model parameters
+        Coordinates for magnetic field vector = 'cartesian'
+        
 
             [[[Ranges]]]
             Bx     = -500, 500

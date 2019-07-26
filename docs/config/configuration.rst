@@ -97,7 +97,7 @@ to those of chromospheres).
         Spectral region = spec1
         Wavelength = 10826, 10833
         Spectral lines = 300, 301
-        Reference frame = vertical
+        Reference frame = vertical        
 
             [[[Ranges]]]
             T      = -3000.0, 3000.0
@@ -154,7 +154,8 @@ relative to the line of sight.
         Height = 3.0                                            # Height of the slab
         Line = 10830                                            # 10830, 5876
         Wavelength = 10826, 10833                         # Wavelength range used for synthesis
-        Reference atmospheric model = 'chromospheres/model_chromosphere.1d'    # File with model parameters
+        Reference atmospheric model = 'chromospheres/model_chromosphere.1d'    #File with model parameters
+        Coordinates for magnetic field vector = 'cartesian'
 
             [[[Ranges]]]
             Bx     = -500, 500
@@ -189,6 +190,7 @@ relative to the line of sight.
 * ``Ranges`` : ranges of variation of each parameter. If ``None``, consider it unconstrained. If not, it will be constrained to the range.
 * ``Nodes`` : defines the number of nodes in each cycle when doing inversions. It is possible to couple parameters with those of another atmosphere by using the name of the atmosphere instead of the number of nodes.
 * ``Regularization`` : not yet implemented
+* ``Coordinates for magnetic field vector`` (optional) : defines the coordinates used for defining the magnetic field vector. If ``cartesian`` is used, then you need to define ``Bx``, ``By`` and ``Bz`` as variables in the ranges, nodes, etc. If ``spherical`` is used, then the variables are termed ``B``, ``thB`` and ``phiB``.
 
 Parametric
 ^^^^^^^^^^

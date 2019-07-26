@@ -655,6 +655,20 @@ class Model(object):
                             self.atmospheres[atm['name']].regularization[k2] = None
                         else:
                             self.atmospheres[atm['name']].regularization[k2] = v
+        
+        if ('coordinates for magnetic field vector' in atm):
+            if (atm['coordinates for magnetic field vector'] == 'cartesian'):
+                self.atmospheres[atm['name']].coordinates_B = 'cartesian'
+            if (atm['coordinates for magnetic field vector'] == 'spherical'):
+                self.atmospheres[atm['name']].coordinates_B = 'spherical'
+        else:
+            self.atmospheres[atm['name']].coordinates_B = 'cartesian'
+
+        self.atmospheres[atm['name']].select_coordinate_system()
+
+        if (self.verbose >= 1):            
+            self.logger.info("    * Magnetic field coordinates system : {0}".format(self.atmospheres[atm['name']].coordinates_B))            
+
 
         if ('reference atmospheric model' in atm):
             my_file = Path(atm['reference atmospheric model'])
@@ -674,7 +688,7 @@ class Model(object):
                 for k2, v2 in self.atmospheres[atm['name']].parameters.items():
                     if (k.lower() == k2.lower()):                            
                         self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)
-
+                            
             
     def add_parametric(self, atmosphere):
         """
@@ -1885,6 +1899,28 @@ class Model(object):
                 
 
             self.find_active_parameters(self.cycle)
+
+            tmp = [pars['atm'] for pars in self.active_meta]
+            tmp = list(set(tmp))
+
+            self.n_free_parameters_cycle = 0
+            
+            for k, v in self.atmospheres.items():
+                if (k in tmp):
+                    if (self.verbose >= 3):
+                        self.logger.info('Free parameters for {0}'.format(k))
+                    for pars in self.active_meta:
+                        if (pars['atm'] == k):
+                            if (self.verbose >= 3):
+                                if (pars['coupled'] is False):
+                                    if (pars['n_nodes'] == 1):
+                                        self.logger.info('  - {0} with {1} node'.format(pars['parameter'], pars['n_nodes']))
+                                    else:
+                                        self.logger.info('  - {0} with {1} nodes'.format(pars['parameter'], pars['n_nodes']))
+                                else:
+                                    self.logger.info('  - {0} coupled to {1} variable'.format(pars['parameter'], pars['n_nodes']))
+                            if (pars['coupled'] is False):
+                                self.n_free_parameters_cycle += pars['n_nodes']
 
             n_pars = len(self.nodes)
 

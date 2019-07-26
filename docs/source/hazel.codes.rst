@@ -5,6 +5,6 @@ Module contents
 ---------------
 
 .. automodule:: hazel.codes
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

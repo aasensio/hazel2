@@ -141,3 +141,12 @@ configuration file, and it will be broadcasted to all slaves internally.
 
     iterator.run_all_pixels()
 
+## Building docs from sources
+
+Install the following packages:
+
+    conda install sphinx sphinx_rtd_theme numpydoc nbsphinx
+
+And then compile them typing the following in the ``docs`` directory:
+
+    ./compile

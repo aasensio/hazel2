@@ -23,7 +23,10 @@ class Hazel_atmosphere(General_atmosphere):
 
         self.parameters['Bx'] = 0.0
         self.parameters['By'] = 0.0
-        self.parameters['Bz'] = 0.0        
+        self.parameters['Bz'] = 0.0
+        self.parameters['B'] = 0.0
+        self.parameters['thB'] = 0.0
+        self.parameters['phiB'] = 0.0
         self.parameters['tau'] = 1.0
         self.parameters['v'] = 0.0
         self.parameters['deltav'] = 8.0
@@ -33,7 +36,10 @@ class Hazel_atmosphere(General_atmosphere):
 
         self.units['Bx'] = 'G'
         self.units['By'] = 'G'
-        self.units['Bz'] = 'G'        
+        self.units['Bz'] = 'G'
+        self.units['B'] = 'G'
+        self.units['thB'] = 'deg'
+        self.units['phiB'] = 'deg'
         self.units['tau'] = ''
         self.units['v'] = 'km/s'
         self.units['deltav'] = 'km/s'
@@ -44,6 +50,9 @@ class Hazel_atmosphere(General_atmosphere):
         self.nodes['Bx'] = 0.0
         self.nodes['By'] = 0.0
         self.nodes['Bz'] = 0.0        
+        self.nodes['B'] = 0.0
+        self.nodes['thB'] = 0.0
+        self.nodes['phiB'] = 0.0
         self.nodes['tau'] = 0.0
         self.nodes['v'] = 0.0
         self.nodes['deltav'] = 0.0
@@ -53,7 +62,10 @@ class Hazel_atmosphere(General_atmosphere):
 
         self.error['Bx'] = 0.0
         self.error['By'] = 0.0
-        self.error['Bz'] = 0.0        
+        self.error['Bz'] = 0.0
+        self.error['B'] = 0.0
+        self.error['thB'] = 0.0
+        self.error['phiB'] = 0.0
         self.error['tau'] = 0.0
         self.error['v'] = 0.0
         self.error['deltav'] = 0.0
@@ -64,6 +76,9 @@ class Hazel_atmosphere(General_atmosphere):
         self.n_nodes['Bx'] = 0
         self.n_nodes['By'] = 0
         self.n_nodes['Bz'] = 0        
+        self.n_nodes['B'] = 0
+        self.n_nodes['thB'] = 0
+        self.n_nodes['phiB'] = 0
         self.n_nodes['tau'] = 0
         self.n_nodes['v'] = 0
         self.n_nodes['deltav'] = 0
@@ -74,6 +89,9 @@ class Hazel_atmosphere(General_atmosphere):
         self.ranges['Bx'] = None
         self.ranges['By'] = None
         self.ranges['Bz'] = None
+        self.ranges['B'] = None
+        self.ranges['thB'] = None
+        self.ranges['phiB'] = None
         self.ranges['tau'] = None
         self.ranges['v'] = None
         self.ranges['deltav'] = None
@@ -83,7 +101,10 @@ class Hazel_atmosphere(General_atmosphere):
 
         self.cycles['Bx'] = None
         self.cycles['By'] = None
-        self.cycles['Bz'] = None        
+        self.cycles['Bz'] = None  
+        self.cycles['B'] = None
+        self.cycles['thB'] = None
+        self.cycles['phiB'] = None
         self.cycles['tau'] = None
         self.cycles['v'] = None
         self.cycles['deltav'] = None
@@ -93,7 +114,10 @@ class Hazel_atmosphere(General_atmosphere):
 
         self.epsilon['Bx'] = 0.01
         self.epsilon['By'] = 0.01
-        self.epsilon['Bz'] = 0.01      
+        self.epsilon['Bz'] = 0.01
+        self.epsilon['B'] = 0.01
+        self.epsilon['thB'] = 0.01
+        self.epsilon['phiB'] = 0.01
         self.epsilon['tau'] = 0.01
         self.epsilon['v'] = 0.01
         self.epsilon['deltav'] = 0.01
@@ -103,7 +127,10 @@ class Hazel_atmosphere(General_atmosphere):
 
         self.jacobian['Bx'] = 1.0
         self.jacobian['By'] = 1.0
-        self.jacobian['Bz'] = 1.0      
+        self.jacobian['Bz'] = 1.0
+        self.jacobian['B'] = 1.0
+        self.jacobian['thB'] = 1.0
+        self.jacobian['phiB'] = 1.0
         self.jacobian['tau'] = 1.0
         self.jacobian['v'] = 1.0
         self.jacobian['deltav'] = 1.0
@@ -114,12 +141,33 @@ class Hazel_atmosphere(General_atmosphere):
         self.regularization['Bx'] = None
         self.regularization['By'] = None
         self.regularization['Bz'] = None
+        self.regularization['B'] = None
+        self.regularization['thB'] = None
+        self.regularization['phiB'] = None
         self.regularization['tau'] = None
         self.regularization['v'] = None
         self.regularization['deltav'] = None
         self.regularization['beta'] = None
         self.regularization['a'] = None
         self.regularization['ff'] = None
+
+    def select_coordinate_system(self):
+
+        if (self.coordinates_B == 'cartesian'):
+            labels = ['B', 'thB', 'phiB']
+        if (self.coordinates_B == 'spherical'):
+            labels = ['Bx', 'By', 'Bz']
+        
+        for label in labels:            
+            self.parameters.pop(label)
+            self.units.pop(label)
+            self.nodes.pop(label)
+            self.error.pop(label)
+            self.n_nodes.pop(label)
+            self.ranges.pop(label)
+            self.cycles.pop(label)
+            self.jacobian.pop(label)
+            self.regularization.pop(label)
         
     def add_active_line(self, line, spectrum, wvl_range):
         """
@@ -166,15 +214,23 @@ class Hazel_atmosphere(General_atmosphere):
         None
         """
 
-        self.parameters['Bx'] = pars[0]
-        self.parameters['By'] = pars[1]
-        self.parameters['Bz'] = pars[2]        
+        if (self.coordinates_B == 'cartesian'):
+            self.parameters['Bx'] = pars[0]
+            self.parameters['By'] = pars[1]
+            self.parameters['Bz'] = pars[2]
+        
+        if (self.coordinates_B == 'spherical'):
+            self.parameters['B'] = pars[0]
+            self.parameters['thB'] = pars[1]
+            self.parameters['phiB'] = pars[2]
+
         self.parameters['tau'] = pars[3]
         self.parameters['v'] = pars[4]
         self.parameters['deltav'] = pars[5]
         self.parameters['beta'] = pars[6]
         self.parameters['a'] = pars[7]
         self.parameters['ff'] = ff
+
 
         # Check that parameters are inside borders by clipping inside the interval with a border of 1e-8
         if (self.working_mode == 'inversion'):
@@ -203,9 +259,7 @@ class Hazel_atmosphere(General_atmosphere):
             if (verbose >= 1):
                 self.logger.info('    * Reading 1D model {0} as reference'.format(model_file))
             self.model_type = '1d'
-            self.model_filename = model_file
-            
-
+            self.model_filename = model_file          
         
         if (extension == 'h5'):
             if (verbose >= 1):
@@ -241,14 +295,24 @@ class Hazel_atmosphere(General_atmosphere):
                 # self.parameters[k] = self.reference[k]            
                             
     def print_parameters(self, first=False, error=False):
-        # if (first):
-        print("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}".format('Bx', 'By', 'Bz', 'tau', 'v', 'deltav', 'beta', 'a'), flush=True)
-        print("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.parameters['Bx'], self.parameters['By'], self.parameters['Bz'], self.parameters['tau'], 
-            self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a']), flush=True)
+        if (self.coordinates_B == 'cartesian'):
+            print("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}".format('Bx', 'By', 'Bz', 'tau', 'v', 'deltav', 'beta', 'a'), flush=True)
+            print("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.parameters['Bx'], self.parameters['By'], self.parameters['Bz'], self.parameters['tau'], 
+                self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a']), flush=True)
+            
+            if (error):            
+                print("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.error['Bx'], self.error['By'], self.error['Bz'], self.error['tau'], 
+                self.error['v'], self.error['deltav'], self.error['beta'], self.error['a']), flush=True)
         
-        if (error):            
-            print("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.error['Bx'], self.error['By'], self.error['Bz'], self.error['tau'], 
-            self.error['v'], self.error['deltav'], self.error['beta'], self.error['a']), flush=True)
+        if (self.coordinates_B == 'spherical'):
+            print("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}".format('B', 'thB', 'phiB', 'tau', 'v', 'deltav', 'beta', 'a'), flush=True)
+            print("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.parameters['B'], self.parameters['thB'], self.parameters['phiB'], self.parameters['tau'], 
+                self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a']), flush=True)
+            
+            if (error):            
+                print("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.error['B'], self.error['thB'], self.error['phiB'], self.error['tau'], 
+                self.error['v'], self.error['deltav'], self.error['beta'], self.error['a']), flush=True)
+        
 
 
     def synthesize(self, stokes=None):
@@ -274,23 +338,32 @@ class Hazel_atmosphere(General_atmosphere):
 
         
         # Magnetic field components are entered in Hazel in the vertical reference system
-        # Here we do the transformation from one to the other if fields are given in LOS
-        if (self.reference_frame == 'line-of-sight'):
-            Bx = self.parameters['Bx'] * self.spectrum.mu + self.parameters['Bz'] * np.sqrt(1.0 - self.spectrum.mu**2)
-            By = self.parameters['By']
-            Bz = -self.parameters['Bx'] * np.sqrt(1.0 - self.spectrum.mu**2) + self.parameters['Bz'] * self.spectrum.mu                        
-        else:
-            Bx = self.parameters['Bx']
-            By = self.parameters['By']
-            Bz = self.parameters['Bz']
+        # Here we do the transformation from one to the other if fields are
+        # given in LOS
+        if (self.coordinates_B == 'cartesian'):
+
+            if (self.reference_frame == 'line-of-sight'):
+                Bx = self.parameters['Bx'] * self.spectrum.mu + self.parameters['Bz'] * np.sqrt(1.0 - self.spectrum.mu**2)
+                By = self.parameters['By']
+                Bz = -self.parameters['Bx'] * np.sqrt(1.0 - self.spectrum.mu**2) + self.parameters['Bz'] * self.spectrum.mu
+            else:
+                Bx = self.parameters['Bx']
+                By = self.parameters['By']
+                Bz = self.parameters['Bz']
         
         
-        B = np.sqrt(Bx**2 + By**2 + Bz**2)
-        if (B == 0):
-            thetaB = 0.0
-        else:
-            thetaB = 180.0 / np.pi * np.arccos(Bz / B)
-        phiB = 180.0 / np.pi * np.arctan2(By, Bx)
+            B = np.sqrt(Bx**2 + By**2 + Bz**2)
+            if (B == 0):
+                thetaB = 0.0
+            else:
+                thetaB = 180.0 / np.pi * np.arccos(Bz / B)
+            phiB = 180.0 / np.pi * np.arctan2(By, Bx)
+
+        if (self.coordinates_B == 'spherical'):
+            B = self.parameters['B']
+            thetaB = self.parameters['thB']
+            phiB = self.parameters['phiB']
+
         B1Input = np.asarray([B, thetaB, phiB])
 
         hInput = self.height

@@ -18,7 +18,7 @@ a new environment and install the dependencies (you can install whatever version
 ::
 
     conda create -n hazel_env python=3.6
-    source activate hazel_env
+    conda activate hazel_env
     conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpi4py configobj
 
 Feel free to add `matplotlib` for doing some plots. You will need it if you want to run some of the examples
@@ -29,7 +29,7 @@ If you also want to use the GUI, you need to add two new dependencies:
 ::
 
     conda create -n hazel_env python=3.6 
-    source activate hazel_env
+    conda activate hazel_env
     conda install -c conda-forge cython numpy scipy h5py tqdm astropy configobj matplotlib mpi4py pyqt
 
 Remember to add `ipython` if you are using this shell to run |hazel2|. Otherwise, it will use
