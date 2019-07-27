@@ -13,13 +13,26 @@ There are different ways to install |hazel2|, but the best is to install
 it into a virtual environment either with `pip <http://www.virtualenv.org>`_ or `conda <https://conda.io/docs/user-guide/tasks/manage-environments.html>`_,
 which makes everything much more safer, plus making sure that all packages are installed for the code.
 For example, once you have installed `Miniconda <https://conda.io/miniconda.html>`_, you can generate
-a new environment and install the dependencies (you can install whatever version of Python 3 you desire):
+a new environment and install the dependencies (you can install whatever version of Python 3 you desire).
+For consistency, it is better to use the gfortran compilers from Anaconda. In the
+following we show how install all packages with Anaconda. Anyway, feel free to use
+the gfortran compiler from your system but you might have some issues.
+
+For a Linux OS, type:
 
 ::
 
     conda create -n hazel_env python=3.6
     conda activate hazel_env
-    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpi4py configobj
+    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpi4py configobj gfortran_linux-64 gcc
+
+For Mac OS, type:
+
+::
+
+    conda create -n hazel_env python=3.6
+    conda activate hazel_env
+    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpi4py configobj gfortran_osx-64 gcc
 
 Feel free to add `matplotlib` for doing some plots. You will need it if you want to run some of the examples
 shown in this documentation in your computer.
@@ -55,17 +68,14 @@ the code by typing the following from the location of the sources:
     git pull
     python setup.py install
     
-Improvements are pushed all the time in |hazel2|.
-
-
-If you find errors similar to ``Internal Error: get_unit(): Bad internal unit KIND``, try
-to install the Anaconda ``gfortran`` compilers by invoking:
+Improvements are pushed all the time in |hazel2|. In case you do not want
+to reinstall it after every pull or you are in fact helping on the development
+of the code, you can also install it in develop mode:
 
 ::
-
-    conda install gcc
-
-and then reinstalling |hazel2| with ``python setup.py install`` or ``python setup.py develop``.
+    
+    git pull
+    python setup.py develop
 
 
 ..
