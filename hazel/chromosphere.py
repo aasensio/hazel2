@@ -342,16 +342,18 @@ class Hazel_atmosphere(General_atmosphere):
         # given in LOS
         if (self.coordinates_B == 'cartesian'):
 
+            # Cartesian - LOS : just carry out the rotation in cartesian geometry and transform to spherical
             if (self.reference_frame == 'line-of-sight'):
                 Bx = self.parameters['Bx'] * self.spectrum.mu + self.parameters['Bz'] * np.sqrt(1.0 - self.spectrum.mu**2)
                 By = self.parameters['By']
                 Bz = -self.parameters['Bx'] * np.sqrt(1.0 - self.spectrum.mu**2) + self.parameters['Bz'] * self.spectrum.mu
             else:
+            # Cartesian - vertical : just transform to spherical
                 Bx = self.parameters['Bx']
                 By = self.parameters['By']
                 Bz = self.parameters['Bz']
         
-        
+            # Transform to spherical components in the vertical reference frame which are those used in Hazel
             B = np.sqrt(Bx**2 + By**2 + Bz**2)
             if (B == 0):
                 thetaB = 0.0
@@ -360,9 +362,41 @@ class Hazel_atmosphere(General_atmosphere):
             phiB = 180.0 / np.pi * np.arctan2(By, Bx)
 
         if (self.coordinates_B == 'spherical'):
-            B = self.parameters['B']
-            thetaB = self.parameters['thB']
-            phiB = self.parameters['phiB']
+
+            # Spherical - LOS : transform to cartesian, do rotation to vertical and come back to spherical
+            if (self.reference_frame == 'line-of-sight'):
+                B = self.parameters['B']
+                thetaB = self.parameters['thB']
+                phiB = self.parameters['phiB']
+
+                print('LOS sp', B,thetaB,phiB)
+
+                Bx_los = B * np.sin(thetaB * np.pi / 180.0) * np.cos(phiB * np.pi / 180)
+                By_los = B * np.sin(thetaB * np.pi / 180.0) * np.sin(phiB * np.pi / 180)
+                Bz_los = B * np.cos(thetaB * np.pi / 180.0)
+
+                print('LOS cart', Bx_los, By_los, Bz_los)
+
+                Bx_vert = Bx_los * self.spectrum.mu + Bz_los * np.sqrt(1.0 - self.spectrum.mu**2)
+                By_vert = By_los
+                Bz_vert = -Bx_los * np.sqrt(1.0 - self.spectrum.mu**2) + Bz_los * self.spectrum.mu
+
+                print('Vert cart ', Bx_vert, By_vert, Bz_vert)
+
+                # Transform to spherical components in the vertical reference frame which are those used in Hazel
+                B = np.sqrt(Bx_vert**2 + By_vert**2 + Bz_vert**2)
+                if (B == 0):
+                    thetaB = 0.0
+                else:
+                    thetaB = 180.0 / np.pi * np.arccos(Bz_vert / B)
+                phiB = 180.0 / np.pi * np.arctan2(By_vert, Bx_vert)
+            else:
+            # Spherical - vertical : do nothing
+                B = self.parameters['B']
+                thetaB = self.parameters['thB']
+                phiB = self.parameters['phiB']
+
+            print('Vert sp ', B,thetaB,phiB)
 
         B1Input = np.asarray([B, thetaB, phiB])
 
