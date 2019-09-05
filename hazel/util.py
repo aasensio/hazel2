@@ -1,7 +1,11 @@
 import numpy as np
+import h5py
+from asciitree import LeftAligned
+from collections import OrderedDict
+from asciitree.drawing import BoxStyle, BOX_DOUBLE, BOX_BLANK
 # from ipdb import set_trace as stop
 
-__all__ = ['i0_allen', '_extract_parameter_cycles', 'isint', 'fvoigt', 'lower_dict_keys']
+__all__ = ['i0_allen', '_extract_parameter_cycles', 'isint', 'fvoigt', 'lower_dict_keys', 'show_tree']
 
 def i0_allen(wavelength, muAngle):
     """
@@ -120,3 +124,22 @@ def lower_dict_keys(d):
     for k, v in d.items():
         out[k.lower()] = v
     return out
+
+def show_tree(hdf5_file):
+    tree = {hdf5_file: OrderedDict()}
+
+    f = h5py.File(hdf5_file, 'r')
+    for k, v in f.items():
+        tree[hdf5_file][k] = OrderedDict()
+        for k2, v2 in v.items():
+            tree[hdf5_file][k][f'{k2} -> {v2.shape}  {v2.dtype}'] = OrderedDict()            
+
+    chrs = dict(
+            UP_AND_RIGHT=u"\u2514",
+            HORIZONTAL=u"\u2500",
+            VERTICAL=u"\u2502",
+            VERTICAL_AND_RIGHT=u"\u251C"
+        )
+
+    tr = LeftAligned(draw=BoxStyle(gfx = chrs, horiz_len=1))
+    print(tr(tree))

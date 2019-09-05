@@ -43,6 +43,7 @@ class General_atmosphere(object):
         self.multiplets = {'10830': 10829.0911, '3888': 3888.6046, '7065': 7065.7085, '5876': 5875.9663}
 
         self.parameters = OrderedDict()
+        self.nodes_location = OrderedDict()
         self.ranges = OrderedDict()
         self.regularization = OrderedDict()
         self.cycles = OrderedDict()
@@ -89,6 +90,7 @@ class General_atmosphere(object):
 
         self.reference_cycle = [None] * n_cycles
         self.error_cycle = [None] * n_cycles
+        self.nodes_location_cycle = [None] * n_cycles
 
     def to_physical(self):
         """
@@ -106,9 +108,10 @@ class General_atmosphere(object):
         """
         
         for k, v in self.parameters.items():            
-            lower = self.ranges[k][0] #- self.eps_borders
-            upper = self.ranges[k][1] #+ self.eps_borders
-            self.parameters[k] = transformed_to_physical(v, lower, upper)
+            if (k in self.ranges):
+                lower = self.ranges[k][0] #- self.eps_borders
+                upper = self.ranges[k][1] #+ self.eps_borders
+                self.parameters[k] = transformed_to_physical(v, lower, upper)
                         
     def to_transformed(self):
         """
@@ -124,10 +127,11 @@ class General_atmosphere(object):
         None
     
         """
-        for k, v in self.parameters.items():                        
-            lower = self.ranges[k][0] #- self.eps_borders
-            upper = self.ranges[k][1] #+ self.eps_borders            
-            self.parameters[k] = physical_to_transformed(v, lower, upper)
+        for k, v in self.parameters.items():
+            if (k in self.ranges):
+                lower = self.ranges[k][0] #- self.eps_borders
+                upper = self.ranges[k][1] #+ self.eps_borders            
+                self.parameters[k] = physical_to_transformed(v, lower, upper)
             
 
     def set_reference(self, cycle=None):
@@ -144,10 +148,12 @@ class General_atmosphere(object):
         """            
         self.nodes_to_model()
         self.reference = copy.deepcopy(self.parameters)
+        self.nodes_location =  copy.deepcopy(self.nodes_location)
 
         if (cycle is not None):
             self.to_physical()        
             self.reference_cycle[cycle] = copy.deepcopy(self.parameters)
+            self.nodes_location_cycle[cycle] =  copy.deepcopy(self.nodes_location)
             self.error_cycle[cycle] = copy.deepcopy(self.error)
 
     def reset_reference(self):
@@ -182,8 +188,9 @@ class General_atmosphere(object):
         if (self.working_mode == 'inversion'):
             if (check_borders):
                 for k, v in self.parameters.items():                    
-                    if (not np.all(np.logical_and(v >= self.ranges[k][0], v <= self.ranges[k][1]))):
-                        raise Exception("Parameter {0} of atmosphere {1} is outside ranges".format(k, self.name))
+                    if (k in self.ranges):
+                        if (not np.all(np.logical_and(v >= self.ranges[k][0], v <= self.ranges[k][1]))):
+                            raise Exception("Parameter {0} of atmosphere {1} is outside ranges".format(k, self.name))
 
             self.to_transformed()            
 

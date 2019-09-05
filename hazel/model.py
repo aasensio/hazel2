@@ -560,19 +560,19 @@ class Model(object):
                             self.atmospheres[atm['name']].ranges[k2] = None
                         else:
                             self.atmospheres[atm['name']].ranges[k2] = hazel.util.tofloat(v)
-        
+
+        for k2, v2 in self.atmospheres[atm['name']].parameters.items():
+            self.atmospheres[atm['name']].regularization[k2] = None
+
         if ('regularization' in atm):
-            for k, v in atm['regularization'].items():                
+            for k, v in atm['regularization'].items():            
                 for k2, v2 in self.atmospheres[atm['name']].parameters.items():                    
                     if (k.lower() == k2.lower()):                        
                         if (v == 'None'):
                             self.atmospheres[atm['name']].regularization[k2] = None
                         else:
-                            self.atmospheres[atm['name']].regularization[k2] = v
-                    else:
-                        self.atmospheres[atm['name']].regularization[k2] = None
-
-
+                            self.atmospheres[atm['name']].regularization[k2] = v                                            
+        
         if ('reference atmospheric model' in atm):
             my_file = Path(atm['reference atmospheric model'])
             if (not my_file.exists()):
@@ -646,6 +646,9 @@ class Model(object):
                             self.atmospheres[atm['name']].ranges[k2] = None
                         else:
                             self.atmospheres[atm['name']].ranges[k2] = hazel.util.tofloat(v)
+
+        for k2, v2 in self.atmospheres[atm['name']].parameters.items():
+            self.atmospheres[atm['name']].regularization[k2] = None
 
         if ('regularization' in atm):
             for k, v in atm['regularization'].items():                
@@ -752,6 +755,18 @@ class Model(object):
                     if (k.lower() == k2.lower()):                            
                         self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)
 
+        for k2, v2 in self.atmospheres[atm['name']].parameters.items():
+            self.atmospheres[atm['name']].regularization[k2] = None
+
+        if ('regularization' in atm):
+            for k, v in atm['regularization'].items():                
+                for k2, v2 in self.atmospheres[atm['name']].parameters.items():                    
+                    if (k.lower() == k2.lower()):                        
+                        if (v == 'None'):
+                            self.atmospheres[atm['name']].regularization[k2] = None
+                        else:
+                            self.atmospheres[atm['name']].regularization[k2] = v
+
     
     def add_straylight(self, atmosphere):
         """
@@ -814,6 +829,18 @@ class Model(object):
                 for k2, v2 in self.atmospheres[atm['name']].parameters.items():
                     if (k.lower() == k2.lower()):                            
                         self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)
+
+        for k2, v2 in self.atmospheres[atm['name']].parameters.items():
+            self.atmospheres[atm['name']].regularization[k2] = None
+
+        if ('regularization' in atm):
+            for k, v in atm['regularization'].items():                
+                for k2, v2 in self.atmospheres[atm['name']].parameters.items():                    
+                    if (k.lower() == k2.lower()):                        
+                        if (v == 'None'):
+                            self.atmospheres[atm['name']].regularization[k2] = None
+                        else:
+                            self.atmospheres[atm['name']].regularization[k2] = v
         
 
     def remove_unused_atmosphere(self):
@@ -1284,18 +1311,18 @@ class Model(object):
                         if (par['atm'] == par2['n_nodes'] and par['parameter'] == par2['parameter']):
                             self.atmospheres[par2['atm']].nodes[par2['parameter']] = nodes
                 
-                rf = {}
-                for k, v in self.spectrum.items():
-                    rf[k] = np.expand_dims((v.stokes - v.stokes_perturbed) / perturbation[i], 0)
-
-                # rf = np.expand_dims((self.spectrum['spec1'].stokes - self.spectrum['spec1'].stokes_perturbed) / perturbation[i], 0)
-
                 if (include_jacobian):
-                    jacobian = self.atmospheres[par['atm']].jacobian[par['parameter']]                    
+                    # jacobian =
+                    # self.atmospheres[par['atm']].jacobian[par['parameter']]                    
+                    jacobian = jacobian_transformation(nodes[i], lower, upper)                    
                 else:
                     jacobian = 1.0
 
-                # rf *= jacobian
+                rf = {}
+                for k, v in self.spectrum.items():
+                    rf[k] = jacobian * np.expand_dims((v.stokes - v.stokes_perturbed) / perturbation[i], 0)
+
+                # rf = np.expand_dims((self.spectrum['spec1'].stokes - self.spectrum['spec1'].stokes_perturbed) / perturbation[i], 0)
                                                 
                 if (loop == 0):
                     self.response = rf
@@ -1507,12 +1534,14 @@ class Model(object):
         # Recalculate chi2 without weights        
 
         # Calculate Hessian
-        self.synthesize_and_compute_rf(compute_rf=True)
+        self.synthesize_and_compute_rf(compute_rf=True, include_jacobian=True)
         chi2, dchi2, ddchi2 = self.compute_chi2()
         hessian = 0.5 * ddchi2
         
         U, w_inv, VT = self.modified_svd_inverse(hessian, tol=1e-12)
         cov = VT.T.dot(np.diag(w_inv)).dot(U.T)
+
+        # breakpoint()
 
         for par in self.active_meta:
             left = par['left']
@@ -1520,6 +1549,9 @@ class Model(object):
 
             dof = self.atmospheres[par['atm']].spectrum.dof
             rf = scipy.stats.chi2(dof)
+            delta = np.sqrt(rf.isf(1.0 - scipy.special.erf(1.0/np.sqrt(2.0))))
+            
+            rf = scipy.stats.chi2(right-left)
             delta = np.sqrt(rf.isf(1.0 - scipy.special.erf(1.0/np.sqrt(2.0))))
 
             cov_diagonal = np.abs(np.diagonal(cov[left:right,left:right]))
@@ -1726,6 +1758,7 @@ class Model(object):
             tmp = list(set(tmp))
 
             self.n_free_parameters_cycle = 0
+
             
             for k, v in self.atmospheres.items():
                 if (k in tmp):
@@ -1733,12 +1766,20 @@ class Model(object):
                         self.logger.info('Free parameters for {0}'.format(k))
                     for pars in self.active_meta:
                         if (pars['atm'] == k):
-                            if (self.verbose >= 3):
+                            if (self.verbose >= 3):                                
                                 if (pars['coupled'] is False):
                                     if (pars['n_nodes'] == 1):
-                                        self.logger.info('  - {0} with {1} node'.format(pars['parameter'], pars['n_nodes']))
+                                        if (pars['regularization'] is not None):
+                                            self.logger.info('  - {0} with {1} node - Regularization -> type:{2}, weight:{3}, value:{4}'.format(pars['parameter'], 
+                                                pars['n_nodes'], pars['regularization'][0], pars['regularization'][1], pars['regularization'][2]))
+                                        else:
+                                            self.logger.info('  - {0} with {1} node - Not regularized'.format(pars['parameter'], pars['n_nodes']))
                                     else:
-                                        self.logger.info('  - {0} with {1} nodes'.format(pars['parameter'], pars['n_nodes']))
+                                        if (pars['regularization'] is not None):
+                                            self.logger.info('  - {0} with {1} nodes - Regularization -> type:{2}, weight:{3}, value:{4}'.format(pars['parameter'], 
+                                                pars['n_nodes'], pars['regularization'][0], pars['regularization'][1], pars['regularization'][2]))
+                                        else:
+                                            self.logger.info('  - {0} with {1} nodes - Not regularized'.format(pars['parameter'], pars['n_nodes']))
                                 else:
                                     self.logger.info('  - {0} coupled to {1} variable'.format(pars['parameter'], pars['n_nodes']))
                             if (pars['coupled'] is False):
@@ -1776,8 +1817,8 @@ class Model(object):
                 if (self.backtracking == 'brent'):                    
                     lambda_opt = self.backtracking_brent(dchi2, ddchi2, maxiter=10, bounds=[-4.0,4.0], tol=1e-2)
                                                 
-                if (self.verbose >= 3):
-                    self.logger.info('  * Optimal lambda: {0}'.format(lambda_opt))
+                # if (self.verbose >= 3):
+                    # self.logger.info('  * Optimal lambda: {0}'.format(lambda_opt))
                                             
                 # If after backtracking the chi2 is larger than the current one, then increase lambda and go to the iteration
                 # print(chi2, backtracking_bestchi2)
@@ -1810,8 +1851,22 @@ class Model(object):
 
                 rel = 2.0 * (chi2 - bestchi2) / (chi2 + bestchi2)
 
+                if (self.verbose > 2):
+                    for k, v in self.atmospheres.items():
+                        self.logger.info('')
+                        self.logger.info('-----------')
+                        self.logger.info('{0}'.format(k))
+                        self.logger.info('-----------')
+                        if (v.type == 'chromosphere'):
+                            v.print_parameters(first=first)
+                        if (v.type == 'photosphere'):
+                            v.print_parameters(first=first)                        
+                    first = False
+
                 if (self.verbose >= 2):
-                    self.logger.info('It: {0} - chi2: {1} - lambda: {2} - rel: {3}'.format(iteration, chi2, lambda_opt, rel))
+                    self.logger.info('==============================================================================')
+                    self.logger.info('It: {0} - chi2: {1:10.6f} - lambda_opt: {2:10.6f} - rel: {3:10.6f}'.format(iteration, chi2, lambda_opt, np.abs(rel)))
+                    self.logger.info('==============================================================================')
 
                 # Increase the optimal by 100 to find again the optimal value
                 lambdaLM = 100.0 * lambda_opt
@@ -1823,14 +1878,7 @@ class Model(object):
 
                 iteration += 1
 
-                if (self.verbose > 2):
-                    for k, v in self.atmospheres.items():
-                        if (v.type == 'chromosphere'):
-                            v.print_parameters(first=first)
-                        # if (v.type == 'photosphere'):
-                            # v.print_parameters(first=first)
-                    # self.atmospheres['ch2'].print_parameters(first=first)
-                    first = False
+                
                         
             self.set_new_model(self.nodes)
 

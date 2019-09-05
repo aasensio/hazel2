@@ -8,6 +8,7 @@ from hazel.hsra import hsra_continuum
 from hazel.io import Generic_SIR_file
 import scipy.interpolate as interp
 from hazel.exceptions import NumericalErrorSIR
+from hazel.transforms import transformed_to_physical
 import copy
 
 # from ipdb import set_trace as stop
@@ -32,6 +33,14 @@ class SIR_atmosphere(General_atmosphere):
         self.parameters['By'] = None
         self.parameters['Bz'] = None
         self.parameters['ff'] = None
+
+        self.nodes_location['T'] = None
+        self.nodes_location['vmic'] = None
+        self.nodes_location['v'] = None
+        self.nodes_location['Bx'] = None
+        self.nodes_location['By'] = None
+        self.nodes_location['Bz'] = None
+        self.nodes_location['ff'] = None
 
         self.n_nodes['T'] = 0
         self.n_nodes['vmic'] = 0
@@ -147,30 +156,30 @@ class SIR_atmosphere(General_atmosphere):
         n_depth = len(log_tau)
 
         if (n_nodes == 0):
-            return reference
+            return reference, 0
         
         if (n_nodes == 1):
-            return reference + nodes[0]
+            return reference + nodes[0], log_tau[n_depth//2]
         
         if (n_nodes == 2):
             pos = np.linspace(0, n_depth-1, n_nodes, dtype=int)
             pos = np.linspace(0, n_depth-1, n_nodes+2, dtype=int)[1:-1]
             # coeff = np.polyfit(log_tau[pos], nodes, 1)            
             f = interp.interp1d(log_tau[pos], nodes, 'linear', bounds_error=False, fill_value='extrapolate')
-            return reference + f(log_tau) #np.polyval(coeff, log_tau)
+            return reference + f(log_tau), log_tau[pos] #np.polyval(coeff, log_tau)
 
         if (n_nodes == 3):
             pos = np.linspace(0, n_depth-1, n_nodes, dtype=int)
             pos = np.linspace(0, n_depth-1, n_nodes+2, dtype=int)[1:-1]
             # coeff = np.polyfit(log_tau[pos], nodes, 2)      
             f = interp.interp1d(log_tau[pos], nodes, 'quadratic', bounds_error=False, fill_value='extrapolate')
-            return reference + f(log_tau)
+            return reference + f(log_tau), log_tau[pos]
 
         if (n_nodes > 3):            
             pos = np.linspace(n_depth-1, 0, n_nodes, dtype=int)
             pos = np.linspace(n_depth-1, 0, n_nodes+2, dtype=int)[1:-1]
             f = interp.PchipInterpolator(log_tau[pos], nodes, extrapolate=True)            
-            return reference + f(log_tau)
+            return reference + f(log_tau), log_tau[pos]
 
     def load_reference_model(self, model_file, verbose):
         """
@@ -286,7 +295,7 @@ class SIR_atmosphere(General_atmosphere):
         """        
         for k, v in self.nodes.items():
             if (self.n_nodes[k] > 0):                
-                self.parameters[k] = self.interpolate_nodes(self.log_tau, self.reference[k], self.nodes[k])
+                self.parameters[k], self.nodes_location[k] = self.interpolate_nodes(self.log_tau, self.reference[k], self.nodes[k])
             else:
                 self.parameters[k] = self.reference[k]
                     
@@ -314,9 +323,13 @@ class SIR_atmosphere(General_atmosphere):
             # if (k is not 'log_tau'):
                 
     def print_parameters(self, first=False, error=False):
-        # if (first):
-        print(self.parameters, flush=True)
-
+        for k, v in self.nodes.items():
+            if (k != 'ff'):
+                lower = self.ranges[k][0] #- self.eps_borders
+                upper = self.ranges[k][1] #+ self.eps_borders
+                nodes = transformed_to_physical(v, lower, upper)            
+                self.logger.info('{0} -> {1}'.format(k, nodes))
+        
     def synthesize(self, stokes_in, returnRF=False):
         """
         Carry out the synthesis and returns the Stokes parameters and the response 

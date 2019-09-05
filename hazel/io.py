@@ -79,10 +79,12 @@ class Generic_output_file(object):
             if (model.working_mode == 'inversion'):
                 self.out_model = {}
                 self.out_error = {}
+                self.out_nodes = {}
                 for k, v in model.atmospheres.items():
                     db = self.handler.create_group(k)
                     self.out_model[k] = {}
                     self.out_error[k] = {}
+                    self.out_nodes[k] = {}
 
                     # Save metadata for type of reference for magnetic field components
                     if (hasattr(v, 'reference_frame')):
@@ -112,6 +114,12 @@ class Generic_output_file(object):
                         self.out_error[k][k2].dims[0].label = 'pixel'
                         self.out_error[k][k2].dims[1].label = 'randomization'
                         self.out_error[k][k2].dims[2].label = 'cycle'                        
+                        
+                        d_nodes = h5py.special_dtype(vlen=np.dtype('float64'))
+                        self.out_nodes[k][k2] = db.create_dataset('{0}_nodes'.format(k2), shape=(model.n_pixels, model.n_randomization, model.n_cycles,), dtype=d_nodes)
+                        self.out_nodes[k][k2].dims[0].label = 'pixel'
+                        self.out_nodes[k][k2].dims[1].label = 'randomization'
+                        self.out_nodes[k][k2].dims[2].label = 'cycle'
 
                     for k2, v2 in v.units.items():                        
                         self.out_model[k][k2].attrs['unit'] = v2
@@ -140,9 +148,16 @@ class Generic_output_file(object):
                     if (hasattr(v, 'log_tau')):
                         self.out_model[k]['log_tau'][:] = v.log_tau
                     for cycle in range(model.n_cycles):
+
+                        # Model parameters
                         for k2, v2 in v.reference_cycle[cycle].items():
                             self.out_model[k][k2][pixel,randomization,cycle,...] = v2
+                            
+                        # Model node positions                                                                  
+                        for k2, v2 in v.nodes_location_cycle[cycle].items():
+                            self.out_nodes[k][k2][pixel,randomization,cycle] = np.atleast_1d(v2)
 
+                        # Model parameter errors
                         for k2, v2 in v.error_cycle[cycle].items():                            
                             self.out_error[k][k2][pixel,randomization,cycle] = np.atleast_1d(v2)
                             

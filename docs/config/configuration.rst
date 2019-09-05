@@ -117,7 +117,7 @@ to those of chromospheres).
             Bz     = 1, 1, 1, 1
             ff     = 0, 0, 0, 0
 
-            [[Regularization]]
+            [[[Regularization]]]
             T      = None
             vmic   = None
             v      = None
@@ -134,7 +134,7 @@ to those of chromospheres).
 * ``Reference frame`` : it defines the reference system in which the magnetic field is measured. ``line-of-sight`` or ``vertical`` (traditional mode for |hazel2|). If absent, ``vertical`` is used by default.
 * ``Ranges`` : ranges of variation of each parameter. If ``None``, consider it unconstrained. If not, it will be constrained to the range using a logit transform (with a small :math:`\epsilon` to avoid under/overflow when close to the border).
 * ``Nodes`` : defines the number of nodes in each cycle when doing inversions. It is possible to couple parameters with those of another atmosphere by using the name of the atmosphere instead of the number of nodes.
-* ``Regularization`` : not yet implemented
+* ``Regularization`` : add regularization to the parameters. See :ref:`regularization`.
 
 Chromospheres
 ^^^^^^^^^^^^^
@@ -189,7 +189,7 @@ relative to the line of sight.
 * ``Height`` : height of the slab in arcsec.
 * ``Ranges`` : ranges of variation of each parameter. If ``None``, consider it unconstrained. If not, it will be constrained to the range.
 * ``Nodes`` : defines the number of nodes in each cycle when doing inversions. It is possible to couple parameters with those of another atmosphere by using the name of the atmosphere instead of the number of nodes.
-* ``Regularization`` : not yet implemented
+* ``Regularization`` : add regularization to the parameters. See :ref:`regularization`.
 * ``Coordinates for magnetic field vector`` (optional) : defines the coordinates used for defining the magnetic field vector. If ``cartesian`` is used, then you need to define ``Bx``, ``By`` and ``Bz`` as variables in the ranges, nodes, etc. If ``spherical`` is used, then the variables are termed ``B``, ``thB`` and ``phiB``.
 
 Parametric
@@ -232,7 +232,7 @@ during the fit. The curently available parametric atmosphere is just a Voigt fun
 * ``Type`` : type of parametric atmosphere, from the available selection ``Voigt``/``MoVoigt``
 * ``Ranges`` : ranges of variation of each parameter. If ``None``, consider it unconstrained. If not, it will be constrained to the range.
 * ``Nodes`` : defines the number of nodes in each cycle when doing inversions
-* ``Regularization`` : not yet implemented
+* ``Regularization`` : add regularization to the parameters. See :ref:`regularization`.
 
 Straylight
 ^^^^^^^^^^
@@ -262,4 +262,4 @@ Straylight components are always added to the final spectrum with a filling fact
 * ``Wavelength`` (optional): defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time. If absent or `None', then the whole spectral region is synthesized.
 * ``Ranges`` : ranges of variation of each parameter. If ``None``, consider it unconstrained. If not, it will be constrained to the range.
 * ``Nodes`` : defines the number of nodes in each cycle when doing inversions
-* ``Regularization`` : not yet implemented
+* ``Regularization`` : add regularization to the parameters. See :ref:`regularization`.

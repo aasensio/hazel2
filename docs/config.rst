@@ -8,4 +8,5 @@ Configuration
    config/examples
    config/configuration
    config/topology
+   config/regularization
    

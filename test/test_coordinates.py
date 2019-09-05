@@ -43,7 +43,7 @@ def test_coordinates():
     mod4.setup()
 
     # Magnetic field points along the LOS
-    B = 100.0
+    B = 0.5
     thB = 25.0
     phiB = 0.0
 

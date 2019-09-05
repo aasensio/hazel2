@@ -24,7 +24,7 @@ For a Linux OS, type:
 
     conda create -n hazel_env python=3.6
     conda activate hazel_env
-    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpi4py configobj gfortran_linux-64 gcc
+    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpi4py configobj gfortran_linux-64 gcc asciitree
 
 For Mac OS, type:
 
@@ -32,7 +32,7 @@ For Mac OS, type:
 
     conda create -n hazel_env python=3.6
     conda activate hazel_env
-    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpi4py configobj gfortran_osx-64 gcc
+    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpi4py configobj gfortran_osx-64 gcc asciitree
 
 Feel free to add `matplotlib` for doing some plots. You will need it if you want to run some of the examples
 shown in this documentation in your computer.
@@ -43,7 +43,7 @@ If you also want to use the GUI, you need to add two new dependencies:
 
     conda create -n hazel_env python=3.6 
     conda activate hazel_env
-    conda install -c conda-forge cython numpy scipy h5py tqdm astropy configobj matplotlib mpi4py pyqt
+    conda install -c conda-forge cython numpy scipy h5py tqdm astropy configobj matplotlib mpi4py pyqt asciitree
 
 Remember to add `ipython` if you are using this shell to run |hazel2|. Otherwise, it will use
 `ipython` from another environment and you can get confused.
@@ -109,6 +109,7 @@ pretty straightforward to install:
 * ``mpi4py``
 * ``configobj``
 * ``tqdm``
+* ``asciitree``
 
 If you want to use the GUI, you also need to install the following dependencies:
 
