@@ -24,7 +24,7 @@ For a Linux OS, type:
 
     conda create -n hazel_env python=3.6
     conda activate hazel_env
-    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpi4py configobj gfortran_linux-64 gcc asciitree
+    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpi4py configobj gfortran_linux-64 gcc_linux-64 asciitree
 
 For Mac OS, type:
 
@@ -32,8 +32,10 @@ For Mac OS, type:
 
     conda create -n hazel_env python=3.6
     conda activate hazel_env
-    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpi4py configobj gfortran_osx-64 gcc asciitree
+    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpi4py configobj gfortran_osx-64 gcc_osx-64 asciitree
 
+The specific packages for the Fortran and C compilers might change depending on the version of Anaconda
+that you have installed in your system. Their name might also be `gfortran` and `gcc`.
 Feel free to add `matplotlib` for doing some plots. You will need it if you want to run some of the examples
 shown in this documentation in your computer.
 

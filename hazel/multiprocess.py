@@ -258,7 +258,7 @@ class Iterator(object):
                                 v.aic_cycle = data_received[label][k][3]
                             
                             for k, v in self.model.atmospheres.items():
-                                v.reference_cycle, v.error_cycle = data_received[label][k]
+                                v.reference_cycle, v.error_cycle, v.nodes_location_cycle = data_received[label][k]
 
                             self.model.output_handler.write(self.model, pixel=index, randomization=loop)
                         
@@ -337,7 +337,7 @@ class Iterator(object):
                                 data_to_send[label][k] = [self.model.spectrum[k].stokes_cycle, self.model.spectrum[k].chi2_cycle, self.model.spectrum[k].bic_cycle, self.model.spectrum[k].aic_cycle]
 
                             for k, v in self.model.atmospheres.items():
-                                data_to_send[label][k] = [v.reference_cycle, v.error_cycle]
+                                data_to_send[label][k] = [v.reference_cycle, v.error_cycle, v.nodes_location_cycle]
 
                         # If a numerical problem appeared, send the error code to the parent
                         except NumericalErrorHazel:                            
