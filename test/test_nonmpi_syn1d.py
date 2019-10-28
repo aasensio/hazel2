@@ -16,3 +16,8 @@ def test_nonmpi_syn1d():
         assert f['spec1']['stokes'].shape == (1,1,1,4,150), "incorrect dimensions in inversion"
 
         f.close()
+
+        try:
+            os.remove('output.h5')
+        except:
+            pass

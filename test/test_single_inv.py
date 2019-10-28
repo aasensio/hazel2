@@ -18,3 +18,8 @@ def test_single_inv():
     assert f['spec1']['stokes'].shape == (1,1,2,4,150), "incorrect dimensions in inversion"
 
     f.close()
+
+    try:
+        os.remove('output.h5')
+    except:
+        pass

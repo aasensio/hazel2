@@ -147,6 +147,8 @@ class Iterator(object):
         if (self.model.working_mode == 'inversion'):
             for k, v in self.model.spectrum.items():
                 v.close_observation()
+
+        self.model.close_output()
                                             
 
     def mpi_parent_work(self, start=0, end=None):
