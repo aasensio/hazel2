@@ -149,19 +149,24 @@ class Iterator(object):
                 v.close_observation()
                                             
 
-    def mpi_parent_work(self):
+    def mpi_parent_work(self, start=0, end=None):
         """
         MPI parent work
 
         Parameters
         ----------
-        None
+        start : int
+            Initial pixel, by default 0
+        end : int
+            Final pixel, by default the number of pixels in the observations
 
         Returns
         -------
         None
         """
-        
+        if (end is None):
+            end = self.model.n_pixels
+
         self.model.open_output()
 
         if (self.model.working_mode == 'inversion'):
@@ -170,7 +175,7 @@ class Iterator(object):
                 v.mask_handle.open()
         
         # Loop over all pixels doing the synthesis/inversion and saving the results
-        task_index = 0
+        task_index = start
         num_workers = self.size - 1
         closed_workers = 0
         self.last_received = 0
@@ -185,7 +190,7 @@ class Iterator(object):
         self.elapsed = 0.0
         self.avg_elapsed = 0.0
         
-        with tqdm(total=self.model.n_pixels, ncols=140) as pbar:
+        with tqdm(initial=task_index, total=end, ncols=140) as pbar:
             while (closed_workers < num_workers):
                 data_received = self.comm.recv(source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=self.status)
                 source = self.status.Get_source()
@@ -195,7 +200,7 @@ class Iterator(object):
                 
                 if tag == tags.READY:
                     # Worker is ready, send a task
-                    if (task_index < self.model.n_pixels):
+                    if (task_index < end):
 
                         data_to_send = {'index': task_index}
 
@@ -391,17 +396,17 @@ class Iterator(object):
             self.logger.info('Closed')
             sys.exit(0)
 
-    def run_all_pixels(self):
+    def run_all_pixels(self, start=0, end=None):
         """
         Run synthesis/inversion for all pixels
-
+        
         Parameters
         ----------
-        None
+        start : int, optional
+            Initial pixel, by default 0
 
-        Returns
-        -------
-        None
+        end : int
+            Final pixel, by default the number of pixels in the observations
         """
 
         # Capture SIGTERM and SIGINT from the main process. When the process being run with mpiexec 
@@ -418,7 +423,7 @@ class Iterator(object):
         try:
             if (self.use_mpi):
                 if (self.rank == 0):
-                    self.mpi_parent_work()
+                    self.mpi_parent_work(start, end)
                     self.logger.info('Finished.')
                 else:
                     self.mpi_workers_work()

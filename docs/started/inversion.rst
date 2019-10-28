@@ -185,7 +185,7 @@ Without randomization
     iterator = hazel.Iterator(use_mpi=False)    
     mod = hazel.Model('configurations/conf_nonmpi_inv1d.ini', working_mode='inversion', verbose=2)
     iterator.use_model(model=mod)
-    iterator.run_all_pixels()
+    iterator.run_all_pixels(start=0)
 
 The first thing to do is to instantiate an ``Iterator`` which will be used to
 iterate over all pixels in the file with the observations. The ``Iterator`` class
@@ -195,7 +195,10 @@ If ``True``, it will use the `Message Passing Interface
 you need to have the ``mpi4py`` package installed. If ``False``, it will serially
 iterate over all pixels. Then we instantiate the ``Model`` as usual and tell the
 ``Iterator`` to use this model. Finally, we run the calculation by calling the 
-``run_all_pixels`` method of the ``Iterator``.
+``run_all_pixels`` method of the ``Iterator``. ``run_all_pixels`` admit two parameters:
+``start``, set by default to ``0`` that marks the starting point of the inversions and
+``end``, set by default to ``None`` (equivalent to using the number of pixels in the file 
+with the observations), that mark the last pixel to invert.
 
 With randomization
 """"""""""""""""""
