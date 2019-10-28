@@ -13,7 +13,8 @@ from tqdm import tqdm
 import logging
 import os
 import time
-# from ipdb import set_trace as stop
+import signal
+import sys
 
 class tags(IntEnum):
     READY = 0
@@ -383,6 +384,13 @@ class Iterator(object):
 
         self.comm.send(None, dest=0, tag=tags.EXIT)           
 
+    def cleanup(self, *args):
+        if (self.rank == 0):
+            self.logger.info('Closing output file before exiting with exception')
+            self.model.close_output()
+            self.logger.info('Closed')
+            sys.exit(0)
+
     def run_all_pixels(self):
         """
         Run synthesis/inversion for all pixels
@@ -395,6 +403,17 @@ class Iterator(object):
         -------
         None
         """
+
+        # Capture SIGTERM and SIGINT from the main process. When the process being run with mpiexec 
+        # is killed, mpiexec 
+        # During a normal python execution, hitting ^C sends a SIGINT signal to python, which 
+        # translates it into a KeyboardInterrupt exception (https://docs.python.org/3.7/library/signal.html).
+        # But when hitting ^C during an mpiexec execution, it is the mpiexec process which receives the 
+        # SIGINT signal, and instead of propagating it to its children processes, it sends to its 
+        # children processes a SIGTERM signal (https://www.open-mpi.org/doc/current/man1/mpirun.1.php).
+        # It thus seems that python doesn't react similarly to SIGINT and SIGTERM signals.
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            signal.signal(sig, self.cleanup)
 
         try:
             if (self.use_mpi):
@@ -411,9 +430,5 @@ class Iterator(object):
                     os.remove('lte.grid')
                 except OSError:
                     pass
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, SystemExit):
             pass
-        finally:
-            # Always close the output file even if an interruption occured
-            if (self.rank == 0):
-                self.model.close_output()

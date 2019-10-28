@@ -171,7 +171,7 @@ class Generic_output_file(object):
             return
 
         if (self.extension == 'h5'):            
-            self.handler.close()            
+            self.handler.close()
             del self.handler
         
 

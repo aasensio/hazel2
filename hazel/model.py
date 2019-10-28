@@ -1860,7 +1860,9 @@ class Model(object):
                         if (v.type == 'chromosphere'):
                             v.print_parameters(first=first)
                         if (v.type == 'photosphere'):
-                            v.print_parameters(first=first)                        
+                            v.print_parameters(first=first)
+                        if (v.type == 'parametric'):
+                            v.print_parameters(first=first)
                     first = False
 
                 if (self.verbose >= 2):
