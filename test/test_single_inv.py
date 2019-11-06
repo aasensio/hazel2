@@ -13,7 +13,7 @@ def test_single_inv():
 
     mod.close_output()
 
-    f = h5py.File('output.h5')
+    f = h5py.File('output.h5', 'r')
 
     assert f['spec1']['stokes'].shape == (1,1,2,4,150), "incorrect dimensions in inversion"
 

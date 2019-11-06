@@ -15,7 +15,7 @@ mod.close_output()
 
 final = np.loadtxt('photospheres/model_photosphere.1d', skiprows=4)
 start = np.loadtxt('photospheres/model_photosphere_200.1d', skiprows=4)
-f = h5py.File('output.h5')
+f = h5py.File('output.h5', 'r')
 fig = pl.figure()
 pl.plot(f['ph1']['T'][0,0,0,:])
 pl.plot(final[:,1])

@@ -501,12 +501,13 @@ class Generic_SIR_file(object):
         if (self.extension == '1d'):
             f = open(self.filename, 'r')
             f.readline()
-            ff = float(f.readline())
+            tmp = f.readline().split()
+            ff, vmac = float(tmp[0]), float(tmp[1])
             f.close()
-            return np.loadtxt(self.filename, skiprows=4), ff
+            return np.loadtxt(self.filename, skiprows=4), ff, vmac
 
         if (self.extension == 'h5' or self.extension == 'zarr'):            
-            return self.handler['model'][pixel,...], self.handler['ff'][pixel]
+            return self.handler['model'][pixel,...], self.handler['ff'][pixel], self.handler['vmac'][pixel]
 
     def close(self):
         if (self.extension == '1d'):

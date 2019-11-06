@@ -150,3 +150,12 @@ Install the following packages:
 And then compile them typing the following in the ``docs`` directory:
 
     ./compile
+
+## Issues
+
+MacOSX Catalina has some issues with the paths to the include files. Defining the following environment variables might help.
+
+    export CFLAGS="-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+    export CCFLAGS="-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+    export CXXFLAGS="-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+    export CPPFLAGS="-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"

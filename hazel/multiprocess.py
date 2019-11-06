@@ -121,8 +121,13 @@ class Iterator(object):
             if all(x == 1 for x in mask):
 
                 for k, v in self.model.atmospheres.items():
-                    args, ff = v.model_handler.read(pixel=i)
-                    v.set_parameters(args, ff)
+                    if (v.type == 'photosphere'):
+                        args, ff, vmac = v.model_handler.read(pixel=i)
+                        v.set_parameters(args, ff, vmac)
+                    else:
+                        args, ff = v.model_handler.read(pixel=i)
+                        v.set_parameters(args, ff)
+                    
                     v.init_reference()
 
                 if (self.model.n_randomization > 1):

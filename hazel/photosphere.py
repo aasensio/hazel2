@@ -33,6 +33,7 @@ class SIR_atmosphere(General_atmosphere):
         self.parameters['By'] = None
         self.parameters['Bz'] = None
         self.parameters['ff'] = None
+        self.parameters['vmac'] = None
 
         self.nodes_location['T'] = None
         self.nodes_location['vmic'] = None
@@ -41,6 +42,7 @@ class SIR_atmosphere(General_atmosphere):
         self.nodes_location['By'] = None
         self.nodes_location['Bz'] = None
         self.nodes_location['ff'] = None
+        self.nodes_location['vmac'] = None
 
         self.n_nodes['T'] = 0
         self.n_nodes['vmic'] = 0
@@ -49,6 +51,7 @@ class SIR_atmosphere(General_atmosphere):
         self.n_nodes['By'] = 0
         self.n_nodes['Bz'] = 0
         self.n_nodes['ff'] = 0
+        self.n_nodes['vmac'] = 0
 
         self.nodes['T'] = 0
         self.nodes['vmic'] = 0
@@ -57,6 +60,7 @@ class SIR_atmosphere(General_atmosphere):
         self.nodes['By'] = 0
         self.nodes['Bz'] = 0
         self.nodes['ff'] = 0
+        self.nodes['vmac'] = 0
 
         self.ranges['T'] = None
         self.ranges['vmic'] = None
@@ -65,6 +69,7 @@ class SIR_atmosphere(General_atmosphere):
         self.ranges['By'] = None
         self.ranges['Bz'] = None
         self.ranges['ff'] = None
+        self.ranges['vmac'] = None
 
         self.cycles['T'] = None
         self.cycles['vmic'] = None
@@ -73,6 +78,7 @@ class SIR_atmosphere(General_atmosphere):
         self.cycles['By'] = None
         self.cycles['Bz'] = None
         self.cycles['ff'] = None
+        self.cycles['vmac'] = None
 
         self.epsilon['T'] = 0.01
         self.epsilon['vmic'] = 0.01
@@ -81,6 +87,7 @@ class SIR_atmosphere(General_atmosphere):
         self.epsilon['By'] = 0.01
         self.epsilon['Bz'] = 0.01
         self.epsilon['ff'] = 0.01
+        self.epsilon['vmac'] = 0.01
 
         self.regularization['T'] = None
         self.regularization['vmic'] = None
@@ -89,6 +96,7 @@ class SIR_atmosphere(General_atmosphere):
         self.regularization['By'] = None
         self.regularization['Bz'] = None
         self.regularization['ff'] = None
+        self.regularization['vmac'] = None
         
     def list_lines(self):
         """
@@ -211,14 +219,14 @@ class SIR_atmosphere(General_atmosphere):
 
         self.model_handler = Generic_SIR_file(model_file)
         self.model_handler.open()
-        out, ff = self.model_handler.read(pixel=0)
+        out, ff, vmac = self.model_handler.read(pixel=0)
         self.model_handler.close()
 
-        self.set_parameters(out, ff)
+        self.set_parameters(out, ff, vmac)
         
         self.init_reference(check_borders=True)
                         
-    def set_parameters(self, model, ff):
+    def set_parameters(self, model, ff, vmac):
         """
         Set the parameters of the current model to those passed as argument
 
@@ -228,6 +236,8 @@ class SIR_atmosphere(General_atmosphere):
             Array with the model        
         ff : float
             Value of the filling factor
+        vmac : float
+            Value of the macroturbulent velocity
 
         Returns
         -------
@@ -249,6 +259,7 @@ class SIR_atmosphere(General_atmosphere):
             self.Pe[-1] = 1.11634e-1        
         
         self.parameters['ff'] = ff
+        self.parameters['vmac'] = vmac
 
         # Check that parameters are inside borders by clipping inside the interval with a border of 1e-8
         if (self.working_mode == 'inversion'):
@@ -362,12 +373,12 @@ class SIR_atmosphere(General_atmosphere):
         if (returnRF):
             stokes, rf = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
                 self.Pe, self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
-                self.parameters['Bz'], self.macroturbulence)
+                self.parameters['Bz'], self.parameters['vmac'])
             return self.parameters['ff'] * stokes[1:,:], rf
         else:                        
             stokes, error = sir_code.synth(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
                 self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
-                self.parameters['Bz'], self.macroturbulence[0])
+                self.parameters['Bz'], self.parameters['vmac'])
             
             if (error == 1):
                 raise NumericalErrorSIR()

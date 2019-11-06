@@ -121,7 +121,7 @@ class File_photosphere(object):
 
         self.mode = mode
         
-        self.model = {'model': None, 'ff': None}
+        self.model = {'model': None, 'ff': None, 'vmac': None}
 
     def set_size(self, nz, n_pixel=1):
         """
@@ -148,6 +148,7 @@ class File_photosphere(object):
 
         self.model['model'] = np.zeros((n_pixel,nz,8), dtype=np.float64)
         self.model['ff'] = np.zeros((n_pixel,), dtype=np.float64)
+        self.model['vmac'] = np.zeros((n_pixel,), dtype=np.float64)
 
     def set_default(self, n_pixel=1, default='hsra'):
         """
@@ -172,7 +173,8 @@ class File_photosphere(object):
         filename = '/'.join(path[0:-1])+'/data/{0}.1d'.format(default)
         f = open(filename, 'r')
         f.readline()
-        ff = float(f.readline())
+        tmp = f.readline().split()
+        ff, vmac = float(tmp[0]), float(tmp[1])
         f.close()
         model = np.loadtxt(filename, skiprows=4)
 
@@ -180,9 +182,11 @@ class File_photosphere(object):
 
         self.model['model'] = np.zeros((n_pixel,nz,8), dtype=np.float64)
         self.model['ff'] = np.zeros((n_pixel,), dtype=np.float64)
+        self.model['vmac'] = np.zeros((n_pixel,), dtype=np.float64)
 
         self.model['model'][:] = model[None,:,:]
         self.model['ff'][:] = ff
+        self.model['vmac'][:] = vmac
 
     def list_models(self):
         docs = """
@@ -290,8 +294,8 @@ class File_photosphere(object):
         if (self.mode == 'single'):
             print("Saving photospheric 1D model : {0}.1d".format(file))
             f = open('{0}.1d'.format(file), 'w')
-            f.write('ff\n')
-            f.write('{0}\n'.format(self.model['ff'][0]))
+            f.write('ff  vmac\n')
+            f.write('{0}  {1}\n'.format(self.model['ff'][0], self.model['vmac'][0]))
             f.write('\n')
             f.write('  logtau     T        Pe           vmic        v            Bx           By         Bz\n')            
             
@@ -303,8 +307,10 @@ class File_photosphere(object):
             f = h5py.File('{0}.h5'.format(file), 'w')
             db_model = f.create_dataset('model', self.model['model'].shape, dtype=np.float64)
             db_ff = f.create_dataset('ff', self.model['ff'].shape, dtype=np.float64)
+            db_vmac = f.create_dataset('vmac', self.model['vmac'].shape, dtype=np.float64)
             db_model[:] = self.model['model']
             db_ff[:] = self.model['ff']
+            db_vmac[:] = self.model['vmac']
             f.close()
 
 

@@ -145,12 +145,13 @@ be perturbed with nodes until a fit is obtained for the observed Stokes paramete
 These are text files which tabulates the depth dependence as a function of the log optical depth at 500 nm
 of the temperature [K], electron pressure [cgs], 
 microturbulent velocity [cm/s], bulk velocity [cm/s], and the cartesian components of the magnetic field,
-Bx, By and Bz [G]. Additionally, the filling factor is given in the header. An example follows:
+Bx, By and Bz [G]. Additionally, the filling factor and the macroscopic velocity in km/s
+is given in the header. An example follows:
 
 ::
 
-    ff
-    1.0
+    ff   vmac
+    1.0  1.0
 
     logtau     T        Pe           vmic        v            Bx           By         Bz
     1.2000   8879.7  2.99831E+03  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00   
@@ -164,9 +165,10 @@ Bx, By and Bz [G]. Additionally, the filling factor is given in the header. An e
 HDF5/zarr 3D files
 ^^^^^^^^^^^^^^^^^^
 
-HDF5/zarr files with model photospheres are defined with two double-precision datasets: ``model`` and ``ff``. The first
+HDF5/zarr files with model photospheres are defined with three double-precision datasets: ``model``, ``ff`` and ``vmac``. The first
 one has size ``(n_pixel,nz,8)``, containing the depth dependence of the 8 variables for all pixels. The second 
-one has size ``(n_pixel,)``, containing the filling factor for each pixel. In the following we show how to
+and the third ones have sizes ``(n_pixel,)``, containing the filling factor and the macroscopic velocity
+for each pixel. In the following we show how to
 create a sample file:
 
 ::
@@ -176,12 +178,15 @@ create a sample file:
     
     model_3d = np.zeros((n_pixel,nz,8), dtype=np.float64)
     ff_3d = np.zeros((n_pixel,), dtype=np.float64)
+    vmac_3d = np.zeros((n_pixel,), dtype=np.float64)
 
     f = h5py.File('photospheres/model_photosphere.h5', 'w')
     db_model = f.create_dataset('model', model_3d.shape, dtype=np.float64)
     db_ff = f.create_dataset('ff', ff_3d.shape, dtype=np.float64)
+    db_vmac = f.create_dataset('vmac', vmac_3d.shape, dtype=np.float64)
     db_model[:] = model_3d
     db_ff[:] = ff_3d
+    db_vmac[:] = vmac_3d
     f.close()
 
 FITS 3D files
