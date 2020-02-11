@@ -109,7 +109,7 @@ class General_atmosphere(object):
         """
         
         for k, v in self.parameters.items():            
-            if (k in self.ranges):
+            if (self.ranges[k] is not None):
                 lower = self.ranges[k][0] #- self.eps_borders
                 upper = self.ranges[k][1] #+ self.eps_borders
                 self.parameters[k] = transformed_to_physical(v, lower, upper)
@@ -129,7 +129,7 @@ class General_atmosphere(object):
     
         """
         for k, v in self.parameters.items():
-            if (k in self.ranges):
+            if (self.ranges[k] is not None):
                 lower = self.ranges[k][0] #- self.eps_borders
                 upper = self.ranges[k][1] #+ self.eps_borders            
                 self.parameters[k] = physical_to_transformed(v, lower, upper)
@@ -189,7 +189,7 @@ class General_atmosphere(object):
         if (self.working_mode == 'inversion'):
             if (check_borders):
                 for k, v in self.parameters.items():                    
-                    if (k in self.ranges):
+                    if (self.ranges[k] is not None):
                         if (not np.all(np.logical_and(v >= self.ranges[k][0], v <= self.ranges[k][1]))):
                             raise Exception("Parameter {0} of atmosphere {1} is outside ranges".format(k, self.name))
 

@@ -298,8 +298,9 @@ class Model(object):
         if (self.working_mode == 'inversion'):
             cycles = []
             for k, v in self.atmospheres.items():
-                for k2, v2 in v.cycles.items():                    
-                    cycles.append(len(v2))
+                for k2, v2 in v.cycles.items():       
+                    if (v2 is not None):
+                        cycles.append(len(v2))
 
             all_equal = all(x == cycles[0] for x in cycles)
             if (not all_equal):
@@ -342,8 +343,9 @@ class Model(object):
             self.n_free_parameters = 0
 
             for k, v in self.atmospheres.items():
-                for k2, v2 in v.cycles.items():                    
-                    self.n_free_parameters += max(hazel.util.onlyint(v2[0:self.n_cycles+1]))
+                for k2, v2 in v.cycles.items():
+                    if (v2 is not None):                   
+                        self.n_free_parameters += max(hazel.util.onlyint(v2[0:self.n_cycles+1]))
 
             if (self.verbose >= 1):
                 self.logger.info('Total number of free parameters in all cycles : {0}'.format(self.n_free_parameters))
