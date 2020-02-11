@@ -151,7 +151,6 @@ And then compile them typing the following in the ``docs`` directory:
 
     ./compile
 
-
 ## Issues
 
 MacOSX Catalina has some issues with the paths to the include files. Defining the following environment variables might help.
