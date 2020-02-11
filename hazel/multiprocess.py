@@ -15,6 +15,7 @@ import os
 import time
 import signal
 import sys
+import warnings
 
 class tags(IntEnum):
     READY = 0
@@ -36,6 +37,7 @@ class Iterator(object):
             self.size = self.comm.Get_size()        # total number of processes
             self.rank = self.comm.Get_rank()        # rank of this process
             self.status = MPI.Status()   # get MPI status object                        
+            warnings.filterwarnings("ignore", category=RuntimeWarning)  # Ignore all RuntimeWarnings
         else:
             self.rank = 0            
 
@@ -224,8 +226,12 @@ class Iterator(object):
 
                                 # Read current model atmosphere
                                 for k, v in self.model.atmospheres.items():
-                                    args, ff = v.model_handler.read(pixel=task_index)
-                                    v.set_parameters(args, ff)
+                                    if (v.type == 'photosphere'):                                        
+                                        args, ff, vmac = v.model_handler.read(pixel=task_index)
+                                        v.set_parameters(args, ff, vmac)
+                                    else:
+                                        args, ff = v.model_handler.read(pixel=task_index)
+                                        v.set_parameters(args, ff)
                                     v.init_reference()
                                     data_to_send[k] = [v.reference, v.parameters, v.stray_profile]
 
@@ -293,7 +299,7 @@ class Iterator(object):
 
                 elif tag == tags.EXIT:                    
                     closed_workers += 1
-                    self.logger.info('Worker {0} has finished'.format(source))        
+                    pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers='{0} finished'.format(source), elapsed='{0:6.3f} s <{1:6.3f} s>'.format(self.elapsed, self.avg_elapsed))                    
 
     def mpi_workers_work(self):
         """

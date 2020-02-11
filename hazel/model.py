@@ -138,16 +138,27 @@ class Model(object):
                     if (self.verbose >= 1):
                         self.logger.info('Using {0} cycles'.format(self.n_cycles))
 
+        # Use analytical RFs if possible
+        if ('analytical rf if possible' in config_dict['working mode']):
+            if (config_dict['working mode']['analytical rf if possible'] != 'None'):
+                self.use_analytical_RF_if_possible = hazel.util.tobool(config_dict['working mode']['analytical rf if possible'])
+            else:
+                self.use_analytical_RF_if_possible = False
+        else:
+            self.use_analytical_RF_if_possible = False
+        if (self.verbose >= 1):
+            self.logger.info('Using analytical RFs if possible : {0}'.format(self.use_analytical_RF_if_possible))
+
         # Set number of maximum iterations
         if ('maximum iterations' in config_dict['working mode']):
             if (config_dict['working mode']['number of cycles'] != 'None'):
                 self.max_iterations = int(config_dict['working mode']['maximum iterations'])
-                if (self.verbose >= 1):
-                    self.logger.info('Using {0} max. iterations'.format(self.max_iterations))
             else:
                 self.max_iterations = 10
         else:
             self.max_iterations = 10
+        if (self.verbose >= 1):
+            self.logger.info('Using {0} max. iterations'.format(self.max_iterations))
 
         # Randomization
         if (self.verbose >= 1):
@@ -231,13 +242,26 @@ class Model(object):
         # Calculate indices for atmospheres
         index_chromosphere = 1
         index_photosphere = 1
+        self.n_photospheres = 0
+        self.n_chromospheres = 0
         for k, v in self.atmospheres.items():
             if (v.type == 'photosphere'):
                 v.index = index_photosphere
                 index_photosphere += 1
+                self.n_photospheres += 1
             if (v.type == 'chromosphere'):
                 v.index = index_chromosphere
                 index_chromosphere += 1
+                self.n_chromospheres += 1
+
+        # Use analytical RFs if only photospheres are defined
+        if (self.n_chromospheres == 0 and self.use_analytical_RF_if_possible):
+            self.use_analytical_RF = True
+            if (self.verbose >= 1):
+                self.logger.info('Using analytical RFs : {0}'.format(self.use_analytical_RF))
+        else:
+            self.use_analytical_RF = False
+
 
         # Check that number of pixels is the same for all atmospheric files if in synthesis mode
         if (self.working_mode == 'synthesis'):
@@ -541,9 +565,9 @@ class Model(object):
             if ('line-of-sight' in atm['reference frame']):
                 self.atmospheres[atm['name']].reference_frame = 'line-of-sight'
             if ('vertical' in atm['reference frame']):
-                self.atmospheres[atm['name']].reference_frame = 'vertical'
+                raise Exception('Magnetic fields in photospheres are always in the line-of-sight reference frame.')
         else:
-            self.atmospheres[atm['name']].reference_frame = 'vertical'
+            self.atmospheres[atm['name']].reference_frame = 'line-of-sight'
 
         if (self.verbose >= 1):
             self.logger.info("    * Adding line : {0}".format(lines))
@@ -1052,7 +1076,20 @@ class Model(object):
                 raise Exception("Straylight components can only be at the last position of a topology.")
         
         self.order_atmospheres.append(order)
-                
+
+        # Check that there are no two photospheres linked with ->
+        # because they do not make any sense
+
+        n_photospheres_linked = []
+        for atmospheres in self.order_atmospheres:
+            for order in atmospheres:
+                for k, atm in enumerate(order):
+                    if (self.atmospheres[atm].type == 'photosphere'):
+                        n_photospheres_linked.append(k)
+        
+        if (len(n_photospheres_linked) != len(set(n_photospheres_linked))):
+            raise Exception("There are several photospheres linked with ->. This is not allowed.")
+                        
     def normalize_ff(self):
         """
         Normalize all filling factors so that they add to one to avoid later problems.
@@ -1139,7 +1176,10 @@ class Model(object):
                             stokes += (1.0 - self.atmospheres[atm].parameters['ff']) * stokes_out                            
                         else:
                             if (k == 0):                                
-                                stokes, error = self.atmospheres[atm].synthesize(stokes_out)
+                                if (self.use_analytical_RF):
+                                    stokes, rf, error = self.atmospheres[atm].synthesize(stokes_out, returnRF=True)
+                                else:
+                                    stokes, error = self.atmospheres[atm].synthesize(stokes_out)
                             else:             
                                 tmp, error = self.atmospheres[atm].synthesize(stokes_out)       
                                 stokes += tmp
@@ -1260,7 +1300,7 @@ class Model(object):
         None
 
         """
-
+        
         self.synthesize()
 
         if (not compute_rf):            
@@ -1273,7 +1313,7 @@ class Model(object):
         self.hessian_regularization = np.zeros(self.n_free_parameters_cycle)
         self.grad_regularization = np.zeros(self.n_free_parameters_cycle)
 
-        for par in self.active_meta:            
+        for par in self.active_meta:
             nodes = self.nodes[par['left']:par['right']]
 
             lower = par['ranges'][0]
@@ -1281,66 +1321,69 @@ class Model(object):
 
             if (self.verbose >= 4):
                 self.logger.info(" * RF to {0} - {1} - nodes={2}".format(par['parameter'], par['atm'], par['n_nodes']))
-                        
-            for i in range(par['n_nodes']):
-                perturbation = np.zeros(par['n_nodes'])
-                if (nodes[i] == 0):
-                    perturbation[i] = self.epsilon * par['delta']
-                else:
-                    perturbation[i] = self.epsilon * nodes[i]                
 
-                # Perturb this parameter
-                self.atmospheres[par['atm']].nodes[par['parameter']] = nodes + perturbation
+            if (self.use_analytical_RF):
+                pass
+            else:           
+                for i in range(par['n_nodes']):
+                    perturbation = np.zeros(par['n_nodes'])
+                    if (nodes[i] == 0):
+                        perturbation[i] = self.epsilon * par['delta']
+                    else:
+                        perturbation[i] = self.epsilon * nodes[i]                
 
-                # Also perturb those parameters that are coupled
-                for par2 in self.coupled_meta:
-                    if (par2['coupled'] is True):                            
-                        if (par['atm'] == par2['n_nodes'] and par['parameter'] == par2['parameter']):
-                            if (self.verbose >= 4):
-                                self.logger.info("   * Coupling RF to {0} - {1}".format(par2['parameter'], par2['atm']))
-                            self.atmospheres[par2['atm']].nodes[par2['parameter']] = nodes + perturbation
-                                
-                # Synthesize
-                self.synthesize(perturbation=True)
-                                                
-                # And come back to the original value of the nodes
-                self.atmospheres[par['atm']].nodes[par['parameter']] = nodes
+                    # Perturb this parameter
+                    self.atmospheres[par['atm']].nodes[par['parameter']] = nodes + perturbation
 
-                for par2 in self.coupled_meta:
-                    if (par2['coupled'] is True):
-                        if (par['atm'] == par2['n_nodes'] and par['parameter'] == par2['parameter']):
-                            self.atmospheres[par2['atm']].nodes[par2['parameter']] = nodes
-                
-                if (include_jacobian):
-                    # jacobian =
-                    # self.atmospheres[par['atm']].jacobian[par['parameter']]                    
-                    jacobian = jacobian_transformation(nodes[i], lower, upper)                    
-                else:
-                    jacobian = 1.0
+                    # Also perturb those parameters that are coupled
+                    for par2 in self.coupled_meta:
+                        if (par2['coupled'] is True):                            
+                            if (par['atm'] == par2['n_nodes'] and par['parameter'] == par2['parameter']):
+                                if (self.verbose >= 4):
+                                    self.logger.info("   * Coupling RF to {0} - {1}".format(par2['parameter'], par2['atm']))
+                                self.atmospheres[par2['atm']].nodes[par2['parameter']] = nodes + perturbation
+                                    
+                    # Synthesize
+                    self.synthesize(perturbation=True)
+                                                    
+                    # And come back to the original value of the nodes
+                    self.atmospheres[par['atm']].nodes[par['parameter']] = nodes
 
-                rf = {}
-                for k, v in self.spectrum.items():
-                    rf[k] = jacobian * np.expand_dims((v.stokes - v.stokes_perturbed) / perturbation[i], 0)
+                    for par2 in self.coupled_meta:
+                        if (par2['coupled'] is True):
+                            if (par['atm'] == par2['n_nodes'] and par['parameter'] == par2['parameter']):
+                                self.atmospheres[par2['atm']].nodes[par2['parameter']] = nodes
+                    
+                    if (include_jacobian):
+                        # jacobian =
+                        # self.atmospheres[par['atm']].jacobian[par['parameter']]                    
+                        jacobian = jacobian_transformation(nodes[i], lower, upper)                    
+                    else:
+                        jacobian = 1.0
 
-                # rf = np.expand_dims((self.spectrum['spec1'].stokes - self.spectrum['spec1'].stokes_perturbed) / perturbation[i], 0)
-                                                
-                if (loop == 0):
-                    self.response = rf
-                else:
-                    # self.response = np.vstack([self.response, rf])
+                    rf = {}
                     for k, v in self.spectrum.items():
-                        self.response[k] = np.vstack([self.response[k], rf[k]])
+                        rf[k] = jacobian * np.expand_dims((v.stokes - v.stokes_perturbed) / perturbation[i], 0)
 
-                if (par['regularization'] is not None):
-                    if (par['regularization'][0] == 'l2-value'):
-                        alpha = float(par['regularization'][1])
-                        lower = par['ranges'][0]
-                        upper = par['ranges'][1]
-                        value = physical_to_transformed(float(par['regularization'][2]), lower, upper)
-                        self.grad_regularization[par['left']:par['right']] = 2.0 * alpha * (self.atmospheres[par['atm']].nodes[par['parameter']] - value)
-                        self.hessian_regularization[par['left']:par['right']] = 2.0 * alpha
+                    # rf = np.expand_dims((self.spectrum['spec1'].stokes - self.spectrum['spec1'].stokes_perturbed) / perturbation[i], 0)
+                                                    
+                    if (loop == 0):
+                        self.response = rf
+                    else:
+                        # self.response = np.vstack([self.response, rf])
+                        for k, v in self.spectrum.items():
+                            self.response[k] = np.vstack([self.response[k], rf[k]])
 
-                loop += 1
+                    if (par['regularization'] is not None):
+                        if (par['regularization'][0] == 'l2-value'):
+                            alpha = float(par['regularization'][1])
+                            lower = par['ranges'][0]
+                            upper = par['ranges'][1]
+                            value = physical_to_transformed(float(par['regularization'][2]), lower, upper)
+                            self.grad_regularization[par['left']:par['right']] = 2.0 * alpha * (self.atmospheres[par['atm']].nodes[par['parameter']] - value)
+                            self.hessian_regularization[par['left']:par['right']] = 2.0 * alpha
+
+                    loop += 1
 
         
     def flatten_parameters_to_reference(self, cycle):

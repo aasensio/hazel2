@@ -425,7 +425,7 @@ contains
 	
 ! definimos los nodos en todos los puntos (excepto para ls presion elctronica)
 		do i=1,8                 
-        	mnodos(i)=0
+        	mnodos(i)=ntau
 		end do  
     	mnodos(2)=0
 
@@ -468,13 +468,14 @@ contains
 	end subroutine c_synth
 
 
-	subroutine c_synthrf(index, nDepth, nLambda, macroturbulence, model, stokes, RFt, RFp, RFh, RFv, RFg, RFf, RFmic, RFmac) bind(c)
+	subroutine c_synthrf(index, nDepth, nLambda, macroturbulence, model, stokes, RFt, RFp, RFh, RFv, RFg, RFf, RFmic, RFmac, error) bind(c)
 	integer(c_int), intent(in) :: index, nDepth, nLambda
-	real(c_float), intent(in) :: model(8,ndepth)
-	real(c_float), intent(in) :: macroturbulence
-	real(c_float), intent(out) :: stokes(5,nLambda)
-	real(c_float), intent(out), dimension(4,nLambda,nDepth) :: RFt, RFp, RFh, RFv, RFg, RFf, RFmic
-	real(c_float), intent(out), dimension(4,nLambda) :: RFmac
+	real(c_double), intent(in) :: model(8,ndepth)
+	real(c_double), intent(in) :: macroturbulence
+	real(c_double), intent(out) :: stokes(5,nLambda)
+	real(c_double), intent(out), dimension(4,nLambda,nDepth) :: RFt, RFp, RFh, RFv, RFg, RFf, RFmic
+	real(c_double), intent(out), dimension(4,nLambda) :: RFmac
+	integer(c_int), intent(out) :: error
 
 	real*4 stok(kld4)
     real*4 rt(kldt4),rp(kldt4),rh(kldt4),rv(kldt4)
@@ -490,6 +491,21 @@ contains
 	real*4 dlamda(kld)
 	integer ntls,nlins(kl4),npass(kl4)
 	real*4 dlamdas(kld4)
+
+	character*2 atom_all(kl)
+	integer istage_all(kl)
+    real*4 wlengt_all(kl)
+    real*4 zeff_all(kl)
+	real*4 energy_all(kl)
+	real*4 loggf_all(kl)
+	integer mult_all(2,kl)
+	character*1 design_all(2,kl)
+	real*4 tam_all(2,kl)
+	real*4 alfa_all(kl)
+	real*4 sigma_all(kl)
+
+	integer :: error_code
+	common/Error/error_code
 	
 	
     common/OutputStokes/Stokesfilename
@@ -500,10 +516,12 @@ contains
     common/anguloheliocent/xmu        !para StokesFRsub
 
 	common/Malla/ntl,nlin,npas,nble,dlamda  !common para StokesFRsub
-    common/Malla4/ntls,nlins,npass,dlamdas  !common para StokesFRsub
+	common/Malla4/ntls,nlins,npass,dlamdas  !common para StokesFRsub
+	common/Lineas_all/atom_all,istage_all,wlengt_all,zeff_all,energy_all,loggf_all,mult_all,design_all,tam_all,alfa_all,sigma_all
 
-	integer :: error_code
-	common/Error/error_code
+		atmosmodel = 0
+		error = 0
+		error_code = 0
 
 		error_code = 0
 
@@ -516,6 +534,18 @@ contains
 		nlins = conf(index)%nlins
 		npass = conf(index)%npass
 		dlamdas = conf(index)%dlamdas
+
+		atom_all = conf(index)%atom_all
+		istage_all = conf(index)%istage_all
+		wlengt_all = conf(index)%wlengt_all
+		zeff_all = conf(index)%zeff_all
+		energy_all = conf(index)%energy_all
+		loggf_all = conf(index)%loggf_all
+		mult_all = conf(index)%mult_all
+		design_all = conf(index)%design_all
+		tam_all = conf(index)%tam_all
+		alfa_all = conf(index)%alfa_all
+		sigma_all = conf(index)%sigma_all
 
 	    ntau = nDepth
 
@@ -548,7 +578,12 @@ contains
 ! Calculate hydrostatic equilibrium if Pe is not known
     	if (minval(model(3,:)) == -1) then
 
-    		call equisubmu(ntau,tau,t,pe,pg,z,ro)
+			call equisubmu(ntau,tau,t,pe,pg,z,ro)
+			
+			if (error_code == 1) then
+				error = 1
+				return
+			endif
  
         	do i=1,ntau
             	atmosmodel(i+2*ntau)=pe(i)
@@ -556,6 +591,11 @@ contains
         endif
 
 		call StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac)
+
+		if (error_code == 1) then
+			error = 1
+			return
+		endif
 		 	
 ! contamos el numero de puntos	
 		ntot=0

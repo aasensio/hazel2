@@ -26,6 +26,7 @@ parameters.
     ax = ax.flatten()
 
     for j in range(5):
+        # Vector of parameters are (Bx,By,Bztau,v,deltav,beta,a) and then the ff
         mod.atmospheres['ch1'].set_parameters([0.0,0.0,100.0*j,1.0,0.0,8.0,1.0,0.0],1.0)
         mod.synthesize()
 

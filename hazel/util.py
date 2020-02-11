@@ -65,6 +65,9 @@ def toint(l):
 def tofloat(l):
     return [float(x) if isfloat(x) else None for x in l]
 
+def tobool(l):
+    return True if l == 'True' else False
+
 def onlyint(l):
     return [i for i in l if isinstance(i, int)]
 

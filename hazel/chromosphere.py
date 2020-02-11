@@ -173,14 +173,14 @@ class Hazel_atmosphere(General_atmosphere):
         
         for label in labels:            
             self.parameters.pop(label)
-            self.units.pop(label)
-            self.nodes.pop(label)
-            self.error.pop(label)
-            self.n_nodes.pop(label)
-            self.ranges.pop(label)
-            self.cycles.pop(label)
-            self.jacobian.pop(label)
-            self.regularization.pop(label)
+            # self.units.pop(label)
+            # self.nodes.pop(label)
+            # self.error.pop(label)
+            # self.n_nodes.pop(label)
+            # self.ranges.pop(label)
+            # self.cycles.pop(label)
+            # self.jacobian.pop(label)
+            # self.regularization.pop(label)
         
     def add_active_line(self, line, spectrum, wvl_range):
         """
@@ -350,7 +350,7 @@ class Hazel_atmosphere(General_atmosphere):
         
 
 
-    def synthesize(self, stokes=None):
+    def synthesize(self, stokes=None, returnRF=False):
         """
         Carry out the synthesis and returns the Stokes parameters
         

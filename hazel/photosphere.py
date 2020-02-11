@@ -62,6 +62,16 @@ class SIR_atmosphere(General_atmosphere):
         self.nodes['ff'] = 0
         self.nodes['vmac'] = 0
 
+        self.rf_analytical = OrderedDict()
+        self.rf_analytical['T'] = None
+        self.rf_analytical['vmic'] = None
+        self.rf_analytical['v'] = None
+        self.rf_analytical['Bx'] = None
+        self.rf_analytical['By'] = None
+        self.rf_analytical['Bz'] = None
+        self.rf_analytical['ff'] = None
+        self.rf_analytical['vmac'] = None
+
         self.ranges['T'] = None
         self.ranges['vmic'] = None
         self.ranges['v'] = None
@@ -172,18 +182,16 @@ class SIR_atmosphere(General_atmosphere):
         if (n_nodes == 2):
             pos = np.linspace(0, n_depth-1, n_nodes, dtype=int)
             pos = np.linspace(0, n_depth-1, n_nodes+2, dtype=int)[1:-1]
-            # coeff = np.polyfit(log_tau[pos], nodes, 1)            
             f = interp.interp1d(log_tau[pos], nodes, 'linear', bounds_error=False, fill_value='extrapolate')
-            return reference + f(log_tau), log_tau[pos] #np.polyval(coeff, log_tau)
+            return reference + f(log_tau), log_tau[pos]
 
         if (n_nodes == 3):
             pos = np.linspace(0, n_depth-1, n_nodes, dtype=int)
             pos = np.linspace(0, n_depth-1, n_nodes+2, dtype=int)[1:-1]
-            # coeff = np.polyfit(log_tau[pos], nodes, 2)      
             f = interp.interp1d(log_tau[pos], nodes, 'quadratic', bounds_error=False, fill_value='extrapolate')
             return reference + f(log_tau), log_tau[pos]
 
-        if (n_nodes > 3):            
+        if (n_nodes > 3):
             pos = np.linspace(n_depth-1, 0, n_nodes, dtype=int)
             pos = np.linspace(n_depth-1, 0, n_nodes+2, dtype=int)[1:-1]
             f = interp.PchipInterpolator(log_tau[pos], nodes, extrapolate=True)            
@@ -371,10 +379,36 @@ class SIR_atmosphere(General_atmosphere):
             self.to_physical()
         
         if (returnRF):
-            stokes, rf = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
+            stokes, rf, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
                 self.Pe, self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
                 self.parameters['Bz'], self.parameters['vmac'])
-            return self.parameters['ff'] * stokes[1:,:], rf
+            error = 0
+
+            delta = 1e-2*self.parameters['vmic'][30]
+            self.parameters['vmic'][30] += 0.01
+            stokes2, rf2, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
+                self.Pe, self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
+                self.parameters['Bz'], self.parameters['vmac'])
+            error = 0
+
+            rfn = (stokes2[1,:]-stokes[1,:])/0.01
+            import matplotlib.pyplot as pl
+            pl.plot(rfn, '-o')
+            pl.plot(rf[6][0,:,30])
+            pl.show()
+            breakpoint()
+            
+            # RF(B)=rf[3]
+            # RF(thB)=rf[5]
+            # RF(phiB)=rf[6]
+            # self.rf_analytical['T'] = rf[0]       OK
+            # self.rf_analytical['vmic'] = rf[2]
+            # self.rf_analytical['v'] = 1e5*rf[3]       OK
+            # self.rf_analytical['Bx'] = rf[3]
+            # self.rf_analytical['By'] = rf[5]
+            # self.rf_analytical['Bz'] = rf[6]
+            
+            return self.parameters['ff'] * stokes[1:,:] * i0_allen(np.mean(self.wvl_axis), self.spectrum.mu), error
         else:                        
             stokes, error = sir_code.synth(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
                 self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 

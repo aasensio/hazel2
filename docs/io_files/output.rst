@@ -171,6 +171,9 @@ invoking ``hazel.util.show_tree('output.h5')``:
         │  ├─ ff -> (1, 1, 1, 1)  float64
         │  ├─ ff_err -> (1, 1, 1)  object
         │  ├─ ff_nodes -> (1, 1, 1)  object
+        │  ├─ vmac -> (1, 1, 1, 1)  float64
+        │  ├─ vmac_err -> (1, 1, 1)  object
+        │  ├─ vmac_nodes -> (1, 1, 1)  object
         │  ├─ log_tau -> (73,)  float64
         │  ├─ v -> (1, 1, 1, 73)  float64
         │  ├─ v_err -> (1, 1, 1)  object

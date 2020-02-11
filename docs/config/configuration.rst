@@ -84,8 +84,9 @@ Photospheres
 
 Photospheres are always in the lower part of the atmosphere and so need to be defined
 in the first level of the topology. They are synthesized in local thermodynamic equilibrium
-using SIR. The magnetic field is always given with respect to the line-of-sight (contrary
-to those of chromospheres).
+using SIR. The magnetic field is *always* given with respect to the line-of-sight, like
+in SIR (contrary to those of chromospheres) and the reference direction for Q is
+then defined as the zero azimuth (like in SIR).
 
 ::
 
@@ -97,7 +98,6 @@ to those of chromospheres).
         Spectral region = spec1
         Wavelength = 10826, 10833
         Spectral lines = 300, 301
-        Reference frame = vertical        
 
             [[[Ranges]]]
             T      = -3000.0, 3000.0
@@ -107,6 +107,7 @@ to those of chromospheres).
             By     = -1000.0, 1000.0
             Bz     = -1000.0, 1000.0
             ff     = 0.0, 1.0
+            vmac   = 0.0, 5.0
 
             [[[Nodes]]]
             T      = 3, 3, 5, 5
@@ -116,6 +117,7 @@ to those of chromospheres).
             By     = 1, 1, 1, 1
             Bz     = 1, 1, 1, 1
             ff     = 0, 0, 0, 0
+            vmac   = 0, 0, 0, 0
 
             [[[Regularization]]]
             T      = None
@@ -124,6 +126,7 @@ to those of chromospheres).
             Bx     = None
             By     = None
             Bz     = None
+            vmac   = None
 
 
 * ``Name`` : defines the name of the atmosphere. This will be used in the output file to refer to the parameters of this specific atmosphere.
@@ -131,7 +134,6 @@ to those of chromospheres).
 * ``Spectral region`` : defines the spectral region associated with this atmosphere.
 * ``Wavelength`` (optional): defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time. If absent or `None', then the whole spectral region is synthesized.
 * ``Spectral lines`` : it is a comma-separated list of lines to synthesize from the :ref:`photospheric_lines`. Note that if you only want one line, you should use a comma at the end. The list of available lines
-* ``Reference frame`` : it defines the reference system in which the magnetic field is measured. ``line-of-sight`` or ``vertical`` (traditional mode for |hazel2|). If absent, ``vertical`` is used by default.
 * ``Ranges`` : ranges of variation of each parameter. If ``None``, consider it unconstrained. If not, it will be constrained to the range using a logit transform (with a small :math:`\epsilon` to avoid under/overflow when close to the border).
 * ``Nodes`` : defines the number of nodes in each cycle when doing inversions. It is possible to couple parameters with those of another atmosphere by using the name of the atmosphere instead of the number of nodes.
 * ``Regularization`` : add regularization to the parameters. See :ref:`regularization`.
