@@ -343,12 +343,13 @@ class SIR_atmosphere(General_atmosphere):
                 
     def print_parameters(self, first=False, error=False):
         for k, v in self.nodes.items():
-            if (k != 'ff'):
-                lower = self.ranges[k][0] #- self.eps_borders
-                upper = self.ranges[k][1] #+ self.eps_borders
-                nodes = transformed_to_physical(v, lower, upper)            
-                self.logger.info('{0} -> {1}'.format(k, nodes))
-        
+            if (self.n_nodes[k] > 0):
+                if (k != 'ff'):
+                    lower = self.ranges[k][0] #- self.eps_borders
+                    upper = self.ranges[k][1] #+ self.eps_borders
+                    nodes = transformed_to_physical(v, lower, upper)            
+                    self.logger.info('{0} -> {1}'.format(k, nodes))
+            
     def synthesize(self, stokes_in, returnRF=False):
         """
         Carry out the synthesis and returns the Stokes parameters and the response 

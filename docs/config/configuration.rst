@@ -97,7 +97,7 @@ then defined as the zero azimuth (like in SIR).
         Reference atmospheric model = 'photospheres/model_photosphere.1d'
         Spectral region = spec1
         Wavelength = 10826, 10833
-        Spectral lines = 300, 301
+        Spectral lines = 300, 
 
             [[[Ranges]]]
             T      = -3000.0, 3000.0

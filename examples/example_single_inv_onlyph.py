@@ -11,7 +11,6 @@ mod.invert()
 mod.write_output()
 
 mod.close_output()
-mod.close_output()
 
 f, ax = pl.subplots()
 ax.plot(mod.spectrum['spec1'].stokes[0,:])
