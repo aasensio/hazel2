@@ -242,8 +242,12 @@ class Iterator(object):
                                     data_to_send[k] = [v.obs, v.noise, v.los, v.boundary, v.mu]
                             else:
                                 for k, v in self.model.atmospheres.items():
-                                    args, ff = v.model_handler.read(pixel=task_index)
-                                    data_to_send[k] = [args, ff]
+                                    if (v.type == 'photosphere'):
+                                        args, ff, vmac = v.model_handler.read(pixel=task_index)
+                                        data_to_send[k] = [args, ff, vmac]
+                                    else:
+                                        args, ff = v.model_handler.read(pixel=task_index)
+                                        data_to_send[k] = [args, ff]
 
                             self.comm.send(data_to_send, dest=source, tag=tags.START)
 
@@ -377,20 +381,29 @@ class Iterator(object):
                         
                 else:
                     for k, v in self.model.atmospheres.items():                    
-                        v.set_parameters(data_received[k][0], data_received[k][1])
+                        if (v.type == 'photosphere'):
+                            v.set_parameters(data_received[k][0], data_received[k][1], data_received[k][2])
+                        else:
+                            v.set_parameters(data_received[k][0], data_received[k][1])
                         
-                    self.model.synthesize()
-                    self.model.flatten_parameters_to_reference(cycle=0)
-
                     label = 'randomization_0'
-
                     data_to_send[label] = {}
+
+                    try:
+                        self.model.synthesize()
+                        self.model.flatten_parameters_to_reference(cycle=0)
+                        data_to_send['error'] = 0
+                    except NumericalErrorHazel:                            
+                        data_to_send['error'] = 1
+                    except NumericalErrorSIR:                            
+                        data_to_send['error'] = 2
+                    
                     
                     for k, v in self.model.spectrum.items():
-                        data_to_send[label][k] = self.model.spectrum[k].stokes_cycle
+                        data_to_send[label][k] = [self.model.spectrum[k].stokes_cycle, None, None, None]
 
                     for k, v in self.model.atmospheres.items():
-                        data_to_send[label][k] = [v.reference_cycle, v.error_cycle]
+                        data_to_send[label][k] = [v.reference_cycle, v.error_cycle, None]
                                         
                 t1 = time.time()
                 data_to_send['elapsed'] = t1 - t0

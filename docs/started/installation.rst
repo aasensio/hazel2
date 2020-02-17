@@ -152,3 +152,10 @@ MacOSX Catalina has some issues with the paths to the include files. Defining th
     export CCFLAGS="-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
     export CXXFLAGS="-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
     export CPPFLAGS="-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+
+Supercomputers
+--------------
+
+Configuring |hazel2| for running in supercomputers should be easy. We recommend
+to locally create an Anaconda installation with the needed packages and follow
+the details given by the supercomputer staff.
