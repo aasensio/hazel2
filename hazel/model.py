@@ -49,6 +49,7 @@ class Model(object):
         self.working_mode = working_mode
         self.pixel = 0
         self.debug = debug
+        self.use_analytical_RF_if_possible = False
 
         self.epsilon = 1e-2
         self.step_limiter_inversion = 1.0
