@@ -8,7 +8,7 @@ from hazel.hsra import hsra_continuum
 from hazel.io import Generic_SIR_file
 import scipy.interpolate as interp
 from hazel.exceptions import NumericalErrorSIR
-from hazel.transforms import transformed_to_physical
+from hazel.transforms import transformed_to_physical, jacobian_transformation
 import copy
 
 # from ipdb import set_trace as stop
@@ -180,22 +180,124 @@ class SIR_atmosphere(General_atmosphere):
             return reference + nodes[0], log_tau[n_depth//2]
         
         if (n_nodes == 2):
-            pos = np.linspace(0, n_depth-1, n_nodes, dtype=int)
             pos = np.linspace(0, n_depth-1, n_nodes+2, dtype=int)[1:-1]
             f = interp.interp1d(log_tau[pos], nodes, 'linear', bounds_error=False, fill_value='extrapolate')
             return reference + f(log_tau), log_tau[pos]
 
         if (n_nodes == 3):
-            pos = np.linspace(0, n_depth-1, n_nodes, dtype=int)
             pos = np.linspace(0, n_depth-1, n_nodes+2, dtype=int)[1:-1]
             f = interp.interp1d(log_tau[pos], nodes, 'quadratic', bounds_error=False, fill_value='extrapolate')
             return reference + f(log_tau), log_tau[pos]
 
         if (n_nodes > 3):
-            pos = np.linspace(n_depth-1, 0, n_nodes, dtype=int)
             pos = np.linspace(n_depth-1, 0, n_nodes+2, dtype=int)[1:-1]
             f = interp.PchipInterpolator(log_tau[pos], nodes, extrapolate=True)            
             return reference + f(log_tau), log_tau[pos]
+
+    def interpolate_nodes_rf(self, log_tau, reference, nodes, lower, upper):
+        """
+        Generate a model atmosphere by interpolating the defined nodes. The interpolation
+        order depends on the number of nodes.
+        
+        Parameters
+        ----------
+        log_tau : float
+            Vector of log optical depth at 500 nm
+        reference : float
+            Vector with the reference atmosphere to which the nodes are added
+        nodes : float
+            List with the position of the nodes
+
+        Returns
+        -------
+        real
+            Vector with the interpolated atmosphere
+    
+        """
+        n_nodes = len(nodes)
+        n_depth = len(log_tau)
+
+        if (n_nodes == 0):
+            return np.zeros(n_depth)
+        
+        if (n_nodes == 1):
+            rf = np.zeros((n_nodes, n_depth))
+
+            tmp0 = reference + nodes[0]
+
+            # Add the Jacobian to each height
+            jacobian = jacobian_transformation(tmp0, lower, upper)
+
+            rf[0,:] = 1.0 * jacobian
+            return rf
+        
+        if (n_nodes == 2):
+            rf = np.zeros((n_nodes, n_depth))
+
+            pos = np.linspace(0, n_depth-1, n_nodes+2, dtype=int)[1:-1]
+            f = interp.interp1d(log_tau[pos], nodes, 'linear', bounds_error=False, fill_value='extrapolate')
+
+            tmp0 = reference + f(log_tau)
+
+            jacobian = jacobian_transformation(tmp0, lower, upper)
+
+            delta = 1e-3
+
+            for i in range(n_nodes):
+                tmp_nodes = np.copy(nodes)
+                tmp_nodes[i] += delta
+                f = interp.interp1d(log_tau[pos], tmp_nodes, 'linear', bounds_error=False, fill_value='extrapolate')
+
+                tmp1 = reference + f(log_tau)
+
+                rf[i,:] = (tmp1 - tmp0) / delta * jacobian
+            
+            return rf
+
+        if (n_nodes == 3):
+            rf = np.zeros((n_nodes, n_depth))
+
+            pos = np.linspace(0, n_depth-1, n_nodes+2, dtype=int)[1:-1]
+            f = interp.interp1d(log_tau[pos], nodes, 'quadratic', bounds_error=False, fill_value='extrapolate')
+            tmp0 = reference + f(log_tau)
+
+            jacobian = jacobian_transformation(tmp0, lower, upper)
+
+            delta = 1e-3
+
+            for i in range(n_nodes):
+                tmp_nodes = np.copy(nodes)
+                tmp_nodes[i] += delta
+                f = interp.interp1d(log_tau[pos], tmp_nodes, 'quadratic', bounds_error=False, fill_value='extrapolate')
+
+                tmp1 = reference + f(log_tau)
+
+                rf[i,:] = (tmp1 - tmp0) / delta * jacobian
+            
+            return rf
+
+        if (n_nodes > 3):
+            rf = np.zeros((n_nodes, n_depth))
+
+            pos = np.linspace(n_depth-1, 0, n_nodes+2, dtype=int)[1:-1]
+            f = interp.PchipInterpolator(log_tau[pos], nodes, extrapolate=True)
+
+            tmp0 = reference + f(log_tau)
+
+            jacobian = jacobian_transformation(tmp0, lower, upper)
+
+            delta = 1e-3
+
+            for i in range(n_nodes):
+                tmp_nodes = np.copy(nodes)
+                tmp_nodes[i] += delta
+                f = interp.PchipInterpolator(log_tau[pos], tmp_nodes, extrapolate=True)
+
+                tmp1 = reference + f(log_tau)
+
+                rf[i,:] = (tmp1 - tmp0) / delta * jacobian
+            
+            return rf
 
     def load_reference_model(self, model_file, verbose):
         """
@@ -381,40 +483,105 @@ class SIR_atmosphere(General_atmosphere):
         
         if (returnRF):
             stokes, rf, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
-                self.Pe, self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
+                self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
                 self.parameters['Bz'], self.parameters['vmac'])
-            error = 0
 
-            delta = 1e-2*self.parameters['vmic'][30]
-            self.parameters['vmic'][30] += 0.01
-            stokes2, rf2, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
-                self.Pe, self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
-                self.parameters['Bz'], self.parameters['vmac'])
-            error = 0
+            if (error == 1):
+                raise NumericalErrorSIR()
 
-            rfn = (stokes2[1,:]-stokes[1,:])/0.01
-            import matplotlib.pyplot as pl
-            pl.plot(rfn, '-o')
-            pl.plot(rf[6][0,:,30])
-            pl.show()
-            breakpoint()
+            B = np.sqrt(self.parameters['Bx']**2 + self.parameters['By']**2 + self.parameters['Bz']**2)
             
-            # RF(B)=rf[3]
-            # RF(thB)=rf[5]
-            # RF(phiB)=rf[6]
-            # self.rf_analytical['T'] = rf[0]       OK
-            # self.rf_analytical['vmic'] = rf[2]
-            # self.rf_analytical['v'] = 1e5*rf[3]       OK
-            # self.rf_analytical['Bx'] = rf[3]
-            # self.rf_analytical['By'] = rf[5]
-            # self.rf_analytical['Bz'] = rf[6]
-            
-            return self.parameters['ff'] * stokes[1:,:] * i0_allen(np.mean(self.wvl_axis), self.spectrum.mu), error
-        else:                        
+            thetaB = np.arccos(self.parameters['Bz'] / B)
+            thetaB[B == 0] = 0.0
+
+            phiB = np.arctan2(self.parameters['By'], self.parameters['Bx'])
+
+            # rfn = np.zeros((150, 73))
+            # pars = copy.deepcopy(self.parameters)
+            # for pos in range(73):
+            #     ind_sto = 0
+
+            #     self.parameters = copy.deepcopy(pars)
+
+            #     delta = 5e-4*self.parameters['T'][pos]
+            #     self.parameters['T'][pos] += delta
+
+            #     stokes2, rf2, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
+            #         self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
+            #         self.parameters['Bz'], self.parameters['vmac'])
+            #     error = 0
+
+            #     rfn[:, pos] = (stokes2[ind_sto+1,:]-stokes[ind_sto+1,:])/delta
+
+            # breakpoint()
+
+            # import matplotlib.pyplot as pl
+            # pl.plot(rfn[:, 40], '-o', label='numerical')
+
+            self.rf_analytical['T'] = rf[0]+rf[1]       #OK
+            self.rf_analytical['vmic'] = 1e5*rf[6]   #OK
+            self.rf_analytical['v'] = 1e5*rf[3]      #OK
+
+            # Transform SIR RFs into response functions to Bx, By and Bz.
+            # To this end, we have:
+            # [RF_B ]   [dBxdB     dBydB    dBzdB ][RF_Bx]
+            # [RF_th] = [dBxdthB  dBydthB  dBzdthB][RF_By] 
+            # [RF_ph]   [dBxdphB  dBydphB  dBzdphB][RF_Bz]
+            # and then invert the Jacobian
+
+            RFB = rf[2]
+            RFt = rf[4]
+            RFp = rf[5]
+
+            self.rf_analytical['Bx'] = RFB * np.sin(thetaB) * np.cos(phiB) + \
+                                        RFt * np.cos(thetaB) * np.cos(phiB) / B - \
+                                        RFp * np.sin(phiB) / (B * np.sin(thetaB))
+            self.rf_analytical['By'] = RFB * np.sin(thetaB) * np.sin(phiB) + \
+                                        RFt * np.cos(thetaB) * np.sin(phiB) / B + \
+                                        RFp * np.cos(phiB) / (B * np.sin(thetaB))
+            self.rf_analytical['Bz'] = RFB * np.cos(thetaB) - RFt * np.sin(thetaB) / B
+
+            self.rf_analytical['vmac'] = rf[7][:, :, None]
+
+            # pl.plot(self.rf_analytical['T'][ind_sto,:,pos], label='analytical')
+            # pl.legend()
+            # pl.show()
+
+            # import matplotlib.pyplot as pl
+            # f, ax = pl.subplots(nrows=3, ncols=3, figsize=(10,10))
+            # ax = ax.flatten()
+            # for i in range(9):
+            #     ax[i].plot(np.log(self.rf_analytical['T'][0,i*10,:]), color=f'C{i}')
+            #     ax[i].plot(np.log(rfn[i*10,:]), 'o', color=f'C{i}')
+            # pl.show()
+
+            i0 = i0_allen(np.mean(self.wvl_axis), self.spectrum.mu)
+
+            for k, v in self.nodes.items():
+                if (k != 'vmac'):
+                    if (self.n_nodes[k] > 0):
+                        lower = self.ranges[k][0]
+                        upper = self.ranges[k][1]
+                        rf = self.interpolate_nodes_rf(self.log_tau, self.reference[k], self.nodes[k], lower, upper)
+
+                        # import matplotlib.pyplot as pl
+                        # f, ax = pl.subplots(nrows=3, ncols=3, figsize=(10,10))
+                        # ax = ax.flatten()
+                        # for i in range(9):
+                        #     ax[i].plot(rfn[i*10,:] / self.rf_analytical['T'][0,i*10,:], color=f'C{i}')
+                        #     ax[i].set_ylim([0,2])
+                        # pl.show()
+                        # print(k)
+                        # breakpoint()
+
+                        self.rf_analytical[k] = np.einsum('ijk,lk->ijl', self.rf_analytical[k], rf) * i0
+
+            return self.parameters['ff'] * stokes[1:,:] * i0, self.rf_analytical, error
+        else:                       
             stokes, error = sir_code.synth(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
                 self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
                 self.parameters['Bz'], self.parameters['vmac'])
-            
+
             if (error == 1):
                 raise NumericalErrorSIR()
 

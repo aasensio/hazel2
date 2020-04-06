@@ -52,6 +52,7 @@ class Model(object):
         self.use_analytical_RF_if_possible = False
 
         self.epsilon = 1e-2
+        self.svd_tolerance = 1e-8
         self.step_limiter_inversion = 1.0
         self.backtracking = 'brent'
         
@@ -93,6 +94,14 @@ class Model(object):
         if 'logger' in d:
             d['logger'] = logging.getLogger(d['logger'])
         self.__dict__.update(d)
+
+    def __str__(self):
+        tmp = ''
+        for l, par in self.__dict__.items():
+            if (l != 'LINES'):
+                tmp += '{0}: {1}\n'.format(l, par)
+        return tmp
+
             
     def use_configuration(self, config_dict):
         """
@@ -1180,7 +1189,7 @@ class Model(object):
                         else:
                             if (k == 0):                                
                                 if (self.use_analytical_RF):
-                                    stokes, rf, error = self.atmospheres[atm].synthesize(stokes_out, returnRF=True)
+                                    stokes, self.rf_analytical, error = self.atmospheres[atm].synthesize(stokes_out, returnRF=True)
                                 else:
                                     stokes, error = self.atmospheres[atm].synthesize(stokes_out)
                             else:             
@@ -1189,10 +1198,19 @@ class Model(object):
                                     
                         ind_low, ind_top = self.atmospheres[atm].wvl_range
                         
+                        mean_wvl = np.mean(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top])
+                        i0 = hazel.util.i0_allen(mean_wvl, 1.0)
+
+                        # Divide by i0
+                        if (self.use_analytical_RF):
+                            for k, v in self.rf_analytical.items():
+                                if (k != 'ff'):
+                                    v /= i0
+
                         if (perturbation):
-                            self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top] = stokes / hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
+                            self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top] = stokes / i0#[None,:]
                         else:                            
-                            self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top] = stokes / hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
+                            self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top] = stokes / i0#[None,:]
     
     def synthesize(self, perturbation=False):
         """
@@ -1303,7 +1321,6 @@ class Model(object):
         None
 
         """
-        
         self.synthesize()
 
         if (not compute_rf):            
@@ -1312,9 +1329,12 @@ class Model(object):
         n_active_pars = len(self.active_meta)
 
         loop = 0
+        loop2 = 0
 
         self.hessian_regularization = np.zeros(self.n_free_parameters_cycle)
         self.grad_regularization = np.zeros(self.n_free_parameters_cycle)
+
+        # self.use_analytical_RF = False
 
         for par in self.active_meta:
             nodes = self.nodes[par['left']:par['right']]
@@ -1326,7 +1346,34 @@ class Model(object):
                 self.logger.info(" * RF to {0} - {1} - nodes={2}".format(par['parameter'], par['atm'], par['n_nodes']))
 
             if (self.use_analytical_RF):
-                pass
+                for i in range(par['n_nodes']):
+                    rf = {}
+                    for k, v in self.spectrum.items():
+
+                        # The minus sign comes from the fact that we compute the RF numerically as
+                        # (stokes-stokes_perturbed)/delta
+                        # rf[k] = -self.atmospheres[par['atm']].rf_analytical[par['parameter']][:,:,i] * jacobian
+                        rf[k] = -self.rf_analytical[par['parameter']][:,:,i]
+                        rf[k] = rf[k][None, :, :]
+
+                    if (loop == 0):
+                        self.response = rf
+                    else:
+                        for k, v in self.spectrum.items():
+                            self.response[k] = np.vstack([self.response[k], rf[k]])
+
+                    if (par['regularization'] is not None):
+                        if (par['regularization'][0] == 'l2-value'):
+                            alpha = float(par['regularization'][1])
+                            lower = par['ranges'][0]
+                            upper = par['ranges'][1]
+                            value = physical_to_transformed(float(par['regularization'][2]), lower, upper)
+                            self.grad_regularization[par['left']:par['right']] = 2.0 * alpha * (self.atmospheres[par['atm']].nodes[par['parameter']] - value)
+                            self.hessian_regularization[par['left']:par['right']] = 2.0 * alpha
+
+                    loop += 1
+
+                # breakpoint()
             else:           
                 for i in range(par['n_nodes']):
                     perturbation = np.zeros(par['n_nodes'])
@@ -1368,6 +1415,7 @@ class Model(object):
                     for k, v in self.spectrum.items():
                         rf[k] = jacobian * np.expand_dims((v.stokes - v.stokes_perturbed) / perturbation[i], 0)
 
+                
                     # rf = np.expand_dims((self.spectrum['spec1'].stokes - self.spectrum['spec1'].stokes_perturbed) / perturbation[i], 0)
                                                     
                     if (loop == 0):
@@ -1388,6 +1436,37 @@ class Model(object):
 
                     loop += 1
 
+        #     for i in range(par['n_nodes']):
+        #         rf = {}
+        #         for k, v in self.spectrum.items():
+
+        #             # The minus sign comes from the fact that we compute the RF numerically as
+        #             # (stokes-stokes_perturbed)/delta
+        #             # rf[k] = -self.atmospheres[par['atm']].rf_analytical[par['parameter']][:,:,i] * jacobian
+        #             rf[k] = -self.rf_analytical[par['parameter']][:,:,i]
+        #             rf[k] = rf[k][None, :, :]
+
+        #         if (loop2 == 0):
+        #             self.response2 = rf
+        #         else:
+        #             for k, v in self.spectrum.items():
+        #                 self.response2[k] = np.vstack([self.response2[k], rf[k]])
+
+        #         loop2 += 1
+
+        # import matplotlib.pyplot as pl
+        # f, ax = pl.subplots(nrows=3, ncols=2, figsize=(9,9))
+        # ax = ax.flatten()
+        # for i in range(3):
+        #     ax[i].plot(self.response['spec1'][i,0,0:60], label='numerical')
+        #     ax[i].plot(self.response2['spec1'][i,0,0:60], label='analytical')
+        # ax[i].legend()
+        # pl.show()
+        # breakpoint()
+
+        # # self.response = copy.deepcopy(self.response2)
+
+        # self.use_analytical_RF = True
         
     def flatten_parameters_to_reference(self, cycle):
         """
@@ -1584,7 +1663,7 @@ class Model(object):
         chi2, dchi2, ddchi2 = self.compute_chi2()
         hessian = 0.5 * ddchi2
         
-        U, w_inv, VT = self.modified_svd_inverse(hessian, tol=1e-12)
+        U, w_inv, VT = self.modified_svd_inverse(hessian, tol=self.svd_tolerance)
         cov = VT.T.dot(np.diag(w_inv)).dot(U.T)
 
         # breakpoint()
@@ -1615,7 +1694,7 @@ class Model(object):
         H += np.diag(10.0**(log_lambda) * np.diag(H))
         gradF = 0.5 * (dchi2 + self.grad_regularization)
 
-        U, w_inv, VT = self.modified_svd_inverse(H, tol=1e-8)
+        U, w_inv, VT = self.modified_svd_inverse(H, tol=self.svd_tolerance)
 
         # xnew = xold - H^-1 * grad F
         delta = -VT.T.dot(np.diag(w_inv)).dot(U.T).dot(gradF)
@@ -1687,7 +1766,7 @@ class Model(object):
             H += np.diag(lambdaLM * np.diag(H))
             gradF = 0.5 * (dchi2 + self.grad_regularization)
 
-            U, w_inv, VT = self.modified_svd_inverse(H, tol=1e-8)
+            U, w_inv, VT = self.modified_svd_inverse(H, tol=self.svd_tolerance)
 
             # xnew = xold - H^-1 * grad F
             delta = -VT.T.dot(np.diag(w_inv)).dot(U.T).dot(gradF)
@@ -1879,7 +1958,7 @@ class Model(object):
                 H += np.diag(lambda_opt * np.diag(H))
                 gradF = 0.5 * (dchi2 + self.grad_regularization)
 
-                U, w_inv, VT = self.modified_svd_inverse(H, tol=1e-8)
+                U, w_inv, VT = self.modified_svd_inverse(H, tol=self.svd_tolerance)
 
                 # xnew = xold - H^-1 * grad F
                 delta = -VT.T.dot(np.diag(w_inv)).dot(U.T).dot(gradF)

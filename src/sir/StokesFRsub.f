@@ -14,7 +14,7 @@ c _________________________________________________________________
 c
 c ist=1 (i); =2 (q); =3 (u); =4 (v)
 
-        subroutine StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac)     
+        subroutine StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac,dPedT)     
 
         include 'PARAMETER'         !incluye kt,kn,kl,kld
 
@@ -33,7 +33,7 @@ c new variables to include leelineasii data
         real*4 tam_all(2,kl),alfa_all(kl),sigma_all(kl)
 
 c para las funciones respuesta
-        real*4 rt(*),rp(*),rh(*),rv(*),rg(*),rf(*),rm(*)
+        real*4 rt(*),rp(*),rh(*),rv(*),rg(*),rf(*),rm(*),dPedT(*)
         real*4 rmac(*)
         real*4 rtlin(kld4),rplin(kld4),rhlin(kld4)
         real*4 rvlin(kld4),rglin(kld4),rflin(kld4)
@@ -271,6 +271,8 @@ c con respecto a la t (dpg) y, con pe (ddpg)
             dx(i)=1.+d1x(i)*bx(i)
 
         end do
+
+        
 
         rx(ntau)=0. 
         sx(ntau)=0. 
@@ -1061,8 +1063,16 @@ c rt(tau1:i(l1,l2,...),q(l1,..),....v(l1....);tau2:i......)
               end do   
               do j=1,mnodos(2)
                  iktt=(j-1)*ntotal4+ikk4
-                 rp(iktt)=grp(j)
-              end do   
+c Como I=I(T,Pe) -> dI/dT = (dI/dT)_Pe * dT + (dI/dPe)_T * dPe
+c El signo menos no tengo claro de donde sale
+                 if (j == mnodos(2)) then
+                     rp(iktt) = 0.0
+                  else
+                     rp(iktt)=grp(j) 
+                  endif
+                  dPedT(j) = -dpgas(j) / ddpgas(j)
+              end do
+
               do j=1,mnodos(3)
                  iktt=(j-1)*ntotal4+ikk4
                  rm(iktt)=grm(j)
@@ -1102,16 +1112,16 @@ c convolucionamos con la macro (y la PSF si existe)
 	      end do
 	   end do
 	      
-           call deconv(stok,1,ntls,npass,dlamda0s,dlamdas,macro)
-           call deconv2(rmac,1,ntls,npass,dlamda0s,dlamdas,macro)
+         !   call deconv(stok,1,ntls,npass,dlamda0s,dlamdas,macro)
+         !   call deconv2(rmac,1,ntls,npass,dlamda0s,dlamdas,macro)
 
-           call deconRF(mnodos(1),rt,dlamda0s,ntotal4,macro)
-           call deconRF(mnodos(2),rp,dlamda0s,ntotal4,macro)
-           call deconRF(mnodos(3),rm,dlamda0s,ntotal4,macro)
-           call deconRF(mnodos(4),rh,dlamda0s,ntotal4,macro)
-           call deconRF(mnodos(5),rv,dlamda0s,ntotal4,macro)
-           call deconRF(mnodos(6),rg,dlamda0s,ntotal4,macro)
-           call deconRF(mnodos(7),rf,dlamda0s,ntotal4,macro)
+         !   call deconRF(mnodos(1),rt,dlamda0s,ntotal4,macro)
+         !   call deconRF(mnodos(2),rp,dlamda0s,ntotal4,macro)
+         !   call deconRF(mnodos(3),rm,dlamda0s,ntotal4,macro)
+         !   call deconRF(mnodos(4),rh,dlamda0s,ntotal4,macro)
+         !   call deconRF(mnodos(5),rv,dlamda0s,ntotal4,macro)
+         !   call deconRF(mnodos(6),rg,dlamda0s,ntotal4,macro)
+         !   call deconRF(mnodos(7),rf,dlamda0s,ntotal4,macro)
         end if
         
         return

@@ -341,7 +341,7 @@ contains
 	character*100 Stokesfilename
 	integer*4 mnodos(18), ntau
 	real*4 atmosmodel(kt8), pesostray
-	real*4 tau(kt),t(kt),pe(kt),pg(kt),z(kt),ro(kt)
+	real*4 tau(kt),t(kt),pe(kt),pg(kt),z(kt),ro(kt), dPedT(kt,kt)
 	real*4 voffset,xmu
 
 	integer ntl,nlin(kl),npas(kl),nble(kl)
@@ -427,12 +427,12 @@ contains
 		do i=1,8                 
         	mnodos(i)=ntau
 		end do  
-    	mnodos(2)=0
+    	! mnodos(2)=0
 
 ! Compute hydrostatic equilibrium if necessary
-    	if (minval(model(3,:)) == -1) then
-    		call equisubmu(ntau,tau,t,pe,pg,z,ro)
-
+		if (minval(model(3,:)) == -1) then
+			call equisubmu(ntau,tau,t,pe,pg,z,ro)
+			
 			if (error_code == 1) then
 				error = 1
 				return
@@ -443,7 +443,7 @@ contains
         	end do
         endif
 
-		call StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac)
+		call StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac,dPedT)
 		
 		if (error_code == 1) then
 			error = 1
@@ -483,7 +483,7 @@ contains
     integer ist(4),i,k,ntot, j, l, itau
 	character*100 Stokesfilename
 	integer*4 mnodos(18), ntau
-	real*4 tau(kt),t(kt),pe(kt),pg(kt),z(kt),ro(kt)
+	real*4 tau(kt),t(kt),pe(kt),pg(kt),z(kt),ro(kt), t2(kt), pe2(kt), dPedT(kt,kt)
 	real*4 atmosmodel(kt8), pesostray
 	real*4 voffset,xmu
 
@@ -573,24 +573,52 @@ contains
 		do i=1,8                 
         	mnodos(i)=ntau
 		end do  
-    	mnodos(2)=0  
+
+		! Since mnodos(2) is not zero, the RF(T) will not be corrected by the RF(Pe) because
+		! of the hydrostatic equilibrium
+		! mnodos(2)=0
+
+		! NUMERICAL CALCULATION OF dPe/dT
+		! call equisubmu(ntau,tau,t,pe,pg,z,ro)
+		
+		! do j = 1, ntau
+		! 	do i = 1, ntau
+		! 		t2(i) = atmosmodel(i+ntau)
+		! 		pe2(i) = atmosmodel(i+2*ntau)
+		! 	enddo
+			
+		! 	t2(j) = t2(j) + 0.1d0
+		! 	call equisubmu(ntau,tau,t2,pe2,pg,z,ro)
+		! 	if (error_code == 1) then
+		! 		error = 1
+		! 		return
+		! 	endif
+
+		! 	do i = 1, ntau
+		! 		dPedT(j,i) = (pe2(i) - pe(i)) / 0.1d0
+		! 	enddo
+
+		! enddo
 
 ! Calculate hydrostatic equilibrium if Pe is not known
-    	if (minval(model(3,:)) == -1) then
-
+		if (minval(model(3,:)) == -1) then
 			call equisubmu(ntau,tau,t,pe,pg,z,ro)
-			
 			if (error_code == 1) then
 				error = 1
 				return
 			endif
  
         	do i=1,ntau
-            	atmosmodel(i+2*ntau)=pe(i)
+				atmosmodel(i+2*ntau)=pe(i)
         	end do
-        endif
+		endif
 
-		call StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac)
+		! dPedT = 0.d0
+		call StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac,dPedT)
+		! do i = 1, ntau	
+		! 	print *, dPedT(i)!, dpedt_num(i)
+		! enddo
+		! ! stop
 
 		if (error_code == 1) then
 			error = 1
@@ -655,6 +683,13 @@ contains
 		RFmac(2,:) = rmac(ntot+1:2*ntot)
 		RFmac(3,:) = rmac(2*ntot+1:3*ntot)
 		RFmac(4,:) = rmac(3*ntot+1:4*ntot)
+
+		do i = 1, ntot
+			do j = 1, 4
+				RFp(j,i,:) = matmul(dPedT(1:ntau,1:ntau), RFp(j,i,1:ntau))
+			enddo
+		enddo
+			
         
 	end subroutine c_synthrf
 
