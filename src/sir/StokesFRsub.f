@@ -14,7 +14,7 @@ c _________________________________________________________________
 c
 c ist=1 (i); =2 (q); =3 (u); =4 (v)
 
-        subroutine StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac,dPedT)     
+        subroutine StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac,dLPgdPe,dLPgdT)     
 
         include 'PARAMETER'         !incluye kt,kn,kl,kld
 
@@ -33,7 +33,7 @@ c new variables to include leelineasii data
         real*4 tam_all(2,kl),alfa_all(kl),sigma_all(kl)
 
 c para las funciones respuesta
-        real*4 rt(*),rp(*),rh(*),rv(*),rg(*),rf(*),rm(*),dPedT(*)
+        real*4 rt(*),rp(*),rh(*),rv(*),rg(*),rf(*),rm(*),dLPgdPe(*),dLPgdT(*)
         real*4 rmac(*)
         real*4 rtlin(kld4),rplin(kld4),rhlin(kld4)
         real*4 rvlin(kld4),rglin(kld4),rflin(kld4)
@@ -1070,7 +1070,8 @@ c El signo menos no tengo claro de donde sale
                   else
                      rp(iktt)=grp(j) 
                   endif
-                  dPedT(j) = -dpgas(j) / ddpgas(j)
+                  dLPgdT(j) = dpgas(j)
+                  dLPgdPe(j) = ddpgas(j)
               end do
 
               do j=1,mnodos(3)

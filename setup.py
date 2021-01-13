@@ -36,16 +36,16 @@ author = re.search('__author__ = "([^"]+)"', tmp).group(1)
 version = re.search('__version__ = "([^"]+)"', tmp).group(1)
 
 def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
-    compiler_so = self.compiler_so
+    compiler_so = self.compiler_so    
     arch = platform.architecture()[0].lower()
     if (ext == ".f" or ext == ".f90"):
         if sys.platform == 'darwin' or sys.platform.startswith('linux'):
-            compiler_so = ["gfortran"]
+            compiler_so = [os.environ['FC']]
             if (ext == ".f90"):
-                cc_args = ["-O3", "-march=native", "-fPIC", "-c", "-ffree-form", "-ffree-line-length-none"]
+                cc_args = ["-O3", "-march=native", "-fPIC", "-c", "-ffree-form", "-ffree-line-length-none", "-w"]
 #                cc_args = ["-O3", "-fPIC", "-c", "-ffree-form", "-ffree-line-length-none", "-fno-automatic", "-ffast-math", "-funroll-loops"]
             if (ext == ".f"):
-                cc_args = ["-O3", "-march=native", "-fPIC", "-c", "-fno-automatic", "-ffixed-line-length-none"]
+                cc_args = ["-O3", "-march=native", "-fPIC", "-c", "-fno-automatic", "-ffixed-line-length-none", "-w"]
 #                cc_args = ["-O3", "-fPIC", "-c", "-ffixed-line-length-none", "-fno-automatic", "-ffast-math", "-funroll-loops"]
             # Force architecture of shared library.
             if arch == "32bit":
@@ -55,7 +55,7 @@ def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
             else:
                 print("\nPlatform has architecture '%s' which is unknown to "
                       "the setup script. Proceed with caution\n" % arch)
-    try:
+    try:        
         self.spawn(compiler_so + cc_args + [src, '-o', obj] +
                    extra_postargs)
     except DistutilsExecError as msg:
@@ -71,9 +71,8 @@ class finallist(list):
 
 class MyExtension(Extension):
     def __init__(self, *args, **kwargs):
-        Extension.__init__(self, *args, **kwargs)
-        self.export_symbols = finallist(self.export_symbols)
-
+        Extension.__init__(self, *args, **kwargs)        
+        self.export_symbols = finallist(self.export_symbols)        
 
 def get_libgfortran_dir():
     """
@@ -104,7 +103,6 @@ CCompiler.language_map['.f'] = "c"
 UnixCCompiler.src_extensions.append(".f")
 
 
-
 # SIR
 path = pathGlobal+"sir"
 list_files = glob.glob(path+'/*.f*')
@@ -129,7 +127,6 @@ lib_hazel = MyExtension('hazel.codes.hazel_code',
                   sources=list_files,
                   include_dirs=[numpy.get_include()])
 
-
 setup_config = dict(
     name='hazel',
     version=version,
@@ -141,7 +138,6 @@ setup_config = dict(
     license='GNU General Public License, version 3 (GPLv3)',
     platforms='OS Independent',
     install_requires=['numpy','scipy','configobj','h5py','astropy','tqdm','cython'],
-    # packages=["pyiacsun.atlas"], #, "pyiacsun.linalg", "pyiacsun.plot", "pyiacsun.sparse", "pyiacsun.util"], #.radtran.milne", "pyiacsun.radtran.lte"],
     ext_modules=[lib_sir, lib_hazel],
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -168,7 +164,7 @@ setup_config = dict(
 if __name__ == "__main__":
     setup(**setup_config)
 
-    # Attempt to remove the *.c files
+#    Attempt to remove the *.c files
     for filename in glob.glob("**/*.c", recursive=True):
         try:
             os.remove(filename)

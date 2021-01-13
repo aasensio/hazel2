@@ -520,7 +520,8 @@ class Model(object):
         else:
             boundary = np.array(value['boundary condition']).astype('float64')
             if (boundary[0] == 0.0):
-                self.logger.info('  - Using off-limb normalization (peak intensity)')
+                if (self.verbose >= 1):
+                    self.logger.info('  - Using off-limb normalization (peak intensity)')
 
             if (self.verbose >= 1):
                 self.logger.info('  - Using boundary condition {0}'.format(value['boundary condition']))
@@ -1123,7 +1124,7 @@ class Model(object):
 
                 total_ff = 0.0
                 for atm in order:            
-                    if (self.atmospheres[atm].type is not 'straylight'):
+                    if (self.atmospheres[atm].type != 'straylight'):
                         if (self.working_mode == 'inversion'):                            
                             self.atmospheres[atm].parameters['ff'], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1]
                             ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
@@ -1132,7 +1133,7 @@ class Model(object):
                         total_ff += ff
 
                 for atm in order:                    
-                    if (self.atmospheres[atm].type is not 'straylight'):
+                    if (self.atmospheres[atm].type != 'straylight'):
                         if (self.working_mode == 'inversion'):
                             ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
                             self.atmospheres[atm].parameters['ff'] = ff / total_ff

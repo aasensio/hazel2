@@ -341,7 +341,7 @@ contains
 	character*100 Stokesfilename
 	integer*4 mnodos(18), ntau
 	real*4 atmosmodel(kt8), pesostray
-	real*4 tau(kt),t(kt),pe(kt),pg(kt),z(kt),ro(kt), dPedT(kt,kt)
+	real*4 tau(kt),t(kt),pe(kt),pg(kt),z(kt),ro(kt), dLPgdT(kt), dLPgdPe(kt)
 	real*4 voffset,xmu
 
 	integer ntl,nlin(kl),npas(kl),nble(kl)
@@ -443,7 +443,7 @@ contains
         	end do
         endif
 
-		call StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac,dPedT)
+		call StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac,dLPgdPe,dLPgdT)
 		
 		if (error_code == 1) then
 			error = 1
@@ -483,7 +483,7 @@ contains
     integer ist(4),i,k,ntot, j, l, itau
 	character*100 Stokesfilename
 	integer*4 mnodos(18), ntau
-	real*4 tau(kt),t(kt),pe(kt),pg(kt),z(kt),ro(kt), t2(kt), pe2(kt), dPedT(kt,kt)
+	real*4 tau(kt),t(kt),pe(kt),pg(kt),z(kt),ro(kt), t2(kt), pe2(kt), dPedT(kt,kt), dLPgdT(kt), dLPgdPe(kt), dPedT2(kt,kt), caca(kt)
 	real*4 atmosmodel(kt8), pesostray
 	real*4 voffset,xmu
 
@@ -578,8 +578,8 @@ contains
 		! of the hydrostatic equilibrium
 		! mnodos(2)=0
 
-		! NUMERICAL CALCULATION OF dPe/dT
-		! call equisubmu(ntau,tau,t,pe,pg,z,ro)
+		!NUMERICAL CALCULATION OF dPe/dT
+		! call equisubmu(ntau,tau,t,pe,pg,z,ro,caca)
 		
 		! do j = 1, ntau
 		! 	do i = 1, ntau
@@ -588,14 +588,14 @@ contains
 		! 	enddo
 			
 		! 	t2(j) = t2(j) + 0.1d0
-		! 	call equisubmu(ntau,tau,t2,pe2,pg,z,ro)
+		! 	call equisubmu(ntau,tau,t2,pe2,pg,z,ro,caca)
 		! 	if (error_code == 1) then
 		! 		error = 1
 		! 		return
 		! 	endif
 
 		! 	do i = 1, ntau
-		! 		dPedT(j,i) = (pe2(i) - pe(i)) / 0.1d0
+		! 		dPedT2(j,i) = (pe2(i) - pe(i)) / 0.1d0
 		! 	enddo
 
 		! enddo
@@ -613,12 +613,12 @@ contains
         	end do
 		endif
 
-		! dPedT = 0.d0
-		call StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac,dPedT)
-		! do i = 1, ntau	
-		! 	print *, dPedT(i)!, dpedt_num(i)
-		! enddo
-		! ! stop
+		dPedT = 0.d0
+		call StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac,dLPgdPe,dLPgdT)
+
+		do i = 1, ntau
+			dPedT(i, i) = -dLPgdT(i) / dLPgdPe(i)
+		enddo
 
 		if (error_code == 1) then
 			error = 1

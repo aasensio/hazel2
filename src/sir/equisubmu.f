@@ -15,7 +15,8 @@ c _______________________________________________________________
 	real*4 tau(kt),t(*),pe(*),pg(*),kac,d2,x(kt),kappa(kt),taue(kt)
         real*4 z1(kt),z(*),ro(*),y(kt)
 	real*4 mu,pcontorno
-	integer*4 nmaxitera
+        integer*4 nmaxitera
+        real dp(99),ddp(99)
     
 	real*4 wgt,abu,ei1,ei2,pp(10),tsi,psi,d1(10)
         common/constantes/g,avog	!gravedad,n. avogadro/pmu
@@ -72,7 +73,7 @@ c inicializamos
         psi=pe(ntau)
 c        pg(ntau)=pcontorno
         call gasc(tsi,psi,pg(ntau),pp)
-	call kappach(5.e-5,tsi,psi,pp,d1,d1,kac,d2,d2)
+        call kappach(5.e-5,tsi,psi,pp,d1,d1,kac,d2,d2)
         pesomedio=pmusum/(asum+pp(8)) !peso molec. medio
         kappa(ntau)=kac*avog/pmusum
         ro(ntau)=pesomedio*pg(ntau)/tsi/cgases
@@ -116,6 +117,10 @@ c integramos
             pe(i)=psi
             ro(i)=pesomedio*pg(i)/tsi/cgases
             y(i)=taue(i)/kappa(i)/ro(i)
+        
+c            dLPgdT(i) = -x(i+1) * (taue(i+1) * dkappadT(i+1) / kappa(i+1)**2 + taue(i) * dkappadT(i) / kappa(i)**2)/2.0
+c            dLPgdT(i) = dLPgdT(i) / pg(i)
+
 	end do
         z1(1)=0.
         do i=2,ntau  !this is the z scale along the vertical direction
@@ -124,6 +129,13 @@ c integramos
         do i=1,ntau
            z(i)=(z1(i)-z1(imin))*1.e-5
         end do
+
+c        do i = 1, ntau
+c                call kappach(5.e-5,t(i),pe(i),pp,d1,d1,kac,d2,d2)
+c                kappa(i) = kac*avog/pmusum
+c                d2 = d2 * avog/pmusum
+c                dLPgdT(i) = -g * d2 / kappa(i)**2 / pg(i) * (taue(i+1) - taue(i))
+c        enddo
 
 c        do i=1,ntau   !we output geometrical heights ALONG the LOS
 c          z(i)=z(i)/mu
