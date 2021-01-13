@@ -15,6 +15,7 @@ env:
     - CONDA_DEPS="cython numpy scipy h5py sphinx sphinx_rtd_theme ipython nbsphinx tqdm astropy configobj matplotlib numpydoc mpich mpi4py pytest-cov zarr"
     # package name for test invocation
     - PACKAGENAME="hazel"
+    - FC="gfortran"
 
 before_install:
   - export MINICONDA=$HOME/miniconda
