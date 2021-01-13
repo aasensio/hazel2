@@ -26,10 +26,10 @@ before_install:
   - conda update conda
   - conda info -a
   - conda create -n testenv python=$TRAVIS_PYTHON_VERSION
-  - conda activate testenv
+  - source activate testenv
   - conda install -c conda-forge $CONDA_DEPS  
-  - conda deactivate
-  - conda activate testenv
+  - source deactivate
+  - source activate testenv
   - pip install coveralls
   
 install:
