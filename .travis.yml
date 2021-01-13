@@ -12,10 +12,9 @@ addons:
 env:
   global:
     # List package dependencies for conda
-    - CONDA_DEPS="cython numpy scipy h5py sphinx sphinx_rtd_theme ipython nbsphinx tqdm astropy configobj matplotlib numpydoc mpich mpi4py pytest-cov zarr"
+    - CONDA_DEPS="cython numpy scipy h5py sphinx sphinx_rtd_theme ipython nbsphinx tqdm astropy configobj matplotlib numpydoc mpich mpi4py pytest-cov zarr gfortran_linux-64 gcc_linux-64" 
     # package name for test invocation
     - PACKAGENAME="hazel"
-    - FC="gfortran"
 
 before_install:
   - export MINICONDA=$HOME/miniconda
@@ -27,8 +26,10 @@ before_install:
   - conda update conda
   - conda info -a
   - conda create -n testenv python=$TRAVIS_PYTHON_VERSION
-  - source activate testenv
+  - conda activate testenv
   - conda install -c conda-forge $CONDA_DEPS  
+  - conda deactivate
+  - conda activate testenv
   - pip install coveralls
   
 install:
