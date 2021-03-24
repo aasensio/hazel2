@@ -144,7 +144,7 @@ be perturbed with nodes until a fit is obtained for the observed Stokes paramete
 
 These are text files which tabulates the depth dependence as a function of the log optical depth at 500 nm
 of the temperature [K], electron pressure [cgs], 
-microturbulent velocity [cm/s], bulk velocity [cm/s], and the cartesian components of the magnetic field,
+microturbulent velocity [km/s], bulk velocity [km/s], and the cartesian components of the magnetic field,
 Bx, By and Bz [G]. Additionally, the filling factor and the macroscopic velocity in km/s
 is given in the header. An example follows:
 

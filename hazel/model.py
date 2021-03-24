@@ -21,7 +21,6 @@ import scipy.optimize
 import warnings
 import logging
 
-# from ipdb import set_trace as stop
 
 __all__ = ['Model']
 

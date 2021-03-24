@@ -4,7 +4,6 @@ import os.path
 from astropy.constants import c
 from scipy import interpolate
 
-# from ipdb import set_trace as stop
 
 __all__ = ['Spectrum']
 

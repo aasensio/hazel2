@@ -3,7 +3,6 @@ import h5py
 from asciitree import LeftAligned
 from collections import OrderedDict
 from asciitree.drawing import BoxStyle, BOX_DOUBLE, BOX_BLANK
-# from ipdb import set_trace as stop
 
 __all__ = ['i0_allen', '_extract_parameter_cycles', 'isint', 'fvoigt', 'lower_dict_keys', 'show_tree']
 

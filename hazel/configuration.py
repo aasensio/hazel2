@@ -1,6 +1,6 @@
 import numpy as np
 from configobj import ConfigObj
-# from ipdb import set_trace as stop
+
 __all__ = ['Configuration']
 
 def _lower_to_sep(string, separator='='):

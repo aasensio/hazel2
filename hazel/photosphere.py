@@ -11,7 +11,6 @@ from hazel.exceptions import NumericalErrorSIR
 from hazel.transforms import transformed_to_physical, jacobian_transformation
 import copy
 
-# from ipdb import set_trace as stop
 
 __all__ = ['SIR_atmosphere']
 

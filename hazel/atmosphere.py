@@ -10,7 +10,6 @@ import copy
 from hazel.sir import Sir
 import logging
 
-# from ipdb import set_trace as stop
 
 
 __all__ = ['General_atmosphere']

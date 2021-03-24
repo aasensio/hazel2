@@ -1,6 +1,5 @@
 import numpy as np
 import h5py
-# from ipdb import set_trace as stop
 
 __all__ = ['File_observation', 'File_photosphere', 'File_chromosphere']
 
@@ -297,7 +296,7 @@ class File_photosphere(object):
             f.write('ff  vmac\n')
             f.write('{0}  {1}\n'.format(self.model['ff'][0], self.model['vmac'][0]))
             f.write('\n')
-            f.write('  logtau     T        Pe           vmic        v            Bx           By         Bz\n')            
+            f.write('  logtau     T        Pe           vmic        v            Bx           By         Bz\n')
             
             np.savetxt(f, np.squeeze(self.model['model']))
             f.close()

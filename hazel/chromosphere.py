@@ -9,7 +9,6 @@ from hazel.io import Generic_hazel_file
 from hazel.exceptions import NumericalErrorHazel
 import copy
 
-# from ipdb import set_trace as stop
 
 __all__ = ['Hazel_atmosphere']
 
