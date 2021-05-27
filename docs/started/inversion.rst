@@ -60,6 +60,7 @@ to adapt it to the specific details of your spectrum.
             By     = -1000.0, 1000.0
             Bz     = -1000.0, 1000.0
             ff     = 0.0, 1.0
+            vmac   = 0.0, 5.0
 
             [[[Nodes]]]
             T      = 3, 3, 5, 5
@@ -69,6 +70,7 @@ to adapt it to the specific details of your spectrum.
             By     = 1, 1, 1, 1
             Bz     = 1, 1, 1, 1
             ff     = 0, 0, 0, 0
+            vmac   = 0, 0, 0, 0
 
             [[Regularization]]
             T      = None

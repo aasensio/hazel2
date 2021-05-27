@@ -372,7 +372,7 @@ class SIR_atmosphere(General_atmosphere):
 
         # Check that parameters are inside borders by clipping inside the interval with a border of 1e-8
         if (self.working_mode == 'inversion'):
-            for k, v in self.parameters.items():                        
+            for k, v in self.parameters.items():                
                 self.parameters[k] = np.clip(v, self.ranges[k][0] + 1e-8, self.ranges[k][1] - 1e-8)
                 
 

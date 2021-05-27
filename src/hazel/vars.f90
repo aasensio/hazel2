@@ -94,10 +94,10 @@ implicit none
 	end type atom_model
 		
 	
-	type(variable_parameters) :: params(10), trial, scaled_params, errorparams
-	type(fixed_parameters) :: fixed(10)
-	type(type_observation) :: observation(10)
-	type(type_inversion) :: inversion(10)
+	type(variable_parameters) :: params(100), trial, scaled_params, errorparams
+	type(fixed_parameters) :: fixed(100)
+	type(type_observation) :: observation(100)
+	type(type_inversion) :: inversion(100)
 	type(atom_model) :: atom
 	
 	character(len=6) :: parameters_name(18) = (/ 'B     ','thetaB','chiB  ', 'vdopp ', &
