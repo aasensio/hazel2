@@ -120,10 +120,10 @@ method of the atmosphere:
 
 ::
 
-    mod.atmospheres['ch1'].set_parameters(model, ff)
+    mod.atmospheres['ch1'].set_parameters(model, ff, vmac)
 
-where ``model`` is an array of size (nz,8) with the model atmosphere and ff 
-is the filling factor. The columns are, in order: :math:`\log \tau`, T, Pe, vmic, v, Bx, By, Bz.
+where ``model`` is an array of size (nz,8) with the model atmosphere, ff 
+is the filling factor and vmac is the macroturbulent velocity. The columns are, in order: :math:`\log \tau`, T, Pe, vmic, v, Bx, By, Bz.
 If Pe is negative, the electron pressure will be calculated in synthesis mode
 assuming hydrostatic equilibrium. On the other hand, it is always calculated
 in hydrostatic equilibrium in inversion mode.

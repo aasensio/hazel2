@@ -533,12 +533,12 @@ class SIR_atmosphere(General_atmosphere):
             RFp = rf[5]
 
             self.rf_analytical['Bx'] = RFB * np.sin(thetaB) * np.cos(phiB) + \
-                                        RFt * np.cos(thetaB) * np.cos(phiB) / B - \
+                                        RFt * np.cos(thetaB) * np.cos(phiB) / (B + 1e-6) - \
                                         RFp * np.sin(phiB) / (B * np.sin(thetaB))
             self.rf_analytical['By'] = RFB * np.sin(thetaB) * np.sin(phiB) + \
-                                        RFt * np.cos(thetaB) * np.sin(phiB) / B + \
+                                        RFt * np.cos(thetaB) * np.sin(phiB) / (B + 1e-6) + \
                                         RFp * np.cos(phiB) / (B * np.sin(thetaB))
-            self.rf_analytical['Bz'] = RFB * np.cos(thetaB) - RFt * np.sin(thetaB) / B
+            self.rf_analytical['Bz'] = RFB * np.cos(thetaB) - RFt * np.sin(thetaB) / (B + 1e-6)
 
             self.rf_analytical['vmac'] = rf[7][:, :, None]
 
@@ -577,9 +577,42 @@ class SIR_atmosphere(General_atmosphere):
 
             return self.parameters['ff'] * stokes[1:,:] * i0, self.rf_analytical, error
         else:                       
-            stokes, error = sir_code.synth(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
+            # stokes, error = sir_code.synth(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
+                # self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
+                # self.parameters['Bz'], self.parameters['vmac'])
+
+            stokes, rf, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
                 self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
                 self.parameters['Bz'], self.parameters['vmac'])
+
+            # Transform SIR RFs into response functions to Bx, By and Bz.
+            # To this end, we have:
+            # [RF_B ]   [dBxdB     dBydB    dBzdB ][RF_Bx]
+            # [RF_th] = [dBxdthB  dBydthB  dBzdthB][RF_By] 
+            # [RF_ph]   [dBxdphB  dBydphB  dBzdphB][RF_Bz]
+            # and then invert the Jacobian
+            B = np.sqrt(self.parameters['Bx']**2 + self.parameters['By']**2 + self.parameters['Bz']**2) + 1e-6
+            thetaB = np.arccos(self.parameters['Bz'] / B)
+            thetaB[B == 0] = 0.0
+            phiB = np.arctan2(self.parameters['By'], self.parameters['Bx'])
+
+            self.rf_analytical['T'] = rf[0]+rf[1]       #OK
+            self.rf_analytical['vmic'] = 1e5*rf[6]   #OK
+            self.rf_analytical['v'] = 1e5*rf[3]      #OK
+        
+            RFB = rf[2]
+            RFt = rf[4]
+            RFp = rf[5]
+
+            self.rf_analytical['Bx'] = RFB * np.sin(thetaB) * np.cos(phiB) + \
+                                        RFt * np.cos(thetaB) * np.cos(phiB) / B - \
+                                        RFp * np.sin(phiB) / (B * np.sin(thetaB))
+            self.rf_analytical['By'] = RFB * np.sin(thetaB) * np.sin(phiB) + \
+                                        RFt * np.cos(thetaB) * np.sin(phiB) / B + \
+                                        RFp * np.cos(phiB) / (B * np.sin(thetaB))
+            self.rf_analytical['Bz'] = RFB * np.cos(thetaB) - RFt * np.sin(thetaB) / B 
+
+            self.rf_analytical['vmac'] = rf[7][:, :, None]
 
             if (error == 1):
                 raise NumericalErrorSIR()
