@@ -15,11 +15,16 @@ For more information see: https://github.com/aasensio/hazel2
 :license:
     The MIT License (MIT)
 """
+import setuptools
+from setuptools import find_packages, setup
+from setuptools.extension import Extension
 from distutils.ccompiler import CCompiler
 from distutils.errors import DistutilsExecError, CompileError
 from distutils.unixccompiler import UnixCCompiler
-from setuptools import find_packages, setup
-from setuptools.extension import Extension
+
+from setuptools.command.build_ext import build_ext
+from distutils.dep_util import newer_group
+from distutils import log
 
 import os
 import platform
@@ -65,7 +70,7 @@ UnixCCompiler._compile = _compile
 
 # Hack to prevent build_ext from trying to append "init" to the export symbols.
 class finallist(list):
-    def append(self, object):
+    def append(self, object):        
         return
 
 
@@ -127,6 +132,106 @@ lib_hazel = MyExtension('hazel.codes.hazel_code',
                   sources=list_files,
                   include_dirs=[numpy.get_include()])
 
+class BuildExtSubclass(build_ext):
+    def build_extension(self, ext):
+        """
+        We monkey-patch the build extension function of the build_ext class to avoid sorting.
+        This can probably be done in a more elegant way, but it works. Files in F90 cannot 
+        be compiled in arbitrary orders because of the module dependencies so the sorted
+        introduced in setuptools cannot be used.
+        """
+        sources = ext.sources
+        if sources is None or not isinstance(sources, (list, tuple)):
+            raise DistutilsSetupError(
+                  "in 'ext_modules' option (extension '%s'), "
+                  "'sources' must be present and must be "
+                  "a list of source filenames" % ext.name)
+        # This sorting needs to be removed
+        # sources = sorted(sources)
+
+        ext_path = self.get_ext_fullpath(ext.name)
+        depends = sources + ext.depends
+        if not (self.force or newer_group(depends, ext_path, 'newer')):
+            log.debug("skipping '%s' extension (up-to-date)", ext.name)
+            return
+        else:
+            log.info("building '%s' extension", ext.name)
+
+        # First, scan the sources for SWIG definition files (.i), run
+        # SWIG on 'em to create .c files, and modify the sources list
+        # accordingly.
+        sources = self.swig_sources(sources, ext)
+
+        # Two possible sources for extra compiler arguments:
+        #   - 'extra_compile_args' in Extension object
+        #   - CFLAGS environment variable (not particularly
+        #     elegant, but people seem to expect it and I
+        #     guess it's useful)
+        # The environment variable should take precedence, and
+        # any sensible compiler will give precedence to later
+        # command line args.  Hence we combine them in order:
+        extra_args = ext.extra_compile_args or []
+
+        macros = ext.define_macros[:]
+        for undef in ext.undef_macros:
+            macros.append((undef,))
+
+        objects = self.compiler.compile(sources,
+                                         output_dir=self.build_temp,
+                                         macros=macros,
+                                         include_dirs=ext.include_dirs,
+                                         debug=self.debug,
+                                         extra_postargs=extra_args,
+                                         depends=ext.depends)
+
+        # XXX outdated variable, kept here in case third-part code
+        # needs it.
+        self._built_objects = objects[:]
+
+        # Now link the object files together into a "shared object" --
+        # of course, first we have to figure out all the other things
+        # that go into the mix.
+        if ext.extra_objects:
+            objects.extend(ext.extra_objects)
+        extra_args = ext.extra_link_args or []
+
+        # Detect target language, if not provided
+        language = ext.language or self.compiler.detect_language(sources)
+
+        self.compiler.link_shared_object(
+            objects, ext_path,
+            libraries=self.get_libraries(ext),
+            library_dirs=ext.library_dirs,
+            runtime_library_dirs=ext.runtime_library_dirs,
+            extra_postargs=extra_args,
+            export_symbols=self.get_export_symbols(ext),
+            debug=self.debug,
+            build_temp=self.build_temp,
+            target_lang=language)
+
+
+    #     arch = platform.architecture()[0].lower()
+    #     if (ext == ".f" or ext == ".f90"):
+    #         if sys.platform == 'darwin' or sys.platform.startswith('linux'):
+    #             compiler_so = [os.environ['FC']]
+    #             if (ext == ".f90"):
+    #                 cc_args = ["-O3", "-march=native", "-fPIC", "-c", "-ffree-form", "-ffree-line-length-none", "-w"]
+    # #                cc_args = ["-O3", "-fPIC", "-c", "-ffree-form", "-ffree-line-length-none", "-fno-automatic", "-ffast-math", "-funroll-loops"]
+    #             if (ext == ".f"):
+    #                 cc_args = ["-O3", "-march=native", "-fPIC", "-c", "-fno-automatic", "-ffixed-line-length-none", "-w"]
+    # #                cc_args = ["-O3", "-fPIC", "-c", "-ffixed-line-length-none", "-fno-automatic", "-ffast-math", "-funroll-loops"]
+    #             # Force architecture of shared library.
+    #             if arch == "32bit":
+    #                 cc_args.append("-m32")
+    #             elif arch == "64bit":
+    #                 cc_args.append("-m64")
+    #             else:
+    #                 print("\nPlatform has architecture '%s' which is unknown to "
+    #                     "the setup script. Proceed with caution\n" % arch)
+    #     breakpoint()
+
+### https://github.com/manodeep/Makefile-C-Python/blob/master/setup.py
+
 setup_config = dict(
     name='hazel',
     version=version,
@@ -159,6 +264,7 @@ setup_config = dict(
     zip_safe=False,
     include_package_data=True,
     scripts=['gui/hazelgui'],
+    cmdclass={'build_ext': BuildExtSubclass}
 )
 
 if __name__ == "__main__":
