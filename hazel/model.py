@@ -20,12 +20,13 @@ import scipy.linalg
 import scipy.optimize
 import warnings
 import logging
+import sys
 
 
 __all__ = ['Model']
 
 class Model(object):
-    def __init__(self, config=None, working_mode='synthesis', verbose=0, debug=False, rank=0, randomization=None):
+    def __init__(self, config=None, working_mode='synthesis', verbose=0, debug=False, rank=0, randomization=None, root=''):
 
         np.random.seed(123)
 
@@ -49,6 +50,8 @@ class Model(object):
         self.pixel = 0
         self.debug = debug
         self.use_analytical_RF_if_possible = False
+        self.nlte_available = False
+        self.root = root
 
         self.epsilon = 1e-2
         self.svd_tolerance = 1e-8
@@ -72,6 +75,14 @@ class Model(object):
             self.n_randomization = 1        
         else:
             self.n_randomization = randomization
+
+        if (self.verbose >= 1):
+            self.logger.info('Hazel2 v1.0')
+    
+        if ('torch' in sys.modules and 'torch_geometric' in sys.modules):
+            if (self.verbose >= 1):
+                self.logger.info('PyTorch and PyTorch Geometric found. NLTE for Ca II is available')
+            self.nlte_available = True
         
         if (config is not None):
             if (self.verbose >= 1):
@@ -186,6 +197,15 @@ class Model(object):
                 self.relative_error = 1e-4
         else:
             self.relative_error = 1e-4
+
+        # Save all cycles
+        if ('save all cycles' not in config_dict['working mode']):
+            self.save_all_cycles = False
+        else:
+            self.save_all_cycles = hazel.util.tobool(config_dict['working mode']['save all cycles'])
+
+        if (self.verbose >= 1):
+            self.logger.info('Saving all cycles : {0}'.format(self.save_all_cycles))
         
         # Deal with the atmospheres
         tmp = config_dict['atmospheres']
@@ -440,7 +460,7 @@ class Model(object):
         if ('instrumental profile' not in value):
             value['instrumental profile'] = None
         elif (value['instrumental profile'] == 'None'):
-            value['instrumental profile'] = None
+            value['instrumental profile'] = None        
 
         # Wavelength file is not present
         if (value['wavelength file'] is None):
@@ -456,7 +476,7 @@ class Model(object):
         else:
             if (self.verbose >= 1):
                 self.logger.info('  - Reading wavelength axis from {0}'.format(value['wavelength file']))
-            wvl = np.loadtxt(value['wavelength file'])
+            wvl = np.loadtxt(self.root + value['wavelength file'])
                 
         if (value['wavelength weight file'] is None):
             if (self.verbose >= 1 and self.working_mode == 'inversion'):
@@ -465,7 +485,7 @@ class Model(object):
         else:
             if (self.verbose >= 1):
                 self.logger.info('  - Reading wavelength weights from {0}'.format(value['wavelength weight file']))
-            weights = np.loadtxt(value['wavelength weight file'], skiprows=1).T
+            weights = np.loadtxt(self.root + value['wavelength weight file'], skiprows=1).T
 
         # Observations file not present
         if (value['observations file'] is None):
@@ -534,7 +554,7 @@ class Model(object):
         stokes_weights = np.array(stokes_weights)
 
         self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, 
-            name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, mask_file=mask_file, instrumental_profile=value['instrumental profile'])
+            name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, mask_file=mask_file, instrumental_profile=value['instrumental profile'], root=self.root)
 
         self.topologies.append(value['topology'])
         
@@ -563,6 +583,18 @@ class Model(object):
         self.atmospheres[atm['name']] = SIR_atmosphere(working_mode=self.working_mode, name=atm['name'])
         lines = [int(k) for k in list(atm['spectral lines'])]
 
+        # If NLTE is available because PyTorch and PyTorch Geom are available
+        # check whether the line is needed in NLTE or not
+        if self.nlte_available:
+            if ('nlte' not in atm):
+                self.atmospheres[atm['name']].nlte = False
+            else:
+                self.atmospheres[atm['name']].nlte = hazel.util.tobool(atm['nlte'])
+                if (self.verbose >= 1):
+                    self.logger.info("    * Line in NLTE if available")
+        else:
+            self.atmospheres[atm['name']].nlte = False
+                
         if ('wavelength' not in atm):
             atm['wavelength'] = None
         elif (atm['wavelength'] == 'None'):
@@ -586,7 +618,7 @@ class Model(object):
             self.logger.info("    * Magnetic field reference frame : {0}".format(self.atmospheres[atm['name']].reference_frame))
                     
         self.atmospheres[atm['name']].add_active_line(lines=lines, spectrum=self.spectrum[atm['spectral region']], 
-            wvl_range=np.array(wvl_range))
+            wvl_range=np.array(wvl_range), verbose=self.verbose)
 
         if ('ranges' in atm):
             for k, v in atm['ranges'].items():
@@ -610,11 +642,11 @@ class Model(object):
                             self.atmospheres[atm['name']].regularization[k2] = v                                            
         
         if ('reference atmospheric model' in atm):
-            my_file = Path(atm['reference atmospheric model'])
+            my_file = Path(self.root + atm['reference atmospheric model'])
             if (not my_file.exists()):
                 raise FileExistsError("Input file {0} for atmosphere {1} does not exist.".format(my_file, atm['name']))
 
-            self.atmospheres[atm['name']].load_reference_model(atm['reference atmospheric model'], self.verbose)
+            self.atmospheres[atm['name']].load_reference_model(self.root + atm['reference atmospheric model'], self.verbose)
 
             if (self.atmospheres[atm['name']].model_type == '3d'):
                 self.atmospheres[atm['name']].n_pixel = self.atmospheres[atm['name']].model_handler.get_npixel()
@@ -623,7 +655,7 @@ class Model(object):
             for k, v in atm['nodes'].items():
                 for k2, v2 in self.atmospheres[atm['name']].parameters.items():
                     if (k.lower() == k2.lower()):
-                        self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)        
+                        self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)                
 
 
     def add_chromosphere(self, atmosphere):
@@ -710,11 +742,11 @@ class Model(object):
 
 
         if ('reference atmospheric model' in atm):
-            my_file = Path(atm['reference atmospheric model'])
+            my_file = Path(self.root + atm['reference atmospheric model'])
             if (not my_file.exists()):
                 raise FileExistsError("Input file {0} for atmosphere {1} does not exist.".format(my_file, atm['name']))
 
-            self.atmospheres[atm['name']].load_reference_model(atm['reference atmospheric model'], self.verbose)
+            self.atmospheres[atm['name']].load_reference_model(self.root + atm['reference atmospheric model'], self.verbose)
 
             if (self.atmospheres[atm['name']].model_type == '3d'):
                 self.atmospheres[atm['name']].n_pixel = self.atmospheres[atm['name']].model_handler.get_npixel()
@@ -775,11 +807,11 @@ class Model(object):
                             self.atmospheres[atm['name']].ranges[k2] = hazel.util.tofloat(v)
 
         if ('reference atmospheric model' in atm):
-            my_file = Path(atm['reference atmospheric model'])
+            my_file = Path(self.root + atm['reference atmospheric model'])
             if (not my_file.exists()):
                 raise FileExistsError("Input file {0} for atmosphere {1} does not exist.".format(my_file, atm['name']))
 
-            self.atmospheres[atm['name']].load_reference_model(atm['reference atmospheric model'], self.verbose)
+            self.atmospheres[atm['name']].load_reference_model(self.root + atm['reference atmospheric model'], self.verbose)
 
             if (self.atmospheres[atm['name']].model_type == '3d'):
                 self.atmospheres[atm['name']].n_pixel = self.atmospheres[atm['name']].model_handler.get_npixel()
@@ -849,12 +881,12 @@ class Model(object):
                         else:
                             self.atmospheres[atm['name']].ranges[k2] = hazel.util.tofloat(v)        
 
-        my_file = Path(atm['reference atmospheric model'])
+        my_file = Path(self.root + atm['reference atmospheric model'])
         if (not my_file.exists()):
             raise FileExistsError("Input file {0} for atmosphere {1} does not exist.".format(my_file, atm['name']))
 
         if ('reference atmospheric model' in atm):
-            self.atmospheres[atm['name']].load_reference_model(atm['reference atmospheric model'], self.verbose)
+            self.atmospheres[atm['name']].load_reference_model(self.root + atm['reference atmospheric model'], self.verbose)
 
             if (self.atmospheres[atm['name']].model_type == '3d'):
                 self.atmospheres[atm['name']].n_pixel = self.atmospheres[atm['name']].model_handler.get_npixel()
@@ -1143,7 +1175,7 @@ class Model(object):
                             self.atmospheres[atm].parameters['ff'] = physical_to_transformed(self.atmospheres[atm].parameters['ff'], -0.00001, 1.00001)
 
 
-    def synthesize_spectral_region(self, spectral_region, perturbation=False):
+    def synthesize_spectral_region(self, spectral_region, perturbation=False, nlte=False):
         """
         Synthesize all atmospheres for a single spectral region and normalize to the continuum of the quiet Sun at disk center
 
@@ -1154,6 +1186,8 @@ class Model(object):
         perturbation : bool
             Set to True if you are synthesizing with a perturbation. In this case, the synthesis
             is saved in spectrum.stokes_perturbed instead of spectrum.stokes
+        nlte : bool
+            Set to True if you want to use NLTE synthesis in Ca II 8542
         
         Returns
         -------
@@ -1182,18 +1216,18 @@ class Model(object):
                                 stokes_out = self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top] * hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
 
                         if (self.atmospheres[atm].type == 'straylight'):
-                            stokes, error = self.atmospheres[atm].synthesize()
+                            stokes, error = self.atmospheres[atm].synthesize(nlte=nlte)
                             if (error == 1):
                                 raise 
                             stokes += (1.0 - self.atmospheres[atm].parameters['ff']) * stokes_out                            
                         else:
                             if (k == 0):                                
                                 if (self.use_analytical_RF):
-                                    stokes, self.rf_analytical, error = self.atmospheres[atm].synthesize(stokes_out, returnRF=True)
+                                    stokes, self.rf_analytical, error = self.atmospheres[atm].synthesize(stokes_out, returnRF=True, nlte=nlte)
                                 else:
-                                    stokes, error = self.atmospheres[atm].synthesize(stokes_out)
+                                    stokes, error = self.atmospheres[atm].synthesize(stokes_out, nlte=nlte)
                             else:             
-                                tmp, error = self.atmospheres[atm].synthesize(stokes_out)       
+                                tmp, error = self.atmospheres[atm].synthesize(stokes_out, nlte=nlte)
                                 stokes += tmp
                                     
                         ind_low, ind_top = self.atmospheres[atm].wvl_range
@@ -1212,7 +1246,7 @@ class Model(object):
                         else:                            
                             self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top] = stokes / i0#[None,:]
     
-    def synthesize(self, perturbation=False):
+    def synthesize(self, perturbation=False, nlte=False):
         """
         Synthesize all atmospheres
 
@@ -1230,7 +1264,7 @@ class Model(object):
         if (self.working_mode == 'inversion'):
             self.normalize_ff()
         for k, v in self.spectrum.items():            
-            self.synthesize_spectral_region(k, perturbation=perturbation)
+            self.synthesize_spectral_region(k, perturbation=perturbation, nlte=nlte)
             if (v.normalization == 'off-limb'):
                 if (perturbation):
                     v.stokes_perturbed /= np.max(v.stokes_perturbed[0,:])
@@ -1717,7 +1751,7 @@ class Model(object):
     def backtracking_brent(self, dchi2, ddchi2, maxiter=10, bounds=[-3.0,3.0], tol=1e-2):
 
         tmp = scipy.optimize.minimize_scalar(self._fun_backtracking, bounds=bounds, args=(dchi2, ddchi2), 
-            method='bounded', tol=tol, options={'maxiter': maxiter})
+            method='bounded', options={'xatol': tol, 'maxiter': maxiter})
 
         return 10.0**tmp['x']
         

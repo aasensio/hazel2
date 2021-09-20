@@ -4,12 +4,15 @@ import os
 from hazel.atmosphere import General_atmosphere
 from hazel.util import i0_allen
 from hazel.codes import sir_code
-from hazel.hsra import hsra_continuum
 from hazel.io import Generic_SIR_file
 import scipy.interpolate as interp
 from hazel.exceptions import NumericalErrorSIR
 from hazel.transforms import transformed_to_physical, jacobian_transformation
-import copy
+
+try:
+    from hazel.forward_nn import Forward
+except:
+    pass
 
 
 __all__ = ['SIR_atmosphere']
@@ -17,13 +20,15 @@ __all__ = ['SIR_atmosphere']
 # sir_parameters = OrderedDict.fromkeys('T B thetaB phiB v')
 
 class SIR_atmosphere(General_atmosphere):
-    def __init__(self, working_mode, name=''):
+    def __init__(self, working_mode, name='', root=''):
         
         super().__init__('photosphere', name=name)
 
         self.ff = 1.0        
         self.macroturbulence = np.zeros(1)
         self.working_mode = working_mode
+        self.graphnet_nlte = None
+        self.root = root
         
         self.parameters['T'] = None
         self.parameters['vmic'] = None
@@ -120,7 +125,7 @@ class SIR_atmosphere(General_atmosphere):
         for l in lines[:-1]:
             print(l[:-1])
 
-    def add_active_line(self, lines, spectrum, wvl_range):
+    def add_active_line(self, lines, spectrum, wvl_range, verbose):
         """
         Add an active lines in this atmosphere
         
@@ -139,7 +144,7 @@ class SIR_atmosphere(General_atmosphere):
     
         """
         
-        self.lines = lines
+        self.lines = lines        
         self.wvl_range_lambda = wvl_range
 
         ind_low = (np.abs(spectrum.wavelength_axis - wvl_range[0])).argmin()
@@ -148,6 +153,16 @@ class SIR_atmosphere(General_atmosphere):
         self.spectrum = spectrum
         self.wvl_axis = spectrum.wavelength_axis[ind_low:ind_top+1]
         self.wvl_range = np.array([ind_low, ind_top+1])
+
+        # Check if Ca II 8542 is in the list of lines and instantiate the neural networks
+        if (self.nlte):
+            if 301 in self.lines:
+                if self.graphnet_nlte is None:                    
+                    path = str(__file__).split('/')
+                    checkpoint = '/'.join(path[0:-1])+'/data/20210829-092224_best.pth'
+                    if (verbose >= 1):
+                        self.logger.info('    * Reading NLTE Neural Network')
+                    self.graphnet_nlte = Forward(checkpoint=checkpoint)
         
     def interpolate_nodes(self, log_tau, reference, nodes):
         """
@@ -451,7 +466,7 @@ class SIR_atmosphere(General_atmosphere):
                     nodes = transformed_to_physical(v, lower, upper)            
                     self.logger.info('{0} -> {1}'.format(k, nodes))
             
-    def synthesize(self, stokes_in, returnRF=False):
+    def synthesize(self, stokes_in, returnRF=False, nlte=False):
         """
         Carry out the synthesis and returns the Stokes parameters and the response 
         functions to all physical variables at all depths
@@ -481,9 +496,9 @@ class SIR_atmosphere(General_atmosphere):
             self.to_physical()
         
         if (returnRF):
-            stokes, rf, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
+            stokes, cmass, rf, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
                 self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
-                self.parameters['Bz'], self.parameters['vmac'])
+                self.parameters['Bz'], self.parameters['vmac'])            
 
             if (error == 1):
                 raise NumericalErrorSIR()
@@ -580,10 +595,27 @@ class SIR_atmosphere(General_atmosphere):
             # stokes, error = sir_code.synth(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
                 # self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
                 # self.parameters['Bz'], self.parameters['vmac'])
+            
+            self.departure = np.ones((2, len(self.lines), len(self.log_tau)))
 
-            stokes, rf, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
+            # Check if the line is 8542 and we want NLTE. If that is the case, then evaluate the
+            # neural network to return the departure coefficients
+            if (nlte):
+                if (self.nlte):
+                    for i, l in enumerate(self.lines):
+                        if (l == 301):
+                            n = len(self.log_tau)
+                            cmass = [10.0**self.log_tau[::-1]]
+                            tau = [10.0**self.log_tau[::-1]]
+                            vturb = [1e3*self.parameters['vmic'][::-1]]
+                            tt = [self.parameters['T'][::-1]]
+                            prediction = self.graphnet_nlte.predict(cmass, tau, vturb, tt)
+                            self.departure[0, i, :] = 10.0**prediction[0][::-1, 2]
+                            self.departure[1, i, :] = 10.0**prediction[0][::-1, 4]
+
+            stokes, cmass, rf, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
                 self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
-                self.parameters['Bz'], self.parameters['vmac'])
+                self.parameters['Bz'], self.parameters['vmac'], self.departure)
 
             # Transform SIR RFs into response functions to Bx, By and Bz.
             # To this end, we have:
@@ -599,7 +631,7 @@ class SIR_atmosphere(General_atmosphere):
             self.rf_analytical['T'] = rf[0]+rf[1]       #OK
             self.rf_analytical['vmic'] = 1e5*rf[6]   #OK
             self.rf_analytical['v'] = 1e5*rf[3]      #OK
-        
+            
             RFB = rf[2]
             RFt = rf[4]
             RFp = rf[5]

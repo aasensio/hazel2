@@ -5,7 +5,7 @@ c teniendo en cuenta el numero de electrones para el calculo de mu
 c Luis Bellot y Basilio Ruiz 27/7/95 
 c Cambio del metodo de integracion Basilio Ruiz 3/9/96
 c _______________________________________________________________
-	subroutine equisubmu(ntau,tau1,t,pe,pg,z,ro)
+	subroutine equisubmu(ntau,tau1,t,pe,pg,z,ro,cmass)
 
 	implicit real*4 (a-h,o-z)
 
@@ -13,7 +13,7 @@ c _______________________________________________________________
 	parameter (nex=28,cgases=83145100.)
         real*4 tau1(kt)
 	real*4 tau(kt),t(*),pe(*),pg(*),kac,d2,x(kt),kappa(kt),taue(kt)
-        real*4 z1(kt),z(*),ro(*),y(kt)
+        real*4 z1(kt),z(*),ro(*),cmass(*),y(kt)
 	real*4 mu,pcontorno
         integer*4 nmaxitera
         real dp(99),ddp(99)
@@ -129,6 +129,11 @@ c            dLPgdT(i) = dLPgdT(i) / pg(i)
         do i=1,ntau
            z(i)=(z1(i)-z1(imin))*1.e-5
         end do
+
+        cmass(ntau)=(pg(ntau)+pe(ntau))/g
+        do i=ntau-1,1,-1  !this is the column mass scale along the vertical direction
+           cmass(i)=cmass(i+1)+abs(z(i+1) - z(i))*(ro(i+1)+ro(i))/2.*1e5
+        end do 
 
 c        do i = 1, ntau
 c                call kappach(5.e-5,t(i),pe(i),pp,d1,d1,kac,d2,d2)

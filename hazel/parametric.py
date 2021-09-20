@@ -170,7 +170,7 @@ class Parametric_atmosphere(General_atmosphere):
         self.logger.info("     {0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}".format(np.atleast_1d(self.parameters['lambda0'])[0], \
             np.atleast_1d(self.parameters['sigma'])[0], np.atleast_1d(self.parameters['depth'])[0], np.atleast_1d(self.parameters['a'])[0]))
                 
-    def synthesize(self, stokes=None):
+    def synthesize(self, stokes=None, nlte=None):
         """
         Carry out the synthesis and returns the Stokes parameters
         

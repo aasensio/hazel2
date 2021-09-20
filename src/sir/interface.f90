@@ -258,17 +258,6 @@ contains
 
 		ifiltro = 0
 
-		! print *, 'ntl ', ntl
-		! print *, 'nlin ', nlin
-		! print *, 'npas ', npas
-		! print *, 'nble ', nble
-		! print *, 'dlamda ', dlamda(1:npas(1))
-		! print *, 'ntls ', ntls
-		! print *, 'nlins ', nlins
-		! print *, 'npass ', npass
-		! print *, 'dlamdas ', dlamdas(1:4*npas(1))
-
-
 
 		do ixx = 1, n_blend
 			conf(index)%atom_all(ixx)=atom_name(atom_in(ixx))
@@ -286,21 +275,6 @@ contains
 			conf(index)%alfa_all(ixx)=alfa_in(ixx)
 			conf(index)%sigma_all(ixx)=sigma_in(ixx)
 			
-			! print *, 'atom ', atom_name(atom_in(ixx))
-			! print *, 'istage ', istage_in(ixx)
-			! print *, 'wlengt ', wlength_in(ixx)
-			! print *, 'zeff ', zeff_in(ixx)
-			! print *, 'energy ', energy_in(ixx)
-			! print *, 'loggf ', loggf_in(ixx)
-			! print *, 'mult1 ', mult1_in(ixx)
-			! print *, 'mult2 ', mult2_in(ixx)
-			! print *, 'design1 ', state(design1_in(ixx)+1)
-			! print *, 'design2 ', state(design2_in(ixx)+1)
-			! print *, 'tam1 ', tam1_in(ixx)
-			! print *, 'tam2 ', tam2_in(ixx)
-			! print *, 'alfa ', alfa_in(ixx)
-			! print *, 'sigma ', sigma_in(ixx)
-
 		enddo
 
 
@@ -327,11 +301,11 @@ contains
 	end subroutine c_setpsf
 
 
-	subroutine c_synth(index, nDepth, nLambda, macroturbulence, model, stokes, error) bind(c)
+	subroutine c_synth(index, nDepth, nLambda, macroturbulence, model, stokes, colmass, error) bind(c)
 	integer(c_int), intent(in) :: index, nDepth, nLambda
 	real(c_double), intent(in) :: model(8,ndepth)
 	real(c_double), intent(in) :: macroturbulence
-	real(c_double), intent(out) :: stokes(5,nLambda)
+	real(c_double), intent(out) :: stokes(5,nLambda), colmass(ndepth)
 	integer(c_int), intent(out) :: error
 	
 	real*4 stok(kld4)
@@ -341,13 +315,14 @@ contains
 	character*100 Stokesfilename
 	integer*4 mnodos(18), ntau
 	real*4 atmosmodel(kt8), pesostray
-	real*4 tau(kt),t(kt),pe(kt),pg(kt),z(kt),ro(kt), dLPgdT(kt), dLPgdPe(kt)
+	real*4 tau(kt), t(kt), pe(kt), pg(kt), z(kt), ro(kt), cmass(kt), dLPgdT(kt), dLPgdPe(kt)
 	real*4 voffset,xmu
 
 	integer ntl,nlin(kl),npas(kl),nble(kl)
 	real*4 dlamda(kld)
 	integer ntls,nlins(kl4),npass(kl4)
 	real*4 dlamdas(kld4)
+	real*4 beta1(kl,kt),beta2(kl,kt)
 
 	character*2 atom_all(kl)
 	integer istage_all(kl)
@@ -361,6 +336,8 @@ contains
 	real*4 alfa_all(kl)
 	real*4 sigma_all(kl)
 
+	integer :: ixx, ible
+
 	integer :: error_code
 	common/Error/error_code
 
@@ -370,10 +347,12 @@ contains
 	common/numeronodos/mnodos         !para StokesFRsub
     common/offset/voffset             !para StokesFRsub
     common/anguloheliocent/xmu        !para StokesFRsub
+	common/departcoef/beta1,beta2
 
 	common/Malla/ntl,nlin,npas,nble,dlamda  !common para StokesFRsub
     common/Malla4/ntls,nlins,npass,dlamdas  !common para StokesFRsub
 	common/Lineas_all/atom_all,istage_all,wlengt_all,zeff_all,energy_all,loggf_all,mult_all,design_all,tam_all,alfa_all,sigma_all
+	
 
 		atmosmodel = 0
 		error = 0
@@ -431,7 +410,7 @@ contains
 
 ! Compute hydrostatic equilibrium if necessary
 		if (minval(model(3,:)) == -1) then
-			call equisubmu(ntau,tau,t,pe,pg,z,ro)
+			call equisubmu(ntau,tau,t,pe,pg,z,ro,cmass)
 			
 			if (error_code == 1) then
 				error = 1
@@ -442,6 +421,18 @@ contains
             	atmosmodel(i+2*ntau)=pe(i)				
         	end do
         endif
+
+! Set the departure coefficients
+		ixx=0
+        do l=1,ntl
+	   		do ible=1,nble(l)
+	   			ixx=ixx+1				   
+              		do i=1,ntau
+                 		beta1(ixx,i)=1.0 !departure(1, ixx, i)  !entran ordenados sobre todas lineas*blends
+                 		beta2(ixx,i)=1.0 !departure(2, ixx, i)
+	      			end do	 
+           	end do
+        end do
 
 		call StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac,dLPgdPe,dLPgdT)
 		
@@ -464,15 +455,18 @@ contains
 		stokes(3,:) = stok(ntot+1:2*ntot)
 		stokes(4,:) = stok(2*ntot+1:3*ntot)
 		stokes(5,:) = stok(3*ntot+1:4*ntot)
+
+! Column mass
+		colmass(:) = cmass(1:ntau)
         
 	end subroutine c_synth
 
 
-	subroutine c_synthrf(index, nDepth, nLambda, macroturbulence, model, stokes, RFt, RFp, RFh, RFv, RFg, RFf, RFmic, RFmac, error) bind(c)
-	integer(c_int), intent(in) :: index, nDepth, nLambda
-	real(c_double), intent(in) :: model(8,ndepth)
+	subroutine c_synthrf(index, nDepth, nLambda, nLines, macroturbulence, model, departure, stokes, colmass, RFt, RFp, RFh, RFv, RFg, RFf, RFmic, RFmac, error) bind(c)
+	integer(c_int), intent(in) :: index, nDepth, nLambda, nLines
+	real(c_double), intent(in) :: model(8,ndepth), departure(2, nLines, nDepth)
 	real(c_double), intent(in) :: macroturbulence
-	real(c_double), intent(out) :: stokes(5,nLambda)
+	real(c_double), intent(out) :: stokes(5,nLambda), colmass(ndepth)
 	real(c_double), intent(out), dimension(4,nLambda,nDepth) :: RFt, RFp, RFh, RFv, RFg, RFf, RFmic
 	real(c_double), intent(out), dimension(4,nLambda) :: RFmac
 	integer(c_int), intent(out) :: error
@@ -483,7 +477,7 @@ contains
     integer ist(4),i,k,ntot, j, l, itau
 	character*100 Stokesfilename
 	integer*4 mnodos(18), ntau
-	real*4 tau(kt),t(kt),pe(kt),pg(kt),z(kt),ro(kt), t2(kt), pe2(kt), dPedT(kt,kt), dLPgdT(kt), dLPgdPe(kt), dPedT2(kt,kt), caca(kt)
+	real*4 tau(kt),t(kt),pe(kt),pg(kt),z(kt),ro(kt), cmass(kt), t2(kt), pe2(kt), dPedT(kt,kt), dLPgdT(kt), dLPgdPe(kt), dPedT2(kt,kt), caca(kt)
 	real*4 atmosmodel(kt8), pesostray
 	real*4 voffset,xmu
 
@@ -503,6 +497,9 @@ contains
 	real*4 tam_all(2,kl)
 	real*4 alfa_all(kl)
 	real*4 sigma_all(kl)
+	real*4 beta1(kl,kt),beta2(kl,kt)
+
+	integer :: ixx, ible
 
 	integer :: error_code
 	common/Error/error_code
@@ -514,6 +511,7 @@ contains
 	common/numeronodos/mnodos         !para StokesFRsub
     common/offset/voffset             !para StokesFRsub
     common/anguloheliocent/xmu        !para StokesFRsub
+	common/departcoef/beta1,beta2
 
 	common/Malla/ntl,nlin,npas,nble,dlamda  !common para StokesFRsub
 	common/Malla4/ntls,nlins,npass,dlamdas  !common para StokesFRsub
@@ -602,7 +600,7 @@ contains
 
 ! Calculate hydrostatic equilibrium if Pe is not known
 		if (minval(model(3,:)) == -1) then
-			call equisubmu(ntau,tau,t,pe,pg,z,ro)
+			call equisubmu(ntau,tau,t,pe,pg,z,ro,cmass)
 			if (error_code == 1) then
 				error = 1
 				return
@@ -612,6 +610,18 @@ contains
 				atmosmodel(i+2*ntau)=pe(i)
         	end do
 		endif
+
+! Set the departure coefficients
+		ixx=0
+        do l=1,ntl
+	   		do ible=1,nble(l)
+	   			ixx=ixx+1				   
+              		do i=1,ntau
+                 		beta1(ixx,i)=departure(1, ixx, i)  !entran ordenados sobre todas lineas*blends
+                 		beta2(ixx,i)=departure(2, ixx, i)
+	      			end do	 
+           	end do
+        end do
 
 		dPedT = 0.d0
 		call StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac,dLPgdPe,dLPgdT)

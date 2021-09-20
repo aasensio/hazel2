@@ -8,9 +8,10 @@ from ipdb import set_trace as stop
 def read_photosphere(file):
     f = open(file, 'r')
     f.readline()
-    ff = float(f.readline())
+    tmp = f.readline().split()
+    ff, vmac = float(tmp[0]), float(tmp[1])    
     f.close()
-    return np.loadtxt(file, skiprows=4), ff
+    return np.loadtxt(file, skiprows=4), ff, vmac
 
 def read_1d(file):
     f = open(file, 'r')
@@ -77,22 +78,26 @@ if __name__ == '__main__':
     #-------------------------------------------
     n_pixel = 10
 
-    model, ff = read_photosphere('photospheres/model_photosphere.1d')
+    model, ff, vmac = read_photosphere('photospheres/model_photosphere.1d')
 
     nz, ncol = model.shape
     model_3d = np.zeros((n_pixel,nz,ncol), dtype=np.float64)
     ff_3d = np.zeros((n_pixel,), dtype=np.float64)
+    vmac_3d = np.zeros((n_pixel,), dtype=np.float64)
 
     for i in range(n_pixel):
         model[:,1] += 100.0
         model_3d[i,:,:] = model
         ff_3d[i] = ff
+        vmac_3d[i] = vmac
         
     f = h5py.File('photospheres/model_photosphere.h5', 'w')
     db_model = f.create_dataset('model', model_3d.shape, dtype=np.float64)
     db_ff = f.create_dataset('ff', ff_3d.shape, dtype=np.float64)
+    db_vmac = f.create_dataset('vmac', vmac_3d.shape, dtype=np.float64)
     db_model[:] = model_3d
     db_ff[:] = ff_3d
+    db_vmac[:] = vmac_3d
     f.close()
 
     # Observations    
@@ -112,6 +117,31 @@ if __name__ == '__main__':
         boundary_3d[i,:,:] = np.repeat(np.atleast_2d(boundary), n_lambda, axis=0)
 
     f = h5py.File('observations/10830_stokes.h5', 'w')
+    db_stokes = f.create_dataset('stokes', stokes_3d.shape, dtype=np.float64)
+    db_sigma = f.create_dataset('sigma', sigma_3d.shape, dtype=np.float64)
+    db_los = f.create_dataset('LOS', los_3d.shape, dtype=np.float64)
+    db_boundary = f.create_dataset('boundary', boundary_3d.shape, dtype=np.float64)
+    db_stokes[:] = stokes_3d
+    db_sigma[:] = sigma_3d
+    db_los[:] = los_3d
+    db_boundary[:] = boundary_3d
+    f.close()
+
+
+    n_lambda, _ = stokes.T.shape
+
+    stokes_3d = np.zeros((n_pixel,n_lambda,4), dtype=np.float64)
+    sigma_3d = np.zeros((n_lambda,4), dtype=np.float64)
+    los_3d = np.zeros((n_pixel,3), dtype=np.float64)
+    boundary_3d = np.zeros((n_lambda,4), dtype=np.float64)
+
+    for i in range(n_pixel):
+        stokes_3d[i,:,:] = stokes.T
+        sigma_3d[:,:] = sigma.T
+        los_3d[i,:] = np.array([0.0,0.0,90.0])
+        boundary_3d[:,:] = np.repeat(np.atleast_2d(boundary), n_lambda, axis=0)
+
+    f = h5py.File('observations/10830_stokes_shared.h5', 'w')
     db_stokes = f.create_dataset('stokes', stokes_3d.shape, dtype=np.float64)
     db_sigma = f.create_dataset('sigma', sigma_3d.shape, dtype=np.float64)
     db_los = f.create_dataset('LOS', los_3d.shape, dtype=np.float64)

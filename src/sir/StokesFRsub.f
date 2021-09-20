@@ -67,6 +67,7 @@ c para la matriz de absorcion y sus derivadas
         real*4 dabb(16),gkb(16),fkb(16),tkb(16)
         real*4 pkb(16),hkb(16),vkb(16)
         real*4 mkb(16)
+        real*4 beta1(kl,kt),beta2(kl,kt)
 
 c para la malla
         real*4 wlengt,wlengt1,lambda,dlamdaii,wvac,wc,c
@@ -114,6 +115,8 @@ c lugares comunes de memoria
         common/Malla/ntl,nlin,npas,nble,dlamda             !se carga en lee_malla.f
         common/Malla4/ntls,nlins,npass,dlamdas             !se carga en lee_malla.f
         common/yder/y,dyt,dyp,alpha                        !se carga aqui coef.abs.cont.y su der.t,p 
+        common/nlte/nlte                                   ! NLTE
+        common/departcoef/beta1,beta2
         common/segunda/tau,taue,deltae,deltai,delt2i       !se carga aqui (para hermite y rnorma)
         common/piis/piis                                   !1./sqrt(3.1415926) se carga aqui (para mvoigt)
         common/offset/voffset                              !se carga en lee_model 
@@ -631,10 +634,23 @@ c       dd son las derivadas totales respecto a la presion.
 c calculo la funcion de planck en lambda y su derivada con t
 c la function "dtplanck" calcula la derivada de la f. de planck
 c con la temperatura.
-                www=wlengt1*1.e-8 
+                www=wlengt1*1.e-8
 
-                bp(i)=dplnck(t(i),www)  !cuerpo negro
-                bt(i)=dtplanck(t(i),www)               
+
+c Add the effect of departure coefficients. If the line is in LTE (the usual case)
+c they will be equal to 1
+                blow=beta1(ixx,i)
+                bratio=blow/beta2(ixx,i)
+                
+                call planck2(t(i),www,bratio,bp(i),bt(i))
+
+                eta0=eta0*blow
+                deta0=deta0*blow
+                ddeta0=ddeta0*blow
+                meta0=meta0*blow
+
+c                bp(i)=dplnck(t(i),www)  !cuerpo negro
+c                bt(i)=dtplanck(t(i),www)               
                 y(i)=ckappa              !ckappa/ckappa5
                 dyt(i)=dkappa
                 dyp(i)=ddkappa

@@ -19,6 +19,7 @@ class General_atmosphere(object):
         self.ff = 1.0
         self.name = name
         self.type = atm_type
+        self.nlte = False
 
         self.logger = logging.getLogger("model")
         self.logger.setLevel(logging.DEBUG)

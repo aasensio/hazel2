@@ -349,7 +349,7 @@ class Hazel_atmosphere(General_atmosphere):
         
 
 
-    def synthesize(self, stokes=None, returnRF=False):
+    def synthesize(self, stokes=None, returnRF=False, nlte=None):
         """
         Carry out the synthesis and returns the Stokes parameters
         
@@ -462,7 +462,7 @@ class Hazel_atmosphere(General_atmosphere):
             anglesInput, nLambdaInput, lambdaAxisInput, dopplerWidthInput, 
             dampingInput, dopplerVelocityInput, 
             betaInput, nbarInput, omegaInput)
-                
+            
         l, stokes, error = hazel_code._synth(*args)
 
         if (error == 1):

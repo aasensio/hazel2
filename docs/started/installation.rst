@@ -141,6 +141,14 @@ version can be uninstalled by typing:
     
     python setup.py develop --uninstall
 
+Documentation
+-------------
+For the compilation of the docs, you will need the following packages:
+
+::
+  
+    sphinx numpydoc sphinx_rtd_theme nbsphinx
+
 Issues
 ------
 

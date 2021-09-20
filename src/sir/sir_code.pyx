@@ -10,9 +10,9 @@ cdef extern:
 		int *mult1, int *mult2, int *design1, int *design2, double *tam1, double *tam2, double *alfa, double *sigma,
 		double *lambda0, double *lambda1, int *nsteps)
 	void c_setpsf(int *nPSF, float *xPSF, float *yPSF)
-	void c_synthrf(int *index, int *nDepth, int *nLambda, double *macroturbulence, double *model, double *stokes, double *rt, double *rp, double *rh,
+	void c_synthrf(int *index, int *nDepth, int *nLambda, int *nLines, double *macroturbulence, double *model, double *departure, double *stokes, double *cmass, double *rt, double *rp, double *rh,
 		double *rv, double *rf, double *rg, double *rm, double *rmac, int *error)
-	void c_synth(int *index, int *nDepth, int *nLambda, double *macroturbulence, double *model, double *stokes, int *error)
+	void c_synth(int *index, int *nDepth, int *nLambda, double *macroturbulence, double *model, double *stokes, double *cmass, int *error)
 
 def init_externalfile(int index, str file):
 	cdef:
@@ -51,7 +51,8 @@ def synth(int index, int nLambda, ar[double, ndim=1] log_tau, ar[double, ndim=1]
 		int nDepth = len(log_tau)
 		int error
 		ar[double, ndim=2] model = empty((8,nDepth), order='F')
-		ar[double, ndim=2] stokes = empty((5,nLambda), order='F')		
+		ar[double, ndim=2] stokes = empty((5,nLambda), order='F')
+		ar[double, ndim=1] cmass = empty((nDepth), order='F')
 		
 	model[0,:] = log_tau
 	model[1,:] = T
@@ -62,19 +63,21 @@ def synth(int index, int nLambda, ar[double, ndim=1] log_tau, ar[double, ndim=1]
 	model[6,:] = 180.0 / np.pi * np.arccos(Bz / (model[4,:] + 1e-8))      # Regularize in case B=0
 	model[7,:] = 180.0 / np.pi * np.arctan2(By, Bx)
 
-	c_synth(&index, &nDepth, &nLambda, &macroturbulence, &model[0,0], <double*> stokes.data, &error)
+	c_synth(&index, &nDepth, &nLambda, &macroturbulence, &model[0,0], <double*> stokes.data, <double*> cmass.data, &error)
 	
-	return stokes, error
+	return stokes, cmass, error
 
 def synthRF(int index, int nLambda, ar[double, ndim=1] log_tau, ar[double, ndim=1] T, ar[double, ndim=1] Pe, ar[double, ndim=1] vmic, 
 	ar[double, ndim=1] vlos, ar[double, ndim=1] Bx, ar[double, ndim=1] By, ar[double, ndim=1] Bz, 
-	double macroturbulence):
+	double macroturbulence, ar[double, ndim=3] departure):
 
 	cdef:
 		int nDepth = len(log_tau)
+		int nLines = departure.shape[1]
 		int error
 		ar[double, ndim=2] model = empty((8,nDepth), order='F')
 		ar[double, ndim=2] stokes = empty((5,nLambda), order='F')
+		ar[double, ndim=1] cmass = empty((nDepth), order='F')
 		ar[double, ndim=3] rt = empty((4,nLambda,nDepth), order='F')
 		ar[double, ndim=3] rp = empty((4,nLambda,nDepth), order='F')
 		ar[double, ndim=3] rh = empty((4,nLambda,nDepth), order='F')
@@ -93,8 +96,8 @@ def synthRF(int index, int nLambda, ar[double, ndim=1] log_tau, ar[double, ndim=
 	model[6,:] = 180.0 / np.pi * np.arccos(Bz / (model[4,:] + 1e-8))
 	model[7,:] = 180.0 / np.pi * np.arctan2(By, Bx)
 
-	c_synthrf(&index, &nDepth, &nLambda, &macroturbulence, &model[0,0], <double*> stokes.data, <double*> rt.data, <double*> rp.data, 
+	c_synthrf(&index, &nDepth, &nLambda, &nLines, &macroturbulence, &model[0,0], &departure[0,0,0], <double*> stokes.data, <double*> cmass.data, <double*> rt.data, <double*> rp.data, 
 		<double*> rh.data, <double*> rv.data, <double*> rf.data, <double*> rg.data, <double*> rm.data, 
 		<double*> rmac.data, &error)
 	
-	return stokes, [rt, rp, rh, rv, rf, rg, rm, rmac], error
+	return stokes, cmass, [rt, rp, rh, rv, rf, rg, rm, rmac], error

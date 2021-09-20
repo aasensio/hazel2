@@ -9,7 +9,7 @@ __all__ = ['Spectrum']
 
 class Spectrum(object):
     def __init__(self, wvl=None, weights=None, observed_file=None, name=None, stokes_weights=None, los=None, boundary=None, mask_file=None, 
-        instrumental_profile=None):
+        instrumental_profile=None, save_all_cycles=False, root=''):
         
         self.wavelength_axis = None
         self.stokes = None
@@ -20,6 +20,8 @@ class Spectrum(object):
         self.chi2 = -1.0
         self.rss = -1.0
         self.normalization = 'on-disk'
+        self.save_all_cycles = save_all_cycles
+        self.root = root
         
         if (wvl is not None):
             self.add_spectrum(wvl)
@@ -51,8 +53,8 @@ class Spectrum(object):
             n = len(self.wavelength_axis)
 
             # Instrumental profile given as a file
-            if os.path.exists(instrumental_profile):
-                tmp = np.loadtxt(instrumental_profile)
+            if os.path.exists(self.root + instrumental_profile):
+                tmp = np.loadtxt(self.root + instrumental_profile)
                 f = interpolate.interp1d(tmp[:,0] + self.wavelength_axis[n//2-1], tmp[:,1], kind='cubic', fill_value=0.0, bounds_error=False)                
                 self.psf_spectral = f(self.wavelength_axis)
             else:
@@ -141,7 +143,7 @@ class Spectrum(object):
         None
     
         """  
-        self.observed_handle = Generic_observed_file(observed_file)
+        self.observed_handle = Generic_observed_file(observed_file, self.root)
         self.n_pixel = self.observed_handle.get_npixel()
 
     def add_mask_file(self, mask_file):        
@@ -159,12 +161,12 @@ class Spectrum(object):
     
         """  
         if (mask_file is not None):
-            self.mask_handle = Generic_mask_file(mask_file)            
+            self.mask_handle = Generic_mask_file(mask_file, self.root)            
             n_pixel = self.mask_handle.get_npixel()
             if (n_pixel != self.n_pixel):
                 raise Exception("Number of pixels in mask is different from number of observed pixels")
         else:
-            self.mask_handle = Generic_mask_file(None)
+            self.mask_handle = Generic_mask_file(None, None)
         
     # def add_stray_file(self, stray_file):        
     #     """

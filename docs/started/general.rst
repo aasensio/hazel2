@@ -13,7 +13,7 @@ the package and create the class:
 ::
 
     import hazel
-    mod = hazel.Model(config=None, working_mode='synthesis', verbose=0, randomization=None)
+    mod = hazel.Model(config=None, working_mode='synthesis', verbose=0, randomization=None, root='')
 
 The class ``Model`` admits the following keywords:
 
@@ -21,6 +21,7 @@ The class ``Model`` admits the following keywords:
 * ``working_model`` : ``synthesis`` for synthesis mode and ``inversion`` for inversion mode.
 * ``verbose`` (optional, default is 0) : verbosity level. No verbosity is 0. Increasing levels of verbosity are 1-4, each one giving more information, useful for debugging. Use 0 when doing large scale inversions.
 * ``randomization`` (optional, default is None) : when carrying out inversions, it is useful to carry out several optimizations starting from different regions of the space of parameters and check for convergence. This defines the number of randomizations used.
+* ``root`` (optional, default is '') : set the root directory where all models used by the configuration file will be placed.
 
 
 Once the ``Model`` class has been intantiated, one can interact with it.

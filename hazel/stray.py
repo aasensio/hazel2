@@ -145,7 +145,7 @@ class Straylight_atmosphere(General_atmosphere):
                 self.parameters[k] = self.reference[k]
 
     
-    def synthesize(self):
+    def synthesize(self, nlte=None):
         """
         Carry out the synthesis and returns the Stokes parameters
         

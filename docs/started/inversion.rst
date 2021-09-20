@@ -24,6 +24,7 @@ to adapt it to the specific details of your spectrum.
     [Working mode]
     Output file = output.h5
     Number of cycles = 1
+    Save all cycles = False
 
 
     [Spectral regions]
