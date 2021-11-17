@@ -605,12 +605,12 @@ contains
 				error = 1
 				return
 			endif
- 
-        	do i=1,ntau
-				atmosmodel(i+2*ntau)=pe(i)
-        	end do
 		endif
-
+		
+        do i=1,ntau
+			atmosmodel(i+2*ntau)=pe(i)
+        end do
+		
 ! Set the departure coefficients
 		ixx=0
         do l=1,ntl
@@ -702,5 +702,63 @@ contains
 			
         
 	end subroutine c_synthrf
+
+
+	subroutine c_hydroeq(nDepth, model, pe_out, error) bind(c)
+	integer(c_int), intent(in) :: nDepth
+	real(c_double), intent(in) :: model(8, ndepth)
+	real(c_double), intent(out) :: pe_out(ndepth)
+	integer(c_int), intent(out) :: error
+
+    integer ist(4),i,k,ntot, j, l, itau	
+	integer*4 mnodos(18), ntau
+	real*4 tau(kt),t(kt),pe(kt),pg(kt),z(kt),ro(kt), cmass(kt), pesostray
+	real*4 atmosmodel(kt8)
+	
+
+	integer :: error_code
+	common/Error/error_code
+	
+    common/Atmosmodel/atmosmodel, ntau !common para StokesFRsub
+		
+		error = 0
+		error_code = 0
+
+		ntau = nDepth
+
+		! Put the model in vectorized form
+		atmosmodel(8*ntau+1) = 0.0
+		atmosmodel(8*ntau+2) = 1.0 ! Filling
+		pesostray = 1.0            ! stray
+		do i = 1, ntau
+			do j = 0, 7
+				atmosmodel(i+j*ntau) = model(j+1,i)				
+			enddo
+			tau(i) = atmosmodel(i)
+			t(i) = atmosmodel(i+ntau)
+			pe(i) = atmosmodel(i+2*ntau)
+		enddo
+
+! pasamos los angulos a radianes
+		call taulinea(0,1.,1,0.,atmosmodel,ntau)
+	
+! definimos los nodos en todos los puntos (excepto para ls presion elctronica)
+		do i=1,8                 
+        	mnodos(i)=ntau
+		end do  	    
+		
+
+! Calculate hydrostatic equilibrium if Pe is not known
+		call equisubmu(ntau,tau,t,pe,pg,z,ro,cmass)		
+		if (error_code == 1) then
+			error = 1
+			return
+		endif
+
+		do i = 1, ntau
+			pe_out(i) = pe(i)
+		enddo         	
+        
+	end subroutine c_hydroeq
 
 end module sirMod

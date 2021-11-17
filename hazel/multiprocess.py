@@ -143,8 +143,7 @@ class Iterator(object):
                         # Read current spectrum and stray light
                         for k, v in self.model.spectrum.items():
                             v.read_observation(pixel=i)
-
-                        self.model.invert(randomize=randomize, randomization_ind=loop)
+                        self.model.invert(randomize=randomize, randomization_ind=loop)                        
                     else:
                         self.model.synthesize()
                         self.model.flatten_parameters_to_reference(cycle=0)
@@ -279,6 +278,9 @@ class Iterator(object):
                                 v.chi2_cycle = data_received[label][k][1]
                                 v.bic_cycle = data_received[label][k][2]
                                 v.aic_cycle = data_received[label][k][3]
+                                if (v.interpolate_to_lr):
+                                    v.stokes_lr_cycle = data_received[label][k][4]
+                                
                             
                             for k, v in self.model.atmospheres.items():
                                 v.reference_cycle, v.error_cycle, v.nodes_location_cycle = data_received[label][k]
@@ -357,7 +359,10 @@ class Iterator(object):
                             self.model.invert(randomize=randomize, randomization_ind=loop)
                             data_to_send['error'] = 0
                             for k, v in self.model.spectrum.items():
-                                data_to_send[label][k] = [self.model.spectrum[k].stokes_cycle, self.model.spectrum[k].chi2_cycle, self.model.spectrum[k].bic_cycle, self.model.spectrum[k].aic_cycle]
+                                if (v.interpolate_to_lr):
+                                    data_to_send[label][k] = [self.model.spectrum[k].stokes_cycle, self.model.spectrum[k].chi2_cycle, self.model.spectrum[k].bic_cycle, self.model.spectrum[k].aic_cycle, self.model.spectrum[k].stokes_lr_cycle]
+                                else:
+                                    data_to_send[label][k] = [self.model.spectrum[k].stokes_cycle, self.model.spectrum[k].chi2_cycle, self.model.spectrum[k].bic_cycle, self.model.spectrum[k].aic_cycle]
 
                             for k, v in self.model.atmospheres.items():
                                 data_to_send[label][k] = [v.reference_cycle, v.error_cycle, v.nodes_location_cycle]
@@ -400,7 +405,10 @@ class Iterator(object):
                     
                     
                     for k, v in self.model.spectrum.items():
-                        data_to_send[label][k] = [self.model.spectrum[k].stokes_cycle, None, None, None]
+                        if (v.interpolate_to_lr):
+                            data_to_send[label][k] = [self.model.spectrum[k].stokes_cycle, None, None, None, self.model.spectrum[k].stokes_lr_cycle]
+                        else:
+                            data_to_send[label][k] = [self.model.spectrum[k].stokes_cycle, None, None, None]
 
                     for k, v in self.model.atmospheres.items():
                         data_to_send[label][k] = [v.reference_cycle, v.error_cycle, None]

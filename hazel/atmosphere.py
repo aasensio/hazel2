@@ -150,7 +150,7 @@ class General_atmosphere(object):
         self.nodes_to_model()
         self.reference = copy.deepcopy(self.parameters)
         self.nodes_location =  copy.deepcopy(self.nodes_location)
-
+    
         if (cycle is not None):
             self.to_physical()        
             self.reference_cycle[cycle] = copy.deepcopy(self.parameters)

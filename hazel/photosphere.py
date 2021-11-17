@@ -20,7 +20,7 @@ __all__ = ['SIR_atmosphere']
 # sir_parameters = OrderedDict.fromkeys('T B thetaB phiB v')
 
 class SIR_atmosphere(General_atmosphere):
-    def __init__(self, working_mode, name='', root=''):
+    def __init__(self, working_mode, name='', root='', verbose=0):
         
         super().__init__('photosphere', name=name)
 
@@ -111,6 +111,9 @@ class SIR_atmosphere(General_atmosphere):
         self.regularization['Bz'] = None
         self.regularization['ff'] = None
         self.regularization['vmac'] = None
+
+        self.verbose = verbose
+        
         
     def list_lines(self):
         """
@@ -159,10 +162,10 @@ class SIR_atmosphere(General_atmosphere):
             if 301 in self.lines:
                 if self.graphnet_nlte is None:                    
                     path = str(__file__).split('/')
-                    checkpoint = '/'.join(path[0:-1])+'/data/20210829-092224_best.pth'
+                    checkpoint = '/'.join(path[0:-1])+'/data/20211114-131045_best.prd.pth'
                     if (verbose >= 1):
                         self.logger.info('    * Reading NLTE Neural Network')
-                    self.graphnet_nlte = Forward(checkpoint=checkpoint)
+                    self.graphnet_nlte = Forward(checkpoint=checkpoint, verbose=verbose)
         
     def interpolate_nodes(self, log_tau, reference, nodes):
         """
@@ -200,7 +203,7 @@ class SIR_atmosphere(General_atmosphere):
 
         if (n_nodes == 3):
             pos = np.linspace(0, n_depth-1, n_nodes+2, dtype=int)[1:-1]
-            f = interp.interp1d(log_tau[pos], nodes, 'quadratic', bounds_error=False, fill_value='extrapolate')
+            f = interp.interp1d(log_tau[pos], nodes, 'quadratic', bounds_error=False, fill_value='extrapolate')            
             return reference + f(log_tau), log_tau[pos]
 
         if (n_nodes > 3):
@@ -347,8 +350,12 @@ class SIR_atmosphere(General_atmosphere):
         self.model_handler.close()
 
         self.set_parameters(out, ff, vmac)
+
+        self.t_old = np.zeros_like(self.parameters['T'])
         
         self.init_reference(check_borders=True)
+
+        self.departure = np.ones((2, len(self.lines), len(self.log_tau)))
                         
     def set_parameters(self, model, ff, vmac):
         """
@@ -433,6 +440,9 @@ class SIR_atmosphere(General_atmosphere):
                 self.parameters[k], self.nodes_location[k] = self.interpolate_nodes(self.log_tau, self.reference[k], self.nodes[k])
             else:
                 self.parameters[k] = self.reference[k]
+
+        self.Pe = -np.ones(len(self.log_tau))
+        self.Pe[-1] = 1.11634e-1 
                     
     def model_to_nodes(self):
         """
@@ -465,6 +475,7 @@ class SIR_atmosphere(General_atmosphere):
                     upper = self.ranges[k][1] #+ self.eps_borders
                     nodes = transformed_to_physical(v, lower, upper)            
                     self.logger.info('{0} -> {1}'.format(k, nodes))
+                    
             
     def synthesize(self, stokes_in, returnRF=False, nlte=False):
         """
@@ -496,6 +507,7 @@ class SIR_atmosphere(General_atmosphere):
             self.to_physical()
         
         if (returnRF):
+
             stokes, cmass, rf, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
                 self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
                 self.parameters['Bz'], self.parameters['vmac'])            
@@ -595,27 +607,42 @@ class SIR_atmosphere(General_atmosphere):
             # stokes, error = sir_code.synth(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
                 # self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
                 # self.parameters['Bz'], self.parameters['vmac'])
-            
-            self.departure = np.ones((2, len(self.lines), len(self.log_tau)))
+
+            # If we need to put the atmosphere in hydrostatic eq.
+            if (self.working_mode == 'inversion'):
+                self.Pe = sir_code.hydroeq(self.log_tau, self.parameters['T'], 
+                    self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
+                    self.parameters['Bz'])            
 
             # Check if the line is 8542 and we want NLTE. If that is the case, then evaluate the
             # neural network to return the departure coefficients
             if (nlte):
                 if (self.nlte):
-                    for i, l in enumerate(self.lines):
-                        if (l == 301):
-                            n = len(self.log_tau)
-                            cmass = [10.0**self.log_tau[::-1]]
-                            tau = [10.0**self.log_tau[::-1]]
-                            vturb = [1e3*self.parameters['vmic'][::-1]]
-                            tt = [self.parameters['T'][::-1]]
-                            prediction = self.graphnet_nlte.predict(cmass, tau, vturb, tt)
-                            self.departure[0, i, :] = 10.0**prediction[0][::-1, 2]
-                            self.departure[1, i, :] = 10.0**prediction[0][::-1, 4]
-
+                    dif = (self.parameters['T'] - self.t_old)                                        
+                    if (np.max(dif) > self.t_change_departure):
+                        for i, l in enumerate(self.lines):
+                            if (l == 301):
+                                if (self.verbose >= 4):
+                                    self.logger.info('  - NLTE neural oracle')
+                                n = len(self.log_tau)                            
+                                tau = [10.0**self.log_tau[::-1]]
+                                ne = self.Pe / (1.381e-16 * self.parameters['T'])
+                                ne = [ne[::-1] * 1e6]                                 # in m^-3
+                                tt = [self.parameters['T'][::-1]]
+                                vturb = [self.parameters['vmic'][::-1] * 1e3]         # in m/s                            
+                                vlos = [self.parameters['v'][::-1] * 1e3]             # in m/s
+                                prediction = self.graphnet_nlte.predict(tau, ne, vturb, tt, vlos)
+                                self.departure[0, i, :] = 10.0**prediction[0][::-1, 2]
+                                self.departure[1, i, :] = 10.0**prediction[0][::-1, 4]
+            
+                            self.t_old = self.parameters['T']
+                        
+            else:
+                self.departure = np.ones((2, len(self.lines), len(self.log_tau)))
+            
             stokes, cmass, rf, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
                 self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
-                self.parameters['Bz'], self.parameters['vmac'], self.departure)
+                self.parameters['Bz'], self.parameters['vmac'], np.asfortranarray(self.departure))
 
             # Transform SIR RFs into response functions to Bx, By and Bz.
             # To this end, we have:

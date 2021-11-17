@@ -52,7 +52,7 @@ class Generic_output_file(object):
 
                 n_stokes, n_lambda = v.stokes.shape
                 self.out_spectrum[k]['wavelength'] = db.create_dataset('wavelength', shape=(n_lambda,), dtype=np.float64)                
-                
+                                
                 if (model.save_all_cycles):
                     self.out_spectrum[k]['stokes'] = db.create_dataset('stokes', shape=(model.n_pixels, model.n_randomization, model.n_cycles, n_stokes, n_lambda), dtype=np.float64)
                     self.out_spectrum[k]['stokes'].dims[0].label = 'pixel'
@@ -66,6 +66,25 @@ class Generic_output_file(object):
                     self.out_spectrum[k]['stokes'].dims[1].label = 'randomization'                    
                     self.out_spectrum[k]['stokes'].dims[2].label = 'stokes_parameter'
                     self.out_spectrum[k]['stokes'].dims[3].label = 'wavelength'
+
+                if (v.interpolate_to_lr):
+                    n_stokes, n_lambda = v.stokes_lr.shape
+                    
+                    self.out_spectrum[k]['wavelength_lr'] = db.create_dataset('wavelength_lr', shape=(n_lambda,), dtype=np.float64)                
+
+                    if (model.save_all_cycles):
+                        self.out_spectrum[k]['stokes_lr'] = db.create_dataset('stokes_lr', shape=(model.n_pixels, model.n_randomization, model.n_cycles, n_stokes, n_lambda), dtype=np.float64)
+                        self.out_spectrum[k]['stokes_lr'].dims[0].label = 'pixel'
+                        self.out_spectrum[k]['stokes_lr'].dims[1].label = 'randomization'
+                        self.out_spectrum[k]['stokes_lr'].dims[2].label = 'cycle'
+                        self.out_spectrum[k]['stokes_lr'].dims[3].label = 'stokes_parameter'
+                        self.out_spectrum[k]['stokes_lr'].dims[4].label = 'wavelength'
+                    else:
+                        self.out_spectrum[k]['stokes_lr'] = db.create_dataset('stokes_lr', shape=(model.n_pixels, model.n_randomization, n_stokes, n_lambda), dtype=np.float64)
+                        self.out_spectrum[k]['stokes_lr'].dims[0].label = 'pixel'
+                        self.out_spectrum[k]['stokes_lr'].dims[1].label = 'randomization'                    
+                        self.out_spectrum[k]['stokes_lr'].dims[2].label = 'stokes_parameter'
+                        self.out_spectrum[k]['stokes_lr'].dims[3].label = 'wavelength'
 
                 if (model.working_mode == 'inversion'):
 
@@ -156,7 +175,7 @@ class Generic_output_file(object):
 
     def write(self, model, pixel=0, randomization=0):
 
-        if (self.extension == 'h5'):
+        if (self.extension == 'h5'):            
             for k, v in model.spectrum.items():                            
                 for cycle in range(model.n_cycles):
                     self.out_spectrum[k]['wavelength'][:] = v.wavelength_axis
@@ -164,6 +183,16 @@ class Generic_output_file(object):
                         self.out_spectrum[k]['stokes'][pixel,randomization,cycle,...] = v.stokes_cycle[cycle]
                     else:
                         self.out_spectrum[k]['stokes'][pixel,randomization,...] = v.stokes_cycle[cycle]
+
+                    if (v.interpolate_to_lr):
+                        
+                        self.out_spectrum[k]['wavelength_lr'][:] = v.wavelength_axis_lr
+
+                        if (model.save_all_cycles):
+                            self.out_spectrum[k]['stokes_lr'][pixel,randomization,cycle,...] = v.stokes_lr_cycle[cycle]
+                        else:
+                            self.out_spectrum[k]['stokes_lr'][pixel,randomization,...] = v.stokes_lr_cycle[cycle]
+
 
                     if (model.working_mode == 'inversion'):
                         if (model.save_all_cycles):

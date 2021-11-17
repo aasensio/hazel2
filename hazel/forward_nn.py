@@ -8,7 +8,7 @@ from sklearn import neighbors
 import logging
 
 class Dataset(torch.utils.data.Dataset):
-    def __init__(self, hyperparameters, cmass_all, tau_all, vturb_all, T_all):
+    def __init__(self, hyperparameters, tau_all, ne_all, vturb_all, T_all, vlos_all):
         """
         Dataset for the depth stratification
         """
@@ -44,11 +44,12 @@ class Dataset(torch.utils.data.Dataset):
             receivers = np.concatenate(receivers_list, axis=0)            
 
             # Mask self edges
-            mask = senders != receivers
+            mask = senders != receivers            
 
             # Transform senders and receivers to tensors
             senders = torch.tensor(senders[mask].astype('long'))
             receivers = torch.tensor(receivers[mask].astype('long'))
+            
 
             # Define the graph for this model by using the sender/receiver information
             self.edge_index[i] = torch.cat([senders[None, :], receivers[None, :]], dim=0)
@@ -59,22 +60,16 @@ class Dataset(torch.utils.data.Dataset):
             node_input_size = hyperparameters['node_input_size']
             self.nodes[i] = np.zeros((num_nodes, node_input_size))
             self.nodes[i][:, 0] = np.log10(T_all[i])
-            if node_input_size > 1:
-                self.nodes[i][:, 1] = vturb_all[i]
+            self.nodes[i][:, 1] = np.log10(tau_all[i])            
+            self.nodes[i][:, 2] = np.log10(ne_all[i])
+            self.nodes[i][:, 3] = vturb_all[i] / 1e3
+            self.nodes[i][:, 4] = vlos_all[i] / 1e3
 
             # We use two quantities for the information encoded on the edges: log(column mass) and log(tau)
             edge_input_size = hyperparameters['edge_input_size']
             self.edges[i] = np.zeros((n_edges, edge_input_size))
             
-            if edge_input_size == 2:
-                cmass_0 = np.log10(cmass_all[i][self.edge_index[i][0, :]])
-                cmass_1 = np.log10(cmass_all[i][self.edge_index[i][1, :]])
-                self.edges[i][:, 0] = (cmass_0 - cmass_1)
-
-                tau0 = np.log10(tau_all[i][self.edge_index[i][0, :]])
-                tau1 = np.log10(tau_all[i][self.edge_index[i][1, :]])
-                self.edges[i][:, 1] = (tau0 - tau1)
-            elif edge_input_size == 1:
+            if edge_input_size == 1:
                 tau0 = np.log10(tau_all[i][self.edge_index[i][0, :]])
                 tau1 = np.log10(tau_all[i][self.edge_index[i][1, :]])
                 self.edges[i][:, 0] = (tau0 - tau1)
@@ -110,11 +105,11 @@ class Dataset(torch.utils.data.Dataset):
         return self.n_training
 
     def __call__(self, index):
-        return self.cmass_all[index], self.tau_all[index], self.vturb_all[index], self.T_all[index]
+        return self.cmass_all[index], self.tau_all[index], self.vturb_all[index], self.T_all[index], self.vlos_all[index]
 
 
 class Forward(object):
-    def __init__(self, gpu=0, checkpoint=None, readir=None, verbose=False):
+    def __init__(self, gpu=0, checkpoint=None, readir=None, verbose=0):
 
         self.logger = logging.getLogger("neural")
         self.logger.setLevel(logging.DEBUG)
@@ -127,7 +122,7 @@ class Forward(object):
         # Is a GPU available?
         self.cuda = torch.cuda.is_available()
         self.gpu = gpu
-        self.device = torch.device(f"cuda:{self.gpu}" if self.cuda else "cpu")
+        self.device = torch.device("cpu") #f"cuda:{self.gpu}" if self.cuda else "cpu")        
 
         if (checkpoint is None):
             if readir is None:
@@ -148,11 +143,11 @@ class Forward(object):
 
         if (verbose >= 1):
             npars = sum(p.numel() for p in self.predict_model.parameters() if p.requires_grad)
-            self.logger.info(f'Using neural checkpoint {self.checkpoint} - N. parameters = {npars}')
+            self.logger.info(f'Using neural checkpoint {self.checkpoint} on {self.device} - N. parameters = {npars}')
 
-    def predict(self, cmass_all, tau_all, vturb_all, T_all):
+    def predict(self, tau_all, ne_all, vturb_all, T_all, vlos_all):
 
-        dset = Dataset(self.hyperparameters, cmass_all, tau_all, vturb_all, T_all)
+        dset = Dataset(self.hyperparameters, tau_all, ne_all, vturb_all, T_all, vlos_all)
 
         self.loader = torch_geometric.loader.DataLoader(dset, batch_size=1, shuffle=False)
 

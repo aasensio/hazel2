@@ -51,6 +51,7 @@ class Model(object):
         self.debug = debug
         self.use_analytical_RF_if_possible = False
         self.nlte_available = False
+        self.use_nlte = False
         self.root = root
 
         self.epsilon = 1e-2
@@ -461,22 +462,33 @@ class Model(object):
             value['instrumental profile'] = None
         elif (value['instrumental profile'] == 'None'):
             value['instrumental profile'] = None        
-
+        
         # Wavelength file is not present
         if (value['wavelength file'] is None):
 
-            # If the wavelength is defined
+            # If the wavelength is defined            
             if ('wavelength' in value):
                 axis = value['wavelength']
-                wvl = np.linspace(float(axis[0]), float(axis[1]), int(axis[2]))
+                wvl = np.linspace(float(axis[0]), float(axis[1]), int(axis[2]))                
+                wvl_lr = None
                 if (self.verbose >= 1):
                     self.logger.info('  - Using wavelength axis from {0} to {1} with {2} steps'.format(float(axis[0]), float(axis[1]), int(axis[2])))
             else:
                 raise Exception('Wavelength range is not defined. Please, use "Wavelength" or "Wavelength file"')
         else:
-            if (self.verbose >= 1):
-                self.logger.info('  - Reading wavelength axis from {0}'.format(value['wavelength file']))
-            wvl = np.loadtxt(self.root + value['wavelength file'])
+            # If both observed and synthetic wavelength points are given
+            if ('wavelength' in value):
+                axis = value['wavelength']
+                wvl = np.linspace(float(axis[0]), float(axis[1]), int(axis[2]))
+                if (self.verbose >= 1):
+                    self.logger.info('  - Using wavelength axis from {0} to {1} with {2} steps'.format(float(axis[0]), float(axis[1]), int(axis[2])))
+                    self.logger.info('  - Reading wavelength axis from {0}'.format(value['wavelength file']))
+                wvl_lr = np.loadtxt(self.root + value['wavelength file'])
+            else:
+                if (self.verbose >= 1):
+                    self.logger.info('  - Reading wavelength axis from {0}'.format(value['wavelength file']))
+                wvl = np.loadtxt(self.root + value['wavelength file'])
+                wvl_lr = None
                 
         if (value['wavelength weight file'] is None):
             if (self.verbose >= 1 and self.working_mode == 'inversion'):
@@ -552,9 +564,9 @@ class Model(object):
             stokes_weights.append(tmp)
         
         stokes_weights = np.array(stokes_weights)
-
+        
         self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, 
-            name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, mask_file=mask_file, instrumental_profile=value['instrumental profile'], root=self.root)
+            name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, mask_file=mask_file, instrumental_profile=value['instrumental profile'], root=self.root, wvl_lr=wvl_lr)
 
         self.topologies.append(value['topology'])
         
@@ -580,7 +592,7 @@ class Model(object):
         # already done
         atm = hazel.util.lower_dict_keys(atmosphere)
 
-        self.atmospheres[atm['name']] = SIR_atmosphere(working_mode=self.working_mode, name=atm['name'])
+        self.atmospheres[atm['name']] = SIR_atmosphere(working_mode=self.working_mode, name=atm['name'], verbose=self.verbose)
         lines = [int(k) for k in list(atm['spectral lines'])]
 
         # If NLTE is available because PyTorch and PyTorch Geom are available
@@ -656,6 +668,11 @@ class Model(object):
                 for k2, v2 in self.atmospheres[atm['name']].parameters.items():
                     if (k.lower() == k2.lower()):
                         self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)                
+
+        if ('temperature change to recompute departure coefficients' in atm):
+            self.atmospheres[atm['name']].t_change_departure = float(atm['temperature change to recompute departure coefficients'])
+        else:
+            self.atmospheres[atm['name']].t_change_departure = 0.0
 
 
     def add_chromosphere(self, atmosphere):
@@ -1175,7 +1192,7 @@ class Model(object):
                             self.atmospheres[atm].parameters['ff'] = physical_to_transformed(self.atmospheres[atm].parameters['ff'], -0.00001, 1.00001)
 
 
-    def synthesize_spectral_region(self, spectral_region, perturbation=False, nlte=False):
+    def synthesize_spectral_region(self, spectral_region, perturbation=False):
         """
         Synthesize all atmospheres for a single spectral region and normalize to the continuum of the quiet Sun at disk center
 
@@ -1186,8 +1203,6 @@ class Model(object):
         perturbation : bool
             Set to True if you are synthesizing with a perturbation. In this case, the synthesis
             is saved in spectrum.stokes_perturbed instead of spectrum.stokes
-        nlte : bool
-            Set to True if you want to use NLTE synthesis in Ca II 8542
         
         Returns
         -------
@@ -1216,18 +1231,18 @@ class Model(object):
                                 stokes_out = self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top] * hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
 
                         if (self.atmospheres[atm].type == 'straylight'):
-                            stokes, error = self.atmospheres[atm].synthesize(nlte=nlte)
+                            stokes, error = self.atmospheres[atm].synthesize(nlte=self.use_nlte)
                             if (error == 1):
                                 raise 
                             stokes += (1.0 - self.atmospheres[atm].parameters['ff']) * stokes_out                            
                         else:
                             if (k == 0):                                
                                 if (self.use_analytical_RF):
-                                    stokes, self.rf_analytical, error = self.atmospheres[atm].synthesize(stokes_out, returnRF=True, nlte=nlte)
-                                else:
-                                    stokes, error = self.atmospheres[atm].synthesize(stokes_out, nlte=nlte)
+                                    stokes, self.rf_analytical, error = self.atmospheres[atm].synthesize(stokes_out, returnRF=True, nlte=self.use_nlte)
+                                else:                                    
+                                    stokes, error = self.atmospheres[atm].synthesize(stokes_out, nlte=self.use_nlte)
                             else:             
-                                tmp, error = self.atmospheres[atm].synthesize(stokes_out, nlte=nlte)
+                                tmp, error = self.atmospheres[atm].synthesize(stokes_out, nlte=self.use_nlte)
                                 stokes += tmp
                                     
                         ind_low, ind_top = self.atmospheres[atm].wvl_range
@@ -1246,7 +1261,20 @@ class Model(object):
                         else:                            
                             self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top] = stokes / i0#[None,:]
     
-    def synthesize(self, perturbation=False, nlte=False):
+    def set_nlte(self, option):
+        """
+        Set calculation of Ca II 8542 A to NLTE
+
+        Parameters
+        ----------
+        option : bool
+            Set to True to use NLTE, False to use LTE
+        """
+        self.use_nlte = option
+        if (self.verbose >= 1):
+            self.logger.info('Setting NLTE for Ca II 8542 A to {0}'.format(self.use_nlte))
+
+    def synthesize(self, perturbation=False):
         """
         Synthesize all atmospheres
 
@@ -1261,21 +1289,31 @@ class Model(object):
         None
 
         """
+
         if (self.working_mode == 'inversion'):
             self.normalize_ff()
-        for k, v in self.spectrum.items():            
-            self.synthesize_spectral_region(k, perturbation=perturbation, nlte=nlte)
+        for k, v in self.spectrum.items():
+            self.synthesize_spectral_region(k, perturbation=perturbation)            
             if (v.normalization == 'off-limb'):
                 if (perturbation):
                     v.stokes_perturbed /= np.max(v.stokes_perturbed[0,:])
                 else:
                     v.stokes /= np.max(v.stokes[0,:])
 
-            if (v.psf_spectral is not None):
-                for i in range(4):                    
-                    v.stokes[i,:] = scipy.signal.convolve(v.stokes[i,:], v.psf_spectral, mode='same', method='auto')
-                
+            if (v.psf_spectral is not None):                
+                for i in range(4):
+                    if (perturbation):
+                        v.stokes_perturbed[i,:] = scipy.signal.convolve(v.stokes_perturbed[i,:], v.psf_spectral, mode='same', method='auto')
+                    else:
+                        v.stokes[i,:] = scipy.signal.convolve(v.stokes[i,:], v.psf_spectral, mode='same', method='auto')
             
+            if (v.interpolate_to_lr):
+                for i in range(4):
+                    if (perturbation):                        
+                        v.stokes_perturbed_lr[i,:] = np.interp(v.wavelength_axis_lr, v.wavelength_axis, v.stokes_perturbed[i,:])
+                    else:                        
+                        v.stokes_lr[i,:] = np.interp(v.wavelength_axis_lr, v.wavelength_axis, v.stokes[i,:])                    
+                            
     def find_active_parameters(self, cycle):
         """
         Find all active parameters in all active atmospheres in the current cycle
@@ -1406,15 +1444,14 @@ class Model(object):
                             self.hessian_regularization[par['left']:par['right']] = 2.0 * alpha
 
                     loop += 1
-
-                # breakpoint()
+                
             else:           
                 for i in range(par['n_nodes']):
                     perturbation = np.zeros(par['n_nodes'])
                     if (nodes[i] == 0):
                         perturbation[i] = self.epsilon * par['delta']
                     else:
-                        perturbation[i] = self.epsilon * nodes[i]                
+                        perturbation[i] = self.epsilon * nodes[i]
 
                     # Perturb this parameter
                     self.atmospheres[par['atm']].nodes[par['parameter']] = nodes + perturbation
@@ -1445,14 +1482,17 @@ class Model(object):
                     else:
                         jacobian = 1.0
 
-                    rf = {}
+                    rf = {}                    
                     for k, v in self.spectrum.items():
-                        rf[k] = jacobian * np.expand_dims((v.stokes - v.stokes_perturbed) / perturbation[i], 0)
+                        if (v.interpolate_to_lr):
+                            rf[k] = jacobian * np.expand_dims((v.stokes_lr - v.stokes_perturbed_lr) / perturbation[i], 0)
+                        else:
+                            rf[k] = jacobian * np.expand_dims((v.stokes - v.stokes_perturbed) / perturbation[i], 0)
 
                 
                     # rf = np.expand_dims((self.spectrum['spec1'].stokes - self.spectrum['spec1'].stokes_perturbed) / perturbation[i], 0)
-                                                    
-                    if (loop == 0):
+                    
+                    if (loop == 0):                        
                         self.response = rf
                     else:
                         # self.response = np.vstack([self.response, rf])
@@ -1500,8 +1540,9 @@ class Model(object):
 
         # # self.response = copy.deepcopy(self.response2)
 
-        # self.use_analytical_RF = True
-        
+        # self.use_analytical_RF = True        
+
+                
     def flatten_parameters_to_reference(self, cycle):
         """
         Flatten all current parameters to the reference atmosphere
@@ -1522,6 +1563,8 @@ class Model(object):
             
         for k, v in self.spectrum.items():            
             v.stokes_cycle[cycle] = copy.deepcopy(v.stokes)
+            if (v.interpolate_to_lr):
+                v.stokes_lr_cycle[cycle] = copy.deepcopy(v.stokes_lr)
 
             if (self.working_mode == 'inversion'):                
                 v.chi2_cycle[cycle] = copy.deepcopy(v.chi2)                        
@@ -1633,7 +1676,10 @@ class Model(object):
         ddchi2 = np.zeros((n,n))
 
         for k, v in self.spectrum.items():
-            residual = (v.stokes - v.obs)
+            if (v.interpolate_to_lr):
+                residual = (v.stokes_lr - v.obs)
+            else:
+                residual = (v.stokes - v.obs)
             
             # Do not use weights. This is used for the computation of errors            
             # if (weights is None):
@@ -1748,8 +1794,7 @@ class Model(object):
         return chi2
             
     
-    def backtracking_brent(self, dchi2, ddchi2, maxiter=10, bounds=[-3.0,3.0], tol=1e-2):
-
+    def backtracking_brent(self, dchi2, ddchi2, maxiter=10, bounds=[-3.0,3.0], tol=1e-2):        
         tmp = scipy.optimize.minimize_scalar(self._fun_backtracking, bounds=bounds, args=(dchi2, ddchi2), 
             method='bounded', options={'xatol': tol, 'maxiter': maxiter})
 
@@ -1880,7 +1925,6 @@ class Model(object):
         
         first = True
 
-
         # Reset reference model to the one loaded from the file
         for k, v in self.atmospheres.items():
             v.reset_reference()
@@ -1943,7 +1987,7 @@ class Model(object):
                                     self.logger.info('  - {0} coupled to {1} variable'.format(pars['parameter'], pars['n_nodes']))
                             if (pars['coupled'] is False):
                                 self.n_free_parameters_cycle += pars['n_nodes']
-            
+                        
             # Randomize parameters if necessary
             if (randomize):
                 self.randomize()
@@ -1951,9 +1995,9 @@ class Model(object):
             keepon = True
             iteration = 0
 
-            # Mail Levenberg-Marquardt algorithm
+            # Main Levenberg-Marquardt algorithm
             self.synthesize_and_compute_rf(compute_rf=True)
-            chi2, dchi2, ddchi2 = self.compute_chi2()
+            chi2, dchi2, ddchi2 = self.compute_chi2()       
 
             while keepon:                                
                 
@@ -1974,7 +2018,7 @@ class Model(object):
 
                 # Bounded Brent backtracking
                 if (self.backtracking == 'brent'):                    
-                    lambda_opt = self.backtracking_brent(dchi2, ddchi2, maxiter=10, bounds=[-4.0,4.0], tol=1e-2)
+                    lambda_opt = self.backtracking_brent(dchi2, ddchi2, maxiter=10, bounds=[-4.0,2.0], tol=1e-2)
                                                 
                 # if (self.verbose >= 3):
                     # self.logger.info('  * Optimal lambda: {0}'.format(lambda_opt))
@@ -2006,7 +2050,9 @@ class Model(object):
                 self.nodes += np.clip(delta, -self.step_limiter_inversion, self.step_limiter_inversion)
 
                 self.synthesize_and_compute_rf(compute_rf=True)
+
                 chi2, dchi2, ddchi2 = self.compute_chi2()
+                
 
                 rel = 2.0 * (chi2 - bestchi2) / (chi2 + bestchi2)
 
@@ -2038,9 +2084,7 @@ class Model(object):
                     keepon = False
 
                 iteration += 1
-
-                
-                        
+                                        
             self.set_new_model(self.nodes)
 
             # Calculate final chi2

@@ -9,7 +9,7 @@ __all__ = ['Spectrum']
 
 class Spectrum(object):
     def __init__(self, wvl=None, weights=None, observed_file=None, name=None, stokes_weights=None, los=None, boundary=None, mask_file=None, 
-        instrumental_profile=None, save_all_cycles=False, root=''):
+        instrumental_profile=None, save_all_cycles=False, root='', wvl_lr=None):
         
         self.wavelength_axis = None
         self.stokes = None
@@ -24,7 +24,7 @@ class Spectrum(object):
         self.root = root
         
         if (wvl is not None):
-            self.add_spectrum(wvl)
+            self.add_spectrum(wvl, wvl_lr)
 
         if (weights is not None):
             self.add_weights(weights)
@@ -79,11 +79,12 @@ class Spectrum(object):
         """
 
         self.stokes_cycle = [None] * n_cycles
+        self.stokes_lr_cycle = [None] * n_cycles
         self.chi2_cycle = [-1.0] * n_cycles
         self.bic_cycle = [-1.0] * n_cycles
         self.aic_cycle = [-1.0] * n_cycles
 
-    def add_spectrum(self, wvl):
+    def add_spectrum(self, wvl, wvl_lr):
         """
         Add a new spectrum, initializing the Stokes parameters containers
         
@@ -97,7 +98,8 @@ class Spectrum(object):
         None
     
         """  
-        self.wavelength_axis = wvl
+        self.wavelength_axis = wvl        
+        self.wavelength_axis_lr = wvl_lr
         self.stokes = np.zeros((4,len(wvl)))
         self.stokes_perturbed = np.zeros((4,len(wvl)))
         self.stray = np.zeros((4,len(wvl)))
@@ -112,6 +114,13 @@ class Spectrum(object):
                 self.normalization = 'off-limb'
             else:
                 self.normalization = 'on-disk'
+
+        if (self.wavelength_axis_lr is not None):
+            self.interpolate_to_lr = True
+            self.stokes_lr = np.zeros((4,len(wvl_lr)))
+            self.stokes_perturbed_lr = np.zeros((4,len(wvl_lr)))
+        else:
+            self.interpolate_to_lr = False
             
     def add_weights(self, weights):
         """

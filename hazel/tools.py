@@ -293,7 +293,7 @@ class File_photosphere(object):
         if (self.mode == 'single'):
             print("Saving photospheric 1D model : {0}.1d".format(file))
             f = open('{0}.1d'.format(file), 'w')
-            f.write('ff  vmac\n')
+            f.write('ff  vmac\n')            
             f.write('{0}  {1}\n'.format(self.model['ff'][0], self.model['vmac'][0]))
             f.write('\n')
             f.write('  logtau     T        Pe           vmic        v            Bx           By         Bz\n')

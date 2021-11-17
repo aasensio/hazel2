@@ -17,6 +17,8 @@ def kaiming_init(m):
         if m.bias is not None:
             m.bias.data.fill_(0)
 
+def identity(x):
+    return x
 
 class GraphIndependent(nn.Module):
     def __init__(self, edge_model_fn=None, node_model_fn=None, global_model_fn=None):
@@ -30,17 +32,17 @@ class GraphIndependent(nn.Module):
         super(GraphIndependent, self).__init__()
 
         if (edge_model_fn is None):
-            self.edge_model_fn = lambda x: x
+            self.edge_model_fn = identity
         else:
             self.edge_model_fn = edge_model_fn
 
         if (node_model_fn is None):
-            self.node_model_fn = lambda x: x
+            self.node_model_fn = identity
         else:
             self.node_model_fn = node_model_fn
 
         if (global_model_fn is None):
-            self.global_model_fn = lambda x: x
+            self.global_model_fn = identity
         else:
             self.global_model_fn = global_model_fn
 
