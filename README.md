@@ -33,7 +33,7 @@ Graphical front-ends are also provided.
 
 ## Features
 
-- It can invert photospheric, chromospheric and a variety of systematics (i.e., telluric lines).
+- It can invert photospheric, chromospheric (mainly He I lines and the Ca II 854.2 nm line) and a variety of systematics (i.e., telluric lines).
 - It can seamlessly handle 1D or 3D input/output files, making it very easy to invert large maps.
 - Large supercomputers can be used to invert large maps. It scales practically linearly with the number of cores.
 - It provides a programmatic access to the SIR synthesis module, which can be handy for many purposes.

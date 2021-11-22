@@ -9,11 +9,13 @@ tmp.save('../../photospheres/falc')
 
 # Test a single inversion in non-iterator mode
 mod = hazel.Model('../../configurations/conf_caii.ini', working_mode='synthesis', verbose=3, root='../../')
-mod.synthesize(nlte=False)
+mod.set_nlte(False)
+mod.synthesize()
 
 stokes_lte = np.copy(mod.spectrum['spec1'].stokes[0,:])
 
-mod.synthesize(nlte=True)
+mod.set_nlte(True)
+mod.synthesize()
 stokes_nlte = mod.spectrum['spec1'].stokes[0,:]
 
 fig, ax = pl.subplots(nrows=1, ncols=2, figsize=(12, 6))

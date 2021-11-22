@@ -5,6 +5,10 @@
 Step-by-step description
 ========================
 
+All configuration options are described here. Note that some of them are optional
+and can be absent from the configuration file. If this is the case, a default
+value will be used.
+
 Working mode
 ------------
 
@@ -100,6 +104,9 @@ then defined as the zero azimuth (like in SIR).
         Spectral region = spec1
         Wavelength = 10826, 10833
         Spectral lines = 300, 
+        NLTE = False
+        Temperature change to recompute departure coefficients = 5.0
+        Reference frame = line-of-sight
 
             [[[Ranges]]]
             T      = -3000.0, 3000.0
@@ -136,6 +143,9 @@ then defined as the zero azimuth (like in SIR).
 * ``Spectral region`` : defines the spectral region associated with this atmosphere.
 * ``Wavelength`` (optional): defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time. If absent or `None', then the whole spectral region is synthesized.
 * ``Spectral lines`` : it is a comma-separated list of lines to synthesize from the :ref:`photospheric_lines`. Note that if you only want one line, you should use a comma at the end. The list of available lines
+* ``NLTE`` (optional, default is ``False``): defines whether the line should be treated in NLTE. At the moment, only valid for the Ca II 8542 A line (line number 301).
+* ``Temperature change to recompute departure coefficients`` (optional, default is 0): temperature change during the inversion iterations to recompute the departure coefficients.
+* ``Reference frame``: reference frame to give the components of the magnetic field: ``line-of-sight`` or ``vertical`` (default).
 * ``Ranges`` : ranges of variation of each parameter. If ``None``, consider it unconstrained. If not, it will be constrained to the range using a logit transform (with a small :math:`\epsilon` to avoid under/overflow when close to the border).
 * ``Nodes`` : defines the number of nodes in each cycle when doing inversions. It is possible to couple parameters with those of another atmosphere by using the name of the atmosphere instead of the number of nodes.
 * ``Regularization`` : add regularization to the parameters. See :ref:`regularization`.

@@ -85,7 +85,7 @@ class Iterator(object):
         else:
             self.model = model
 
-    def nonmpi_work(self):
+    def nonmpi_work(self, start=0, end=None):
         """
         Do the synthesis/inversion for all pixels in the models
 
@@ -99,6 +99,9 @@ class Iterator(object):
         None
         """
 
+        if (end is None):
+            end = self.model.n_pixels
+            
         self.model.open_output()
 
         if (self.model.working_mode == 'inversion'):
@@ -111,7 +114,7 @@ class Iterator(object):
             v.model_handler.open()
         
         # Loop over all pixels doing the synthesis and saving the results
-        for i in tqdm(range(self.model.n_pixels)):
+        for i in tqdm(range(start, end)):
 
             mask = []
 
@@ -462,7 +465,7 @@ class Iterator(object):
                 else:
                     self.mpi_workers_work()
             else:
-                self.nonmpi_work()
+                self.nonmpi_work(start, end)
 
             if (self.rank == 0):
                 try:

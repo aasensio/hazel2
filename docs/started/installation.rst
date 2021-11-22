@@ -50,6 +50,10 @@ If you also want to use the GUI, you need to add two new dependencies:
 Remember to add `ipython` if you are using this shell to run |hazel2|. Otherwise, it will use
 `ipython` from another environment and you can get confused.
 
+If you want to use the NLTE neural option for synthesizing the Ca II 854.2 nm line, the packages ``pytorch``
+and ``pytorch_geometric`` should be installed. Take a look at the documentation for `PyTorch <https://pytorch.org/>`_
+and `PyTorch Geometric <https://pytorch-geometric.readthedocs.io/en/latest/>`_ for more information.
+
 Installation from source
 ------------------------
 Since |hazel2| is still in a heavy development phase, the only possible way of
@@ -116,8 +120,8 @@ pretty straightforward to install:
 
 If you want to use the GUI, you also need to install the following dependencies:
 
-* matplotlib
-* pyqt5
+* ``matplotlib``
+* ``pyqt5``
 
 All of them can be installed in Anaconda with:
 

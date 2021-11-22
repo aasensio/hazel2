@@ -158,7 +158,7 @@ class SIR_atmosphere(General_atmosphere):
         self.wvl_range = np.array([ind_low, ind_top+1])
 
         # Check if Ca II 8542 is in the list of lines and instantiate the neural networks
-        if (self.nlte):
+        if (self.nlte):            
             if 301 in self.lines:
                 if self.graphnet_nlte is None:                    
                     path = str(__file__).split('/')
@@ -166,7 +166,7 @@ class SIR_atmosphere(General_atmosphere):
                     if (verbose >= 1):
                         self.logger.info('    * Reading NLTE Neural Network')
                     self.graphnet_nlte = Forward(checkpoint=checkpoint, verbose=verbose)
-        
+                                        
     def interpolate_nodes(self, log_tau, reference, nodes):
         """
         Generate a model atmosphere by interpolating the defined nodes. The interpolation
@@ -194,22 +194,31 @@ class SIR_atmosphere(General_atmosphere):
             return reference, 0
         
         if (n_nodes == 1):
-            return reference + nodes[0], log_tau[n_depth//2]
+            return reference + nodes[0], n_depth//2
+
+        # if (n_nodes >= 2):
+        #     # pos = np.linspace(n_depth-1, 0, n_nodes+2, dtype=int)[1:-1]
+        #     pos = np.linspace(n_depth-1, 0, n_nodes, dtype=int)
+        #     f = interp.PchipInterpolator(log_tau[pos], nodes, extrapolate=True)            
+        #     return reference + f(log_tau), pos
         
         if (n_nodes == 2):
-            pos = np.linspace(0, n_depth-1, n_nodes+2, dtype=int)[1:-1]
+            # pos = np.linspace(0, n_depth-1, n_nodes+2, dtype=int)[1:-1]
+            pos = np.linspace(0, n_depth-1, n_nodes, dtype=int)
             f = interp.interp1d(log_tau[pos], nodes, 'linear', bounds_error=False, fill_value='extrapolate')
-            return reference + f(log_tau), log_tau[pos]
+            return reference + f(log_tau), pos
 
         if (n_nodes == 3):
-            pos = np.linspace(0, n_depth-1, n_nodes+2, dtype=int)[1:-1]
+            # pos = np.linspace(0, n_depth-1, n_nodes+2, dtype=int)[1:-1]
+            pos = np.linspace(0, n_depth-1, n_nodes, dtype=int)
             f = interp.interp1d(log_tau[pos], nodes, 'quadratic', bounds_error=False, fill_value='extrapolate')            
-            return reference + f(log_tau), log_tau[pos]
+            return reference + f(log_tau), pos
 
         if (n_nodes > 3):
-            pos = np.linspace(n_depth-1, 0, n_nodes+2, dtype=int)[1:-1]
+            # pos = np.linspace(n_depth-1, 0, n_nodes+2, dtype=int)[1:-1]
+            pos = np.linspace(n_depth-1, 0, n_nodes, dtype=int)
             f = interp.PchipInterpolator(log_tau[pos], nodes, extrapolate=True)            
-            return reference + f(log_tau), log_tau[pos]
+            return reference + f(log_tau), pos
 
     def interpolate_nodes_rf(self, log_tau, reference, nodes, lower, upper):
         """
@@ -467,14 +476,22 @@ class SIR_atmosphere(General_atmosphere):
         # for k, v in self.parameters.items():
             # if (k is not 'log_tau'):
                 
-    def print_parameters(self, first=False, error=False):
-        for k, v in self.nodes.items():
+    # def print_parameters_old(self, first=False, error=False):
+    #     breakpoint()
+    #     for k, v in self.nodes.items():
+    #         if (self.n_nodes[k] > 0):
+    #             if (k != 'ff'):
+    #                 lower = self.ranges[k][0] #- self.eps_borders
+    #                 upper = self.ranges[k][1] #+ self.eps_borders
+    #                 nodes = transformed_to_physical(v, lower, upper)
+    #                 self.logger.info('{0} -> {1}'.format(k, nodes))
+
+    def print_parameters(self, first=False, error=False):        
+        for k, v in self.parameters.items():
             if (self.n_nodes[k] > 0):
-                if (k != 'ff'):
-                    lower = self.ranges[k][0] #- self.eps_borders
-                    upper = self.ranges[k][1] #+ self.eps_borders
-                    nodes = transformed_to_physical(v, lower, upper)            
-                    self.logger.info('{0} -> {1}'.format(k, nodes))
+                if (k != 'ff'):                    
+                    pars = v[self.nodes_location[k]]
+                    self.logger.info('{0} -> {1}'.format(k, pars))
                     
             
     def synthesize(self, stokes_in, returnRF=False, nlte=False):
@@ -501,7 +518,7 @@ class SIR_atmosphere(General_atmosphere):
             Response functions to T, Pe, vmic, B, v, theta, phi, all of size (4,nLambda,nDepth), plus the RF to macroturbulence of size (4,nLambda)
                             It is not returned if returnRF=False
         """
-
+        
         if (self.working_mode == 'inversion'):
             self.nodes_to_model()
             self.to_physical()
@@ -616,8 +633,9 @@ class SIR_atmosphere(General_atmosphere):
 
             # Check if the line is 8542 and we want NLTE. If that is the case, then evaluate the
             # neural network to return the departure coefficients
+            
             if (nlte):
-                if (self.nlte):
+                if (self.nlte):                    
                     dif = (self.parameters['T'] - self.t_old)                                        
                     if (np.max(dif) > self.t_change_departure):
                         for i, l in enumerate(self.lines):

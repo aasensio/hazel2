@@ -143,7 +143,8 @@ class Forward(object):
 
         if (verbose >= 1):
             npars = sum(p.numel() for p in self.predict_model.parameters() if p.requires_grad)
-            self.logger.info(f'Using neural checkpoint {self.checkpoint} on {self.device} - N. parameters = {npars}')
+            tmp = self.checkpoint.split('/')
+            self.logger.info(f'Using neural checkpoint {tmp[-1]} on {self.device} - N. parameters = {npars}')
 
     def predict(self, tau_all, ne_all, vturb_all, T_all, vlos_all):
 

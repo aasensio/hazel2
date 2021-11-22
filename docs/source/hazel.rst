@@ -43,6 +43,22 @@ hazel.exceptions module
    :undoc-members:
    :show-inheritance:
 
+hazel.forward\_nn module
+------------------------
+
+.. automodule:: hazel.forward_nn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+hazel.graphnet module
+---------------------
+
+.. automodule:: hazel.graphnet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 hazel.hsra module
 -----------------
 

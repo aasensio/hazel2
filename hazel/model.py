@@ -79,7 +79,7 @@ class Model(object):
 
         if (self.verbose >= 1):
             self.logger.info('Hazel2 v1.0')
-    
+        
         if ('torch' in sys.modules and 'torch_geometric' in sys.modules):
             if (self.verbose >= 1):
                 self.logger.info('PyTorch and PyTorch Geometric found. NLTE for Ca II is available')
@@ -631,6 +631,9 @@ class Model(object):
                     
         self.atmospheres[atm['name']].add_active_line(lines=lines, spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range), verbose=self.verbose)
+
+        if (self.atmospheres[atm['name']].graphnet_nlte is not None):
+            self.set_nlte(True)
 
         if ('ranges' in atm):
             for k, v in atm['ranges'].items():
@@ -1439,7 +1442,7 @@ class Model(object):
                             alpha = float(par['regularization'][1])
                             lower = par['ranges'][0]
                             upper = par['ranges'][1]
-                            value = physical_to_transformed(float(par['regularization'][2]), lower, upper)
+                            value = physical_to_transformed(float(par['regularization'][2]), lower, upper)                            
                             self.grad_regularization[par['left']:par['right']] = 2.0 * alpha * (self.atmospheres[par['atm']].nodes[par['parameter']] - value)
                             self.hessian_regularization[par['left']:par['right']] = 2.0 * alpha
 
@@ -1504,8 +1507,8 @@ class Model(object):
                             alpha = float(par['regularization'][1])
                             lower = par['ranges'][0]
                             upper = par['ranges'][1]
-                            value = physical_to_transformed(float(par['regularization'][2]), lower, upper)
-                            self.grad_regularization[par['left']:par['right']] = 2.0 * alpha * (self.atmospheres[par['atm']].nodes[par['parameter']] - value)
+                            value = physical_to_transformed(float(par['regularization'][2]), lower, upper)                            
+                            self.grad_regularization[par['left']:par['right']] = 2.0 * alpha * (self.atmospheres[par['atm']].nodes[par['parameter']] - float(par['regularization'][2]))
                             self.hessian_regularization[par['left']:par['right']] = 2.0 * alpha
 
                     loop += 1
@@ -2018,7 +2021,7 @@ class Model(object):
 
                 # Bounded Brent backtracking
                 if (self.backtracking == 'brent'):                    
-                    lambda_opt = self.backtracking_brent(dchi2, ddchi2, maxiter=10, bounds=[-4.0,2.0], tol=1e-2)
+                    lambda_opt = self.backtracking_brent(dchi2, ddchi2, maxiter=10, bounds=[-4.0,1.0], tol=1e-2)
                                                 
                 # if (self.verbose >= 3):
                     # self.logger.info('  * Optimal lambda: {0}'.format(lambda_opt))
@@ -2035,7 +2038,7 @@ class Model(object):
                 H = 0.5 * (ddchi2 + np.diag(self.hessian_regularization))
                 H += np.diag(lambda_opt * np.diag(H))
                 gradF = 0.5 * (dchi2 + self.grad_regularization)
-
+                
                 U, w_inv, VT = self.modified_svd_inverse(H, tol=self.svd_tolerance)
 
                 # xnew = xold - H^-1 * grad F

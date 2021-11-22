@@ -193,7 +193,7 @@ class General_atmosphere(object):
                         if (not np.all(np.logical_and(v >= self.ranges[k][0], v <= self.ranges[k][1]))):
                             raise Exception("Parameter {0} of atmosphere {1} is outside ranges".format(k, self.name))
 
-            self.to_transformed()            
+            self.to_transformed()
 
         self.reference = copy.deepcopy(self.parameters)
-        self.original_reference = copy.deepcopy(self.parameters)        
+        self.original_reference = copy.deepcopy(self.parameters)
