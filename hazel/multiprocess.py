@@ -386,6 +386,14 @@ class Iterator(object):
 
                             for k, v in self.model.atmospheres.items():
                                 data_to_send[label][k] = None
+
+                        except:
+                            data_to_send['error'] = 3
+                            for k, v in self.model.spectrum.items():
+                                data_to_send[label][k] = None
+
+                            for k, v in self.model.atmospheres.items():
+                                data_to_send[label][k] = None
                         
                 else:
                     for k, v in self.model.atmospheres.items():                    
