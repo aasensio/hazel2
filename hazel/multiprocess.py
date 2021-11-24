@@ -413,6 +413,8 @@ class Iterator(object):
                         data_to_send['error'] = 1
                     except NumericalErrorSIR:                            
                         data_to_send['error'] = 2
+                    except:
+                        data_to_send['error'] = 3
                     
                     
                     for k, v in self.model.spectrum.items():

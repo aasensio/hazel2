@@ -479,6 +479,8 @@ class Model(object):
             # If both observed and synthetic wavelength points are given
             if ('wavelength' in value):
                 axis = value['wavelength']
+                if (len(axis) != 3):
+                    raise Exception("Wavelength range is not given in the format: lower, upper, steps")
                 wvl = np.linspace(float(axis[0]), float(axis[1]), int(axis[2]))
                 if (self.verbose >= 1):
                     self.logger.info('  - Using wavelength axis from {0} to {1} with {2} steps'.format(float(axis[0]), float(axis[1]), int(axis[2])))
