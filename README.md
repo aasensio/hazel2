@@ -159,3 +159,19 @@ MacOSX Catalina has some issues with the paths to the include files. Defining th
     export CCFLAGS="-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
     export CXXFLAGS="-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
     export CPPFLAGS="-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+
+## Attribution
+
+Please, cite [Asensio Ramos, Trujillo Bueno & Landi Degl'Innocenti (2008)](https://ui.adsabs.harvard.edu/abs/2008ApJ...683..542A/abstract) if you find this code useful in your research. The BibTeX entry for the paper is:
+
+    @ARTICLE{2008ApJ...683..542A,
+       author = {{Asensio Ramos}, A. and {Trujillo Bueno}, J. and {Landi Degl'Innocenti}, E.},
+        title = "{Advanced Forward Modeling and Inversion of Stokes Profiles Resulting from the Joint Action of the Hanle and Zeeman Effects}",
+      journal = {ApJ},
+         year = 2008,
+        month = aug,
+       volume = {683},
+       number = {1},
+        pages = {542-565},
+          doi = {10.1086/589433},
+           }
