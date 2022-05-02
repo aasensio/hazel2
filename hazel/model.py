@@ -701,7 +701,7 @@ class Model(object):
         # already done
         atm = hazel.util.lower_dict_keys(atmosphere)
         
-        self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, name=atm['name'])
+        self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, name=atm['name'], atom='sodium')
 
         if ('wavelength' not in atm):
             atm['wavelength'] = None

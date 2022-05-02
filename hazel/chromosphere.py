@@ -13,12 +13,13 @@ import copy
 __all__ = ['Hazel_atmosphere']
 
 class Hazel_atmosphere(General_atmosphere):
-    def __init__(self, working_mode, name=''):
+    def __init__(self, working_mode, name='', atom='helium'):
     
-        super().__init__('chromosphere', name=name)
+        super().__init__('chromosphere', name=name, atom=atom)
 
         self.height = 3.0
         self.working_mode = working_mode
+        self.atom = atom
 
         self.parameters['Bx'] = 0.0
         self.parameters['By'] = 0.0
@@ -198,8 +199,12 @@ class Hazel_atmosphere(General_atmosphere):
         -------
         None
     
-        """        
-        self.line_to_index = {'10830': 1, '3888': 2, '7065': 3,'5876': 4}
+        """      
+        if (self.atom == 'helium')  :
+            self.line_to_index = {'10830': 1, '3888': 2, '7065': 3,'5876': 4}
+        if (self.atom == 'sodium')  :
+            self.line_to_index = {'5895': 1, '5889': 2}
+
         self.active_line = line
         self.wavelength_range = wvl_range
         ind_low = (np.abs(spectrum.wavelength_axis - wvl_range[0])).argmin()

@@ -23,6 +23,7 @@ class tags(IntEnum):
     EXIT = 2
     START = 3
     DONOTHING = 4
+    TOTALTIME = 5
 
 class Iterator(object):
     def __init__(self, use_mpi=False):
@@ -192,6 +193,8 @@ class Iterator(object):
         self.last_received = 0
         self.last_sent = 0
 
+        self.time = [None] * num_workers
+
         # Open all model files
         for k, v in self.model.atmospheres.items():
             v.model_handler.open()
@@ -306,9 +309,18 @@ class Iterator(object):
                 elif tag == tags.DONOTHING:
                     pass
 
+                elif tag == tags.TOTALTIME:
+                    index = data_received['index']                                        
+                    self.time[index - 1] = data_received['total_time']
+
                 elif tag == tags.EXIT:                    
                     closed_workers += 1
-                    pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers='{0} finished'.format(source), elapsed='{0:6.3f} s <{1:6.3f} s>'.format(self.elapsed, self.avg_elapsed))                    
+                    pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers='{0} finished'.format(source), elapsed='{0:6.3f} s <{1:6.3f} s>'.format(self.elapsed, self.avg_elapsed))
+
+        self.logger.info('\nSummary')        
+        total_time = sum(self.time)
+        for i in range(num_workers):
+            self.logger.info(f'Worker {i+1:03d} - Total t={self.time[i]:6.3f} - pct: {100*self.time[i]/total_time:6.3f}% - optimal: {1.0/num_workers*100:6.3f}%')
 
     def mpi_workers_work(self):
         """
@@ -322,6 +334,8 @@ class Iterator(object):
         -------
         None
         """
+
+        self.time = 0
         
         while True:
             self.comm.send(None, dest=0, tag=tags.READY)
@@ -428,10 +442,16 @@ class Iterator(object):
                                         
                 t1 = time.time()
                 data_to_send['elapsed'] = t1 - t0
+
+                # Measure total computing time per node
+                self.time += t1 - t0
+
                 self.comm.send(data_to_send, dest=0, tag=tags.DONE)
             elif tag == tags.DONOTHING:
                 self.comm.send({}, dest=0, tag=tags.DONOTHING)
             elif tag == tags.EXIT:
+                data_to_send = {'index': self.rank, 'total_time': self.time}
+                self.comm.send(data_to_send, dest=0, tag=tags.TOTALTIME)
                 break
 
         self.comm.send(None, dest=0, tag=tags.EXIT)           

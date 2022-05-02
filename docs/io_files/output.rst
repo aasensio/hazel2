@@ -188,6 +188,7 @@ invoking ``hazel.util.show_tree('output.h5')``:
             ├─ stokes -> (1, 1, 1, 4, 164)  float64
             └─ wavelength -> (164,)  float64
 
+In the case that both ``Wavelength`` and ``Wavelength file`` are provided (for instance, when inverting data from a filtergraph), you should see ``stokes``, ``stokes_lr``, ``wavelength`` and ``wavelength_lr``. Those without the ``lr`` subscript are obtained with the wavelength axis provided by ``Wavelength``. Those with the ``lr`` (from low-resolution, which is its typical use) refer to the wavelength axis given in ``Ẁavelength file``.
 
 FITS files
 ^^^^^^^^^^

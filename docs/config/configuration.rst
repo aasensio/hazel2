@@ -60,7 +60,7 @@ atmospheres (described below) will produce the synthetic profiles for this regio
         Instrumental profile = 3.0
 
 * ``Name``: defines the name of the spectral region. Programmatically, one can have access to the spectrum of each spectral region by using ``mod.spectrum['spec1'].stokes``. This name is also used in the output file to refer to each region.
-* ``Wavelength`` (optional) : defines the lower, upper and number of points in the wavelength axis. It can be absent if a file with the wavelength axis is provided.
+* ``Wavelength`` (optional) : defines the lower, upper and number of points in the wavelength axis. It should be absent if a file with the wavelength axis is provided. 
 * ``Topology`` defines the combination of atmospheres that are used to synthesize the Stokes parameters in this spectral region. See :ref:`topology` for more details on the syntax.
 * ``LOS`` (mandatory for synthesis) defines the line-of-sight angles: :math:`\theta_\mathrm{LOS}`, :math:`\phi_\mathrm{LOS}` and :math:`\gamma_\mathrm{LOS}`
 * ``Boundary condition`` (mandatory for synthesis) defines the boundary condition normalized to the continuum intensity on the quiet Sun at disk center
@@ -70,7 +70,13 @@ atmospheres (described below) will produce the synthetic profiles for this regio
 * ``Straylight file`` (optional) defines the file with the straylight. See :ref:`input` for more information.
 * ``Mask file`` (optional) defines a mask to invert only a selection of pixels from an input file. See :ref:`input` for more information.
 * ``Weights Stokes`` (optional) defines the weights for all Stokes parameters and cycles. If absent, they will be considered to be 1.
-* ``Instrumental profile`` (optional) defines the instrumental profile. It can be absent, equal to ``None``, a float giving the width of a Gaussian PSF or a file with the PSF (given with two columns with wavelength displacement in A and PSF).
+* ``Instrumental profile`` (optional) defines the instrumental profile. It can be absent, equal to ``None``, a float giving the width of a Gaussian PSF or a file with the PSF (given with two columns with wavelength displacement in A and PSF). The emergent spectra is convolved with this profile and then reinterpolated to the observed wavelength axis.
+
+There might be some confusion as to when using ``Wavelength`` or ``Wavelength file`` for providing the wavelength axis.
+
+* Spectrograph observations. The recommendation is to remove ``Wavelength`` and use the wavelength axis from the observations provided by ``Wavelength file``. You could provide both keywords in the case that the observations are given in a very fine grid and you decided to synthesize in a coarser grid to accelerate the inversions. The code will the reinterpolate to the finer grid.
+* Filtergraph observations. The recommendation is to provide ``Wavelength file`` with the typically coarse sampling and ``Wavelength`` for providing the fine grid in which the synthesis is done. This is typically done in combination with an instrumental profile.
+
 
 Atmospheres
 -----------
