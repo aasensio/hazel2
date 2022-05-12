@@ -1318,6 +1318,7 @@ class Model(object):
                         v.stokes_perturbed_lr[i,:] = np.interp(v.wavelength_axis_lr, v.wavelength_axis, v.stokes_perturbed[i,:])
                     else:                        
                         v.stokes_lr[i,:] = np.interp(v.wavelength_axis_lr, v.wavelength_axis, v.stokes[i,:])                    
+
                             
     def find_active_parameters(self, cycle):
         """
@@ -1689,7 +1690,7 @@ class Model(object):
             # Do not use weights. This is used for the computation of errors            
             # if (weights is None):
             weights = (v.stokes_weights[:,self.cycle][:,None] * v.wavelength_weights) * v.factor_chi2            
-
+            
             chi2 += np.sum(weights * residual**2)
 
             rss += np.sum(residual**2)
@@ -2072,6 +2073,8 @@ class Model(object):
                         if (v.type == 'photosphere'):
                             v.print_parameters(first=first)
                         if (v.type == 'parametric'):
+                            v.print_parameters(first=first)
+                        if (v.type == 'straylight'):
                             v.print_parameters(first=first)
                     first = False
 

@@ -144,7 +144,12 @@ class Straylight_atmosphere(General_atmosphere):
             else:
                 self.parameters[k] = self.reference[k]
 
-    
+    def print_parameters(self, first=False, error=False):
+        self.logger.info("     {0}        {1}".format('v', 'ff'))
+
+        self.logger.info("     {0:8.3f}  {1:8.3f}  ".format(np.atleast_1d(self.parameters['v'])[0], \
+            np.atleast_1d(self.parameters['ff'])[0]))
+
     def synthesize(self, nlte=None):
         """
         Carry out the synthesis and returns the Stokes parameters
@@ -160,13 +165,15 @@ class Straylight_atmosphere(General_atmosphere):
                                     containing I, Q, U and V. Size (4,nLambda)        
         """
         
-        self.nodes_to_model()
+        if (self.working_mode == 'inversion'):
+            self.nodes_to_model()
+            self.to_physical()
         
         dlambda = self.parameters['v'] * 1e5 / (100.0 * constants.c) * self.avg_wavelength
         
         # self.stokes[0,:] = np.interp(self.wvl_axis - dlambda, self.wvl_axis, self.stray_profile[self.wvl_range[0]:self.wvl_range[1]])
         self.stokes[0,:] = np.interp(self.wvl_axis - dlambda, self.wvl_axis, self.stray_profile)
-
+    
         error = 0
-                                
+                                        
         return self.parameters['ff'] * self.stokes * i0_allen(np.mean(self.wvl_axis), self.spectrum.mu), error #* hsra_continuum(np.mean(self.wvl_axis)), error
