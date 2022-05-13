@@ -126,6 +126,10 @@ class Straylight_atmosphere(General_atmosphere):
 
         self.init_reference()
 
+        if (len(self.wvl_axis) != len(out[0])):
+            raise Exception(f"The stray light profile of size {len(out[0])} is not compatible with the length of the observed profile {len(self.wvl_axis)}.") 
+
+
     def nodes_to_model(self):
         """
         Transform from nodes to model

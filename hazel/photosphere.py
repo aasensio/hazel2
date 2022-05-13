@@ -487,11 +487,13 @@ class SIR_atmosphere(General_atmosphere):
     #                 self.logger.info('{0} -> {1}'.format(k, nodes))
 
     def print_parameters(self, first=False, error=False):        
-        for k, v in self.parameters.items():
+        for k, v in self.parameters.items():            
             if (self.n_nodes[k] > 0):
-                if (k != 'ff'):                    
-                    pars = v[self.nodes_location[k]]
+                if (k != 'ff' and k != 'vmac'):
+                    pars = v[self.nodes_location[k]]                    
                     self.logger.info('{0} -> {1}'.format(k, pars))
+                else:
+                    self.logger.info('{0} -> {1}'.format(k, v))
                     
             
     def synthesize(self, stokes_in, returnRF=False, nlte=False):
