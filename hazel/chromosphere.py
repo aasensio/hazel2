@@ -246,10 +246,12 @@ class Hazel_atmosphere(General_atmosphere):
         Parameters 
         ----------
         pars : list of float
-            This list contains the following parameters in order: Bx, By, Bz, tau, v, delta, beta, a, j10 #EDGAR added j10
+            This list contains the following parameters in order: Bx, By, Bz, tau, v, delta, beta, a
 
-        ff : float
+        ff : float optional keyword
             Filling factor
+
+        j10: array of doubles optional keyword, in percentage units
 
         Returns
         -------
@@ -488,11 +490,8 @@ class Hazel_atmosphere(General_atmosphere):
                     
         dopplerWidthInput = self.parameters['deltav']
         dampingInput = self.parameters['a']
-        #EDGAR: remember we are introducing j10 via two different inputs.
-        #when introduced through pararameters, we assume all j10's constant
-        #for all transitions and inversions take that parameter to invert.
-        #But reading them from python script as a vector (one val for every transition)
-        #is the right way but inversions do not take this into account yet.  
+        #EDGAR: remember we are introducing j10 as a vector (one val for every transition)
+        #Inversions do not take this into account yet.  
         j10Input = self.parameters['j10']
         dopplerVelocityInput = self.parameters['v']
         betaInput = self.parameters['beta']

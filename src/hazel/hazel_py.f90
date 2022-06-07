@@ -1,5 +1,5 @@
 module pyHazelMod
-use iso_c_binding, only: c_int, c_double
+use iso_c_binding, only: c_int, c_double,c_char !EDGAR: remember altering this when touching .pyx
 use vars
 use maths
 use io
@@ -193,10 +193,28 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     
 !   open(unit=31,file=input_model_file,action='write',status='replace')
 !   close(31,status='delete')
-        
+    RETURN
+          
 end subroutine c_hazel
 
-subroutine c_init(verbose) bind(c)
+PURE FUNCTION array_to_string(a)  RESULT (s)    ! copy char array to string
+    !This func is needed to pass from array of chars(C way of dealing with strings) to fortran strings
+    !Incompatibility issue will appear otherwise because we're interfacing using the ISO_C_BINDING 
+    !features. The C language only defines strings as arrays of characters.  
+    !Therefore, if receiving a string from C, it will be an array. 
+    !To use this array as a string in Fortran, it has to be converted using a custom function like this
+    CHARACTER,INTENT(IN) :: a(:)
+    CHARACTER(SIZE(a)) :: s
+    INTEGER :: i
+    DO i = 1,SIZE(a)
+       s(i:i) = a(i)
+    END DO
+END FUNCTION array_to_string
+
+
+subroutine c_init(nchar,atomfileInput,verbose) bind(c)
+    integer(c_int), intent(in) :: nchar  !EDGAR: passes the length of the next string
+    character(c_char), intent(in) :: atomfileInput(nchar) !EDGAR:a C array of characters is entering
     integer(c_int), intent(in) ::verbose
     integer :: i
         
@@ -209,26 +227,27 @@ subroutine c_init(verbose) bind(c)
 ! Fill the factorial array
     call factrl
 
-    verbose_mode=verbose
-
-    !Andres had a helium.mod file here without path.
-    !NOW we use .atom files
-    input_model_file = '../hazel/data/helium.atom'
+    !NOW we use .atom files with relative paths
+    !input_model_file = '../hazel/data/helium.atom'
     !input_model_file = '../hazel/data/sodium_hfs.atom'
-    
-! Read the atomic model 
-    ! call read_model_file(input_model_file)
-    !EDGAR: aqui se inicializa a cero el atom%j10(x) de cada transicion x
-    !The reading subroutine was hardocded by Andres, we need a general one.
-    !call read_model_file_sodium_ok(input_model_file) !harcoded atom file
-    call read_model_file_ok(input_model_file) 
+    !convert from C array of chars to F90 string:
+    input_model_file = '../hazel/data/'//array_to_string(atomfileInput)
 
-    !print*,'j10 Python file:',atom%j10(1)
+    !EDGAR: #Not possible to call to logger.info from here.
+    if (verbose > 0)print*,'Reading atom file:',input_model_file
+    !EDGAR: here atom%j10(x) for each transition x is initialized to 0.
+    call read_model_file_ok(input_model_file) 
+    
+   
+
+    verbose_mode=verbose !EDGAR: verbose_mode is general fortran var, like input_model_file 
+
     ! Force recomputation of RT coefficients by using an absurd velocity
     do i = 1, 10
         params(i)%dopplerVelocityInput_old = -1e10
     enddo
     
+    RETURN
 end subroutine c_init
 
 subroutine c_exit(index) bind(c)

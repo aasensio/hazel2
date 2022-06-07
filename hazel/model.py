@@ -26,7 +26,7 @@ import sys
 __all__ = ['Model']
 
 class Model(object):
-    def __init__(self, config=None, working_mode='synthesis', verbose=0, debug=False, rank=0, randomization=None, root=''):
+    def __init__(self, config=None, working_mode='synthesis', atomf='helium.atom', verbose=0, debug=False, rank=0, randomization=None, root=''):
 
         np.random.seed(123)
         if (rank != 0):
@@ -91,9 +91,9 @@ class Model(object):
 
             self.use_configuration(self.configuration.config_dict)
         
-        # Initialize pyhazel
-        hazel_code._init(verbose)   #EDGAR: Now, it uses verbose to init verbose_mode      
-
+        # Initialize pyhazel    
+        hazel_code._init(atomf,verbose)   #EDGAR
+    
     def __getstate__(self):
         d = self.__dict__.copy()
         if 'logger' in d:
@@ -712,7 +712,7 @@ class Model(object):
         # already done
         atm = hazel.util.lower_dict_keys(atmosphere)
         
-        self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, name=atm['name'], atom=atm['atom']) #EDGAR, corrected hardcoded atom='helium'
+        self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, name=atm['name'], atom=atm['atom'])
 
         if ('wavelength' not in atm):
             atm['wavelength'] = None

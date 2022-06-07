@@ -9,7 +9,7 @@ cdef extern:
 		double* betaInput, double* nbarInput, double* omegaInput, 
 		double* wavelengthOutput, double* stokesOutput, int* error)
 		
-	void c_init(int* verbose) #EDGAR: add verbose
+	void c_init(int* nchar,char* atomfile, int* verbose) #EDGAR: added nchar and atomfile
 	void c_exit(int* index)
 
 def _synth(int index=1, ar[double,ndim=1] B1Input=zeros(3), double hInput=3.0, 
@@ -59,16 +59,24 @@ def _synth(int index=1, ar[double,ndim=1] B1Input=zeros(3), double hInput=3.0,
     
 	return wavelengthOutput, stokesOutput, error
 	
-def _init(int verbose=0):
+def _init(str atomfile, int verbose=0):
 	"""
 	Initialize and do some precomputations that can be avoided in the subsequent calls to the synthesis
-	
 	Args:
-        None
+        atomfile: (str) name of the input atom file .mod to be read. This is a C string
     Returns:
         None
+
+	EDGAR:The line atomfile.encode() converts the input atomfile string to utf8
+
 	"""
-	c_init(&verbose)
+	ftmp = atomfile.encode()
+	cdef:
+		int nchar = len(atomfile)
+		char* atomfileInput = ftmp
+		#int ntransOutput = 0
+
+	c_init(&nchar, &atomfileInput[0], &verbose) #&ntransOutput
 
 def _exit(int index):
 		

@@ -1,5 +1,5 @@
 module io
-! use vars
+use vars  !EDGAR: vars was commented! Check WHY. atom var structure was not being read!! 
 use maths
 implicit none
 contains
@@ -229,8 +229,7 @@ contains
 	end subroutine read_experiment
 
 !------------------------------------------------------------
-! Read the main configuration file AS IS DONE IN io.py so that we can 
-!easily read from python wrapper any atom model file and not only helium.mod.
+! Read any atom model file.
 !------------------------------------------------------------
 	subroutine read_model_file_ok(file)
 	character(len=120) :: file   !EDGAR: check if it is inconsistent with the adaptative nchar length in c_init
@@ -396,17 +395,15 @@ contains
 		allocate(atom%reduction_factor_omega(atom%ntran))
 
 		nullify(atom%j10)       !EDGAR ...same as above 
-        allocate(atom%j10(atom%ntran))  !EDGAR 
-         
+        allocate(atom%j10(atom%ntran))   
 		!if (.not. associated(atom%j10)) allocate(atom%j10(atom%ntran))
 		
-
 		!here j10 is readed from file, but it will be overwritten later by the values entered from 
 		!python routine
 		do i = 1, atom%ntran
 			read(12,*) k, atom%nterml(i), atom%ntermu(i), atom%ae(i), atom%wavelength(i), &
 				atom%reduction_factor(i), atom%reduction_factor_omega(i), atom%j10(i)
-			!print*,'atom%reduction_factor',atom%reduction_factor(i)  !EDGAR DELETE
+			!print*,'atom%reduction_factor',atom%reduction_factor(i) 
 			!print*,'j10 from io_py.f90:',atom%j10(i)
 		enddo
 
@@ -415,7 +412,7 @@ contains
 		if (verbose_mode == 1) then
 			print *, 'Number of unknowns : ', nrhos
 		endif
-		return  !EDGAR: add returns!
+		return  
 	end subroutine read_model_file_ok
 	
 !------------------------------------------------------------
