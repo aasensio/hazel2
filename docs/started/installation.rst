@@ -45,7 +45,7 @@ If you also want to use the GUI, you need to add two new dependencies:
 
     conda create -n hazel_env python=3.6 
     conda activate hazel_env
-    conda install -c conda-forge cython numpy scipy h5py tqdm astropy configobj matplotlib mpich mpi4py pyqt asciitree
+    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpich mpi4py configobj gfortran_linux-64 gcc_linux-64 matplotlib pyqt asciitree
 
 Remember to add `ipython` if you are using this shell to run |hazel2|. Otherwise, it will use
 `ipython` from another environment and you can get confused.
