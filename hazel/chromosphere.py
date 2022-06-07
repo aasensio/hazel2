@@ -32,7 +32,10 @@ class Hazel_atmosphere(General_atmosphere):
         self.parameters['deltav'] = 8.0
         self.parameters['beta'] = 1.0
         self.parameters['a'] = 0.0
+        #EDGAR. j10 to be defined as independent elements, not vector:
+        self.parameters['j10'] = np.zeros(4)  
         self.parameters['ff'] = np.log(1.0)
+        
 
         self.units['Bx'] = 'G'
         self.units['By'] = 'G'
@@ -45,7 +48,9 @@ class Hazel_atmosphere(General_atmosphere):
         self.units['deltav'] = 'km/s'
         self.units['beta'] = ''
         self.units['a'] = ''
+        self.units['j10'] = '%' #EDGAR
         self.units['ff'] = ''
+        
 
         self.nodes['Bx'] = 0.0
         self.nodes['By'] = 0.0
@@ -58,7 +63,9 @@ class Hazel_atmosphere(General_atmosphere):
         self.nodes['deltav'] = 0.0
         self.nodes['beta'] = 0.0
         self.nodes['a'] = 0.0
+        self.nodes['j10'] = 0.0  #EDGAR
         self.nodes['ff'] = 0.0
+        
 
         self.nodes_location['Bx'] = None
         self.nodes_location['By'] = None
@@ -71,7 +78,9 @@ class Hazel_atmosphere(General_atmosphere):
         self.nodes_location['deltav'] = None
         self.nodes_location['beta'] = None
         self.nodes_location['a'] = None
+        self.nodes_location['j10'] = None  #EDGAR
         self.nodes_location['ff'] = None
+        
 
         self.error['Bx'] = 0.0
         self.error['By'] = 0.0
@@ -84,7 +93,9 @@ class Hazel_atmosphere(General_atmosphere):
         self.error['deltav'] = 0.0
         self.error['beta'] = 0.0
         self.error['a'] = 0.0
-        self.error['ff'] = 0.0
+        self.error['j10'] = np.zeros(4) #EDGAR
+        self.error['ff'] = 0.0 
+        
 
         self.n_nodes['Bx'] = 0
         self.n_nodes['By'] = 0
@@ -97,8 +108,10 @@ class Hazel_atmosphere(General_atmosphere):
         self.n_nodes['deltav'] = 0
         self.n_nodes['beta'] = 0
         self.n_nodes['a'] = 0
+        self.n_nodes['j10'] = np.zeros(4) #EDGAR
         self.n_nodes['ff'] = 0
-
+        
+        
         self.ranges['Bx'] = None
         self.ranges['By'] = None
         self.ranges['Bz'] = None
@@ -110,7 +123,9 @@ class Hazel_atmosphere(General_atmosphere):
         self.ranges['deltav'] = None
         self.ranges['beta'] = None
         self.ranges['a'] = None
+        self.ranges['j10'] = None #EDGAR
         self.ranges['ff'] = None
+        
 
         self.cycles['Bx'] = None
         self.cycles['By'] = None
@@ -123,7 +138,9 @@ class Hazel_atmosphere(General_atmosphere):
         self.cycles['deltav'] = None
         self.cycles['beta'] = None
         self.cycles['a'] = None
+        self.cycles['j10'] = None  #EDGAR
         self.cycles['ff'] = None
+        
 
         self.epsilon['Bx'] = 0.01
         self.epsilon['By'] = 0.01
@@ -136,7 +153,9 @@ class Hazel_atmosphere(General_atmosphere):
         self.epsilon['deltav'] = 0.01
         self.epsilon['beta'] = 0.01
         self.epsilon['a'] = 0.01
+        self.epsilon['j10'] = 0.01 #EDGAR
         self.epsilon['ff'] = 0.01
+        
 
         self.jacobian['Bx'] = 1.0
         self.jacobian['By'] = 1.0
@@ -149,7 +168,9 @@ class Hazel_atmosphere(General_atmosphere):
         self.jacobian['deltav'] = 1.0
         self.jacobian['beta'] = 1.0
         self.jacobian['a'] = 1.0
+        self.jacobian['j10'] = 1.0  #EDGAR
         self.jacobian['ff'] = 1.0
+        
 
         self.regularization['Bx'] = None
         self.regularization['By'] = None
@@ -162,10 +183,12 @@ class Hazel_atmosphere(General_atmosphere):
         self.regularization['deltav'] = None
         self.regularization['beta'] = None
         self.regularization['a'] = None
+        self.regularization['j10'] = None  #EDGAR
         self.regularization['ff'] = None
+        
 
     def select_coordinate_system(self):
-
+        #EDGAR: if you choose one coordB, this pops the other one out
         if (self.coordinates_B == 'cartesian'):
             labels = ['B', 'thB', 'phiB']
         if (self.coordinates_B == 'spherical'):
@@ -199,11 +222,13 @@ class Hazel_atmosphere(General_atmosphere):
         -------
         None
     
+        EDGAR: number of transitions is already in atom%ntran
         """      
         if (self.atom == 'helium')  :
             self.line_to_index = {'10830': 1, '3888': 2, '7065': 3,'5876': 4}
         if (self.atom == 'sodium')  :
             self.line_to_index = {'5895': 1, '5889': 2}
+            
 
         self.active_line = line
         self.wavelength_range = wvl_range
@@ -214,14 +239,14 @@ class Hazel_atmosphere(General_atmosphere):
         self.wvl_axis = spectrum.wavelength_axis[ind_low:ind_top+1]
         self.wvl_range = [ind_low, ind_top+1]
 
-    def set_parameters(self, pars, ff):
+    def set_parameters(self, pars, ff=1.0,j10=np.zeros(4),m=None):
         """
         Set the parameters of this model chromosphere
 
-        Parameters
+        Parameters 
         ----------
         pars : list of float
-            This list contains the following parameters in order: Bx, By, Bz, tau, v, delta, beta, a
+            This list contains the following parameters in order: Bx, By, Bz, tau, v, delta, beta, a, j10 #EDGAR added j10
 
         ff : float
             Filling factor
@@ -267,15 +292,26 @@ class Hazel_atmosphere(General_atmosphere):
         self.parameters['deltav'] = pars[5]
         self.parameters['beta'] = pars[6]
         self.parameters['a'] = pars[7]
+        #EDGAR: j10 is not just a number, but a vector with Ntransitions length.
+        self.parameters['j10'] = np.array(j10)#from list to array of doubles   
         self.parameters['ff'] = ff
+        
 
-
+        #EDGAR: I think this is not being used because ranges are defined to none above.
         # Check that parameters are inside borders by clipping inside the interval with a border of 1e-8
         if (self.working_mode == 'inversion'):
             for k, v in self.parameters.items():
                 if (self.ranges[k] is not None):
                     self.parameters[k] = np.clip(v, self.ranges[k][0] + 1e-8, self.ranges[k][1] - 1e-8)
-                
+        
+        #EDGAR: this avoids calling it in main user script everytime after
+        #doing set_parameters but it is inefficient 
+        if (m is not None):m.synthesize()  
+
+    #EDGAR: alias to set_parameters.:
+    def set_pars(self, pars,ff=1.0,j10=np.zeros(4),m=None):
+        return self.set_parameters(pars,ff,j10=j10,m=m)
+
     def load_reference_model(self, model_file, verbose):
         """
         Load a reference model or a model for every pixel for synthesis/inversion
@@ -335,24 +371,23 @@ class Hazel_atmosphere(General_atmosphere):
                             
     def print_parameters(self, first=False, error=False):
         if (self.coordinates_B == 'cartesian'):
-            self.logger.info("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}".format('Bx', 'By', 'Bz', 'tau', 'v', 'deltav', 'beta', 'a'))
-            self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.parameters['Bx'], self.parameters['By'], self.parameters['Bz'], self.parameters['tau'], 
-                self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a']))
+            self.logger.info("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}      {8}".format('Bx', 'By', 'Bz', 'tau', 'v', 'deltav', 'beta', 'a', 'j10'))
+            self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}  {7:8.3f}".format(self.parameters['Bx'], self.parameters['By'], self.parameters['Bz'], self.parameters['tau'], 
+                self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a'], self.parameters['j10']))
             
             if (error):            
-                self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.error['Bx'], self.error['By'], self.error['Bz'], self.error['tau'], 
-                self.error['v'], self.error['deltav'], self.error['beta'], self.error['a']))
+                self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}  {7:8.3f}".format(self.error['Bx'], self.error['By'], self.error['Bz'], self.error['tau'], 
+                self.error['v'], self.error['deltav'], self.error['beta'], self.error['a'], self.error['j10']))
         
         if (self.coordinates_B == 'spherical'):
-            self.logger.info("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}".format('B', 'thB', 'phiB', 'tau', 'v', 'deltav', 'beta', 'a'))
+            self.logger.info("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}      {8}".format('B', 'thB', 'phiB', 'tau', 'v', 'deltav', 'beta', 'a', 'j10'))
             self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.parameters['B'], self.parameters['thB'], self.parameters['phiB'], self.parameters['tau'], 
-                self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a']))
+                self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a'], self.parameters['j10']))
             
             if (error):            
-                self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.error['B'], self.error['thB'], self.error['phiB'], self.error['tau'], 
-                self.error['v'], self.error['deltav'], self.error['beta'], self.error['a']))
+                self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}  {7:8.3f}".format(self.error['B'], self.error['thB'], self.error['phiB'], self.error['tau'], 
+                self.error['v'], self.error['deltav'], self.error['beta'], self.error['a'], self.error['j10']))
         
-
 
     def synthesize(self, stokes=None, returnRF=False, nlte=None):
         """
@@ -453,6 +488,12 @@ class Hazel_atmosphere(General_atmosphere):
                     
         dopplerWidthInput = self.parameters['deltav']
         dampingInput = self.parameters['a']
+        #EDGAR: remember we are introducing j10 via two different inputs.
+        #when introduced through pararameters, we assume all j10's constant
+        #for all transitions and inversions take that parameter to invert.
+        #But reading them from python script as a vector (one val for every transition)
+        #is the right way but inversions do not take this into account yet.  
+        j10Input = self.parameters['j10']
         dopplerVelocityInput = self.parameters['v']
         betaInput = self.parameters['beta']
 
@@ -465,7 +506,7 @@ class Hazel_atmosphere(General_atmosphere):
         
         args = (self.index, B1Input, hInput, tau1Input, boundaryInput, transInput, 
             anglesInput, nLambdaInput, lambdaAxisInput, dopplerWidthInput, 
-            dampingInput, dopplerVelocityInput, 
+            dampingInput, j10Input, dopplerVelocityInput, 
             betaInput, nbarInput, omegaInput)
             
         l, stokes, error = hazel_code._synth(*args)

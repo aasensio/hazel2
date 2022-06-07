@@ -5,18 +5,18 @@ from numpy import empty, linspace, zeros, array
 cdef extern:
 	void c_hazel(int* index, double* B1Input, double* hInput, double* tau1Input, 
 		double* boundaryInput, int* transInput, double* anglesInput, int* nLambdaInput, double* lambdaAxisInput,
-		double* dopplerWidthInput, double* dampingInput, double* dopplerVelocityInput, 
+		double* dopplerWidthInput, double* dampingInput, double* j10Input, double* dopplerVelocityInput, 
 		double* betaInput, double* nbarInput, double* omegaInput, 
 		double* wavelengthOutput, double* stokesOutput, int* error)
 		
-	void c_init()
-	void c_exit(int *index)
+	void c_init(int* verbose) #EDGAR: add verbose
+	void c_exit(int* index)
 
 def _synth(int index=1, ar[double,ndim=1] B1Input=zeros(3), double hInput=3.0, 
 	double tau1Input=1.0, 
 	ar[double,ndim=2,mode='fortran'] boundaryInput=zeros((4,128)), int transInput=1, ar[double,ndim=1] anglesInput=zeros(3), 
 	int nLambdaInput=128, ar[double,ndim=1] lambdaAxisInput=linspace(-1.5,2.5,128),  
-	double dopplerWidthInput=5.0, double dampingInput=0.0, double dopplerVelocityInput=0.0, 
+	double dopplerWidthInput=5.0, double dampingInput=0.0, ar[double,ndim=1] j10Input=zeros(4),double dopplerVelocityInput=0.0, 
 	double betaInput=1.0, ar[double,ndim=1] nbarInput=zeros(4), 
 	ar[double,ndim=1] omegaInput=zeros(4)):
 	
@@ -53,13 +53,13 @@ def _synth(int index=1, ar[double,ndim=1] B1Input=zeros(3), double hInput=3.0,
 		
 	c_hazel(&index, &B1Input[0], &hInput, &tau1Input,  
 		&boundaryInput[0,0], &transInput, &anglesInput[0], &nLambdaInput, &lambdaAxisInput[0],  
-		&dopplerWidthInput, &dampingInput, &dopplerVelocityInput, 
+		&dopplerWidthInput, &dampingInput, &j10Input[0], &dopplerVelocityInput, 
 		&betaInput, &nbarInput[0], &omegaInput[0], <double*> wavelengthOutput.data, 
 		<double*> stokesOutput.data, &error)
     
 	return wavelengthOutput, stokesOutput, error
 	
-def _init():
+def _init(int verbose=0):
 	"""
 	Initialize and do some precomputations that can be avoided in the subsequent calls to the synthesis
 	
@@ -68,9 +68,9 @@ def _init():
     Returns:
         None
 	"""
-	c_init()
+	c_init(&verbose)
 
-def exit(int index):
+def _exit(int index):
 		
 	c_exit(&index)
 

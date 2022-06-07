@@ -29,7 +29,6 @@ class Model(object):
     def __init__(self, config=None, working_mode='synthesis', verbose=0, debug=False, rank=0, randomization=None, root=''):
 
         np.random.seed(123)
-
         if (rank != 0):
             return
         
@@ -93,7 +92,7 @@ class Model(object):
             self.use_configuration(self.configuration.config_dict)
         
         # Initialize pyhazel
-        hazel_code._init()        
+        hazel_code._init(verbose)   #EDGAR: Now, it uses verbose to init verbose_mode      
 
     def __getstate__(self):
         d = self.__dict__.copy()
@@ -113,7 +112,11 @@ class Model(object):
                 tmp += '{0}: {1}\n'.format(l, par)
         return tmp
 
-            
+    def plot_stokes(self,ax,specname): 
+        for i in range(4):ax[i].plot(self.spectrum[specname].stokes[i,:])
+        return ax
+
+     
     def use_configuration(self, config_dict):
         """
         Use a configuration file
@@ -379,7 +382,7 @@ class Model(object):
 
             if (self.verbose >= 1):
                 self.logger.info('Total number of free parameters in all cycles : {0}'.format(self.n_free_parameters))
-        
+
     def open_output(self):
         self.output_handler = Generic_output_file(self.output_file)        
         self.output_handler.open(self)
@@ -619,13 +622,21 @@ class Model(object):
         else:
             wvl_range = [np.min(self.spectrum[atm['spectral region']].wavelength_axis), np.max(self.spectrum[atm['spectral region']].wavelength_axis)]
 
-        if ('reference frame' in atm):
-            if ('line-of-sight' in atm['reference frame']):
-                self.atmospheres[atm['name']].reference_frame = 'line-of-sight'
-            if ('vertical' in atm['reference frame']):
+        #EDGAR:more efficient set up of reference frame
+        refkey=''
+        self.atmospheres[atm['name']].reference_frame = 'line-of-sight'#always for photospheres
+        if ('reference frame' in atm):refkey='reference frame'
+        if ('ref frame' in atm):refkey='ref frame' #short keyword alias
+        if ('vertical' in atm[refkey]):
                 raise Exception('Magnetic fields in photospheres are always in the line-of-sight reference frame.')
-        else:
-            self.atmospheres[atm['name']].reference_frame = 'line-of-sight'
+
+        #if ('reference frame' in atm):
+        #    if ('line-of-sight' in atm['reference frame'] or 'LOS' in atm['reference frame']):
+        #        self.atmospheres[atm['name']].reference_frame = 'line-of-sight'
+        #    if ('vertical' in atm['reference frame']):
+        #        raise Exception('Magnetic fields in photospheres are always in the line-of-sight reference frame.')
+        #else:
+        #    self.atmospheres[atm['name']].reference_frame = 'line-of-sight'
 
         if (self.verbose >= 1):
             self.logger.info("    * Adding line : {0}".format(lines))
@@ -701,7 +712,7 @@ class Model(object):
         # already done
         atm = hazel.util.lower_dict_keys(atmosphere)
         
-        self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, name=atm['name'], atom='sodium')
+        self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, name=atm['name'], atom=atm['atom']) #EDGAR, corrected hardcoded atom='helium'
 
         if ('wavelength' not in atm):
             atm['wavelength'] = None
@@ -716,13 +727,16 @@ class Model(object):
         self.atmospheres[atm['name']].add_active_line(line=atm['line'], spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
 
-        if ('reference frame' in atm):
-            if (atm['reference frame'] == 'line-of-sight'):
+        #EDGAR: more efficient and flexible reference frame set up
+        refkey=''
+        self.atmospheres[atm['name']].reference_frame = 'vertical'#default
+        if ('reference frame' in atm):refkey='reference frame'
+        if ('ref frame' in atm):refkey='ref frame' #short keyword alias
+        if (refkey != ''):#desired reference frame has been specified
+            if (atm[refkey] == 'line-of-sight' or atm[refkey] == 'LOS'):
                 self.atmospheres[atm['name']].reference_frame = 'line-of-sight'
-            if (atm['reference frame'] == 'vertical'):
-                self.atmospheres[atm['name']].reference_frame = 'vertical'
-        else:
-            self.atmospheres[atm['name']].reference_frame = 'vertical'
+            elif (atm[refkey] != 'vertical'):
+                raise Exception('Error: wrong specification of reference frame.')
 
         if (self.verbose >= 1):
             self.logger.info("    * Adding line : {0}".format(atm['line']))
@@ -750,12 +764,13 @@ class Model(object):
                             self.atmospheres[atm['name']].regularization[k2] = v
         
         if ('coordinates for magnetic field vector' in atm):
-            if (atm['coordinates for magnetic field vector'] == 'cartesian'):
+            #EDGAR : now coordB is 'coordinates for magnetic field vector'
+            if (atm['coordB'] == 'cartesian'):
                 self.atmospheres[atm['name']].coordinates_B = 'cartesian'
-            if (atm['coordinates for magnetic field vector'] == 'spherical'):
+            if (atm['coordB'] == 'spherical'):
                 self.atmospheres[atm['name']].coordinates_B = 'spherical'
         else:
-            self.atmospheres[atm['name']].coordinates_B = 'cartesian'
+            self.atmospheres[atm['name']].coordinates_B = 'spherical'
 
         self.atmospheres[atm['name']].select_coordinate_system()
 
@@ -781,8 +796,12 @@ class Model(object):
                 for k2, v2 in self.atmospheres[atm['name']].parameters.items():
                     if (k.lower() == k2.lower()):                            
                         self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)
-                            
-            
+        #EDGAR: return directly the dict entry with the name of the chromo that has been just added
+        return self.atmospheres[atm['name']] 
+
+    def add_chrom(self, atmosphere):#EDGAR: alias to add_chromosphere
+        return self.add_chromosphere(atmosphere)
+
     def add_parametric(self, atmosphere):
         """
         Programmatically add a parametric atmosphere

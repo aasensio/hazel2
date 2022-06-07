@@ -4,6 +4,7 @@ import os.path
 from astropy.constants import c
 from scipy import interpolate
 
+#EDGAR: remember here the routine add_boundary
 
 __all__ = ['Spectrum']
 

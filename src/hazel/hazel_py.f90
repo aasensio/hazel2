@@ -12,23 +12,28 @@ implicit none
 contains
 subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     transInput, anglesInput, nLambdaInput, lambdaAxisInput, dopplerWidthInput, dampingInput, &
-    dopplerVelocityInput, betaInput, nbarInput, omegaInput, &
+    j10Input,dopplerVelocityInput, betaInput, nbarInput, omegaInput, &
     wavelengthOutput, stokesOutput, error) bind(c)
 
+    !EDGAR: no hay que leer ntransInput porque ntrans ya esta 
+    !inicializada en atom%ntran
     integer(c_int), intent(in) :: transInput, index
     integer(c_int), intent(in) :: nLambdaInput
     real(c_double), intent(in), dimension(nLambdaInput) :: lambdaAxisInput
     real(c_double), intent(in), dimension(3) :: B1Input, anglesInput
     real(c_double), intent(in), dimension(4,nLambdaInput) :: boundaryInput
-    real(c_double), intent(in), dimension(4) :: nbarInput, omegaInput
-    real(c_double), intent(in) :: hInput, tau1Input, dopplerWidthInput, dampingInput, dopplerVelocityInput, betaInput
+    !EDGAR: dim shouuld be atom%ntran, not 4 (4 is only for Helium)
+    real(c_double), intent(in), dimension(atom%ntran) :: nbarInput, omegaInput 
+    !EDGAR: add j10Input . in or inout to avoid losing memory between consecutive python calls??
+    real(c_double), intent(in), dimension(atom%ntran) :: j10Input  
+    real(c_double), intent(in) :: hInput, tau1Input, dopplerWidthInput, dampingInput, dopplerVelocityInput, betaInput 
     real(c_double), intent(out), dimension(nLambdaInput) :: wavelengthOutput
     real(c_double), intent(out), dimension(4,nLambdaInput) :: stokesOutput
     integer(c_int), intent(out) :: error
 
     integer :: n, nterml, ntermu
     
-    real(c_double) :: ae, wavelength, reduction_factor, reduction_factor_omega, j10
+    real(c_double) :: ae, wavelength, reduction_factor, reduction_factor_omega !, j10 !EDGAR remove j10
     integer :: i, j
     logical :: recompute_see_rtcoef
 
@@ -48,15 +53,14 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
             params(index)%recompute_see_rtcoef = .False.
     endif
 
-    input_model_file = 'helium.mod'
-    input_experiment = 'init_parameters.dat'        
-    verbose_mode = 0
+    !input_model_file = 'helium.mod'
+    !input_experiment = 'init_parameters.dat'        
+    !verbose_mode = 0
     linear_solver = 0       
     synthesis_mode = 5
     working_mode = 0
-
-! Read the atomic model 
-!   call read_model_file(input_model_file)
+    ! Read the atomic model 
+    ! call read_model_file(input_model_file)
     
 ! Set the variables for the experiment from the parameters of the subroutine
     isti = 1
@@ -101,6 +105,15 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
             
     params%vmacro = dopplerVelocityInput
     
+    !EDGAR: we read atom file already with the init() routine before 
+    !calling the actual routine so atom%j10 is already initialized.
+    do i = 1, atom%ntran
+        !print*,'j10 Python file:',atom%j10(i)
+        atom%j10(i)=j10Input(i)   !overwrite thevalue of the file with the python  
+        if (verbose_mode > 0)print*,'j10 Python input:',atom%j10(i)
+        !transOutput(i)=atom%wavelength(i)  !get the central wavelegnths and take them out to python
+    enddo
+
     use_mag_opt_RT = 1
     use_stim_emission_RT = 1
 
@@ -183,8 +196,9 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
         
 end subroutine c_hazel
 
-subroutine c_init() bind(c)
-integer :: i
+subroutine c_init(verbose) bind(c)
+    integer(c_int), intent(in) ::verbose
+    integer :: i
         
 ! Initialize the random number generator
     call random_seed
@@ -194,13 +208,22 @@ integer :: i
         
 ! Fill the factorial array
     call factrl
-                
-    input_model_file = 'helium.mod'
+
+    verbose_mode=verbose
+
+    !Andres had a helium.mod file here without path.
+    !NOW we use .atom files
+    input_model_file = '../hazel/data/helium.atom'
+    !input_model_file = '../hazel/data/sodium_hfs.atom'
     
 ! Read the atomic model 
     ! call read_model_file(input_model_file)
-    call read_model_file_sodium(input_model_file)
+    !EDGAR: aqui se inicializa a cero el atom%j10(x) de cada transicion x
+    !The reading subroutine was hardocded by Andres, we need a general one.
+    !call read_model_file_sodium_ok(input_model_file) !harcoded atom file
+    call read_model_file_ok(input_model_file) 
 
+    !print*,'j10 Python file:',atom%j10(1)
     ! Force recomputation of RT coefficients by using an absurd velocity
     do i = 1, 10
         params(i)%dopplerVelocityInput_old = -1e10

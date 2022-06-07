@@ -227,6 +227,196 @@ contains
 		
 	
 	end subroutine read_experiment
+
+!------------------------------------------------------------
+! Read the main configuration file AS IS DONE IN io.py so that we can 
+!easily read from python wrapper any atom model file and not only helium.mod.
+!------------------------------------------------------------
+	subroutine read_model_file_ok(file)
+	character(len=120) :: file   !EDGAR: check if it is inconsistent with the adaptative nchar length in c_init
+	integer :: i, j, nJ, n, i1, i2, ir, jmax2, jmin2, jp2, j2, kmin, kmax, k, q
+	real(kind=8) :: rnujjp
+	!logical, save :: first_entry = .true. !EDGAR auxiliary variable
+
+		open(unit=12,file=file,action='read',status='old')
+		
+		read(12,*) is2
+		read(12,*) n_terms		
+		
+		
+		if (allocated(lsto2)) deallocate(lsto2) 
+		allocate(lsto2(n_terms))
+		
+		
+		nrhos = 0
+		
+!		open(unit=13,file='mterm.tab',action='write',status='replace')		
+		
+		jlimit2 = 0
+		do i = 1, n_terms
+			read(12,*) n, lsto2(i)
+			jmin2 = abs(is2-lsto2(i))
+			jmax2 = is2 + lsto2(i)
+			do j2 = jmin2, jmax2, 2
+				read(12,*) 
+			enddo
+			if (verbose_mode == 1) then
+				print *, 'Level ', i
+				print *, '         Jmin : ', jmin2/2.d0
+				print *, '         Jmax : ', jmax2/2.d0
+			endif
+			jlimit2 = max(jmax2,jlimit2)
+		enddo
+		
+		
+		if (allocated(energy)) deallocate(energy)
+		allocate(energy(n_terms,0:jlimit2))
+		
+
+
+		rewind(12)
+		call lb(12,2)
+		file_pointer = 2
+		
+		do i = 1, n_terms
+			read(12,*) n, lsto2(i)
+			file_pointer = file_pointer + 1
+			jmin2 = abs(is2-lsto2(i))
+			jmax2 = is2 + lsto2(i)
+			
+			do j2 = jmin2, jmax2, 2
+				read(12,*) energy(i,j2)
+				file_pointer = file_pointer + 1
+			enddo
+			
+			do j2 = jmin2, jmax2, 2
+				do jp2 = j2, jmax2, 2
+					rnujjp = PC * (energy(i,j2)-energy(i,jp2))
+					kmin = (jp2-j2) / 2
+					kmax = (jp2+j2) / 2
+					do k = kmin, kmax
+						do q = -k, k
+							if (j2 == jp2 .and. q < 0) then
+							else
+								do ir = 1, 2
+									if (j2 == jp2 .and. q == 0 .and. ir == 2) then
+									else
+										nrhos = nrhos + 1
+									endif
+								enddo
+							endif
+						enddo
+					enddo
+				enddo
+			enddo
+		enddo
+		
+		rewind(12)
+		call lb(12,2)
+
+		if (allocated(ntab)) deallocate(ntab)
+		if (allocated(j2tab)) deallocate(j2tab)
+		if (allocated(jp2tab)) deallocate(jp2tab)
+		if (allocated(ktab)) deallocate(ktab)
+		if (allocated(qtab)) deallocate(qtab)
+		if (allocated(irtab)) deallocate(irtab)
+		if (allocated(rnutab)) deallocate(rnutab)
+		
+		allocate(ntab(nrhos))
+		allocate(j2tab(nrhos))
+		allocate(jp2tab(nrhos))
+		allocate(ktab(nrhos))
+		allocate(qtab(nrhos))
+		allocate(irtab(nrhos))
+		allocate(rnutab(nrhos))
+		
+		nrhos = 0
+		
+		do i = 1, n_terms
+			read(12,*) n, lsto2(i)
+			jmin2 = abs(is2-lsto2(i))
+			jmax2 = is2 + lsto2(i)
+			
+			do j2 = jmin2, jmax2, 2
+				read(12,*) energy(i,j2)
+			enddo
+			
+			do j2 = jmin2, jmax2, 2
+				do jp2 = j2, jmax2, 2
+					rnujjp = PC * (energy(i,j2)-energy(i,jp2))
+					kmin = (jp2-j2) / 2
+					kmax = (jp2+j2) / 2
+					do k = kmin, kmax
+						do q = -k, k
+							if (j2 == jp2 .and. q < 0) then
+							else
+								do ir = 1, 2
+									if (j2 == jp2 .and. q == 0 .and. ir == 2) then
+									else
+										nrhos = nrhos + 1
+										ntab(nrhos) = n
+										j2tab(nrhos) = j2
+										jp2tab(nrhos) = jp2
+										ktab(nrhos) = k
+										qtab(nrhos) = q
+										irtab(nrhos) = ir
+										rnutab(nrhos) = rnujjp
+!										write(13,FMT='(7(1X,I5),6X,E12.5)') nrhos, n, j2, jp2, k, q, ir, rnujjp
+									endif
+								enddo
+							endif
+						enddo
+					enddo
+				enddo
+			enddo
+		enddo
+
+! Now read transitions
+
+!EDGAR: the next block cannot be done because pointers inside atom are no allocatable, are just free
+!pointers and what you have to allocate are the variables where they will point
+! 		if (allocated(atom%nterml)) deallocate(atom%nterml)
+! 		if (allocated(atom%ntermu)) deallocate(atom%ntermu)
+! 		if (allocated(atom%ae)) deallocate(atom%ae)
+! 		if (associated(atom%wavelength)) deallocate(atom%wavelength)
+! 		if (allocated(atom%reduction_factor)) deallocate(atom%reduction_factor)
+! 		if (allocated(atom%reduction_factor_omega)) deallocate(atom%reduction_factor_omega)
+! 		if (allocated(atom%j10)) deallocate(atom%j10)
+
+
+		read(12,*) atom%ntran
+
+		allocate(atom%nterml(atom%ntran))
+		allocate(atom%ntermu(atom%ntran))
+		allocate(atom%ae(atom%ntran))
+		!EDGAR . nullify the pointer is not really needed because we inmediately allocate 
+        nullify(atom%wavelength)    
+       	allocate(atom%wavelength(atom%ntran))
+		allocate(atom%reduction_factor(atom%ntran))
+		allocate(atom%reduction_factor_omega(atom%ntran))
+
+		nullify(atom%j10)       !EDGAR ...same as above 
+        allocate(atom%j10(atom%ntran))  !EDGAR 
+         
+		!if (.not. associated(atom%j10)) allocate(atom%j10(atom%ntran))
+		
+
+		!here j10 is readed from file, but it will be overwritten later by the values entered from 
+		!python routine
+		do i = 1, atom%ntran
+			read(12,*) k, atom%nterml(i), atom%ntermu(i), atom%ae(i), atom%wavelength(i), &
+				atom%reduction_factor(i), atom%reduction_factor_omega(i), atom%j10(i)
+			!print*,'atom%reduction_factor',atom%reduction_factor(i)  !EDGAR DELETE
+			!print*,'j10 from io_py.f90:',atom%j10(i)
+		enddo
+
+		close(12)
+		
+		if (verbose_mode == 1) then
+			print *, 'Number of unknowns : ', nrhos
+		endif
+		return  !EDGAR: add returns!
+	end subroutine read_model_file_ok
 	
 !------------------------------------------------------------
 ! Read the main configuration file
