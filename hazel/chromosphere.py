@@ -308,7 +308,7 @@ class Hazel_atmosphere(General_atmosphere):
         
         #EDGAR: this avoids calling it in main user script everytime after
         #doing set_parameters but it is inefficient 
-        if (m is not None):m.synthesize()  
+        #if (m is not None):m.synthesize()  
 
     #EDGAR: alias to set_parameters.:
     def set_pars(self, pars,ff=1.0,j10=np.zeros(4),m=None):
@@ -391,10 +391,11 @@ class Hazel_atmosphere(General_atmosphere):
                 self.error['v'], self.error['deltav'], self.error['beta'], self.error['a'], self.error['j10']))
         
 
-    def synthesize(self, stokes=None, returnRF=False, nlte=None):
+    def synthesize(self,stokes=None, returnRF=False, nlte=None):
         """
-        Carry out the synthesis and returns the Stokes parameters
-        
+        Carry out the synthesis and returns the Stokes parameters directly from python user main program.
+        EDGAR:Added N_chromo. From here cannot access N_chromospheres.Needed as input from model.py
+
         Parameters
         ----------
         stokes : float
@@ -407,6 +408,9 @@ class Hazel_atmosphere(General_atmosphere):
                                     containing I, Q, U and V. Size (4,nLambda)        
         """
         
+        
+        #if (self.verbose >= 1):#EDGAR: print number of Hazel chromospheres/slabs
+        #self.logger.info('N_chromospheres',N_chromo)
 
         if (self.working_mode == 'inversion'):
             self.nodes_to_model()            
@@ -503,6 +507,8 @@ class Hazel_atmosphere(General_atmosphere):
         nbarInput = np.ones(4) * ratio
         omegaInput = np.zeros(4)
         
+        print('i chromo')#EDGAR DELETE
+
         args = (self.index, B1Input, hInput, tau1Input, boundaryInput, transInput, 
             anglesInput, nLambdaInput, lambdaAxisInput, dopplerWidthInput, 
             dampingInput, j10Input, dopplerVelocityInput, 

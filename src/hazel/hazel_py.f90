@@ -17,7 +17,7 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
 
     !EDGAR: no hay que leer ntransInput porque ntrans ya esta 
     !inicializada en atom%ntran
-    integer(c_int), intent(in) :: transInput, index
+    integer(c_int), intent(in) :: transInput, index!, Natmos !EDGAR:Added Natmos for dynamic dims of opt coeffs
     integer(c_int), intent(in) :: nLambdaInput
     real(c_double), intent(in), dimension(nLambdaInput) :: lambdaAxisInput
     real(c_double), intent(in), dimension(3) :: B1Input, anglesInput
@@ -29,6 +29,9 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     real(c_double), intent(in) :: hInput, tau1Input, dopplerWidthInput, dampingInput, dopplerVelocityInput, betaInput 
     real(c_double), intent(out), dimension(nLambdaInput) :: wavelengthOutput
     real(c_double), intent(out), dimension(4,nLambdaInput) :: stokesOutput
+    !real(c_double), intent(out), dimension(Natmos,4,nLambdaInput) :: epsOutput !EDGAR: containers for opt coeffs
+    !real(c_double), intent(out), dimension(Natmos,7,nLambdaInput) :: etaOutput !EDGAR: containers for opt coeffs
+    !real(c_double), intent(out), dimension(Natmos,7,nLambdaInput) :: stimOutput !EDGAR: containers for opt coeffs
     integer(c_int), intent(out) :: error
 
     integer :: n, nterml, ntermu
@@ -67,7 +70,7 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     imag = 1
     idep = 0
     use_paschen_back = 1
-    params(index)%nslabs = 1
+    params(index)%nslabs = 1  !EDGAR:this is not being used anymore
     
     params(index)%bgauss = B1Input(1)
     params(index)%thetabd = B1Input(2)
@@ -136,6 +139,9 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
 
     if (params(index)%recompute_see_rtcoef) then
         
+        !EDGAR: in myhazel this block was inside do_synthesis and the opt coeffs 
+        !had extra dimension for the slab number. They now belong to in_fixed/fixed var.
+
         ! Fill the statistical equilibrium equations
         call fill_SEE(params(index), fixed(index), 1)
 
@@ -146,6 +152,11 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
         endif
                 
         ! Calculate the absorption/emission coefficients for a given transition
+        !EDGAR: fixed%eps, fixed%eta, etc are now opt coeffs belonging to in_fixed parameters 
+        !structure type in vars. To extract them out to python main, we have to collect them 
+        !for each index into an array. Their way out fortran must be the present interface 
+        !subroutine, hence pyx file must be modified and Mod.spectrum should also contain 
+        !the final vector-like etas,epsilons,etc, such that one can retrieve them.  
         call calc_rt_coef(params(index), fixed(index), observation(index), 1)
 
         ! If the calculation of the RT coefficients gives and error, return
@@ -154,6 +165,10 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
             return        
         endif
     
+        !the output containers for the vector optical coeffs are defined here
+        !inversion(index)%stokes_unperturbed(i_stokes,nu)  --> stokesOutput(i_stokes,nu)
+        !inversion(index)%stokes_unperturbed(i_stokes,nu)  --> Output
+
     endif
 
 ! Do the synthesis

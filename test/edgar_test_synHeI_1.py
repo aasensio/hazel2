@@ -34,8 +34,6 @@ ax=mod.plot_stokes('sp1')  #NON-interactive plot (all plotting things are inside
 
 #TBD:
 
-#push last commit to github.
-
 #pasa a sodio con dos capas y una iluminacion de frontera correcta.
 
 #anade todos los cambios que hiciste en hazel1: 

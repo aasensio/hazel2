@@ -89,8 +89,9 @@ class Model(object):
                 self.logger.info('Using configuration from file : {0}'.format(config))
             self.configuration = Configuration(config)
 
-            self.use_configuration(self.configuration.config_dict)
-        
+            #EDGAR:n_chromospheres is set here.
+            self.use_configuration(self.configuration.config_dict) 
+
         # Initialize pyhazel    
         hazel_code._init(atomf,verbose)   #EDGAR
 
@@ -252,6 +253,7 @@ class Model(object):
                 self.add_straylight(value)
 
         self.setup()
+        
 
     def setup(self):
         """
@@ -292,6 +294,9 @@ class Model(object):
                 v.index = index_chromosphere
                 index_chromosphere += 1
                 self.n_chromospheres += 1
+        
+        if (self.verbose >= 1):#EDGAR: print number of Hazel chromospheres/slabs
+            self.logger.info('N_chromospheres',self.n_chromospheres)
 
         # Use analytical RFs if only photospheres are defined
         if (self.n_chromospheres == 0 and self.use_analytical_RF_if_possible):
@@ -388,6 +393,11 @@ class Model(object):
 
             if (self.verbose >= 1):
                 self.logger.info('Total number of free parameters in all cycles : {0}'.format(self.n_free_parameters))
+
+        #if (self.verbose >= 1):#EDGAR: print number of Hazel chromospheres/slabs
+        #    self.logger.info('N_chromospheres',self.n_chromospheres)
+
+        #return self.n_chromospheres
 
     def open_output(self):
         self.output_handler = Generic_output_file(self.output_file)        
@@ -1248,7 +1258,10 @@ class Model(object):
             for n, order in enumerate(atmospheres):
                                                                 
                 for k, atm in enumerate(order):                    
-                    
+                    #-------------------------------------------------------------------
+                    print(i,atmospheres)
+                    print(n,order)
+                    print(k,atm)
                     if (self.atmospheres[atm].spectrum.name == spectral_region):                        
                         
                         # Update the boundary condition only for the first atmosphere if several are sharing ff      
@@ -1259,22 +1272,42 @@ class Model(object):
                                 stokes_out = self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top] * hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
                             else:
                                 stokes_out = self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top] * hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
-
+                        
+                        #EDGAR: photospheres must be first lower and unique, stray atms should be always last higher,
+                        #and I guess chromospheres can be alone and as many as desired
                         if (self.atmospheres[atm].type == 'straylight'):
-                            stokes, error = self.atmospheres[atm].synthesize(nlte=self.use_nlte)
+                            #EDGAR:these are stray synthesis routines(no stokes_out, and are type 'straylight').
+                            #A programmer dies every minute in the world trying to distinguish among
+                            #"synthesize" object-oriented routines. Let us have a minute of silence for them.
+                            stokes, error = self.atmospheres[atm].synthesize(nlte=self.use_nlte) 
+                            print('stray')
                             if (error == 1):
                                 raise 
                             stokes += (1.0 - self.atmospheres[atm].parameters['ff']) * stokes_out                            
-                        else:
-                            if (k == 0):                                
-                                if (self.use_analytical_RF):
+                        else: 
+                            #EDGAR: this looked all like SIR synthesis stuff because the first parameter is mandatory in SIR synthesize
+                            #BUT, Where is then the synthesis for chromospheres??
+                            if (k == 0): 
+                                #k=0 is the lower atmosphere, either a PHOTOSPHERE or a CHROMOSPHERE in my tests                               
+                                if (self.use_analytical_RF):#this calls always a photosphere with RF
                                     stokes, self.rf_analytical, error = self.atmospheres[atm].synthesize(stokes_out, returnRF=True, nlte=self.use_nlte)
-                                else:                                    
-                                    stokes, error = self.atmospheres[atm].synthesize(stokes_out, nlte=self.use_nlte)
-                            else:             
-                                tmp, error = self.atmospheres[atm].synthesize(stokes_out, nlte=self.use_nlte)
+                                    print('photo a')#EDGAR DELETE
+                                else:
+                                    #EDGAR:
+                                    #BIG BUG detected?: the routine for chromospheres was working with syntaxis of a routine for photospheres
+                                    #which was very confusing considering the many calls to different synthesize routines                                     
+                                    #stokes, error = self.atmospheres[atm].synthesize(stokes_out, nlte=self.use_nlte) #OLD
+                                    stokes, error = self.atmospheres[atm].synthesize(stokes=stokes_out, nlte=self.use_nlte)#NEW
+                                    #this line calls HAZEL
+                                    print('photo b')#EDGAR DELETE
+                            else: #It should be a CHROMOSPHERE #CHECK            
+                                #tmp, error = self.atmospheres[atm].synthesize(stokes_out,nlte=self.use_nlte) #OLD
+                                tmp, error = self.atmospheres[atm].synthesize(stokes=stokes_out,nlte=self.use_nlte) #NEW
+                                print('chromo yes') #EDGAR DELETE
                                 stokes += tmp
-                                    
+                        
+                        #-------------------------------------------------------------------
+
                         ind_low, ind_top = self.atmospheres[atm].wvl_range
                         
                         mean_wvl = np.mean(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top])
@@ -1423,7 +1456,15 @@ class Model(object):
         None
 
         """
-        self.synthesize()
+        #EDGAR: Put a thousand synthesize routines in your life!
+        #Synthesizes in model.py are not those in atmospheric classes!
+        #BUT atmosphere objects in current file call the synthesis routine of their class!
+        #Consider adding numbers to the names of different synthesis routines.
+        print('hola')
+        self.synthesize() 
+        print('hola')
+        sys.exit()
+        
 
         if (not compute_rf):            
             return

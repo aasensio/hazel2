@@ -103,7 +103,7 @@ contains
 		in_fixed%mag_opt_stim_zeeman = 0.d0
 		if (.not.allocated(onum)) allocate(onum(in_fixed%no))
 		
-		
+!EDGAR: wl should be here wavelength, but these expressions reminds me those in wavenumber: REMEMBER CHECK
 ! In the synthesis mode, generate a new wavelength axis (wavenumber in this case)
 ! #if ! defined(python)
 ! 		if (working_mode == 0) then		
