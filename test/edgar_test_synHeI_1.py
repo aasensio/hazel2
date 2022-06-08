@@ -2,7 +2,7 @@ import hazel
 import matplotlib.pyplot as plt
 import sys
 
-mod = hazel.Model(working_mode='synthesis',atomf='helium.atom',verbose=0) 
+mod = hazel.Model(working_mode='synthesis',atomf='helium.atom',verbose=0) #'helium.atom' is default
 
 #EDGAR: DEBERIAN topology EN SPECTRAL Y name EN CHROMOSPHERE COINCIDIR??
 mod.add_spectral({'Name': 'sp1', 'Wavelength': [10826, 10833, 150], 
@@ -14,25 +14,27 @@ arg={'spectral region': 'sp1', 'atom':'helium','line': '10830',
 #'coordB' : 'spherical' or 'cartesian' #El keyword 'coordB' antes era coordinates for magnetic field vector'
 
 ch1=mod.add_chrom({'name': 'ch1','height': 3.0,**arg}) #redundancia en el nombre
-ch2=mod.add_chrom({'name': 'ch2','height': 4.0,**arg})
+ch2=mod.add_chrom({'name': 'ch2','height': 4.0,**arg}) #heights are pointless I think
 
 mod.setup() 
-f, ax = plt.subplots(nrows=2, ncols=2)	;ax = ax.flatten()
 
+#f, ax = plt.subplots(nrows=2, ncols=2)	;ax = ax.flatten()
 #for j in range(5):
 #	###PARS:(Bx/B,By/thB,Bz/phB,tau,v,deltav,beta,a).OPT kwds:ff(default 1.0),j10(default np.zeros(4))	
 #	ch1.set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.,0.,0.,0.])#,j10=[1e-2,2e-2,3e-2,4e-2])
 #	mod.synthesize() 
-#	ax=mod.plot_stokes(ax,'sp1')
-
+#	ax=mod.iplot_stokes(ax,'sp1') #Interactive plot for loops
+#plt.show()
 
 ch1.set_pars([20.,10.,10.,3.,0.,8.,1.,0.02],j10=[0.,0.,0.1,0.])
 ch2.set_pars([20.,80.,10.,1.,1.,8.,1.,0.02],j10=[0.,0.,0.,0.2])
 mod.synthesize() 
-ax=mod.plot_stokes(ax,'sp1')
+ax=mod.plot_stokes('sp1')  #NON-interactive plot (all plotting things are inside) 
 
-plt.show()
+
 #TBD:
+
+#push last commit to github.
 
 #pasa a sodio con dos capas y una iluminacion de frontera correcta.
 
@@ -53,6 +55,8 @@ plt.show()
 #el "wavelength" de add_chromosphere podriamos cogerlo de add_spectral
 
 #DONE:
+
+#----------------COMMIT 1----------------------
 #tras compilar los archivos fuente de hazel en directorio hazel se manda una copia a :
 #/opt/anaconda3/envs/hazel_38/lib/python3.8/site-packages/hazel-2018.9.22-py3.8-macosx-10.9-x86_64.egg/hazel
 #si intentas cambiar archivos en este ultimo directorio no sirve de nada porque se sobreescribibiran de nuevo
@@ -105,7 +109,7 @@ plt.show()
 # 	for i in range(4):ax[i].plot(mod.spectrum['sp1'].stokes[i,:])
 #ahora es:
 #	ax1=mod.plot_stokes(ax1,'sp1')
-#-----------------------
+#----------------------- COMMIT 2
 
 #corrected error in io_py.f90, where the module vars containing the atom strcuture was
 #not being read.

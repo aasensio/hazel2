@@ -21,7 +21,7 @@ import scipy.optimize
 import warnings
 import logging
 import sys
-
+import matplotlib.pyplot as plt #EDGAR: a bit ugly to place plotting routines here
 
 __all__ = ['Model']
 
@@ -93,7 +93,7 @@ class Model(object):
         
         # Initialize pyhazel    
         hazel_code._init(atomf,verbose)   #EDGAR
-    
+
     def __getstate__(self):
         d = self.__dict__.copy()
         if 'logger' in d:
@@ -112,7 +112,13 @@ class Model(object):
                 tmp += '{0}: {1}\n'.format(l, par)
         return tmp
 
-    def plot_stokes(self,ax,specname): 
+    def plot_stokes(self,specname): 
+        f, ax = plt.subplots(nrows=2, ncols=2)  ;ax = ax.flatten()
+        for i in range(4):ax[i].plot(self.spectrum[specname].stokes[i,:])
+        plt.show()
+        return ax
+
+    def iplot_stokes(self,ax,specname): 
         for i in range(4):ax[i].plot(self.spectrum[specname].stokes[i,:])
         return ax
 
