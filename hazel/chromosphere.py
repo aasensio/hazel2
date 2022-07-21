@@ -251,7 +251,8 @@ class Hazel_atmosphere(General_atmosphere):
         ff : float optional keyword
             Filling factor
 
-        j10: array of doubles optional keyword, in percentage units
+        #EDGAR: 
+        j10: array of doubles optional keyword, in percentage units. It is a vector with Ntransitions length
 
         Returns
         -------
@@ -394,7 +395,9 @@ class Hazel_atmosphere(General_atmosphere):
     def synthesize(self,stokes=None, returnRF=False, nlte=None):
         """
         Carry out the synthesis and returns the Stokes parameters directly from python user main program.
-        EDGAR:Added N_chromo. From here cannot access N_chromospheres.Needed as input from model.py
+        EDGAR:From here cannot access n_chromospheres.Needed as input from model.py
+        for a mod object we have self.n_chromospheres, but this synthesize is not the synthesize of model.py,
+        so it does not see the number n_chromospheres. Anyways we might not need it 
 
         Parameters
         ----------
@@ -507,13 +510,14 @@ class Hazel_atmosphere(General_atmosphere):
         nbarInput = np.ones(4) * ratio
         omegaInput = np.zeros(4)
         
-        print('i chromo')#EDGAR DELETE
-
+        #self.index is the index integer of the chromosphere being processed.It changes
+        # from 1 to n_chromospheres, but where is it updated??
         args = (self.index, B1Input, hInput, tau1Input, boundaryInput, transInput, 
             anglesInput, nLambdaInput, lambdaAxisInput, dopplerWidthInput, 
             dampingInput, j10Input, dopplerVelocityInput, 
             betaInput, nbarInput, omegaInput)
-            
+        
+        #l, stokes, epsilon(self.index,:,:),error = hazel_code._synth(*args)    
         l, stokes, error = hazel_code._synth(*args)
 
         if (error == 1):

@@ -9,12 +9,14 @@ mod.add_spectral({'Name': 'sp1', 'Wavelength': [10826, 10833, 150],
 	'topology': 'ch1->ch2','LOS': [0.0,0.0,90.0], 'Boundary condition': [1.0,0.0,0.0,0]}) #what means 1 here??
 
 arg={'spectral region': 'sp1', 'atom':'helium','line': '10830', 
-	'wavelength': [10826, 10833],'ref frame': 'LOS','coordB': 'spherical'} #para muchas cromosferas
-#'reference frame': 'line-of-sight' or 'vertical'
-#'coordB' : 'spherical' or 'cartesian' #El keyword 'coordB' antes era coordinates for magnetic field vector'
+	'ref frame': 'LOS'} #para muchas cromosferas
+#'wavelength': [10826, 10833] can be omitted because it takes the one of add_spectral
+#'reference frame': 'LOS' or 'vertical'(default)
+#'coordB' : 'spherical'(DEFAULT) or 'cartesian' #El keyword 'coordB' antes era coordinates for magnetic field vector'
 
-ch1=mod.add_chrom({'name': 'ch1','height': 3.0,**arg}) #redundancia en el nombre
-ch2=mod.add_chrom({'name': 'ch2','height': 4.0,**arg}) #heights are pointless I think
+ch1=mod.add_chrom({'name': 'ch1','height': 1.0,**arg}) #redundancia en el nombre
+ch2=mod.add_chrom({'name': 'ch2','height': 2.0,**arg}) #heights are pointless I think
+
 
 mod.setup() 
 
@@ -26,8 +28,9 @@ mod.setup()
 #	ax=mod.iplot_stokes(ax,'sp1') #Interactive plot for loops
 #plt.show()
 
-ch1.set_pars([20.,10.,10.,3.,0.,8.,1.,0.02],j10=[0.,0.,0.1,0.])
-ch2.set_pars([20.,80.,10.,1.,1.,8.,1.,0.02],j10=[0.,0.,0.,0.2])
+ch1.set_pars([20.,10.,10.,3.,0.,7.,1.,0.02],j10=[0.,0.,0.1,0.])
+ch2.set_pars([20.,80.,10.,3.,6.,7.,1.,0.2],j10=[0.,0.,0.,0.2])
+
 mod.synthesize() 
 ax=mod.plot_stokes('sp1')  #NON-interactive plot (all plotting things are inside) 
 
@@ -116,6 +119,11 @@ ax=mod.plot_stokes('sp1')  #NON-interactive plot (all plotting things are inside
 #parchear el paso de cadena python a vector de caracterres en f90 a traves de wrapper pyx.
 #el paso del nombre del archivo se hace a traves de la rutina init cuando se inicia el 
 #el modulo Hazel en model.py. El path del archivo se presupone en hazel/data.
+
+#----------------------- COMMIT 3
+#adicion de comentarios de desarrollador varios
+#corregido un bug en la deteccion del tipo de "coordinates for magnetic field vector" en model.py
+
 
 #Hacer que cuando se indique atom en add_chromosphere ya selecciones 
 #el archivo de atom que se tiene que leer

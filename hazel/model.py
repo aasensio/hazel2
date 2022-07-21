@@ -21,7 +21,7 @@ import scipy.optimize
 import warnings
 import logging
 import sys
-import matplotlib.pyplot as plt #EDGAR: a bit ugly to place plotting routines here
+import matplotlib.pyplot as plt #EDGAR: Im placing plotting routines here, but is a bit ugly
 
 __all__ = ['Model']
 
@@ -42,7 +42,7 @@ class Model(object):
         self.spectrum = []
         self.configuration = None
         self.n_cycles = 1
-        self.spectrum = {}
+        self.spectrum = {}  #EDGAR:confusing that self.spectrum is initialized as [] and now as {}
         self.topologies = []
         self.straylights = []
         self.working_mode = working_mode
@@ -113,7 +113,8 @@ class Model(object):
                 tmp += '{0}: {1}\n'.format(l, par)
         return tmp
 
-    def plot_stokes(self,specname): 
+    def plot_stokes(self,specname):
+        plt.close()#to avoid accumulation of previous figures in memory 
         f, ax = plt.subplots(nrows=2, ncols=2)  ;ax = ax.flatten()
         for i in range(4):ax[i].plot(self.spectrum[specname].stokes[i,:])
         plt.show()
@@ -157,10 +158,45 @@ class Model(object):
         # Working mode
         # self.working_mode = config_dict['working mode']['action']
 
-        # Add spectral regions
+        # Add spectral regions. EDGAR: it create self.spectrum and add value['topologies'] to self.topologies
         for key, value in config_dict['spectral regions'].items():
-            self.add_spectral(value)
+            self.add_spectral(value)  
 
+
+        # Deal with the atmospheres----------------------------------------------------------------
+        tmp = config_dict['atmospheres']
+        self.atmospheres = {}
+
+        if (self.verbose >= 1):
+            self.logger.info('Adding atmospheres')
+
+        for key, value in tmp.items():
+            
+            if ('photosphere' in key):
+                if (self.verbose >=1):
+                    self.logger.info('  - New available photosphere : {0}'.format(value['name']))
+
+                self.add_photosphere(value)
+                                                            
+            if ('chromosphere' in key):
+                if (self.verbose >= 1):
+                    self.logger.info('  - New available chromosphere : {0}'.format(value['name']))
+
+                self.add_chromosphere(value)
+                                            
+            if ('parametric' in key):
+                if (self.verbose >= 1):
+                    self.logger.info('  - New available parametric : {0}'.format(value['name']))
+
+                self.add_parametric(value)
+
+            if ('straylight' in key):
+                if (self.verbose >= 1):
+                    self.logger.info('  - New available straylight : {0}'.format(value['name']))
+
+                self.add_straylight(value)
+        # ----------------------------------------------------------------
+       
         # Set number of cycles if present
         if (self.working_mode == 'inversion'):
             if ('number of cycles' in config_dict['working mode']):
@@ -218,41 +254,11 @@ class Model(object):
         if (self.verbose >= 1):
             self.logger.info('Saving all cycles : {0}'.format(self.save_all_cycles))
         
-        # Deal with the atmospheres
-        tmp = config_dict['atmospheres']
 
-        self.atmospheres = {}
-
-        if (self.verbose >= 1):
-            self.logger.info('Adding atmospheres')
-
-        for key, value in tmp.items():
-            
-            if ('photosphere' in key):
-                if (self.verbose >=1):
-                    self.logger.info('  - New available photosphere : {0}'.format(value['name']))
-
-                self.add_photosphere(value)
-                                                            
-            if ('chromosphere' in key):
-                if (self.verbose >= 1):
-                    self.logger.info('  - New available chromosphere : {0}'.format(value['name']))
-
-                self.add_chromosphere(value)
-                                            
-            if ('parametric' in key):
-                if (self.verbose >= 1):
-                    self.logger.info('  - New available parametric : {0}'.format(value['name']))
-
-                self.add_parametric(value)
-
-            if ('straylight' in key):
-                if (self.verbose >= 1):
-                    self.logger.info('  - New available straylight : {0}'.format(value['name']))
-
-                self.add_straylight(value)
-
-        self.setup()
+        #EDGAR: setup requires values in self.topologies that were added in add_spectral
+        #we want create global optical coeffs in add_spectral together with stokes var
+        #to create global coeffs we require n_chromospheres because is set in setup.
+        self.setup()#EDGAR:n_chromospheres is set here. 
         
 
     def setup(self):
@@ -268,7 +274,7 @@ class Model(object):
         -------
         None
         """
-                            
+              
         # Adding topologies
         if (self.verbose >= 1):
             self.logger.info("Adding topologies") 
@@ -280,7 +286,7 @@ class Model(object):
             self.logger.info("Removing unused atmospheres")
         self.remove_unused_atmosphere()        
 
-        # Calculate indices for atmospheres
+        # Calculate indices for atmospheres, n_chromospheres is set here
         index_chromosphere = 1
         index_photosphere = 1
         self.n_photospheres = 0
@@ -291,10 +297,13 @@ class Model(object):
                 index_photosphere += 1
                 self.n_photospheres += 1
             if (v.type == 'chromosphere'):
-                v.index = index_chromosphere
-                index_chromosphere += 1
+                v.index = index_chromosphere 
+                index_chromosphere += 1  
                 self.n_chromospheres += 1
-        
+        #EDGAR:index_chromosphere and index_photosphere could be avoided using v.index as counting variable.
+        #Also, as the variation of v.index happens all inside the above loop, that parameter endsup being equal
+        #to n_chromospheres, hence most of this loop looks unnecessary.
+
         if (self.verbose >= 1):#EDGAR: print number of Hazel chromospheres/slabs
             self.logger.info('N_chromospheres',self.n_chromospheres)
 
@@ -715,7 +724,12 @@ class Model(object):
         ----------
         atmosphere : dict
             Dictionary containing the following data
-            'Name', 'Spectral region', 'Height', 'Line', 'Wavelength', 'Reference atmospheric model',
+            'Name', 'Spectral region', 'Height', 'Line', 'Wavelength',
+            ...
+            magnetic field reference frame
+            coordinates for magnetic field parameters
+            ...
+            'Reference atmospheric model',
             'Ranges', 'Nodes'
 
         Returns
@@ -735,7 +749,7 @@ class Model(object):
         elif (atm['wavelength'] == 'None'):
             atm['wavelength'] = None
 
-        if (atm['wavelength'] is not None):
+        if (atm['wavelength'] is not None):#EDGAR: if not defined in dictionary, then take the one of current atm['spectral region']
             wvl_range = [float(k) for k in atm['wavelength']]
         else:
             wvl_range = [np.min(self.spectrum[atm['spectral region']].wavelength_axis), np.max(self.spectrum[atm['spectral region']].wavelength_axis)]
@@ -778,15 +792,15 @@ class Model(object):
                             self.atmospheres[atm['name']].regularization[k2] = None
                         else:
                             self.atmospheres[atm['name']].regularization[k2] = v
-        
-        if ('coordinates for magnetic field vector' in atm):
-            #EDGAR : now coordB is 'coordinates for magnetic field vector'
-            if (atm['coordB'] == 'cartesian'):
+        #EDGAR : now 'coordinates for magnetic field vector' is 'coordB' 
+        #but remember to write it here in lower case (see above)
+        if ('coordb' in atm):
+            if (atm['coordb'] == 'cartesian'):
                 self.atmospheres[atm['name']].coordinates_B = 'cartesian'
-            if (atm['coordB'] == 'spherical'):
+            if (atm['coordb'] == 'spherical'):
                 self.atmospheres[atm['name']].coordinates_B = 'spherical'
         else:
-            self.atmospheres[atm['name']].coordinates_B = 'spherical'
+            self.atmospheres[atm['name']].coordinates_B = 'spherical' #default
 
         self.atmospheres[atm['name']].select_coordinate_system()
 
@@ -1259,53 +1273,49 @@ class Model(object):
                                                                 
                 for k, atm in enumerate(order):                    
                     #-------------------------------------------------------------------
-                    print(i,atmospheres)
-                    print(n,order)
-                    print(k,atm)
+                    #EDGAR: I think k is always zero if there is no filling factor (subpixel atmospheres)
+                    #print(i,atmospheres)  #0 , [['ch1'], ['ch2']] #all the chain of atmospehres
+                    #print(n,order)        #0,['ch1'] and 1,['ch2'] #the current layer
+                    #print(k,atm)            #0,ch1 and 0,ch2 (con ch1 y ch2 los nombres(strings) de las atms)
+
                     if (self.atmospheres[atm].spectrum.name == spectral_region):                        
-                        
                         # Update the boundary condition only for the first atmosphere if several are sharing ff      
                         if (n > 0 and k == 0):
                             ind_low, ind_top = self.atmospheres[atm].wvl_range
                             
                             if (perturbation):
                                 stokes_out = self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top] * hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
-                            else:
+                            else:#i0allen doing nothing but multiplying by 1, you could set it to the I0 background
                                 stokes_out = self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top] * hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
                         
                         #EDGAR: photospheres must be first lower and unique, stray atms should be always last higher,
                         #and I guess chromospheres can be alone and as many as desired
                         if (self.atmospheres[atm].type == 'straylight'):
                             #EDGAR:these are stray synthesis routines(no stokes_out, and are type 'straylight').
-                            #A programmer dies every minute in the world trying to distinguish among
-                            #"synthesize" object-oriented routines. Let us have a minute of silence for them.
+                            #call to synthesize routine in stray.py (synthesize4_stray)
                             stokes, error = self.atmospheres[atm].synthesize(nlte=self.use_nlte) 
-                            print('stray')
                             if (error == 1):
                                 raise 
                             stokes += (1.0 - self.atmospheres[atm].parameters['ff']) * stokes_out                            
-                        else: 
+                        else: #for types chromosphere and photosphere
                             #EDGAR: this looked all like SIR synthesis stuff because the first parameter is mandatory in SIR synthesize
                             #BUT, Where is then the synthesis for chromospheres??
                             if (k == 0): 
                                 #k=0 is the lower atmosphere, either a PHOTOSPHERE or a CHROMOSPHERE in my tests                               
                                 if (self.use_analytical_RF):#this calls always a photosphere with RF
                                     stokes, self.rf_analytical, error = self.atmospheres[atm].synthesize(stokes_out, returnRF=True, nlte=self.use_nlte)
-                                    print('photo a')#EDGAR DELETE
-                                else:
-                                    #EDGAR:
-                                    #BIG BUG detected?: the routine for chromospheres was working with syntaxis of a routine for photospheres
-                                    #which was very confusing considering the many calls to different synthesize routines                                     
+                                else:#EDGAR: in standard chromospheric case we enter here all the times
+                                    #small bug? routine for chromospheres was being called with syntaxis of routine for photospheres?                             
                                     #stokes, error = self.atmospheres[atm].synthesize(stokes_out, nlte=self.use_nlte) #OLD
                                     stokes, error = self.atmospheres[atm].synthesize(stokes=stokes_out, nlte=self.use_nlte)#NEW
-                                    #this line calls HAZEL
-                                    print('photo b')#EDGAR DELETE
-                            else: #It should be a CHROMOSPHERE #CHECK            
+                                    #EDGAR:call to HAZEL synthesize routine in chromosphere.py
+                            else: 
+                                #EDGAR:if fillig factor, adds up stokes of all sub-pixels? that would be wrong because
+                                #the addition should be done only once at the end of all the trasnfer 
                                 #tmp, error = self.atmospheres[atm].synthesize(stokes_out,nlte=self.use_nlte) #OLD
                                 tmp, error = self.atmospheres[atm].synthesize(stokes=stokes_out,nlte=self.use_nlte) #NEW
-                                print('chromo yes') #EDGAR DELETE
-                                stokes += tmp
-                        
+                                stokes += tmp  #EDGAR:we are adding current result to previous last one
+                                
                         #-------------------------------------------------------------------
 
                         ind_low, ind_top = self.atmospheres[atm].wvl_range
@@ -1456,16 +1466,6 @@ class Model(object):
         None
 
         """
-        #EDGAR: Put a thousand synthesize routines in your life!
-        #Synthesizes in model.py are not those in atmospheric classes!
-        #BUT atmosphere objects in current file call the synthesis routine of their class!
-        #Consider adding numbers to the names of different synthesis routines.
-        print('hola')
-        self.synthesize() 
-        print('hola')
-        sys.exit()
-        
-
         if (not compute_rf):            
             return
 

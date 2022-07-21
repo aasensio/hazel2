@@ -103,6 +103,9 @@ class Spectrum(object):
         self.wavelength_axis_lr = wvl_lr
         self.stokes = np.zeros((4,len(wvl)))
         self.stokes_perturbed = np.zeros((4,len(wvl)))
+        
+        self.epsOut = np.zeros((4,len(wvl))) #EDGAR: general python containers
+        
         self.stray = np.zeros((4,len(wvl)))
         self.obs = np.zeros((4,len(wvl)))
         self.noise = np.zeros((4,len(wvl)))

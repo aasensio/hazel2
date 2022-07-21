@@ -17,7 +17,7 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
 
     !EDGAR: no hay que leer ntransInput porque ntrans ya esta 
     !inicializada en atom%ntran
-    integer(c_int), intent(in) :: transInput, index!, Natmos !EDGAR:Added Natmos for dynamic dims of opt coeffs
+    integer(c_int), intent(in) :: transInput, index!, Natmos !EDGAR:Add Natmos for dynamic dims of opt coeffs
     integer(c_int), intent(in) :: nLambdaInput
     real(c_double), intent(in), dimension(nLambdaInput) :: lambdaAxisInput
     real(c_double), intent(in), dimension(3) :: B1Input, anglesInput
@@ -40,11 +40,10 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     integer :: i, j
     logical :: recompute_see_rtcoef
 
-    params(index)%recompute_see_rtcoef = .True.
-
     error = 0
     error_code = 0
 
+    params(index)%recompute_see_rtcoef = .True.
     ! If the parameters on which the RT coefficients depend on change, then recompute the coefficients
     if (params(index)%dopplerVelocityInput_old == dopplerVelocityInput .and. &
         params(index)%dopplerWidthInput_old == dopplerWidthInput .and. &
