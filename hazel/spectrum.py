@@ -10,7 +10,7 @@ __all__ = ['Spectrum']
 
 class Spectrum(object):
     def __init__(self, wvl=None, weights=None, observed_file=None, name=None, stokes_weights=None, los=None, boundary=None, mask_file=None, 
-        instrumental_profile=None, save_all_cycles=False, root='', wvl_lr=None):
+        instrumental_profile=None, save_all_cycles=False, root='', wvl_lr=None,lti=None,lineHazel='',lineSIR=''):
         
         self.wavelength_axis = None
         self.stokes = None
@@ -23,7 +23,19 @@ class Spectrum(object):
         self.normalization = 'on-disk'
         self.save_all_cycles = save_all_cycles
         self.root = root
-        
+
+        #-------------------------------------
+        #EDGAR: new general spectrum-related variables in Spectrum objects
+        if (lti is not None):
+            self.line_to_index=lti  #line_to_index dictionary for Hazel
+
+        if (lineHazel != ''):
+            self.lineHazel=lineHazel #line/s for activating in Hazel chromo or in SIR photo
+
+        if (lineSIR != ''):
+            self.lineSIR=lineSIR #line/s for activating in Hazel chromo or in SIR photo
+
+        #-------------------------------------
         if (wvl is not None):
             self.add_spectrum(wvl, wvl_lr)
 

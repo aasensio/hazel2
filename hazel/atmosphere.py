@@ -15,7 +15,7 @@ import logging
 __all__ = ['General_atmosphere']
     
 class General_atmosphere(object):
-    def __init__(self, atm_type, name, atom='helium'):
+    def __init__(self, atm_type, name, atom='helium'): #EDGAR:remove atom from here
         self.ff = 1.0
         self.name = name
         self.type = atm_type

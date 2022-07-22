@@ -5,11 +5,11 @@ import sys
 mod = hazel.Model(working_mode='synthesis',atomf='helium.atom',verbose=0) #'helium.atom' is default
 
 #EDGAR: DEBERIAN topology EN SPECTRAL Y name EN CHROMOSPHERE COINCIDIR??
-mod.add_spectral({'Name': 'sp1', 'atom':'helium', 'Wavelength': [10826, 10833, 150], 
+mod.add_spectral({'Name': 'sp1', 'atom':'helium','lineHazel': '10830', 'Wavelength': [10826, 10833, 150], 
 	'topology': 'ch1->ch2','LOS': [0.0,0.0,90.0], 'Boundary condition': [1.0,0.0,0.0,0]}) #what means 1 here??
+	#linesSIR='number' for adding lines to calcualte with SIR in the model
 
-arg={'spectral region': 'sp1','line': '10830', 
-	'ref frame': 'LOS'} #, 'atom':'helium'     para muchas cromosferas
+arg={'spectral region': 'sp1','ref frame': 'LOS'} #, 'atom':'helium','line': '10830'      para muchas cromosferas
 #'wavelength': [10826, 10833] can be omitted because it takes the one of add_spectral
 #'reference frame': 'LOS' or 'vertical'(default)
 #'coordB' : 'spherical'(DEFAULT) or 'cartesian' #El keyword 'coordB' antes era coordinates for magnetic field vector'
@@ -133,6 +133,19 @@ ax=mod.plot_stokes('sp1')  #NON-interactive plot (all plotting things are inside
 #atmosphere object and to Hazel synthesize in chromosphere.py we do the following in the radiative transfer 
 #logic of synthesize_spectral_region: self.atmospheres[atm].line_to_index=self.line_to_index.  
 
+#-----------------------COMMIT 7 (pending)
+#ECR: moved line keyword and variables to add_spectral and to spectrum object from hazel and SIR atmospheres.
+
+
+
+
 #Hacer que cuando se indique atom en add_chromosphere ya selecciones 
 #el archivo de atom que se tiene que leer
+
+
+
+
+
+
+
 

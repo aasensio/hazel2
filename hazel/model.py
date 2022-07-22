@@ -33,6 +33,9 @@ class Model(object):
             return
 
         #EDGAR: dictionary of dictionaries with possible atoms and lines with their indexes for HAZEL atmospheres and spectra        
+        #A variation of this dict to add more atoms and lines requires to do similar changes in 
+        #multiplets dict in general_atmosphere object (atmosphere.py). 
+        #It'd be more elegant to encapsulate all together in atomslist
         self.atomslist={'helium':{'10830': 1, '3888': 2, '7065': 3,'5876': 4},
             'sodium':{'5895': 1, '5889': 2}} 
         
@@ -599,20 +602,41 @@ class Model(object):
         
         stokes_weights = np.array(stokes_weights)
         
-        self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, 
-            name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, 
-            mask_file=mask_file, instrumental_profile=value['instrumental profile'], 
-            root=self.root, wvl_lr=wvl_lr)
 
-        #EDGAR: atom keyword moved to add_spectral
-        # moving line_to_index to add_spectral.
+        #EDGAR: atom, line_to_index and line keywords moved to add_spectral
         if ('atom' in value) and (value['atom']in self.atomslist):
             self.atom=value['atom']#self.atom can be deleted because is not used anywhere else
             self.line_to_index=self.atomslist[value['atom']]
         else:
-            raise Exception('Atom is not defined or it is not in the database. Please, define a valid atom.')
-
+            raise Exception('Atom is not specified or not in the database. Please, define a valid atom.')
+    
         if (self.verbose >= 1):self.logger.info('Atom added.')
+        
+        #EDGAR: line for Hazel chromospheres and for SIR photosphere
+        #it seems lines for SIR read in add_photosphere were wrong because they were introduced programatically
+        #with the field atm['spectral lines'] in add_photosphere, but there was no such a field defined anywhere 
+        #
+        lineH, lineS = '', ''
+        if ('linehazel' in value) and (value['linehazel'] in self.atomslist[value['atom']]):
+            lineH=value['linehazel'] #e.g. '10830'.  Lines for activating in Hazel atmos
+            if (self.verbose >= 1):self.logger.info("    * Adding HAZEL line : {0}".format(lineH))
+        else:
+            if ('linesir' in value):#same for SIR lines #SIR photospheres have NOT been checked
+                lineS = [int(k) for k in list(value['linesir'])] #we moved this from add_photosphere
+                if (self.verbose >= 1):self.logger.info("    * Adding SIR line : {0}".format(lineS))
+            else:
+                raise Exception('Line is not specified or not in the database. Please, define a valid line.')
+
+        self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, 
+            name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, 
+            mask_file=mask_file, instrumental_profile=value['instrumental profile'], 
+            root=self.root, wvl_lr=wvl_lr,lti=self.line_to_index,lineHazel=lineH,lineSIR=lineS)
+        #we send line_to_index and lines to activate to Spectrum object 
+        #for accessing them later from everywhere
+        #we could then remove self.line_to_index from here
+        #and we could now remove all what has to do with spectrum from add_chromosphere and add_photosphere
+        #so that add_spectral and add_atmos can be invoked in any order
+
 
         self.topologies.append(value['topology'])
         
@@ -639,7 +663,7 @@ class Model(object):
         atm = hazel.util.lower_dict_keys(atmosphere)
 
         self.atmospheres[atm['name']] = SIR_atmosphere(working_mode=self.working_mode, name=atm['name'], verbose=self.verbose)
-        lines = [int(k) for k in list(atm['spectral lines'])]
+        
 
         # If NLTE is available because PyTorch and PyTorch Geom are available
         # check whether the line is needed in NLTE or not
@@ -680,10 +704,13 @@ class Model(object):
         #    self.atmospheres[atm['name']].reference_frame = 'line-of-sight'
 
         if (self.verbose >= 1):
-            self.logger.info("    * Adding line : {0}".format(lines))
             self.logger.info("    * Magnetic field reference frame : {0}".format(self.atmospheres[atm['name']].reference_frame))
+
+        #lines = [int(k) for k in list(atm['spectral lines'])] #we want lines to be set in add_spectral
+        #self.atmospheres[atm['name']].add_active_line(lines=lines, spectrum=self.spectrum[atm['spectral region']], 
+        #    wvl_range=np.array(wvl_range), verbose=self.verbose) #EDGAR ,  OLD version
                     
-        self.atmospheres[atm['name']].add_active_line(lines=lines, spectrum=self.spectrum[atm['spectral region']], 
+        self.atmospheres[atm['name']].add_active_line(spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range), verbose=self.verbose)
 
         if (self.atmospheres[atm['name']].graphnet_nlte is not None):
@@ -772,8 +799,17 @@ class Model(object):
 
         #esto es algo que podriamos hacer en add_spectral (despues de añadir todas las atmosferas de la 
         #topologia pero antes de pasarles los paraemtros) en un for para cada atmosfera de la topologia
-        self.atmospheres[atm['name']].add_active_line(line=atm['line'], spectrum=self.spectrum[atm['spectral region']], 
+        #self.atmospheres[atm['name']].add_active_line(line=atm['line'], spectrum=self.spectrum[atm['spectral region']], 
+        #    wvl_range=np.array(wvl_range)) #OLD
+        #ahora line se coge directamente de Model, no de la atmosfera
+        
+        #EDGAR DELETE lili=self.spectrum[atm['spectral region']].line  #bastaria con pasarle solo spectrum porque hemos metido line dentro
+        self.atmospheres[atm['name']].add_active_line(spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
+
+        #self.atmospheres[atm['name']].add_active_line(line=self.line, spectrum=self.spectrum[atm['spectral region']], 
+        #    wvl_range=np.array(wvl_range))  #OLD , reading line from model object
+
 
         #EDGAR: more efficient and flexible reference frame set up
         refkey=''
