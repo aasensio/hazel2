@@ -31,6 +31,10 @@ class Model(object):
         np.random.seed(123)
         if (rank != 0):
             return
+
+        #EDGAR: dictionary of dictionaries with possible atoms and lines with their indexes for HAZEL atmospheres and spectra        
+        self.atomslist={'helium':{'10830': 1, '3888': 2, '7065': 3,'5876': 4},
+            'sodium':{'5895': 1, '5889': 2}} 
         
         self.photospheres = []
         self.chromospheres = []
@@ -596,7 +600,19 @@ class Model(object):
         stokes_weights = np.array(stokes_weights)
         
         self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, 
-            name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, mask_file=mask_file, instrumental_profile=value['instrumental profile'], root=self.root, wvl_lr=wvl_lr)
+            name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, 
+            mask_file=mask_file, instrumental_profile=value['instrumental profile'], 
+            root=self.root, wvl_lr=wvl_lr)
+
+        #EDGAR: atom keyword moved to add_spectral
+        # moving line_to_index to add_spectral.
+        if ('atom' in value) and (value['atom']in self.atomslist):
+            self.atom=value['atom']#self.atom can be deleted because is not used anywhere else
+            self.line_to_index=self.atomslist[value['atom']]
+        else:
+            raise Exception('Atom is not defined or it is not in the database. Please, define a valid atom.')
+
+        if (self.verbose >= 1):self.logger.info('Atom added.')
 
         self.topologies.append(value['topology'])
         
@@ -742,7 +758,7 @@ class Model(object):
         # already done
         atm = hazel.util.lower_dict_keys(atmosphere)
         
-        self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, name=atm['name'], atom=atm['atom'])
+        self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, name=atm['name'])#EDGAR:,atom=atm['atom'])
 
         if ('wavelength' not in atm):
             atm['wavelength'] = None
@@ -754,6 +770,8 @@ class Model(object):
         else:
             wvl_range = [np.min(self.spectrum[atm['spectral region']].wavelength_axis), np.max(self.spectrum[atm['spectral region']].wavelength_axis)]
 
+        #esto es algo que podriamos hacer en add_spectral (despues de añadir todas las atmosferas de la 
+        #topologia pero antes de pasarles los paraemtros) en un for para cada atmosfera de la topologia
         self.atmospheres[atm['name']].add_active_line(line=atm['line'], spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
 
@@ -1277,7 +1295,11 @@ class Model(object):
                     #print(i,atmospheres)  #0 , [['ch1'], ['ch2']] #all the chain of atmospehres
                     #print(n,order)        #0,['ch1'] and 1,['ch2'] #the current layer
                     #print(k,atm)            #0,ch1 and 0,ch2 (con ch1 y ch2 los nombres(strings) de las atms)
-
+                    
+                    #EDGAR: updating the line_to_index seen by the atmosphere and by hazel synthesize
+                    #from the self.line_to_index known from add_spectral: 
+                    self.atmospheres[atm].line_to_index=self.line_to_index 
+                    
                     if (self.atmospheres[atm].spectrum.name == spectral_region):                        
                         # Update the boundary condition only for the first atmosphere if several are sharing ff      
                         if (n > 0 and k == 0):
@@ -1310,7 +1332,7 @@ class Model(object):
                                     stokes, error = self.atmospheres[atm].synthesize(stokes=stokes_out, nlte=self.use_nlte)#NEW
                                     #EDGAR:call to HAZEL synthesize routine in chromosphere.py
                             else: 
-                                #EDGAR:if fillig factor, adds up stokes of all sub-pixels? that would be wrong because
+                                #EDGAR:if filling factor, adds up stokes of all sub-pixels? that would be wrong because
                                 #the addition should be done only once at the end of all the trasnfer 
                                 #tmp, error = self.atmospheres[atm].synthesize(stokes_out,nlte=self.use_nlte) #OLD
                                 tmp, error = self.atmospheres[atm].synthesize(stokes=stokes_out,nlte=self.use_nlte) #NEW

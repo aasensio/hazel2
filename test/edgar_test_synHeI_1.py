@@ -5,11 +5,11 @@ import sys
 mod = hazel.Model(working_mode='synthesis',atomf='helium.atom',verbose=0) #'helium.atom' is default
 
 #EDGAR: DEBERIAN topology EN SPECTRAL Y name EN CHROMOSPHERE COINCIDIR??
-mod.add_spectral({'Name': 'sp1', 'Wavelength': [10826, 10833, 150], 
+mod.add_spectral({'Name': 'sp1', 'atom':'helium', 'Wavelength': [10826, 10833, 150], 
 	'topology': 'ch1->ch2','LOS': [0.0,0.0,90.0], 'Boundary condition': [1.0,0.0,0.0,0]}) #what means 1 here??
 
-arg={'spectral region': 'sp1', 'atom':'helium','line': '10830', 
-	'ref frame': 'LOS'} #para muchas cromosferas
+arg={'spectral region': 'sp1','line': '10830', 
+	'ref frame': 'LOS'} #, 'atom':'helium'     para muchas cromosferas
 #'wavelength': [10826, 10833] can be omitted because it takes the one of add_spectral
 #'reference frame': 'LOS' or 'vertical'(default)
 #'coordB' : 'spherical'(DEFAULT) or 'cartesian' #El keyword 'coordB' antes era coordinates for magnetic field vector'
@@ -28,8 +28,8 @@ mod.setup()
 #	ax=mod.iplot_stokes(ax,'sp1') #Interactive plot for loops
 #plt.show()
 
-ch1.set_pars([20.,10.,10.,3.,0.,7.,1.,0.02],j10=[0.,0.,0.1,0.])
-ch2.set_pars([20.,80.,10.,3.,6.,7.,1.,0.2],j10=[0.,0.,0.,0.2])
+ch1.set_pars([20.,10.,10.,3.,0.,7.,1.,0.02],j10=[0.,0.,0.1,0.1])
+ch2.set_pars([20.,80.,10.,3.,6.,7.,1.,0.2],j10=[0.,0.,0.3,0.2])
 
 mod.synthesize() 
 ax=mod.plot_stokes('sp1')  #NON-interactive plot (all plotting things are inside) 
@@ -120,10 +120,18 @@ ax=mod.plot_stokes('sp1')  #NON-interactive plot (all plotting things are inside
 #el paso del nombre del archivo se hace a traves de la rutina init cuando se inicia el 
 #el modulo Hazel en model.py. El path del archivo se presupone en hazel/data.
 
-#----------------------- COMMIT 3
+#...
+
+#----------------------- COMMIT 5
 #adicion de comentarios de desarrollador varios
 #corregido un bug en la deteccion del tipo de "coordinates for magnetic field vector" en model.py
 
+#-----------------------COMMIT 6
+#Moved atom keyword from add_chromosphere to add_spectral. For this, we define a dictionary of dictionaries with 
+#the atoms and lines and indexes of the spectral lines to choose among in model.py. The defintion of 
+#line_to_index is then done reading from the dictionary from add_spectral, and in order to pass it to the 
+#atmosphere object and to Hazel synthesize in chromosphere.py we do the following in the radiative transfer 
+#logic of synthesize_spectral_region: self.atmospheres[atm].line_to_index=self.line_to_index.  
 
 #Hacer que cuando se indique atom en add_chromosphere ya selecciones 
 #el archivo de atom que se tiene que leer
