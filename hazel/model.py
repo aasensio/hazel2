@@ -145,11 +145,6 @@ class Model(object):
         -------
         None
         """        
-
-        # Deal with the spectral regions        
-        tmp = config_dict['spectral regions']
-
-
         # Output file
         self.output_file = config_dict['working mode']['output file']
 
@@ -165,9 +160,12 @@ class Model(object):
         # Working mode
         # self.working_mode = config_dict['working mode']['action']
 
-        # Add spectral regions. EDGAR: it create self.spectrum and add value['topologies'] to self.topologies
-        for key, value in config_dict['spectral regions'].items():
-            self.add_spectral(value)  
+        # Deal with the spectral regions        
+        #tmp = config_dict['spectral regions']
+        # EDGAR: Add spectral regions. 
+        #We now move this block after adding atmopsheres below
+        #for key, value in config_dict['spectral regions'].items():
+        #    self.add_spectral(value)  
 
 
         # Deal with the atmospheres----------------------------------------------------------------
@@ -204,6 +202,10 @@ class Model(object):
                 self.add_straylight(value)
         # ----------------------------------------------------------------
        
+        # Add spectral regions. EDGAR: it create self.spectrum and add value['topologies'] to self.topologies
+        for key, value in config_dict['spectral regions'].items():
+            self.add_spectral(value)  
+        # ----------------------------------------------------------------
         # Set number of cycles if present
         if (self.working_mode == 'inversion'):
             if ('number of cycles' in config_dict['working mode']):
@@ -312,7 +314,7 @@ class Model(object):
         #to n_chromospheres, hence most of this loop looks unnecessary.
 
         if (self.verbose >= 1):#EDGAR: print number of Hazel chromospheres/slabs
-            self.logger.info('N_chromospheres',self.n_chromospheres)
+            self.logger.info('N_chromospheres at setup',self.n_chromospheres)
 
         # Use analytical RFs if only photospheres are defined
         if (self.n_chromospheres == 0 and self.use_analytical_RF_if_possible):
@@ -615,7 +617,6 @@ class Model(object):
         #EDGAR: line for Hazel chromospheres and for SIR photosphere
         #it seems lines for SIR read in add_photosphere were wrong because they were introduced programatically
         #with the field atm['spectral lines'] in add_photosphere, but there was no such a field defined anywhere 
-        #
         lineH, lineS = '', ''
         if ('linehazel' in value) and (value['linehazel'] in self.atomslist[value['atom']]):
             lineH=value['linehazel'] #e.g. '10830'.  Lines for activating in Hazel atmos
@@ -627,20 +628,55 @@ class Model(object):
             else:
                 raise Exception('Line is not specified or not in the database. Please, define a valid line.')
 
+        #EDGAR:inside here there is the add_spectrum routine setting up self.spectrum['spx'].wavelength_axis used below 
         self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, 
             name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, 
             mask_file=mask_file, instrumental_profile=value['instrumental profile'], 
             root=self.root, wvl_lr=wvl_lr,lti=self.line_to_index,lineHazel=lineH,lineSIR=lineS)
-        #we send line_to_index and lines to activate to Spectrum object 
-        #for accessing them later from everywhere
+        #we send line_to_index and lines to be activated to this Spectrum object for accessing them later from everywhere
         #we could then remove self.line_to_index from here
         #and we could now remove all what has to do with spectrum from add_chromosphere and add_photosphere
         #so that add_spectral and add_atmos can be invoked in any order
 
+        #--EDGAR---------------------------------------------------------------
+        #change the keyword name as desired
+        keyw='atmos window'#this is the old 'wavelength' keyword of add_chromosphere
+        #we are here defining the wavelength window for all atmospheres associated to this spectral region
+        if ( keyw not in value):
+            value[keyw] = None
+        elif (value[keyw] == 'None'):
+            value[keyw] = None
 
-        self.topologies.append(value['topology'])
-        
+        if (value[keyw] is not None):#EDGAR: if not in dictionary, then take the one of current atm['spectral region']
+            wvl_range = [float(k) for k in value[keyw]]
+        else:
+            wvl_range = [np.min(self.spectrum[value['name']].wavelength_axis), np.max(self.spectrum[value['name']].wavelength_axis)]
+
+        topo=value['topology']
+        self.topologies.append(topo)#'ph1->ch1+ch2'
+        #this gives just string names:
+        #list_of_lists=[k.split('+') for k in topo.split('->')] #[['ph1'], ['ch1', 'ch2']]
+        #list_of_atms=[item for sublist in list_of_lists for item in sublist]#['ph1', 'ch1', 'ch2']
     
+        """
+        Activate this spectrum with add_active_line for all existing atmospheres.
+        Part of this routine was previously inside every add_atmosphere routine.
+        Now all spectral and atmospheric actions and routines are disentangled. 
+        Activate_lines is now called after adding all atmospheres in topology but before passing pars.
+        """
+        self.nch=0  #n_chromospheres=0    
+        for k, atm in self.atmospheres.items():            
+            atm.add_active_line(spectrum=self.spectrum[value['name']], wvl_range=np.array(wvl_range))
+            if (atm.type == 'chromosphere'):self.nch += 1 #should be equal to self.n_chromospheres.
+
+        if (self.verbose >= 1):#print number of Hazel chromospheres/slabs
+            self.logger.info('N_chromospheres before setup',self.nch)
+
+        #initialize here the optical coefficient containers with self.nch dimension:
+
+
+        #--------------------------------------------------------------------
+
     def add_photosphere(self, atmosphere):
         """
         Programmatically add a photosphere
@@ -676,7 +712,8 @@ class Model(object):
                     self.logger.info("    * Line in NLTE if available")
         else:
             self.atmospheres[atm['name']].nlte = False
-                
+        
+        """  EDGAR:   now you can DELETE this block   
         if ('wavelength' not in atm):
             atm['wavelength'] = None
         elif (atm['wavelength'] == 'None'):
@@ -686,6 +723,14 @@ class Model(object):
             wvl_range = [float(k) for k in atm['wavelength']]
         else:
             wvl_range = [np.min(self.spectrum[atm['spectral region']].wavelength_axis), np.max(self.spectrum[atm['spectral region']].wavelength_axis)]
+
+        #lines = [int(k) for k in list(atm['spectral lines'])] #we want lines to be set in add_spectral
+        #self.atmospheres[atm['name']].add_active_line(lines=lines, spectrum=self.spectrum[atm['spectral region']], 
+        #    wvl_range=np.array(wvl_range), verbose=self.verbose) #EDGAR ,  OLD version
+                    
+        self.atmospheres[atm['name']].add_active_line(spectrum=self.spectrum[atm['spectral region']], 
+            wvl_range=np.array(wvl_range), verbose=self.verbose)
+        """
 
         #EDGAR:more efficient set up of reference frame
         refkey=''
@@ -705,13 +750,6 @@ class Model(object):
 
         if (self.verbose >= 1):
             self.logger.info("    * Magnetic field reference frame : {0}".format(self.atmospheres[atm['name']].reference_frame))
-
-        #lines = [int(k) for k in list(atm['spectral lines'])] #we want lines to be set in add_spectral
-        #self.atmospheres[atm['name']].add_active_line(lines=lines, spectrum=self.spectrum[atm['spectral region']], 
-        #    wvl_range=np.array(wvl_range), verbose=self.verbose) #EDGAR ,  OLD version
-                    
-        self.atmospheres[atm['name']].add_active_line(spectrum=self.spectrum[atm['spectral region']], 
-            wvl_range=np.array(wvl_range), verbose=self.verbose)
 
         if (self.atmospheres[atm['name']].graphnet_nlte is not None):
             self.set_nlte(True)
@@ -787,29 +825,36 @@ class Model(object):
         
         self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, name=atm['name'])#EDGAR:,atom=atm['atom'])
 
+        #------------------------------------------------------------------------
+        """EDGAR now you can DELETE THIS BLOCK
+        #the only thing of this block that cannot be known from add_spectrum is atm['wavelength']
+        #so we need to store it associated to every atmosphere. This is a bit of nonsense because
+        #although we would define a spectral window associted to each atmosphere, it is also true
+        #that they would all be the same for a same radiative transfer / spectrum topology.
+        #so we only have to define a single spectral window ('wavelength') associated to all
+        #atmospheres of a same spectral region (or of a same spectrum as we shall rename it).
+        #and this have to be done from add_spectrum, although it would be done for each atmosphere,
+        #together with the activation of the line.
+        
         if ('wavelength' not in atm):
             atm['wavelength'] = None
         elif (atm['wavelength'] == 'None'):
             atm['wavelength'] = None
 
-        if (atm['wavelength'] is not None):#EDGAR: if not defined in dictionary, then take the one of current atm['spectral region']
+        if (atm['wavelength'] is not None):#EDGAR: if not in dictionary, then take the one of current atm['spectral region']
             wvl_range = [float(k) for k in atm['wavelength']]
         else:
             wvl_range = [np.min(self.spectrum[atm['spectral region']].wavelength_axis), np.max(self.spectrum[atm['spectral region']].wavelength_axis)]
 
-        #esto es algo que podriamos hacer en add_spectral (despues de añadir todas las atmosferas de la 
-        #topologia pero antes de pasarles los paraemtros) en un for para cada atmosfera de la topologia
+        #all this could be done in add_spectral (after adding all atmospheres of topology but before passing 
+        #parameters) in a for for every atmopshere
         #self.atmospheres[atm['name']].add_active_line(line=atm['line'], spectrum=self.spectrum[atm['spectral region']], 
         #    wvl_range=np.array(wvl_range)) #OLD
-        #ahora line se coge directamente de Model, no de la atmosfera
-        
-        #EDGAR DELETE lili=self.spectrum[atm['spectral region']].line  #bastaria con pasarle solo spectrum porque hemos metido line dentro
+        #now line is taken from spectrum, not from atmosphere, we could instead read it from model object adding key line=self.line
         self.atmospheres[atm['name']].add_active_line(spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
-
-        #self.atmospheres[atm['name']].add_active_line(line=self.line, spectrum=self.spectrum[atm['spectral region']], 
-        #    wvl_range=np.array(wvl_range))  #OLD , reading line from model object
-
+        """
+        #------------------------------------------------------------------------
 
         #EDGAR: more efficient and flexible reference frame set up
         refkey=''
@@ -908,7 +953,8 @@ class Model(object):
         atm = hazel.util.lower_dict_keys(atmosphere)
 
         self.atmospheres[atm['name']] = Parametric_atmosphere(working_mode=self.working_mode)
-
+        
+        """EDGAR you can now delete this block
         if ('wavelength' not in atm):
             atm['wavelength'] = None
         elif (atm['wavelength'] == 'None'):
@@ -921,6 +967,7 @@ class Model(object):
 
         self.atmospheres[atm['name']].add_active_line(spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
+        """
 
         if ('ranges' in atm):
             for k, v in atm['ranges'].items():
@@ -983,7 +1030,8 @@ class Model(object):
         atm = hazel.util.lower_dict_keys(atmosphere)
 
         self.atmospheres[atm['name']] = Straylight_atmosphere(working_mode=self.working_mode)
-                
+        
+        """
         if ('wavelength' not in atm):
             atm['wavelength'] = None
         elif (atm['wavelength'] == 'None'):
@@ -996,6 +1044,7 @@ class Model(object):
 
         self.atmospheres[atm['name']].add_active_line(spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
+        """
 
         if ('ranges' in atm):
             for k, v in atm['ranges'].items():
