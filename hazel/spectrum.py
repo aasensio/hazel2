@@ -10,11 +10,15 @@ __all__ = ['Spectrum']
 
 class Spectrum(object):
     def __init__(self, wvl=None, weights=None, observed_file=None, name=None, stokes_weights=None, los=None, boundary=None, mask_file=None, 
-        instrumental_profile=None, save_all_cycles=False, root='', wvl_lr=None,lti=None,lineHazel='',lineSIR=''):
+        instrumental_profile=None, save_all_cycles=False, root='', wvl_lr=None,lti=None,lineHazel='',lineSIR='', 
+        n_chromo=None):
         
         self.wavelength_axis = None
         self.stokes = None
         self.stokes_perturbed = None
+        self.eps = None  #EDGAR
+        self.eta = None
+        self.stim = None
         self.pixel = 0
         self.boundary_single = boundary
         self.psf_spectral = None
@@ -23,7 +27,6 @@ class Spectrum(object):
         self.normalization = 'on-disk'
         self.save_all_cycles = save_all_cycles
         self.root = root
-
         #-------------------------------------
         #EDGAR: new general spectrum-related variables in Spectrum objects
         if (lti is not None):
@@ -35,9 +38,10 @@ class Spectrum(object):
         if (lineSIR != ''):
             self.lineSIR=lineSIR #line/s for activating in Hazel chromo or in SIR photo
 
+
         #-------------------------------------
         if (wvl is not None):
-            self.add_spectrum(wvl, wvl_lr)
+            self.add_spectrum(n_chromo,wvl, wvl_lr)
 
         if (weights is not None):
             self.add_weights(weights)
@@ -97,7 +101,7 @@ class Spectrum(object):
         self.bic_cycle = [-1.0] * n_cycles
         self.aic_cycle = [-1.0] * n_cycles
 
-    def add_spectrum(self, wvl, wvl_lr):
+    def add_spectrum(self, nch, wvl, wvl_lr):
         """
         Add a new spectrum, initializing the Stokes parameters containers
         
@@ -116,7 +120,12 @@ class Spectrum(object):
         self.stokes = np.zeros((4,len(wvl)))
         self.stokes_perturbed = np.zeros((4,len(wvl)))
         
-        self.epsOut = np.zeros((4,len(wvl))) #EDGAR: general python containers
+        #EDGAR: general optical coeffs python containers
+        #nch considers all atmospheres, also those inside same pixel with filling factor
+        #so N slabs with 2 subpixels are 2N atmospheres.
+        self.eps = np.zeros((nch,4,len(wvl))) 
+        self.eta = np.zeros((nch,7,len(wvl))) 
+        self.stim = np.zeros((nch,7,len(wvl))) 
         
         self.stray = np.zeros((4,len(wvl)))
         self.obs = np.zeros((4,len(wvl)))

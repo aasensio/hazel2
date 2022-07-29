@@ -112,7 +112,13 @@ contains
 ! ! Calculate the absorption/emission coefficients for a given transition
 !         call calc_rt_coef(in_params, in_fixed, in_observation, 1)
                         
-                
+
+if (synthesis_mode == 1) then 
+    !ESC: place here your new methods of solution with different synthesis_mode value
+endif
+
+!ESC: synthesis_mode=5 is setup in hazel_py.f90 for the evolution operator    
+if (synthesis_mode == 5) then 
 !****************       
 ! Slab case with EXACT SOLUTION
 !****************
@@ -140,6 +146,8 @@ contains
         ! StokesM(3) = in_fixed%Stokes_incident(2)
         ! StokesM(4) = in_fixed%Stokes_incident(3)
 
+    !EDGAR: we add the possibility of using only the zeeman coeffs without atompol
+    if (in_fixed%use_atomic_pol == 1 .or. in_fixed%use_atomic_pol == -1) then
                     
 ! Emission              
         in_fixed%epsI = in_fixed%epsilon(0,:)
@@ -163,6 +171,33 @@ contains
             in_fixed%rhoU = 0.d0
             in_fixed%rhoV = 0.d0
         endif
+    
+    else
+
+! Emission
+            in_fixed%epsI = in_fixed%epsilon_zeeman(0,:)
+            in_fixed%epsQ = in_fixed%epsilon_zeeman(1,:)
+            in_fixed%epsU = in_fixed%epsilon_zeeman(2,:)
+            in_fixed%epsV = in_fixed%epsilon_zeeman(3,:)
+
+! Absorption including stimulated emission
+            in_fixed%etaI = in_fixed%eta_zeeman(0,:) - use_stim_emission_RT * in_fixed%eta_stim_zeeman(0,:) + 1.d-20
+            in_fixed%etaQ = in_fixed%eta_zeeman(1,:) - use_stim_emission_RT * in_fixed%eta_stim_zeeman(1,:) + 1.d-20
+            in_fixed%etaU = in_fixed%eta_zeeman(2,:) - use_stim_emission_RT * in_fixed%eta_stim_zeeman(2,:) + 1.d-20
+            in_fixed%etaV = in_fixed%eta_zeeman(3,:) - use_stim_emission_RT * in_fixed%eta_stim_zeeman(3,:) + 1.d-20
+
+! Magneto-optical terms
+            if (use_mag_opt_RT == 1) then
+                in_fixed%rhoQ = in_fixed%mag_opt_zeeman(1,:) - use_stim_emission_RT * in_fixed%mag_opt_stim_zeeman(1,:)
+                in_fixed%rhoU = in_fixed%mag_opt_zeeman(2,:) - use_stim_emission_RT * in_fixed%mag_opt_stim_zeeman(2,:)
+                in_fixed%rhoV = in_fixed%mag_opt_zeeman(3,:) - use_stim_emission_RT * in_fixed%mag_opt_stim_zeeman(3,:)
+            else
+                in_fixed%rhoQ = 0.d0
+                in_fixed%rhoU = 0.d0
+                in_fixed%rhoV = 0.d0
+            endif
+    endif
+
 
 ! Second component
         ds = in_params%dtau / maxval(in_fixed%etaI)
@@ -211,7 +246,9 @@ contains
         ! do i = 0, 3
         !     output(i,:) = output(i,:) !/ Imax                
         ! enddo
-            
+endif
+
+
         in_fixed%total_forward_modeling = in_fixed%total_forward_modeling + 1
 
         !

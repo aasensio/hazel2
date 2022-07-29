@@ -7,7 +7,7 @@ cdef extern:
 		double* boundaryInput, int* transInput, double* anglesInput, int* nLambdaInput, double* lambdaAxisInput,
 		double* dopplerWidthInput, double* dampingInput, double* j10Input, double* dopplerVelocityInput, 
 		double* betaInput, double* nbarInput, double* omegaInput, 
-		double* wavelengthOutput, double* stokesOutput, int* error)
+		double* wavelengthOut, double* stokesOut,double* epsOut,double* etaOut,double* stimOut, int* error)
 		
 	void c_init(int* nchar,char* atomfile, int* verbose) #EDGAR: added nchar and atomfile
 	void c_exit(int* index)
@@ -43,21 +43,27 @@ def _synth(int index=1, ar[double,ndim=1] B1Input=zeros(3), double hInput=3.0,
     Returns:
         wavelengthOutput: (float) vector of size nLambdaInput with the wavelength axis
         stokesOutput: (float) array of size (4,nLambdaInput) with the emergent Stokes profiles
+        epsOutput: (float) array of size (4,nLambdaInput) with the emissivity vector at each wavelength
+        etaOutput: (float) array of size (7,nLambdaInput) with the independent elements of K matrix at each wavelength
 		error: (int) zero if everything went OK
 	"""
 	
 	cdef:
-		ar[double,ndim=1] wavelengthOutput = empty(nLambdaInput, order='F')
-		ar[double,ndim=2] stokesOutput = empty((4,nLambdaInput), order='F')
+		ar[double,ndim=1] wavelengthOut = empty(nLambdaInput, order='F')
+		ar[double,ndim=2] stokesOut = empty((4,nLambdaInput), order='F')
+		ar[double,ndim=2] epsOut = empty((4,nLambdaInput), order='F')
+		ar[double,ndim=2] etaOut = empty((7,nLambdaInput), order='F')
+		ar[double,ndim=2] stimOut = empty((7,nLambdaInput), order='F')
 		int error
 		
 	c_hazel(&index, &B1Input[0], &hInput, &tau1Input,  
 		&boundaryInput[0,0], &transInput, &anglesInput[0], &nLambdaInput, &lambdaAxisInput[0],  
 		&dopplerWidthInput, &dampingInput, &j10Input[0], &dopplerVelocityInput, 
-		&betaInput, &nbarInput[0], &omegaInput[0], <double*> wavelengthOutput.data, 
-		<double*> stokesOutput.data, &error)
+		&betaInput, &nbarInput[0], &omegaInput[0], <double*> wavelengthOut.data, 
+		<double*> stokesOut.data,<double*> epsOut.data, <double*> etaOut.data,
+		<double*> stimOut.data, &error)
     
-	return wavelengthOutput, stokesOutput, error
+	return wavelengthOut, stokesOut, epsOut, etaOut, stimOut, error
 	
 def _init(str atomfile, int verbose=0):
 	"""

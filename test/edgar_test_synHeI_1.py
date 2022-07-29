@@ -2,39 +2,44 @@ import hazel
 import matplotlib.pyplot as plt
 import sys
 
-mod = hazel.Model(working_mode='synthesis',atomf='helium.atom',verbose=0) #'helium.atom' is default
+mo = hazel.Model(working_mode='synthesis',atomf='helium.atom',verbose=0) #'helium.atom' is default
 
-comargs={'ref frame': 'LOS'} # common args .  {'spectral region': 'sp1'} does not exist any more
+ckeys={'ref frame': 'LOS'} # common args .  {'spectral region': 'sp1'} does not exist any more
 #'ref frame': 'LOS' or 'vertical'(default)
 #'coordB' : 'spherical'(DEFAULT) or 'cartesian' #keyword 'coordB' was 'coordinates for magnetic field vector'
 
-ch1=mod.add_chrom({'name': 'ch1','height': 1.0,**comargs}) 
-ch2=mod.add_chrom({'name': 'ch2','height': 2.0,**comargs})
+#ch1=mo.add_chrom({'name': 'ch1','height': 1.0,**ckeys})  #OLD
+#ch2=mo.add_chrom({'name': 'ch2','height': 2.0,**ckeys})
+
+chs,tags=mo.add_Nchroms(['c1','c2'],ckeys,hz=[1.,3.]) #return a list with chs objects and their names
 
 #the association between spectrum(or spectral region) with atmospheres in topology is now made here
-mod.add_spectral({'Name': 'sp1', 'atom':'helium','lineHazel': '10830','Wavelength': [10826, 10833, 150], 
-	'topology':'ch1->ch2','LOS':[0.0,0.0,90.0],'Boundary condition': [1.0,0.0,0.0,0]}) #what means 1 here??
-	#linesSIR='number' or '[number]' for adding lines to calcualte photospheres with SIR in the model
-	#'atm window': [10826, 10833] when omitted it takes range in 'Wavelength'
+s1=mo.add_spectrum('s1', atom='helium',linehazel='10830',wavelength=[10826, 10833, 150], 
+	topology='c1->c2',los=[0.0,0.0,90.0], boundary=[1.0,0.0,0.0,0]) 
+#linesSIR='number' or '[number]' for adding lines to calcualte photospheres with SIR in the model
+#'atm_window': [10826, 10833] when omitted it takes range in 'Wavelength'
+#OLD: mo.add_spectral({'name':'sp1','atom':'helium','lineHazel': '10830','Wavelength': [10826, 10833, 150], 
+#	'topology':'c1->c2','LOS':[0.0,0.0,90.0],'Boundary condition': [1.0,0.0,0.0,0]}) #what means 1 here??
 
-mod.setup() 
-
+mo.setup() 
+'''
 plt.close()
 f, ax = plt.subplots(nrows=2, ncols=2)	;ax = ax.flatten()
 for j in range(5):
 	###PARS:(Bx/B,By/thB,Bz/phB,tau,v,deltav,beta,a).OPT kwds:ff(default 1.0),j10(default np.zeros(4))	
-	ch1.set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.,0.,0.2,0.])#,j10=[1e-2,2e-2,3e-2,4e-2])
-	ch2.set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.,0.,0.,0.])#,j10=[1e-2,2e-2,3e-2,4e-2])
-	mod.synthesize() 
-	ax=mod.iplot_stokes(ax,'sp1') #Interactive plot for loops
+	chs[0].set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.,0.,0.2,0.])#,j10=[1e-2,2e-2,3e-2,4e-2])
+	chs[1].set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.,0.,0.,0.])#,j10=[1e-2,2e-2,3e-2,4e-2])
+	mo.synthesize() 
+	ax=mo.iplot_stokes(ax,'s1') #Interactive plot for loops
 plt.show()
 
 '''
-ch1.set_pars([20.,10.,10.,3.,0.,7.,1.,0.02],j10=[0.,0.,0.1,0.1])
-ch2.set_pars([20.,80.,10.,3.,6.,7.,1.,0.2],j10=[0.,0.,0.3,0.2])
-mod.synthesize() 
-ax=mod.plot_stokes('sp1')  #NON-interactive plot (all plotting things are inside) 
-'''
+chs[0].set_pars([20.,10.,10.,3.,0.,7.,1.,0.02],j10=[0.,0.,0.1,0.1])
+chs[1].set_pars([20.,80.,10.,3.,6.,7.,1.,0.2],j10=[0.,0.,0.3,0.2])
+mo.synthesize() 
+ax=mo.plot_stokes('s1')  #NON-interactive plot (all plotting things are inside) 
+
+f,ax2=mo.plot_coeffs('s1')
 
 #TBD:
 
@@ -138,16 +143,33 @@ ax=mod.plot_stokes('sp1')  #NON-interactive plot (all plotting things are inside
 #ECR: moved line keyword and variables to add_spectral and to spectrum object from hazel and SIR atmospheres.
 
 #-----------------------COMMIT 8
-#ECR:add_active_line and the block before appeared repeated for every kind of add_atmosphere and 
-#prevented to change the order of add_spectral and add_chromosphere. This also prevented the calculation
-#of n_chromospheres from add_spectral, which is required for storing all optical coefficients. 
-#Add_active_line is now done inside add_spectral (right after adding all atmospheres of topology)for every atmosphere.
+'''
+ECR: Made necessary changes to change the order of add_spectral and add_chromosphere, 
+finally disentangling atmopsheric aspects from spectral ones and reducing the verbosity 
+and complexity of the code. To this aim, add_active_line is now done for every atmosphere inside 
+add_spectral(right after adding all atmospheres of the topology).Before, both add_active_line and 
+the block before appeared repeated for every kind of adding atmosphere routine,preventing to change
+ the order of add_spectral and add_chromosphere. Now n_chromospheres can be known and calculated 
+ from add_spectral, before setup, which is the requirement for starting to program the storage of 
+ all optical coefficients.
+'''
 
+#-----------------------COMMIT 9(pending)
+'''
+ECR: Created add_spectrum in model.py to substitute add_spectral. Now it works with keywords instead of with input dictionaries.
+Remove "name" from input dictionaries of add_spectrum , leaving it as fixed parameter.
+Add additional reduced keyword 'boundary' instead of 'boundary condition' in add_spectrum.
+Create containers for optical coefficients from outside Hazel fortran.
+Extract optical coefficients of every chromosphere to Python 
+Check transfer in synthesize_spectral_region
+Add routine for adding N chromospheres in one line.
+Add plotting routines for optical coefficients.
 
+Reintroduce  UseAtomicPol (which is set always to 1 in hazel_pz.f90) and similar parameters.
+Start to add all your Hazel1 changes to Hazel2.
+clean commments
 
-
-
-
+'''
 
 
 

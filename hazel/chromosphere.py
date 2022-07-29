@@ -395,12 +395,10 @@ class Hazel_atmosphere(General_atmosphere):
                 self.error['v'], self.error['deltav'], self.error['beta'], self.error['a'], self.error['j10']))
         
 
-    def synthesize(self,stokes=None, returnRF=False, nlte=None):
+    def synthesize(self,stokes=None, returnRF=False, nlte=None,epsout=None, etaout=None, stimout=None):
         """
         Carry out the synthesis and returns the Stokes parameters directly from python user main program.
-        EDGAR:From here cannot access n_chromospheres.Needed as input from model.py
-        for a mod object we have self.n_chromospheres, but this synthesize is not the synthesize of model.py,
-        so it does not see the number n_chromospheres. Anyways we might not need it 
+        EDGAR:This is not the synthesize of model.py, it does not see n_chromospheres. 
 
         Parameters
         ----------
@@ -521,12 +519,13 @@ class Hazel_atmosphere(General_atmosphere):
             dampingInput, j10Input, dopplerVelocityInput, 
             betaInput, nbarInput, omegaInput)
         
-        #l, stokes, epsilon(self.index,:,:),error = hazel_code._synth(*args)    
-        l, stokes, error = hazel_code._synth(*args)
+        #ii=self.index #the opt coeffs here are still 2D, only for current slab
+        l,stokes,epsout,etaout,stimout,error = hazel_code._synth(*args)    
+        #l, stokes, error = hazel_code._synth(*args)
 
         if (error == 1):
             raise NumericalErrorHazel()
 
         ff = self.parameters['ff']
         
-        return ff * stokes, error #/ hsra_continuum(self.multiplets[self.active_line])
+        return ff * stokes, epsout,etaout,stimout,error #/ hsra_continuum(self.multiplets[self.active_line])

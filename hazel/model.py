@@ -120,15 +120,26 @@ class Model(object):
                 tmp += '{0}: {1}\n'.format(l, par)
         return tmp
 
-    def plot_stokes(self,specname):
+    def plot_coeffs(self,sp,ats=None):
+        f, ax = plt.subplots(nrows=2, ncols=2)  ;ax = ax.flatten()
+        if sp.isascii():sp=self.spectrum[sp]
+        if ats is None:ats=self.atmospheres 
+        for k,at in enumerate(ats):
+            for sto in range(4):ax[sto].plot(sp.wavelength_axis,sp.eta[k,sto,:])
+        plt.show()
+        return f,ax
+
+    def plot_stokes(self,sp):
+        if sp.isascii():sp=self.spectrum[sp]
         plt.close()#to avoid accumulation of previous figures in memory 
         f, ax = plt.subplots(nrows=2, ncols=2)  ;ax = ax.flatten()
-        for i in range(4):ax[i].plot(self.spectrum[specname].stokes[i,:])
+        for i in range(4):ax[i].plot(sp.wavelength_axis,sp.stokes[i,:])
         plt.show()
         return ax
 
-    def iplot_stokes(self,ax,specname): 
-        for i in range(4):ax[i].plot(self.spectrum[specname].stokes[i,:])
+    def iplot_stokes(self,ax,sp): 
+        if sp.isascii():sp=self.spectrum[sp]
+        for i in range(4):ax[i].plot(sp.wavelength_axis, sp.stokes[i,:])
         return ax
 
      
@@ -204,7 +215,9 @@ class Model(object):
        
         # Add spectral regions. EDGAR: it create self.spectrum and add value['topologies'] to self.topologies
         for key, value in config_dict['spectral regions'].items():
-            self.add_spectral(value)  
+            #EDGAR: if Andres likes the new add_spectrum shift to the second choice
+            self.add_spectral(value) #option 1: use old routine add_spectral reading config file as before
+            #self.add_spectrum(value['name'],config=value) #option 2: use new routine add_spectrum 
         # ----------------------------------------------------------------
         # Set number of cycles if present
         if (self.working_mode == 'inversion'):
@@ -429,12 +442,199 @@ class Model(object):
             self.flatten_parameters_to_reference(cycle=0)        
         self.output_handler.write(self, pixel=0, randomization=randomization)
 
+    def add_spectrum(self, name, config=None, wavelength=None, topology=None, los=None, boundary=None, atom=None,
+        linehazel=None, linesSIR=None, atmos_window=None, instrumental_profile=None,
+        wavelength_file=None, wavelength_weight_file=None,observations_file=None, mask_file=None,
+        weights_stokes_i=[None]*10,weights_stokes_q=[None]*10,weights_stokes_u=[None]*10,weights_stokes_v=[None]*10):
+        """
+        Similar to add_spectral but with keywords and more compact.
+        Programmatically add a spectral region
+        """
+        value = dict(locals()) #CAUTION: this must be the first line to retrieve keywords as dictionary
+        value['name'] =name #we add the positional argument "name" to the dictionary
+
+        #EDGAR: remember that this if block can be deleted if we decide to use the same names 
+        #for the config file keywords as for the keywords of the subroutine
+        #map from config file keywords to compact names in this subroutine. Case insensitive because it was tackled when reading file
+        #In config file we should only define the keywords that we want different than None
+        if (config is not None):#config is old "value" dictionary read from config file and containing all arguments of this subroutine
+            if ('Wavelength' in config):wavelength=config['Wavelength']
+            if ('topology' in config):topology=config['topology']
+            if ('LOS' in config):los=config['LOS']
+            if ('Boundary Condition' in config):boundary=config['Boundary Condition']
+            if ('atom' in config):atom=config['atom']
+            if ('line' in config):linehazel=config['line']
+            if ('lines' in config):linesSIR=config['lines']
+            if ('spectral region' in config):atmos_window=config['spectral region']
+            if ('instrumental profile' in config):instrumental_profile=config['instrumental profile']
+            if ('wavelength file' in config):wavelength_file=config['wavelength file']
+            if ('wavelength weight file' in config):wavelength_weight_file=config['wavelength weight file']
+            if ('observations file' in config):observations_file=config['observations file']
+            if ('mask file' in config):mask_file=config['mask file']
+            if ('weights stokes i' in config):weights_stokes_i=config['weights stokes i']
+            if ('weights stokes q' in config):weights_stokes_q=config['weights stokes q']
+            if ('weights stokes u' in config):weights_stokes_u=config['weights stokes u']
+            if ('weights stokes v' in config):weights_stokes_v=config['weights stokes v']
+
+
+        if (self.verbose >= 1):            
+            self.logger.info('Adding spectral region {0}'.format(name))        
+    
+        # Wavelength file is not present
+        #if (value['wavelength file'] is None):
+        if (wavelength_file is None): #the "is" keyword is used to evaluate whether something is None or not
+            # If wavelength is defined            
+            if (wavelength is not None): #if ('wavelength' in value):
+                axis = wavelength
+                wvl = np.linspace(float(axis[0]), float(axis[1]), int(axis[2]))                
+                wvl_lr = None
+                if (self.verbose >= 1):
+                    self.logger.info('  - Using wavelength axis from {0} to {1} with {2} steps'.format(float(axis[0]), float(axis[1]), int(axis[2])))
+            else:
+                raise Exception('Wavelength range is not defined. Please, use "Wavelength" or "Wavelength file"')
+        else:
+            # If both observed and synthetic wavelength points are given
+            if (wavelength is not None):
+                axis = wavelength
+                if (len(axis) != 3):
+                    raise Exception("Wavelength range is not given in the format: lower, upper, steps")
+                wvl = np.linspace(float(axis[0]), float(axis[1]), int(axis[2]))
+                if (self.verbose >= 1):
+                    self.logger.info('  - Using wavelength axis from {0} to {1} with {2} steps'.format(float(axis[0]), float(axis[1]), int(axis[2])))
+                    self.logger.info('  - Reading wavelength axis from {0}'.format(wavelength_file))
+                wvl_lr = np.loadtxt(self.root + wavelength_file)
+            else:
+                if (self.verbose >= 1):
+                    self.logger.info('  - Reading wavelength axis from {0}'.format(wavelength_file))
+                wvl = np.loadtxt(self.root + wavelength_file)
+                wvl_lr = None
+                
+        if (wavelength_weight_file is None):
+            if (self.verbose >= 1 and self.working_mode == 'inversion'):
+                self.logger.info('  - Setting all wavelength weights to 1')
+            weights = np.ones((4,len(wvl)))
+        else:
+            if (self.verbose >= 1):
+                self.logger.info('  - Reading wavelength weights from {0}'.format(wavelength_weight_file))
+            weights = np.loadtxt(self.root + wavelength_weight_file, skiprows=1).T
+
+        # Observations file not present
+        if (observations_file is None):
+            if (self.working_mode == 'inversion'):
+                raise Exception("Inversion mode without observations is not allowed.")            
+        else:
+            if (self.verbose >= 1):
+                self.logger.info('  - Using observations from {0}'.format(observations_file))
+            
+        if (self.verbose >= 1):
+            if (mask_file is None):            
+                self.logger.info('  - No mask for pixels')
+            else:
+                self.logger.info('  - Using mask from {0}'.format(mask_file))
+
+        if (self.verbose >= 1):
+            if (instrumental_profile is None): 
+                self.logger.info('  - No instrumental profile')
+            else:
+                self.logger.info('  - Instrumental profile : {0}'.format(instrumental_profile))
+
+        if (los is None):
+            if (self.working_mode == 'synthesis'):
+                raise Exception("You need to provide the LOS for spectral region {0}".format(name))
+        else:
+            if (self.verbose >= 1):
+                self.logger.info('  - Using LOS {0}'.format(los))
+            los = np.array(los).astype('float64')
+
+        if (boundary is None):
+            if (self.verbose >= 1):
+                self.logger.info('  - Using default boundary conditions [1,0,0,0] in spectral region {0} or read from file. Check carefully!'.format(name))
+            boundary = np.array([1.0,0.0,0.0,0.0])            
+            self.normalization = 'on-disk'
+        else:
+            boundarykey=boundary
+            boundary = np.array(boundary).astype('float64')
+            if (self.verbose >= 1):
+                self.logger.info('  - Using boundary condition {0}'.format(boundarykey))
+                if (boundary[0] == 0.0):
+                    self.logger.info('  - Using off-limb normalization (peak intensity)')          
+            
+        stokes_weights = []
+        for st in [weights_stokes_i,weights_stokes_q,weights_stokes_u,weights_stokes_v]:
+            tmp = hazel.util.tofloat(st)
+            tmp = [i if i is not None else 1.0 for i in tmp]
+            stokes_weights.append(tmp)
+        stokes_weights = np.array(stokes_weights)
+        
+        #EDGAR: atom, line_to_index and line keywords moved to add_spectral
+        if (atom is not None) and (atom in self.atomslist):
+            self.atom=atom#self.atom can be deleted because is not used anywhere else
+            self.line_to_index=self.atomslist[atom]
+        else:
+            raise Exception('Atom is not specified or not in the database. Please, define a valid atom.')
+    
+        if (self.verbose >= 1):self.logger.info('Atom added.')
+        
+        #EDGAR: line for Hazel chromospheres and for SIR photosphere
+        #it seems lines for SIR read in add_photosphere were wrong because they were introduced programatically
+        #with the field atm['spectral lines'] in add_photosphere, but there was no such a field defined anywhere 
+        lineH, lineS = '', ''
+        if (linehazel is not None) and (linehazel in self.atomslist[atom]):
+            lineH=linehazel #e.g. '10830'.  Lines for activating in Hazel atmos
+            if (self.verbose >= 1):self.logger.info("    * Adding HAZEL line : {0}".format(lineH))
+        else:
+            if (linesSIR is not None):#same for SIR lines #SIR photospheres have NOT been checked
+                lineS = [int(k) for k in list(linesSIR)] #we moved this from add_photosphere
+                if (self.verbose >= 1):self.logger.info("    * Adding SIR line : {0}".format(lineS))
+            else:
+                raise Exception('Line is not specified or not in the database. Please, define a valid line.')
+
+        #Count chromospheres for defining optical coeffs containers, now that all atmospheres have been added
+        self.nch=0  #n_chromospheres=0    
+        for k, atm in self.atmospheres.items():            
+            if (atm.type == 'chromosphere'):self.nch += 1 #should be equal to self.n_chromospheres.
+
+        if (self.verbose >= 1):self.logger.info('N_chromospheres before setup',self.nch)
+
+
+        #initialize here the optical coefficient containers with self.nch dimension:
+        self.spectrum[name] = Spectrum(wvl=wvl, weights=weights, observed_file=observations_file, 
+            name=name, stokes_weights=stokes_weights, los=los, boundary=boundary, 
+            mask_file=mask_file, instrumental_profile=instrumental_profile, 
+            root=self.root, wvl_lr=wvl_lr,lti=self.line_to_index,lineHazel=lineH,lineSIR=lineS,
+            n_chromo=self.nch)
+
+        #--EDGAR---------------------------------------------------------------
+        #we are here defining the wavelength window for all atmospheres associated to this spectral region
+        if (atmos_window is not None):#EDGAR: if not in dictionary, then take the one of current spectral region
+            wvl_range = [float(k) for k in atmos_window]
+        else:
+            wvl_range = [np.min(self.spectrum[name].wavelength_axis), np.max(self.spectrum[name].wavelength_axis)]
+
+        self.topologies.append(topology)#'ph1->ch1+ch2'
+    
+        """
+        Activate this spectrum with add_active_line for all existing atmospheres.
+        Part of this routine was previously inside every add_atmosphere routine.
+        Now all spectral and atmospheric actions and routines are disentangled. 
+        Activate_lines is now called after adding all atmospheres in topology.
+        """
+        if (self.verbose >= 1):self.logger.info('Activating lines in atmospheres',self.nch)
+        for k, atm in self.atmospheres.items():            
+            atm.add_active_line(spectrum=self.spectrum[name], wvl_range=np.array(wvl_range))
+                        
+
+        return self.spectrum[name]
+
     def add_spectral(self, spectral):
         """
-        Programmatically add a spectral region
+        Programmatically add a spectral region  
+
+        EDGAR:In future versions this subroutine could be exchanged by add_spectrum
 
         Parameters
         ----------
+        name: string name of the dictionary
         spectral : dict
             Dictionary containing the following data
             'Name', 'Wavelength', 'Topology', 'Weights Stokes', 'Wavelength file', 'Wavelength weight file',
@@ -450,6 +650,9 @@ class Model(object):
         # already done
         value = hazel.util.lower_dict_keys(spectral)
 
+        #just add the name of the spectrum to the dictionary to keep a fully self-explained dictionary
+        #by working directly with name instead of with value['name'] the following code would be more rea
+        #value['name']=name 
     
         if (self.verbose >= 1):            
             self.logger.info('Adding spectral region {0}'.format(value['name']))        
@@ -628,11 +831,19 @@ class Model(object):
             else:
                 raise Exception('Line is not specified or not in the database. Please, define a valid line.')
 
+        self.nch=0  #n_chromospheres=0    
+        for k, atm in self.atmospheres.items():            
+            if (atm.type == 'chromosphere'):self.nch += 1 #should be equal to self.n_chromospheres.
+        
+        if (self.verbose >= 1):self.logger.info('N_chromospheres before setup',self.nch)
+
+
         #EDGAR:inside here there is the add_spectrum routine setting up self.spectrum['spx'].wavelength_axis used below 
         self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, 
             name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, 
             mask_file=mask_file, instrumental_profile=value['instrumental profile'], 
-            root=self.root, wvl_lr=wvl_lr,lti=self.line_to_index,lineHazel=lineH,lineSIR=lineS)
+            root=self.root, wvl_lr=wvl_lr,lti=self.line_to_index,lineHazel=lineH,lineSIR=lineS,
+            n_chromo=self.nch)
         #we send line_to_index and lines to be activated to this Spectrum object for accessing them later from everywhere
         #we could then remove self.line_to_index from here
         #and we could now remove all what has to do with spectrum from add_chromosphere and add_photosphere
@@ -664,15 +875,9 @@ class Model(object):
         Now all spectral and atmospheric actions and routines are disentangled. 
         Activate_lines is now called after adding all atmospheres in topology but before passing pars.
         """
-        self.nch=0  #n_chromospheres=0    
+        if (self.verbose >= 1):self.logger.info('Activating lines in atmospheres',self.nch)
         for k, atm in self.atmospheres.items():            
             atm.add_active_line(spectrum=self.spectrum[value['name']], wvl_range=np.array(wvl_range))
-            if (atm.type == 'chromosphere'):self.nch += 1 #should be equal to self.n_chromospheres.
-
-        if (self.verbose >= 1):#print number of Hazel chromospheres/slabs
-            self.logger.info('N_chromospheres before setup',self.nch)
-
-        #initialize here the optical coefficient containers with self.nch dimension:
 
 
         #--------------------------------------------------------------------
@@ -819,8 +1024,7 @@ class Model(object):
         """
 
         # Make sure that all keys of the input dictionary are in lower case
-        # This is irrelevant if a configuration file is used because this has been
-        # already done
+        # This is irrelevant if a configuration file is used because this has been already done
         atm = hazel.util.lower_dict_keys(atmosphere)
         
         self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, name=atm['name'])#EDGAR:,atom=atm['atom'])
@@ -930,6 +1134,19 @@ class Model(object):
 
     def add_chrom(self, atmosphere):#EDGAR: alias to add_chromosphere
         return self.add_chromosphere(atmosphere)
+
+    def add_Nchroms(self,tags,ckey,hz=None):
+        '''
+        Add N chromospheres with a list of tags/names(e.g.['c1','c2']), 
+        a dictionary of common paraemters (ckeys), and 
+        a list of specific heigths as optional keyword.
+        '''
+        if (hz is None):hz=[0.0]*len(tags)
+        chout=[]
+        for kk,ch in enumerate(tags):
+            chout.append(self.add_chromosphere({'name': ch,'height': hz[kk],**ckey}))
+
+        return chout, tags
 
     def add_parametric(self, atmosphere):
         """
@@ -1281,8 +1498,11 @@ class Model(object):
             
             tmp = []
             for n in name:
-                tmp.append(n)
-                self.atmospheres[n].active = True
+                if (n in self.atmospheres):#EDGAR:check that atmosphres in topology were add before
+                    tmp.append(n)
+                    self.atmospheres[n].active = True
+                else:
+                    raise Exception("Atmosphere {0} has not been add. Revise the slab names.".format(name))
 
             order.append(tmp)
         
@@ -1371,9 +1591,7 @@ class Model(object):
 
         # Loop over all atmospheres        
         for i, atmospheres in enumerate(self.order_atmospheres):
-            
             for n, order in enumerate(atmospheres):
-                                                                
                 for k, atm in enumerate(order):                    
                     #-------------------------------------------------------------------
                     #EDGAR: I think k is always zero if there is no filling factor (subpixel atmospheres)
@@ -1381,15 +1599,17 @@ class Model(object):
                     #print(n,order)        #0,['ch1'] and 1,['ch2'] #the current layer
                     #print(k,atm)            #0,ch1 and 0,ch2 (con ch1 y ch2 los nombres(strings) de las atms)
                     
-                    #EDGAR: updating the line_to_index seen by the atmosphere and by hazel synthesize
-                    #from the self.line_to_index known from add_spectral: 
+                    #EDGAR: updating line_to_index seen by atmosphere and by hazel synthesize
+                    #with the self.line_to_index known from add_spectral: 
                     self.atmospheres[atm].line_to_index=self.line_to_index 
                     
+                    #EDGAR: just for compact notation while storing opt coeffs later
+                    asp=self.atmospheres[atm].spectrum
+
                     if (self.atmospheres[atm].spectrum.name == spectral_region):                        
                         # Update the boundary condition only for the first atmosphere if several are sharing ff      
                         if (n > 0 and k == 0):
                             ind_low, ind_top = self.atmospheres[atm].wvl_range
-                            
                             if (perturbation):
                                 stokes_out = self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top] * hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
                             else:#i0allen doing nothing but multiplying by 1, you could set it to the I0 background
@@ -1399,28 +1619,26 @@ class Model(object):
                         #and I guess chromospheres can be alone and as many as desired
                         if (self.atmospheres[atm].type == 'straylight'):
                             #EDGAR:these are stray synthesis routines(no stokes_out, and are type 'straylight').
-                            #call to synthesize routine in stray.py (synthesize4_stray)
-                            stokes, error = self.atmospheres[atm].synthesize(nlte=self.use_nlte) 
+                            stokes, error = self.atmospheres[atm].synthesize(nlte=self.use_nlte) #call to synthesize routine in stray.py 
                             if (error == 1):
                                 raise 
                             stokes += (1.0 - self.atmospheres[atm].parameters['ff']) * stokes_out                            
                         else: #for types chromosphere and photosphere
-                            #EDGAR: this looked all like SIR synthesis stuff because the first parameter is mandatory in SIR synthesize
-                            #BUT, Where is then the synthesis for chromospheres??
                             if (k == 0): 
                                 #k=0 is the lower atmosphere, either a PHOTOSPHERE or a CHROMOSPHERE in my tests                               
                                 if (self.use_analytical_RF):#this calls always a photosphere with RF
                                     stokes, self.rf_analytical, error = self.atmospheres[atm].synthesize(stokes_out, returnRF=True, nlte=self.use_nlte)
-                                else:#EDGAR: in standard chromospheric case we enter here all the times
-                                    #small bug? routine for chromospheres was being called with syntaxis of routine for photospheres?                             
-                                    #stokes, error = self.atmospheres[atm].synthesize(stokes_out, nlte=self.use_nlte) #OLD
-                                    stokes, error = self.atmospheres[atm].synthesize(stokes=stokes_out, nlte=self.use_nlte)#NEW
-                                    #EDGAR:call to HAZEL synthesize routine in chromosphere.py
+                                else:#In standard chromospheric case without ff loop enters here always
+                                    #I think this shall not work well with filling factor
+                                    stokes, asp.eps[n,:,:],asp.eta[n,:,:],asp.stim[n,:,:],error = self.atmospheres[atm].synthesize(stokes=stokes_out, nlte=self.use_nlte)
+                                #print('knA',k,n)
                             else: 
-                                #EDGAR:if filling factor, adds up stokes of all sub-pixels? that would be wrong because
-                                #the addition should be done only once at the end of all the trasnfer 
-                                #tmp, error = self.atmospheres[atm].synthesize(stokes_out,nlte=self.use_nlte) #OLD
-                                tmp, error = self.atmospheres[atm].synthesize(stokes=stokes_out,nlte=self.use_nlte) #NEW
+                                #print('knB',k,n,k+n)
+                                #EDGAR:if filling factor, adds up stokes of all sub-pixels? 
+                                #is this wrong? the ff addition should be done only once at the end of all the trasnfer 
+                                #jj tries to consider every unresolved atmosphere as indepednent to retrieve its coeffs 
+                                jj=2*n+k
+                                tmp,asp.eps[jj,:,:],asp.eta[jj,:,:],asp.stim[jj,:,:], error = self.atmospheres[atm].synthesize(stokes=stokes_out,nlte=self.use_nlte)
                                 stokes += tmp  #EDGAR:we are adding current result to previous last one
                                 
                         #-------------------------------------------------------------------

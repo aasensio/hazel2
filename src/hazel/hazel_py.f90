@@ -13,11 +13,10 @@ contains
 subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     transInput, anglesInput, nLambdaInput, lambdaAxisInput, dopplerWidthInput, dampingInput, &
     j10Input,dopplerVelocityInput, betaInput, nbarInput, omegaInput, &
-    wavelengthOutput, stokesOutput, error) bind(c)
+    wavelengthOut, stokesOut, epsOut, etaOut, stimOut,error) bind(c)
 
-    !EDGAR: no hay que leer ntransInput porque ntrans ya esta 
-    !inicializada en atom%ntran
-    integer(c_int), intent(in) :: transInput, index!, Natmos !EDGAR:Add Natmos for dynamic dims of opt coeffs
+    !EDGAR: no need to read ntransInput because ntrans already initialized in atom%ntran
+    integer(c_int), intent(in) :: transInput, index!, EDGAR: index runs from 1 to n_chromo
     integer(c_int), intent(in) :: nLambdaInput
     real(c_double), intent(in), dimension(nLambdaInput) :: lambdaAxisInput
     real(c_double), intent(in), dimension(3) :: B1Input, anglesInput
@@ -27,11 +26,11 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     !EDGAR: add j10Input . in or inout to avoid losing memory between consecutive python calls??
     real(c_double), intent(in), dimension(atom%ntran) :: j10Input  
     real(c_double), intent(in) :: hInput, tau1Input, dopplerWidthInput, dampingInput, dopplerVelocityInput, betaInput 
-    real(c_double), intent(out), dimension(nLambdaInput) :: wavelengthOutput
-    real(c_double), intent(out), dimension(4,nLambdaInput) :: stokesOutput
-    !real(c_double), intent(out), dimension(Natmos,4,nLambdaInput) :: epsOutput !EDGAR: containers for opt coeffs
-    !real(c_double), intent(out), dimension(Natmos,7,nLambdaInput) :: etaOutput !EDGAR: containers for opt coeffs
-    !real(c_double), intent(out), dimension(Natmos,7,nLambdaInput) :: stimOutput !EDGAR: containers for opt coeffs
+    real(c_double), intent(out), dimension(nLambdaInput) :: wavelengthOut
+    real(c_double), intent(out), dimension(4,nLambdaInput) :: stokesOut
+    real(c_double), intent(out), dimension(4,nLambdaInput) :: epsOut !EDGAR: containers for opt coeffs
+    real(c_double), intent(out), dimension(7,nLambdaInput) :: etaOut !EDGAR: containers for opt coeffs
+    real(c_double), intent(out), dimension(7,nLambdaInput) :: stimOut !EDGAR: containers for opt coeffs
     integer(c_int), intent(out) :: error
 
     integer :: n, nterml, ntermu
@@ -42,6 +41,7 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
 
     error = 0
     error_code = 0
+    
 
     params(index)%recompute_see_rtcoef = .True.
     ! If the parameters on which the RT coefficients depend on change, then recompute the coefficients
@@ -68,7 +68,7 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     isti = 1
     imag = 1
     idep = 0
-    use_paschen_back = 1
+    
     params(index)%nslabs = 1  !EDGAR:this is not being used anymore
     
     params(index)%bgauss = B1Input(1)
@@ -78,8 +78,13 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     params(index)%dtau = tau1Input
     params(index)%beta = betaInput
 
+    !EDGAR: I should put all these pars as fixed parameters and set them from outside
+    use_mag_opt_RT = 1  
+    use_stim_emission_RT = 1
+    use_paschen_back = 1
+    fixed(index)%use_atomic_pol = 1  !=atomicpolInput
+
     fixed(index)%nemiss = transInput
-    fixed(index)%use_atomic_pol = 1
     fixed(index)%thetad = anglesInput(1)
     fixed(index)%chid = anglesInput(2)
     fixed(index)%gammad = anglesInput(3)
@@ -87,6 +92,7 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     params(index)%vdopp = dopplerWidthInput
     params(index)%damping = dampingInput
     fixed(index)%damping_treatment = 0
+
     
 ! Read the wavelength of the transition that we want to synthesize
     fixed(index)%wl = atom%wavelength(transInput)
@@ -116,8 +122,6 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
         !transOutput(i)=atom%wavelength(i)  !get the central wavelegnths and take them out to python
     enddo
 
-    use_mag_opt_RT = 1
-    use_stim_emission_RT = 1
 
 !*********************************
 !** SYNTHESIS MODE
@@ -155,7 +159,8 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
         !structure type in vars. To extract them out to python main, we have to collect them 
         !for each index into an array. Their way out fortran must be the present interface 
         !subroutine, hence pyx file must be modified and Mod.spectrum should also contain 
-        !the final vector-like etas,epsilons,etc, such that one can retrieve them.  
+        !the final vector-like etas,epsilons,etc, such that one can retrieve them.
+        !velocities are considered in rt_coef.f90 with parameter va.  
         call calc_rt_coef(params(index), fixed(index), observation(index), 1)
 
         ! If the calculation of the RT coefficients gives and error, return
@@ -180,10 +185,57 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     endif
     
     do i = 1, 4
-        stokesOutput(i,:) = inversion(index)%stokes_unperturbed(i-1,:)
+        stokesOut(i,:) = inversion(index)%stokes_unperturbed(i-1,:)
     enddo
     
-    wavelengthOutput = observation(index)%wl + fixed(index)%wl
+    wavelengthOut = observation(index)%wl + fixed(index)%wl
+!-----------------------------------------------------------------------------
+
+    !EDGAR:OLD output in myhazel1.0. 
+    !With this output we waste space and we loose info about the stimulated coefficients
+    !   etaOutput(1,1,:) = eta(0,:) - eta_stim(0,:)
+    !   etaOutput(2,2,:) = eta(0,:) - eta_stim(0,:)
+    !   etaOutput(3,3,:) = eta(0,:) - eta_stim(0,:)
+    !   etaOutput(4,4,:) = eta(0,:) - eta_stim(0,:)
+    !   etaOutput(1,2,:) = eta(1,:) - eta_stim(1,:)
+    !   etaOutput(2,1,:) = eta(1,:) - eta_stim(1,:)     
+    !   etaOutput(1,3,:) = eta(2,:) - eta_stim(2,:)
+    !   etaOutput(3,1,:) = eta(2,:) - eta_stim(2,:)
+    !   etaOutput(1,4,:) = eta(3,:) - eta_stim(3,:)
+    !   etaOutput(4,1,:) = eta(3,:) - eta_stim(3,:)
+    !   etaOutput(2,3,:) = mag_opt(3,:) - mag_opt_stim(3,:)  
+    !   etaOutput(3,2,:) = -(mag_opt(3,:) - mag_opt_stim(3,:)) !EDGAR: the signs were wrong!!!!
+    !   etaOutput(2,4,:) = -(mag_opt(2,:) - mag_opt_stim(2,:))  !EDGAR: 1,2,3: Q,U,V
+    !   etaOutput(4,2,:) = mag_opt(2,:) - mag_opt_stim(2,:)
+    !   etaOutput(3,4,:) = mag_opt(1,:) - mag_opt_stim(1,:)
+    !   etaOutput(4,3,:) = -(mag_opt(1,:) - mag_opt_stim(1,:))
+
+    !The folowing output is more useful, more compact 
+    !New block that requires to set up again the atomicPolInput parameter.
+    !Note that inner optical coeffs start in index 0 while Out optical coeffs in 1.
+    if (fixed(index)%use_atomic_pol==0)then !when no atompol case, we extract only zeeman coefs.
+        do i = 1, 4
+            epsOut(i,:) = fixed(index)%epsilon_zeeman(i-1,:) 
+            etaOut(i,:) = fixed(index)%eta_zeeman(i-1,:) !eta_I,eta_Q,eta_U,eta_V
+            stimOut(i,:)=fixed(index)%eta_stim_zeeman(i-1,:)*use_stim_emission_RT !
+        enddo
+        do i = 5, 7
+            etaOut(i,:) = fixed(index)%mag_opt_zeeman(i-4,:)  !store rho1(Q),rho2(U),rho3(V) in etaOut(5),(6) y (7)
+            stimOut(i,:) = fixed(index)%mag_opt_stim_zeeman(i-4,:)*use_stim_emission_RT  !ro_QUV_stim
+        enddo
+    else
+        do i = 1, 4
+            epsOut(i,:) = fixed(index)%epsilon(i-1,:)
+            etaOut(i,:) = fixed(index)%eta(i-1,:) !eta_I,eta_Q,eta_U,eta_V
+            stimOut(i,:)=fixed(index)%eta_stim(i-1,:)*use_stim_emission_RT !
+        enddo
+        do i = 5, 7
+            etaOut(i,:) = fixed(index)%mag_opt(i-4,:)  !store rho1(Q),rho2(U),rho3(V) in etaOut(5),(6) y (7)
+            stimOut(i,:) = fixed(index)%mag_opt_stim(i-4,:)*use_stim_emission_RT  !ro_QUV_stim
+        enddo
+    
+    endif
+!-----------------------------------------------------------------------------
 
     params(index)%dopplerVelocityInput_old = dopplerVelocityInput
     params(index)%dopplerWidthInput_old = dopplerWidthInput
