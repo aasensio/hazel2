@@ -242,6 +242,66 @@ class Hazel_atmosphere(General_atmosphere):
         self.wvl_axis = spectrum.wavelength_axis[ind_low:ind_top+1]
         self.wvl_range = [ind_low, ind_top+1]
 
+
+    def cartesian_to_spherical(self,Bx,By,Bz):
+        # Transform to spherical components in the vertical reference frame which are those used in Hazel
+        B = np.sqrt(Bx**2 + By**2 + Bz**2)
+        if (B == 0):
+            thetaB = 0.0
+        else:
+            thetaB = 180.0 / np.pi * np.arccos(Bz / B)
+        phiB = 180.0 / np.pi * np.arctan2(By, Bx)
+    
+        return B, thetaB,phiB
+
+    def los_to_vertical(self,Bx_los,By_los,Bz_los):
+        Bx_vert = Bx_los * self.spectrum.mu + Bz_los * np.sqrt(1.0 - self.spectrum.mu**2)
+        By_vert = By_los
+        Bz_vert = -Bx_los * np.sqrt(1.0 - self.spectrum.mu**2) + Bz_los * self.spectrum.mu
+
+        return Bx_vert,By_vert,Bz_vert
+
+
+    def spherical_to_cartesian(self,B,thetaB,phiB):
+        Bx = B * np.sin(thetaB * np.pi / 180.0) * np.cos(phiB * np.pi / 180.0)
+        By = B * np.sin(thetaB * np.pi / 180.0) * np.sin(phiB * np.pi / 180.0)
+        Bz = B * np.cos(thetaB * np.pi / 180.0)
+
+        return Bx,By,Bz        
+
+
+    def get_B_Hazel(self,B1,B2,B3):#pars[0],pars[1],pars[2]
+        '''
+        Transform magnetic field parameters to vertical reference frame 
+        in spherical coordinates, which is the Hazel working system.
+        Output provides both cartesian and spherical coordinates
+        in case both are needed (I would leave just spherical).
+        '''
+        if (self.coordinates_B == 'cartesian'):
+            # Cartesian - LOS : just carry out the rotation in cartesian geometry and transform to spherical
+            if (self.reference_frame == 'line-of-sight'):
+                Bx,By,Bz=self.los_to_vertical(B1,B2,B3) #here Bi would be cartesian Bx,By,Bz in LOS
+            else:# Cartesian - vertical : do nothing
+                Bx,By,Bz=B1,B2,B3
+
+            # Transform to spherical components in the vertical reference frame which are those used in Hazel
+            B,thB,phiB=self.cartesian_to_spherical(Bx,By,Bz) #from cartesian vertical to spherical vertical
+
+        if (self.coordinates_B == 'spherical'):
+            # Spherical - vertical by default: do nothing but get cartesians .
+            # we assume vertical but result is overwritten in next block if it is not like that
+            Bx,By,Bz=self.spherical_to_cartesian(B1,B2,B3) #delete this line if Bx,By,Bz not needed in the code 
+            B,thB,phiB= B1,B2,B3
+
+            # Spherical - LOS : transform to cartesian, do rotation to vertical and come back to spherical
+            if (self.reference_frame == 'line-of-sight'):
+                Bx_los,By_los,Bz_los=self.spherical_to_cartesian(B,thB,phiB)
+                Bx,By,Bz=self.los_to_vertical(Bx_los,By_los,Bz_los)
+                # To spherical comps in vertical frame as required in Hazel
+                B,thB,phiB=self.cartesian_to_spherical(Bx,By,Bz)
+
+        return B,thB,phiB,Bx,By,Bz #Bx,By,Bz can be deleted if not needed in the code 
+
     def set_parameters(self, pars, ff=1.0,j10=np.zeros(4),m=None):
         """
         Set the parameters of this model chromosphere
@@ -261,8 +321,17 @@ class Hazel_atmosphere(General_atmosphere):
         -------
         None
         """
+        
+        self.parameters['B'],self.parameters['thB'],self.parameters['phiB'], \
+        self.parameters['Bx'],self.parameters['By'],self.parameters['Bz']= \
+        self.get_B_Hazel(pars[0],pars[1],pars[2]) 
+        
 
-        if (self.coordinates_B == 'cartesian'):
+        #---DELETE THIS BLOCK AFTER VALIDATION----------------------------------------------------
+        '''
+        #EDGAR CHECK: this block seems redundant to the block in synthesize!
+        #if cartesian input read it, compute spherical and update spherical parameters
+        if (self.coordinates_B == 'cartesian'): 
             self.parameters['Bx'] = pars[0]
             self.parameters['By'] = pars[1]
             self.parameters['Bz'] = pars[2]
@@ -279,6 +348,7 @@ class Hazel_atmosphere(General_atmosphere):
             self.parameters['thB'] = thetaB
             self.parameters['phiB'] = phiB
         
+        #if spherical input, read it, compute cartesian and update cartesian parameters
         if (self.coordinates_B == 'spherical'):
             self.parameters['B'] = pars[0]
             self.parameters['thB'] = pars[1]
@@ -292,7 +362,8 @@ class Hazel_atmosphere(General_atmosphere):
             self.parameters['Bx'] = Bx
             self.parameters['By'] = By
             self.parameters['Bz'] = Bz
-
+        
+        '''
         self.parameters['tau'] = pars[3]
         self.parameters['v'] = pars[4]
         self.parameters['deltav'] = pars[5]
@@ -398,7 +469,7 @@ class Hazel_atmosphere(General_atmosphere):
     def synthesize(self,stokes=None, returnRF=False, nlte=None,epsout=None, etaout=None, stimout=None):
         """
         Carry out the synthesis and returns the Stokes parameters directly from python user main program.
-        EDGAR:This is not the synthesize of model.py, it does not see n_chromospheres. 
+        EDGAR:This synthesize of model.py, it does not see n_chromospheres. 
 
         Parameters
         ----------
@@ -411,121 +482,101 @@ class Hazel_atmosphere(General_atmosphere):
             Stokes parameters, with the first index containing the wavelength displacement and the remaining
                                     containing I, Q, U and V. Size (4,nLambda)        
         """
-        
-        
-        #if (self.verbose >= 1):#EDGAR: print number of Hazel chromospheres/slabs
-        #self.logger.info('N_chromospheres',N_chromo)
 
         if (self.working_mode == 'inversion'):
             self.nodes_to_model()            
             self.to_physical()
 
-        
-        # Magnetic field components are entered in Hazel in the vertical reference system
-        # Here we do the transformation from one to the other if fields are
-        # given in LOS
-        if (self.coordinates_B == 'cartesian'):
 
+        #--------DELETE ALL THIS BLOCK WHEN VALIDATED---------------------------------------------------------
+        #EDGAR : I MOVED ALL THIS BLOCK WAS MOVED TO ADD_PARAMETERS AVOIDING THE REDUNDANT
+        #OPERATIONS DONE THERE. PLACE THIS BLOCK THERE ONE GETS HAVING BOTH TYPES OF COORDINATES
+        #AND ALSO THE MAGNETIC FIELD IN SPHERICAL COORDINATES AND IN VERTICAL FRAME, AS REQUIRED BY HAZEL
+        '''
+        # Magnetic field components are entered in Hazel in the vertical reference system
+        # Here we do the transformation from one to the other if fields are given in LOS
+        if (self.coordinates_B == 'cartesian'):
             # Cartesian - LOS : just carry out the rotation in cartesian geometry and transform to spherical
             if (self.reference_frame == 'line-of-sight'):
-                Bx = self.parameters['Bx'] * self.spectrum.mu + self.parameters['Bz'] * np.sqrt(1.0 - self.spectrum.mu**2)
-                By = self.parameters['By']
-                Bz = -self.parameters['Bx'] * np.sqrt(1.0 - self.spectrum.mu**2) + self.parameters['Bz'] * self.spectrum.mu
+                Bx,By,Bz=self.los_to_vertical(self.parameters['Bx'],self.parameters['By'],self.parameters['Bz'])
             else:
             # Cartesian - vertical : just transform to spherical
                 Bx = self.parameters['Bx']
                 By = self.parameters['By']
                 Bz = self.parameters['Bz']
-        
+
             # Transform to spherical components in the vertical reference frame which are those used in Hazel
-            B = np.sqrt(Bx**2 + By**2 + Bz**2)
-            if (B == 0):
-                thetaB = 0.0
-            else:
-                thetaB = 180.0 / np.pi * np.arccos(Bz / B)
-            phiB = 180.0 / np.pi * np.arctan2(By, Bx)
+            B,thetaB,phiB=self.cartesian_to_spherical(Bx,By,Bz) #in vertical frame
 
         if (self.coordinates_B == 'spherical'):
+            # Spherical - vertical : do nothing
+            B = self.parameters['B']
+            thetaB = self.parameters['thB']
+            phiB = self.parameters['phiB']
 
             # Spherical - LOS : transform to cartesian, do rotation to vertical and come back to spherical
             if (self.reference_frame == 'line-of-sight'):
-                B = self.parameters['B']
-                thetaB = self.parameters['thB']
-                phiB = self.parameters['phiB']
+                Bx_los,By_los,Bz_los=self.spherical_to_cartesian(B,thetaB,phiB)
+                Bx_vert,By_vert,Bz_vert=self.los_to_vertical(Bx_los,By_los,Bz_los)
+                # To spherical comps in vertical frame as required in Hazel
+                B,thetaB,phiB=self.cartesian_to_spherical(Bx_vert,By_vert,Bz_vert)
+        
 
-                Bx_los = B * np.sin(thetaB * np.pi / 180.0) * np.cos(phiB * np.pi / 180)
-                By_los = B * np.sin(thetaB * np.pi / 180.0) * np.sin(phiB * np.pi / 180)
-                Bz_los = B * np.cos(thetaB * np.pi / 180.0)
+        B1Input = np.asarray([B,thetaB,phiB])
+        '''
+        #--------------------------------------------------------------------------------
+        
+        B1In = np.asarray([self.parameters['B'],self.parameters['thB'], self.parameters['phiB']])
 
-                Bx_vert = Bx_los * self.spectrum.mu + Bz_los * np.sqrt(1.0 - self.spectrum.mu**2)
-                By_vert = By_los
-                Bz_vert = -Bx_los * np.sqrt(1.0 - self.spectrum.mu**2) + Bz_los * self.spectrum.mu
+        hIn = self.height
+        tau1In = self.parameters['tau']
+        anglesIn = self.spectrum.los
 
-                # Transform to spherical components in the vertical reference frame which are those used in Hazel
-                B = np.sqrt(Bx_vert**2 + By_vert**2 + Bz_vert**2)
-                if (B == 0):
-                    thetaB = 0.0
-                else:
-                    thetaB = 180.0 / np.pi * np.arccos(Bz_vert / B)
-                phiB = 180.0 / np.pi * np.arctan2(By_vert, Bx_vert)
-            else:
-            # Spherical - vertical : do nothing
-                B = self.parameters['B']
-                thetaB = self.parameters['thB']
-                phiB = self.parameters['phiB']
-
-        B1Input = np.asarray([B, thetaB, phiB])
-
-        hInput = self.height
-        tau1Input = self.parameters['tau']
-        ##EDGAR:haz llegar line_to_index hasta aqui una vez que lo hayas puesto en add_spectral
-        transInput = self.line_to_index[self.active_line]  
-        anglesInput = self.spectrum.los
-        lambdaAxisInput = self.wvl_axis - self.multiplets[self.active_line]
-        nLambdaInput = len(lambdaAxisInput)
+        ##EDGAR:haz llegar line_to_index y multiplets hasta aqui una vez que los hayas puesto en add_spectral
+        transIn = self.line_to_index[self.active_line]  
+        mltp=self.spectrum.multiplets #only for making code shorter below
+        lambdaAxisIn = self.wvl_axis - mltp[self.active_line]
+        
+        nLambdaIn = len(lambdaAxisIn)
                         
+        #So confusing, there are two updates fo boundary condition, here and in synthesize_spectral_region
         if (stokes is None):
-            boundaryInput  = np.asfortranarray(np.zeros((4,nLambdaInput)))
-            # boundaryInput[0,:] = hsra_continuum(self.multiplets[self.active_line]) #i0_allen(self.multiplets[self.active_line],1.0)            
-            boundaryInput[0,:] = i0_allen(self.multiplets[self.active_line], self.spectrum.mu)
-            boundaryInput *= self.spectrum.boundary[:,self.wvl_range[0]:self.wvl_range[1]]
-            # ratio = 1.0
+            boundaryIn  = np.asfortranarray(np.zeros((4,nLambdaIn)))
+            # boundaryIn[0,:] = hsra_continuum(mltp[self.active_line])            
+            boundaryIn[0,:] = i0_allen(mltp[self.active_line], self.spectrum.mu)
+            boundaryIn *= self.spectrum.boundary[:,self.wvl_range[0]:self.wvl_range[1]]
         else:            
-            # boundaryInput = np.asfortranarray(stokes * hsra_continuum(self.multiplets[self.active_line])) #i0_allen(self.multiplets[self.active_line],1.0)
-            boundaryInput = np.asfortranarray(stokes)
-            # ratio = boundaryInput[0,0] / i0_allen(self.multiplets[self.active_line], self.spectrum.mu)
-
-        ratio = boundaryInput[0,0] / i0_allen(self.multiplets[self.active_line], self.spectrum.mu)
-                    
-        dopplerWidthInput = self.parameters['deltav']
-        dampingInput = self.parameters['a']
-        #EDGAR: remember we are introducing j10 as a vector (one val for every transition)
-        #Inversions do not take this into account yet.  
-        j10Input = self.parameters['j10']
-        dopplerVelocityInput = self.parameters['v']
-        betaInput = self.parameters['beta']
+            boundaryIn = np.asfortranarray(stokes)
 
         # Renormalize nbar so that its CLV is the same as that of Allen, but with a decreased I0
         # If I don't do that, fitting profiles in the umbra is not possible. The lines become in
         # emission because the value of the source function, a consequence of the pumping radiation,
         # is too large. In this case, one needs to use beta to reduce the value of the source function.
-        nbarInput = np.ones(4) * ratio
-        omegaInput = np.zeros(4)
+        ratio = boundaryIn[0,0] / i0_allen(mltp[self.active_line], self.spectrum.mu)
+        nbarIn = np.ones(4) * ratio
+        omegaIn = np.zeros(4) #when different than zero it is used as reduction factors in  hazel
+        betaIn = self.parameters['beta']       
+
+        dopplerWidthIn = self.parameters['deltav']
+        dampingIn = self.parameters['a']
+        #remind j10 is vector (one val per transition).Inversions do not consider this yet.  
+        j10In = self.parameters['j10']
+        dopplerVelocityIn = self.parameters['v']
+        
         
         #self.index is the index integer of the chromosphere being processed.It changes
-        # from 1 to n_chromospheres, but where is it updated??
-        args = (self.index, B1Input, hInput, tau1Input, boundaryInput, transInput, 
-            anglesInput, nLambdaInput, lambdaAxisInput, dopplerWidthInput, 
-            dampingInput, j10Input, dopplerVelocityInput, 
-            betaInput, nbarInput, omegaInput)
+        # from 1 to n_chromospheres. Check where is it updated.
         
-        #ii=self.index #the opt coeffs here are still 2D, only for current slab
-        l,stokes,epsout,etaout,stimout,error = hazel_code._synth(*args)    
-        #l, stokes, error = hazel_code._synth(*args)
+        args = (self.index, B1In, hIn, tau1In, boundaryIn, transIn, anglesIn, nLambdaIn,
+            lambdaAxisIn, dopplerWidthIn, dampingIn, j10In, dopplerVelocityIn,
+            betaIn, nbarIn, omegaIn)
+        
+        #opt coeffs here are still 2D, only for current slab self.index
+        l,stokes,epsout,etaout,stimout,error = hazel_code._synth(*args)
 
         if (error == 1):
             raise NumericalErrorHazel()
 
         ff = self.parameters['ff']
         
-        return ff * stokes, epsout,etaout,stimout,error #/ hsra_continuum(self.multiplets[self.active_line])
+        return ff * stokes, epsout,etaout,stimout,error #/ hsra_continuum(mltp[self.active_line])

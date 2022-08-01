@@ -15,7 +15,7 @@ import logging
 __all__ = ['General_atmosphere']
     
 class General_atmosphere(object):
-    def __init__(self, atm_type, name, atom='helium'): #EDGAR:remove atom from here
+    def __init__(self, atm_type, name):#, atom='helium'): #EDGAR:remove atom from here
         self.ff = 1.0
         self.name = name
         self.type = atm_type
@@ -41,11 +41,11 @@ class General_atmosphere(object):
         self.stray_profile = None
         
         #EDGAR:in future versions this should be gathered there where atom file model is read/set up
-        if (atom == 'helium'):
-            self.multiplets = {'10830': 10829.0911, '3888': 3888.6046, '7065': 7065.7085, '5876': 5875.9663}
+        #if (atom == 'helium'):
+        #    self.multiplets = {'10830': 10829.0911, '3888': 3888.6046, '7065': 7065.7085, '5876': 5875.9663}
         
-        if (atom == 'sodium'):
-            self.multiplets = {'5895': 5895.924, '5889': 5889.95}
+        #if (atom == 'sodium'):
+        #    self.multiplets = {'5895': 5895.924, '5889': 5889.95}
 
         self.parameters = OrderedDict()
         self.nodes_location = OrderedDict()

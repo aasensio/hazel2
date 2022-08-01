@@ -35,10 +35,13 @@ class Model(object):
         #EDGAR: dictionary of dictionaries with possible atoms and lines with their indexes for HAZEL atmospheres and spectra        
         #A variation of this dict to add more atoms and lines requires to do similar changes in 
         #multiplets dict in general_atmosphere object (atmosphere.py). 
-        #It'd be more elegant to encapsulate all together in atomslist
-        self.atomslist={'helium':{'10830': 1, '3888': 2, '7065': 3,'5876': 4},
+        #It'd be more elegant to encapsulate all together in atomsdic
+        self.atomsdic={'helium':{'10830': 1, '3888': 2, '7065': 3,'5876': 4},
             'sodium':{'5895': 1, '5889': 2}} 
         
+        self.multipletsdic={'helium':{'10830': 10829.0911, '3888': 3888.6046, '7065': 7065.7085, '5876': 5875.9663},
+                            'sodium':{'5895': 5895.924, '5889': 5889.95}}
+
         self.photospheres = []
         self.chromospheres = []
         self.chromospheres_order = []
@@ -567,9 +570,9 @@ class Model(object):
         stokes_weights = np.array(stokes_weights)
         
         #EDGAR: atom, line_to_index and line keywords moved to add_spectral
-        if (atom is not None) and (atom in self.atomslist):
+        if (atom is not None) and (atom in self.atomsdic):
             self.atom=atom#self.atom can be deleted because is not used anywhere else
-            self.line_to_index=self.atomslist[atom]
+            self.line_to_index=self.atomsdic[atom]
         else:
             raise Exception('Atom is not specified or not in the database. Please, define a valid atom.')
     
@@ -579,7 +582,7 @@ class Model(object):
         #it seems lines for SIR read in add_photosphere were wrong because they were introduced programatically
         #with the field atm['spectral lines'] in add_photosphere, but there was no such a field defined anywhere 
         lineH, lineS = '', ''
-        if (linehazel is not None) and (linehazel in self.atomslist[atom]):
+        if (linehazel is not None) and (linehazel in self.atomsdic[atom]):
             lineH=linehazel #e.g. '10830'.  Lines for activating in Hazel atmos
             if (self.verbose >= 1):self.logger.info("    * Adding HAZEL line : {0}".format(lineH))
         else:
@@ -603,6 +606,9 @@ class Model(object):
             mask_file=mask_file, instrumental_profile=instrumental_profile, 
             root=self.root, wvl_lr=wvl_lr,lti=self.line_to_index,lineHazel=lineH,lineSIR=lineS,
             n_chromo=self.nch)
+
+        #EDGAR: update spectrum object with the multiplets for later accesing it from synthesize at chromosphere.py
+        self.spectrum[name].multiplets = self.multipletsdic[atom] 
 
         #--EDGAR---------------------------------------------------------------
         #we are here defining the wavelength window for all atmospheres associated to this spectral region
@@ -809,9 +815,9 @@ class Model(object):
         
 
         #EDGAR: atom, line_to_index and line keywords moved to add_spectral
-        if ('atom' in value) and (value['atom']in self.atomslist):
+        if ('atom' in value) and (value['atom']in self.atomsdic):
             self.atom=value['atom']#self.atom can be deleted because is not used anywhere else
-            self.line_to_index=self.atomslist[value['atom']]
+            self.line_to_index=self.atomsdic[value['atom']]
         else:
             raise Exception('Atom is not specified or not in the database. Please, define a valid atom.')
     
@@ -821,7 +827,7 @@ class Model(object):
         #it seems lines for SIR read in add_photosphere were wrong because they were introduced programatically
         #with the field atm['spectral lines'] in add_photosphere, but there was no such a field defined anywhere 
         lineH, lineS = '', ''
-        if ('linehazel' in value) and (value['linehazel'] in self.atomslist[value['atom']]):
+        if ('linehazel' in value) and (value['linehazel'] in self.atomsdic[value['atom']]):
             lineH=value['linehazel'] #e.g. '10830'.  Lines for activating in Hazel atmos
             if (self.verbose >= 1):self.logger.info("    * Adding HAZEL line : {0}".format(lineH))
         else:
@@ -849,7 +855,11 @@ class Model(object):
         #and we could now remove all what has to do with spectrum from add_chromosphere and add_photosphere
         #so that add_spectral and add_atmos can be invoked in any order
 
+
         #--EDGAR---------------------------------------------------------------
+        #Update spectrum object with the multiplets for later accesing it from synthesize at chromosphere.py
+        self.spectrum[name].multiplets = self.multipletsdic[atom] 
+
         #change the keyword name as desired
         keyw='atmos window'#this is the old 'wavelength' keyword of add_chromosphere
         #we are here defining the wavelength window for all atmospheres associated to this spectral region
@@ -1603,17 +1613,18 @@ class Model(object):
                     #with the self.line_to_index known from add_spectral: 
                     self.atmospheres[atm].line_to_index=self.line_to_index 
                     
-                    #EDGAR: just for compact notation while storing opt coeffs later
+                    #Just for compact notation below
                     asp=self.atmospheres[atm].spectrum
 
                     if (self.atmospheres[atm].spectrum.name == spectral_region):                        
+                        ind_low, ind_top = self.atmospheres[atm].wvl_range
                         # Update the boundary condition only for the first atmosphere if several are sharing ff      
                         if (n > 0 and k == 0):
-                            ind_low, ind_top = self.atmospheres[atm].wvl_range
                             if (perturbation):
-                                stokes_out = self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top] * hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
-                            else:#i0allen doing nothing but multiplying by 1, you could set it to the I0 background
-                                stokes_out = self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top] * hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
+                                stokes_out = asp.stokes_perturbed[:, ind_low:ind_top] * hazel.util.i0_allen(asp.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
+                            else:
+                                print('knA',k,n)
+                                stokes_out = asp.stokes[:, ind_low:ind_top] * hazel.util.i0_allen(asp.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
                         
                         #EDGAR: photospheres must be first lower and unique, stray atms should be always last higher,
                         #and I guess chromospheres can be alone and as many as desired
@@ -1642,22 +1653,16 @@ class Model(object):
                                 stokes += tmp  #EDGAR:we are adding current result to previous last one
                                 
                         #-------------------------------------------------------------------
+                        # Divide by i0: why are we dividing by i0 in every step of the radiative trasnfer??
+                        mean_wvl = np.mean(asp.wavelength_axis[ind_low:ind_top])
+                        i0 = hazel.util.i0_allen(mean_wvl, 1.0) #print(i0)
 
-                        ind_low, ind_top = self.atmospheres[atm].wvl_range
-                        
-                        mean_wvl = np.mean(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top])
-                        i0 = hazel.util.i0_allen(mean_wvl, 1.0)
-
-                        # Divide by i0
                         if (self.use_analytical_RF):
                             for k, v in self.rf_analytical.items():
-                                if (k != 'ff'):
-                                    v /= i0
+                                if (k != 'ff'):v /= i0
 
-                        if (perturbation):
-                            self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top] = stokes / i0#[None,:]
-                        else:                            
-                            self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top] = stokes / i0#[None,:]
+                        if (perturbation):asp.stokes_perturbed[:, ind_low:ind_top] = stokes / i0#[None,:]
+                        else:asp.stokes[:, ind_low:ind_top] = stokes / i0#[None,:]
     
     def set_nlte(self, option):
         """

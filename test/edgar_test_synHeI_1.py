@@ -154,16 +154,32 @@ the block before appeared repeated for every kind of adding atmosphere routine,p
  all optical coefficients.
 '''
 
-#-----------------------COMMIT 9(pending)
+#-----------------------COMMIT 9
 '''
 ECR: Created add_spectrum in model.py to substitute add_spectral. Now it works with keywords instead of with input dictionaries.
 Remove "name" from input dictionaries of add_spectrum , leaving it as fixed parameter.
 Add additional reduced keyword 'boundary' instead of 'boundary condition' in add_spectrum.
-Create containers for optical coefficients from outside Hazel fortran.
-Extract optical coefficients of every chromosphere to Python 
-Check transfer in synthesize_spectral_region
+Create containers for optical coefficients in spectrum object.
+Modify fortran routines to extract optical coefficients of every chromosphere to Python. 
+Check transfer in synthesize_spectral_region.
 Add routine for adding N chromospheres in one line.
 Add plotting routines for optical coefficients.
+
+
+#-----------------------COMMIT 10(pending)
+Fix bug when creating a model with other atom different than helium. Now there is a dictionary with 
+multiplets at the beginning of model.py, such that all atom-related information is together and more clear.
+Change to sodium atom creating test program.
+Improved efficiency and readibility of magnetic field transformations in synthesize of chromosphere.py calling Hazel.
+Addition of subroutines cartesian_to_spherical, spherical_to_cartesian, and los_to_vertical.
+Addition of get_B_Hazel and simplification of the treatment of the magnetic field reference and coordinates
+in add_parameters and synthesize inside chromosphere.py.
+CHeck that j10 is correctly introduced(OK).
+Check that effectively linear anisotropy is introducing J10 in the SEE of sodium(OK).
+Reduced parsInput to parsIn names in synthesize at chromosphere.py. 
+Minor simplifications in synthesize_spectral_region.
+
+
 
 Reintroduce  UseAtomicPol (which is set always to 1 in hazel_pz.f90) and similar parameters.
 Start to add all your Hazel1 changes to Hazel2.

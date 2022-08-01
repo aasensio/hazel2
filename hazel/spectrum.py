@@ -38,7 +38,7 @@ class Spectrum(object):
         if (lineSIR != ''):
             self.lineSIR=lineSIR #line/s for activating in Hazel chromo or in SIR photo
 
-
+        self.multiplets=None #the set up of this is done in add_spectrum and add_spectral
         #-------------------------------------
         if (wvl is not None):
             self.add_spectrum(n_chromo,wvl, wvl_lr)

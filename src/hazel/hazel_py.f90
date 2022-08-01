@@ -82,7 +82,7 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     use_mag_opt_RT = 1  
     use_stim_emission_RT = 1
     use_paschen_back = 1
-    fixed(index)%use_atomic_pol = 1  !=atomicpolInput
+    fixed(index)%use_atomic_pol = 1 !-1,0,1.    atomicpolInput
 
     fixed(index)%nemiss = transInput
     fixed(index)%thetad = anglesInput(1)
@@ -116,12 +116,10 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     !EDGAR: we read atom file already with the init() routine before 
     !calling the actual routine so atom%j10 is already initialized.
     do i = 1, atom%ntran
-        !print*,'j10 Python file:',atom%j10(i)
         atom%j10(i)=j10Input(i)   !overwrite thevalue of the file with the python  
         if (verbose_mode > 0)print*,'j10 Python input:',atom%j10(i)
         !transOutput(i)=atom%wavelength(i)  !get the central wavelegnths and take them out to python
     enddo
-
 
 !*********************************
 !** SYNTHESIS MODE
@@ -304,8 +302,6 @@ subroutine c_init(nchar,atomfileInput,verbose) bind(c)
     !EDGAR: here atom%j10(x) for each transition x is initialized to 0.
     call read_model_file_ok(input_model_file) 
     
-   
-
     verbose_mode=verbose !EDGAR: verbose_mode is general fortran var, like input_model_file 
 
     ! Force recomputation of RT coefficients by using an absurd velocity
