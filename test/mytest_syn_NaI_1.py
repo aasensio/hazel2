@@ -6,10 +6,10 @@ import sys
 mo = hazel.Model(working_mode='synthesis',atomf='sodium_hfs.atom',verbose=0) 
 
 cdic={'ref frame': 'LOS'}#common args
-chs,txt=mo.add_Nchroms(['c1','c2'],cdic,hz=[0.,0.]) #return chs objects and tags
+chs,txt=mo.add_Nchroms(['c0','c1','c2'],cdic,hz=[0.,0.,0.]) #return chs objects and tags
 
 s1=mo.add_spectrum('s1', atom='sodium',linehazel='5895',wavelength=[5892, 5899, 150], 
-	topology='c1+c2',los=[0.0,0.0,90.0], boundary=[1.0,0.0,0.0,0])	;mo.setup() 
+	topology='c0->c1+c2',los=[0.0,0.0,90.0], boundary=[1.0,0.0,0.0,0])	;mo.setup() 
 
 #----------------------------------------------------------------------------------
 
@@ -18,6 +18,7 @@ for j in [1,2,3]:
 	#PARS:(Bx or B,By or thB,Bz or phB,tau,v,deltav,beta,a).
 	chs[0].set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.0,0.0])
 	chs[1].set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.0,0.0])
+	chs[2].set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.0,0.0])
 	mo.synthesize() 
 	ax=mo.iplot_stokes(ax,'s1')
 plt.show()

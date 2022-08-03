@@ -199,7 +199,6 @@ if (synthesis_mode == 5) then
     endif
 
 
-! Second component
         ds = in_params%dtau / maxval(in_fixed%etaI)
         in_fixed%dtau = in_fixed%etaI * ds
                 

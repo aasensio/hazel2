@@ -53,7 +53,8 @@ class Model(object):
         self.configuration = None
         self.n_cycles = 1
         self.spectrum = {}  #EDGAR:confusing that self.spectrum is initialized as [] and now as {}
-        self.topologies = []
+        self.topologies = {}#[] EDGAR: before it was a list, now it is a dictionary
+        self.atms_in_spectrum={} #EDGAR: of the kind -> {'sp1': string_with_atmosphere_order_for_sp1}
         self.straylights = []
         self.working_mode = working_mode
         self.pixel = 0
@@ -303,8 +304,10 @@ class Model(object):
         # Adding topologies
         if (self.verbose >= 1):
             self.logger.info("Adding topologies") 
-        for value in self.topologies:
-            self.add_topology(value)
+        #for value in self.topologies:
+        #    self.add_topology(value)
+        for specname, value in self.topologies.items():
+            self.add_topology(value,specname)
 
         # Remove unused atmospheres defined in the configuration file and not in the topology
         if (self.verbose >= 1):
@@ -617,8 +620,9 @@ class Model(object):
         else:
             wvl_range = [np.min(self.spectrum[name].wavelength_axis), np.max(self.spectrum[name].wavelength_axis)]
 
-        self.topologies.append(topology)#'ph1->ch1+ch2'
-    
+        #self.topologies.append(topology)#'ph1->ch1+ch2'
+        self.topologies[name]=topology# anade una entrada del tipo {'sp1':'ch1->ch2'}
+        
         """
         Activate this spectrum with add_active_line for all existing atmospheres.
         Part of this routine was previously inside every add_atmosphere routine.
@@ -874,7 +878,9 @@ class Model(object):
             wvl_range = [np.min(self.spectrum[value['name']].wavelength_axis), np.max(self.spectrum[value['name']].wavelength_axis)]
 
         topo=value['topology']
-        self.topologies.append(topo)#'ph1->ch1+ch2'
+        #self.topologies.append(topo)#'ph1->ch1+ch2'  #if topologies is a list
+        self.topologies[name]=topo# anade una entrada del tipo {'sp1':'ch1->ch2'}  #now topology is dictionary
+        
         #this gives just string names:
         #list_of_lists=[k.split('+') for k in topo.split('->')] #[['ph1'], ['ch1', 'ch2']]
         #list_of_atms=[item for sublist in list_of_lists for item in sublist]#['ph1', 'ch1', 'ch2']
@@ -1481,9 +1487,17 @@ class Model(object):
             if (v.type == 'chromosphere'):
                 hazel_code.exit(v.index)
 
-    def add_topology(self, atmosphere_order):
+    def add_topology(self, atmosphere_order,specname):
         """
-        Add a new topology
+        Add a new topology.
+        EDGAR: A topology is always associated to a spectrum. Hence these two aspects should be
+        related in such a way that we know exactly the atmospheres by the name of the spectrum 
+        (i.e. by the name of the spectral region). If this is done, then in synthesize_spectral_region
+        we dont need to run over all atmospheres, but only through those linked to the spectrum name.
+        For carrying out the radiative transfer, we need then a routine get_transfer_path 
+        that returns the list of atmosphere objects (order) in the self.order_atmospheres list
+        associated to the spectrum name.
+        
 
         Parameters
         ----------
@@ -1524,6 +1538,8 @@ class Model(object):
                 raise Exception("Straylight components can only be at the last position of a topology.")
         
         self.order_atmospheres.append(order)
+        
+        self.atms_in_spectrum[specname]=order  #new for making synthesize_spectral_region easier
 
         # Check that there are no two photospheres linked with ->
         # because they do not make any sense
@@ -1538,6 +1554,8 @@ class Model(object):
         if (len(n_photospheres_linked) != len(set(n_photospheres_linked))):
             raise Exception("There are several photospheres linked with ->. This is not allowed.")
                         
+        
+
     def normalize_ff(self):
         """
         Normalize all filling factors so that they add to one to avoid later problems.
@@ -1578,8 +1596,65 @@ class Model(object):
                             self.atmospheres[atm].parameters['ff'] = ff / total_ff
                             self.atmospheres[atm].parameters['ff'] = physical_to_transformed(self.atmospheres[atm].parameters['ff'], -0.00001, 1.00001)
 
+    def check_filling_factors(self, spectral_region):
+        for n, order in enumerate(self.atms_in_spectrum[spectral_region] ): #n run layers along the ray
+            if (len(order) > 1):#k runs subpixels of topologies c1+c2                                                  
+                count=0
+                for k, atm in enumerate(order):count+=self.atmospheres[atm].parameters['ff']
+                if (count!=1.0):
+                    print("WARNING: Filling factors of layer {0} do not add up to one. Assuming iso-contribution.".format(n))            
+                    for k, atm in enumerate(order):self.atmospheres[atm].parameters['ff']=1.0/len(order)
 
-    def synthesize_spectral_region(self, spectral_region, perturbation=False):
+    def synthesize_spectrum(self, spectral_region, perturbation=False, stokes=None,stokes_out = None,aa=-1,mu=1.0):
+        """
+        Synthesize all atmospheres of a spectral region and normalize to continuum of quiet Sun at disk center
+        Photospheres must be first lower and unique, stray atms should be always last higher
+        Stokes and stokes_out are local variables initialized in header (not intended to be inputs!).
+        atms_in_spectrum makes unnecessary to check the asp spectral region inside the double loop below
+        -----------Parameters:----------
+        spectral_region : str.    Spectral region to synthesize
+        perturbation : bool
+            True if you are synthesizing with a perturbation. Then, the synthesis
+            is saved in spectrum.stokes_perturbed instead of spectrum.stokes
+        --------------------------------
+        for a topology c0->c1+c2 the following inside the loops  gives:
+        print(self.atms_in_spectrum[spectral_region])  #0 , [['c0'], ['c1','c2']] #all the chain of atmospehres
+        print(n,order)        #0,['c0'] and 1,['c1','c2'] #the current layer
+        print(k,atm)            #0,c0 / 0,c1 1,c2 (con chX los nombres(strings) de las atms)
+        """        
+        for n, order in enumerate(self.atms_in_spectrum[spectral_region] ): #n run layers along the ray
+            for k, atm in enumerate(order):  #k runs subpixels of topologies c1+c2                                                  
+                self.atmospheres[atm].line_to_index=self.line_to_index#update line_to_index in atm/hazel synthesize with that in add_spectral. 
+                asp=self.atmospheres[atm].spectrum #for local compact notation
+
+                xbot, xtop = self.atmospheres[atm].wvl_range
+                if (n > 0 and k == 0):stokes_out = stokes[:,xbot:xtop] #Update boundary cond. for layers above bottom one      
+            
+                if (self.atmospheres[atm].type == 'straylight'):#call to synthesize in stray.py 
+                    stokes, error = self.atmospheres[atm].synthesize(nlte=self.use_nlte) 
+                    if (error == 1):raise 
+                    stokes += (1.0 - self.atmospheres[atm].parameters['ff']) * stokes_out                            
+                else: #chromospheres and photospheres
+                    if (k == 0):#1st subelement of c1+c2 layer, or just the element in single layers 
+                        if (self.use_analytical_RF):stokes, self.rf_analytical, error = \
+                            self.atmospheres[atm].synthesize(stokes_out, returnRF=True, nlte=self.use_nlte)#always calls a photosphere with RF  
+                        else:stokes, asp.eps[n+k,:,:],asp.eta[n+k,:,:],asp.stim[n+k,:,:],error = \
+                            self.atmospheres[atm].synthazel(stokes=stokes_out, nlte=self.use_nlte)#For single chromospheres
+                    else:#if c1+c2, adds up stokes of all sub-pixels  
+                        tmp,asp.eps[n+k,:,:],asp.eta[n+k,:,:],asp.stim[n+k,:,:], error = \
+                        self.atmospheres[atm].synthazel(stokes=stokes_out,nlte=self.use_nlte)
+                        stokes += tmp#DOUBT:the sum of contribs of all supixels should be done at the end of the transfer
+                    #-------------------------------------------------------------------
+        i0=hazel.util.i0_allen(np.mean(asp.wavelength_axis[xbot:xtop]), mu)  #at mean wavelength
+        #i0=hazel.util.i0_allen(asp.wavelength_axis[xbot:xtop], mu)[None,:] #at each wavelength
+        if (self.use_analytical_RF):#CHECK this is ok out of the loop
+            for k, v in self.rf_analytical.items():
+                if (k != 'ff'):v /= i0
+        if (perturbation):asp.stokes_perturbed[:,xbot:xtop] = stokes/ i0
+        else:asp.stokes[:,xbot:xtop] = stokes/ i0
+
+
+    def synthesize_spectral_region(self, spectral_region, perturbation=False): #OLD ROUTINE
         """
         Synthesize all atmospheres for a single spectral region and normalize to the continuum of the quiet Sun at disk center
 
@@ -1603,27 +1678,18 @@ class Model(object):
         for i, atmospheres in enumerate(self.order_atmospheres):
             for n, order in enumerate(atmospheres):
                 for k, atm in enumerate(order):                    
-                    #-------------------------------------------------------------------
-                    #EDGAR: I think k is always zero if there is no filling factor (subpixel atmospheres)
-                    #print(i,atmospheres)  #0 , [['ch1'], ['ch2']] #all the chain of atmospehres
-                    #print(n,order)        #0,['ch1'] and 1,['ch2'] #the current layer
-                    #print(k,atm)            #0,ch1 and 0,ch2 (con ch1 y ch2 los nombres(strings) de las atms)
-                    
                     #EDGAR: updating line_to_index seen by atmosphere and by hazel synthesize
                     #with the self.line_to_index known from add_spectral: 
                     self.atmospheres[atm].line_to_index=self.line_to_index 
-                    
-                    #Just for compact notation below
                     asp=self.atmospheres[atm].spectrum
 
                     if (self.atmospheres[atm].spectrum.name == spectral_region):                        
                         ind_low, ind_top = self.atmospheres[atm].wvl_range
                         # Update the boundary condition only for the first atmosphere if several are sharing ff      
-                        if (n > 0 and k == 0):
+                        if (n > 0 and k == 0):#the multiplication with i0 seems to compensate for the division a the end
                             if (perturbation):
                                 stokes_out = asp.stokes_perturbed[:, ind_low:ind_top] * hazel.util.i0_allen(asp.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
                             else:
-                                print('knA',k,n)
                                 stokes_out = asp.stokes[:, ind_low:ind_top] * hazel.util.i0_allen(asp.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
                         
                         #EDGAR: photospheres must be first lower and unique, stray atms should be always last higher,
@@ -1635,21 +1701,13 @@ class Model(object):
                                 raise 
                             stokes += (1.0 - self.atmospheres[atm].parameters['ff']) * stokes_out                            
                         else: #for types chromosphere and photosphere
-                            if (k == 0): 
-                                #k=0 is the lower atmosphere, either a PHOTOSPHERE or a CHROMOSPHERE in my tests                               
-                                if (self.use_analytical_RF):#this calls always a photosphere with RF
+                            if (k == 0): #k=0 is the lower atmosphere, either a PHOTOSPHERE or a CHROMOSPHERE in my tests                               
+                                if (self.use_analytical_RF):
                                     stokes, self.rf_analytical, error = self.atmospheres[atm].synthesize(stokes_out, returnRF=True, nlte=self.use_nlte)
-                                else:#In standard chromospheric case without ff loop enters here always
-                                    #I think this shall not work well with filling factor
-                                    stokes, asp.eps[n,:,:],asp.eta[n,:,:],asp.stim[n,:,:],error = self.atmospheres[atm].synthesize(stokes=stokes_out, nlte=self.use_nlte)
-                                #print('knA',k,n)
+                                else:
+                                    stokes, asp.eps[n+k,:,:],asp.eta[n+k,:,:],asp.stim[n+k,:,:],error = self.atmospheres[atm].synthesize(stokes=stokes_out, nlte=self.use_nlte)
                             else: 
-                                #print('knB',k,n,k+n)
-                                #EDGAR:if filling factor, adds up stokes of all sub-pixels? 
-                                #is this wrong? the ff addition should be done only once at the end of all the trasnfer 
-                                #jj tries to consider every unresolved atmosphere as indepednent to retrieve its coeffs 
-                                jj=2*n+k
-                                tmp,asp.eps[jj,:,:],asp.eta[jj,:,:],asp.stim[jj,:,:], error = self.atmospheres[atm].synthesize(stokes=stokes_out,nlte=self.use_nlte)
+                                tmp,asp.eps[n+k,:,:],asp.eta[n+k,:,:],asp.stim[n+k,:,:], error = self.atmospheres[atm].synthesize(stokes=stokes_out,nlte=self.use_nlte)
                                 stokes += tmp  #EDGAR:we are adding current result to previous last one
                                 
                         #-------------------------------------------------------------------
@@ -1692,11 +1750,16 @@ class Model(object):
         None
 
         """
+        
+        #EDGAR WARNING:I think normalize_ff is not working for the synthesis. 
 
-        if (self.working_mode == 'inversion'):
-            self.normalize_ff()
-        for k, v in self.spectrum.items():
-            self.synthesize_spectral_region(k, perturbation=perturbation)            
+        if (self.working_mode == 'inversion'):self.normalize_ff()
+        
+        for k, v in self.spectrum.items():#k is name of the spectrum or spectral region
+            self.check_filling_factors(k) #EDGAR: checking correct filling factors in composed layers
+            
+            #self.synthesize_spectral_region(k, perturbation=perturbation)  #OLD          
+            self.synthesize_spectrum(k, perturbation=perturbation)   #EDGAR NEW         
             if (v.normalization == 'off-limb'):
                 if (perturbation):
                     v.stokes_perturbed /= np.max(v.stokes_perturbed[0,:])

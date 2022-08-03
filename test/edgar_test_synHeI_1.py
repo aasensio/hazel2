@@ -16,11 +16,15 @@ chs,tags=mo.add_Nchroms(['c1','c2'],ckeys,hz=[1.,3.]) #return a list with chs ob
 #the association between spectrum(or spectral region) with atmospheres in topology is now made here
 s1=mo.add_spectrum('s1', atom='helium',linehazel='10830',wavelength=[10826, 10833, 150], 
 	topology='c1->c2',los=[0.0,0.0,90.0], boundary=[1.0,0.0,0.0,0]) 
-#linesSIR='number' or '[number]' for adding lines to calcualte photospheres with SIR in the model
-#'atm_window': [10826, 10833] when omitted it takes range in 'Wavelength'
-#OLD: mo.add_spectral({'name':'sp1','atom':'helium','lineHazel': '10830','Wavelength': [10826, 10833, 150], 
-#	'topology':'c1->c2','LOS':[0.0,0.0,90.0],'Boundary condition': [1.0,0.0,0.0,0]}) #what means 1 here??
+'''
+linesSIR='number' or '[number]' for adding lines to calcualte photospheres with SIR in the model
+'atm_window': [10826, 10833] when omitted it takes range in 'Wavelength'
+OLD: mo.add_spectral({'name':'sp1','atom':'helium','lineHazel': '10830','Wavelength': [10826, 10833, 150], 
+	'topology':'c1->c2','LOS':[0.0,0.0,90.0],'Boundary condition': [1.0,0.0,0.0,0]}) 
+here the 1 of boundary condition is the fraction of I0Allen that you assume for the background
+boundary condition and for the normalization by i0 (1 means i0Allen at disk center). 
 
+'''
 mo.setup() 
 '''
 plt.close()
@@ -166,7 +170,7 @@ Add routine for adding N chromospheres in one line.
 Add plotting routines for optical coefficients.
 
 
-#-----------------------COMMIT 10(pending)
+#-----------------------COMMIT 10
 Fix bug when creating a model with other atom different than helium. Now there is a dictionary with 
 multiplets at the beginning of model.py, such that all atom-related information is together and more clear.
 Change to sodium atom creating test program.
@@ -178,6 +182,24 @@ CHeck that j10 is correctly introduced(OK).
 Check that effectively linear anisotropy is introducing J10 in the SEE of sodium(OK).
 Reduced parsInput to parsIn names in synthesize at chromosphere.py. 
 Minor simplifications in synthesize_spectral_region.
+
+
+#-----------------------COMMIT 11
+Definition of the dictionary atms_in_spectrum in model.py to link the name of the spectra to 
+the topologies, such that the outer loop and the if clause in synthesize_spectral_region can be
+avoided. Now the loop does not need to search over all atmospheres but just go through the ones
+belonging to that spectral region of interest.
+Fix bug when storing optical coefficients in topologies of the kind c0->c1+c2. Solved 
+using index n+k in synthesize_spectral_region.
+
+DETECTED bug in continuum of Stokes I being 2.0 instead of 1.0 in topologies of the kind 
+c0->c1+c2. This actually happens when the user forget to specify the ff's for the atmospheres
+in set_pars or set_parameters. Possible bug in old routine normalize_ff, seems not working for synthesis.
+To fix these things we add check_filling_factors routine checking and assuring that the sum of ff's in 
+every layer with subshells amounts to 1. If not, it assumes isocontribution: ff=1/natms with nsub the number 
+of sub-atmospheres in the layer (e.g.,if nsub=2, ff=0.5). 
+
+
 
 
 

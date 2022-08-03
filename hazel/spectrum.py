@@ -291,17 +291,12 @@ class Spectrum(object):
 
     def set_normalization(self, normalization):
         """
-        Set a new value for the LOS
+        Set the normalization
         
-        Parameters
+        Parameters: Normalization
         ----------        
-        los : str
-            'off-limb' or 'on-disk'
-        
-        Returns
+        Returns : None
         -------
-        None
-    
         """          
         self.normalization = normalization
 
