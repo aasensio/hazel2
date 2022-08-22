@@ -16,6 +16,7 @@ import time
 import signal
 import sys
 import warnings
+import copy
 
 class tags(IntEnum):
     READY = 0
@@ -363,12 +364,12 @@ class Iterator(object):
                             data_to_send['error'] = 0
                             for k, v in self.model.spectrum.items():
                                 if (v.interpolate_to_lr):
-                                    data_to_send[label][k] = [self.model.spectrum[k].stokes_cycle, self.model.spectrum[k].chi2_cycle, self.model.spectrum[k].bic_cycle, self.model.spectrum[k].aic_cycle, self.model.spectrum[k].stokes_lr_cycle]
+                                    data_to_send[label][k] = copy.deepcopy([self.model.spectrum[k].stokes_cycle, self.model.spectrum[k].chi2_cycle, self.model.spectrum[k].bic_cycle, self.model.spectrum[k].aic_cycle, self.model.spectrum[k].stokes_lr_cycle])
                                 else:
-                                    data_to_send[label][k] = [self.model.spectrum[k].stokes_cycle, self.model.spectrum[k].chi2_cycle, self.model.spectrum[k].bic_cycle, self.model.spectrum[k].aic_cycle]
+                                    data_to_send[label][k] = copy.deepcopy([self.model.spectrum[k].stokes_cycle, self.model.spectrum[k].chi2_cycle, self.model.spectrum[k].bic_cycle, self.model.spectrum[k].aic_cycle])
 
                             for k, v in self.model.atmospheres.items():
-                                data_to_send[label][k] = [v.reference_cycle, v.error_cycle, v.nodes_location_cycle]
+                                data_to_send[label][k] = copy.deepcopy([v.reference_cycle, v.error_cycle, v.nodes_location_cycle])
 
                         # If a numerical problem appeared, send the error code to the parent
                         except NumericalErrorHazel:                            

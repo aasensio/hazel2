@@ -35,7 +35,7 @@ For Mac OS, type:
     conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpich mpi4py configobj gfortran_osx-64 gcc_osx-64 asciitree
 
 The specific packages for the Fortran and C compilers might change depending on the version of Anaconda
-that you have installed in your system. Their name might also be `gfortran` and `gcc`.
+that you have installed in your system. Their name might also be `gfortran` and `gcc` or simply `compilers`.
 Feel free to add `matplotlib` for doing some plots. You will need it if you want to run some of the examples
 shown in this documentation in your computer.
 
