@@ -1,27 +1,32 @@
 import hazel
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as pl
+import numpy as np
 import sys
 
+
+nx=150
+s0,sx=np.ones(nx),np.zeros(nx)
 #----------------------------------------------------------------------------------
 mo = hazel.Model(working_mode='synthesis',atomf='sodium_hfs.atom',verbose=0) 
 
 cdic={'ref frame': 'LOS'}#common args
-chs,txt=mo.add_Nchroms(['c0','c1','c2'],cdic,hz=[0.,0.,0.]) #return chs objects and tags
+chs,txt=mo.add_Nchroms(['c0','c1'],cdic,hz=[0.,0.]) #return chs objects and tags
+#chs,txt=mo.add_Nchroms(['c0','c1','c2'],cdic,hz=[0.,0.,0.]) #return chs objects and tags
 
-s1=mo.add_spectrum('s1', atom='sodium',linehazel='5895',wavelength=[5892, 5899, 150], 
-	topology='c0->c1+c2',los=[0.0,0.0,90.0], boundary=[1.0,0.0,0.0,0])	;mo.setup() 
+s1=mo.add_spectrum('s1', atom='sodium',linehazel='5895',wavelength=[5892, 5899, nx], 
+	topology='c0->c1',los=[0.0,0.0,90.0], boundary=[s0,sx,sx,sx])	;mo.setup() 
 
 #----------------------------------------------------------------------------------
 
-plt.close()	;f, ax = plt.subplots(nrows=2, ncols=2)	;ax = ax.flatten()
+pl.close()	;f, ax = pl.subplots(nrows=2, ncols=2)	;ax = ax.flatten()
 for j in [1,2,3]:
-	#PARS:(Bx or B,By or thB,Bz or phB,tau,v,deltav,beta,a).
-	chs[0].set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.0,0.0])
-	chs[1].set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.0,0.0])
-	chs[2].set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.0,0.0])
+	#PARS:(Bx or B,By or thB,Bz or phB,tau,v,deltav,beta,a).j10=[t1,...tn], nbar=[t1,...tn], omega=x
+	chs[0].set_pars([20.*j,10.*j,10.*j,2.,0.,8.,0.1,0.02],j10=[0.0,0.0],j20f=1.0)
+	chs[1].set_pars([20.*j,10.*j,10.*j,2.,0.,8.,0.1,0.02],j10=0.0,j20f=[1.0,1.0])#
+	#chs[2].set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.0,0.0])
 	mo.synthesize() 
 	ax=mo.iplot_stokes(ax,'s1')
-plt.show()
+pl.show()
 
 f,ax2=mo.plot_coeffs('s1')
 
@@ -31,7 +36,7 @@ f,ax2=mo.plot_coeffs('s1')
 #ax=mo.plot_stokes('s1')  #NON-interactive plot (all plotting things are inside) 
 
 '''
-#model pars
+
 atompol, magopt, stimem = 1, 1, 1  #
 nocoh = 0  #=0 for including all coherences, set to level number to deactive cohs in it
 dcol=np.asarray([0.0,0.0,0.0])  #D^(K=1 and 2)=delta_collision, D^(K=1),D^(K=2)

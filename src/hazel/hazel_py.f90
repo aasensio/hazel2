@@ -60,7 +60,7 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     !verbose_mode = 0
     linear_solver = 0       
     synthesis_mode = 5
-    working_mode = 0
+    working_mode = 0 !0: synthesis. 1: inversion
     ! Read the atomic model 
     ! call read_model_file(input_model_file)
     
@@ -98,19 +98,31 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     fixed(index)%wl = atom%wavelength(transInput)
     
 ! Set the values of nbar and omega in case they are given
-    fixed(index)%nbarExternal = nbarInput
-    fixed(index)%omegaExternal = omegaInput
+    fixed(index)%nbarExternal = nbarInput  !set to ones (Allen nbars) in chromosphere.py
+    fixed(index)%omegaExternal = omegaInput !set to zeroes (no anisotropy) in chromosphere.py
 
-! If nbar=0 or omega=0, use the numbers from Allen. If not, treat them as reduction factors
-    do i = 1, atom%ntran
-        if (nbarInput(i) == 0) then
-            fixed(index)%nbarExternal(i) = 1.0
-        endif
-        if (omegaInput(i) == 0) then
-            fixed(index)%omegaExternal(i) = 1.0
-        endif
-    enddo
-            
+! EDGAR: If nbar=0 or omega=0, use the numbers from Allen. If not, treat them as reduction factors
+! CAUTION: the following loop superseed previous initialization of allen parameters setting them to 1.0.
+! We change now this, leaving the possibility of setting them from main python program or file.
+
+    ! do i = 1, atom%ntran
+    !     if (nbarInput(i) == 0) then
+    !         fixed(index)%nbarExternal(i) = 1.0
+    !     endif
+    !     if (omegaInput(i) == 0) then
+    !         fixed(index)%omegaExternal(i) = 1.0
+    !     endif
+    !     !CAUTION: the following two numbers are always read from atom model and must be 1.0 to avoid reductions
+    !     !They are unnecessary and could be eliminated because nbarexternal and omegaexternal are 
+    !     !already used as reduction factors if we change their value to be different than 1 or 0.
+    !     !we are commenting their set up to 1.0 here becausse they are already entering as 1.0 from
+    !     !the atom file.
+    !     !atom%reduction_factor(i)=1.0  
+    !     !atom%reduction_factor_omega(i)=1.0
+
+    ! enddo
+
+
     params%vmacro = dopplerVelocityInput
     
     !EDGAR: we read atom file already with the init() routine before 
@@ -276,12 +288,15 @@ PURE FUNCTION array_to_string(a)  RESULT (s)    ! copy char array to string
 END FUNCTION array_to_string
 
 
-subroutine c_init(nchar,atomfileInput,verbose) bind(c)
+subroutine c_init(nchar,atomfileInput,verbose,ntransOut) bind(c)
     integer(c_int), intent(in) :: nchar  !EDGAR: passes the length of the next string
     character(c_char), intent(in) :: atomfileInput(nchar) !EDGAR:a C array of characters is entering
     integer(c_int), intent(in) ::verbose
+    integer(c_int), intent(out) ::ntransOut
     integer :: i
-        
+    
+    ntransOut=0
+
 ! Initialize the random number generator
     call random_seed
 
@@ -289,7 +304,7 @@ subroutine c_init(nchar,atomfileInput,verbose) bind(c)
     call read_allen_data
         
 ! Fill the factorial array
-    call factrl
+    call factrl    
 
     !NOW we use .atom files with relative paths
     !input_model_file = '../hazel/data/helium.atom'
@@ -299,9 +314,17 @@ subroutine c_init(nchar,atomfileInput,verbose) bind(c)
 
     !EDGAR: #Not possible to call to logger.info from here.
     if (verbose > 0)print*,'Reading atom file:',input_model_file
-    !EDGAR: here atom%j10(x) for each transition x is initialized to 0.
+    !EDGAR: here atom%j10(x) for each transition x is initialized to 0
+    !and atom%ntran is read from file
+    !c_init shouuld return atom%ntran to init nbar,j10 containers in python??
     call read_model_file_ok(input_model_file) 
     
+    ntransOut=atom%ntran
+    if (ntransOut==0)then
+        print*,'No transitions in atom file. STOPPING.'
+        STOP
+    endif
+
     verbose_mode=verbose !EDGAR: verbose_mode is general fortran var, like input_model_file 
 
     ! Force recomputation of RT coefficients by using an absurd velocity

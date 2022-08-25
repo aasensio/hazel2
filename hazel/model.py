@@ -35,7 +35,13 @@ class Model(object):
         #EDGAR: dictionary of dictionaries with possible atoms and lines with their indexes for HAZEL atmospheres and spectra        
         #A variation of this dict to add more atoms and lines requires to do similar changes in 
         #multiplets dict in general_atmosphere object (atmosphere.py). 
-        #It'd be more elegant to encapsulate all together in atomsdic
+        #It'd be more elegant to encapsulate all together in atomsdic.
+        #From here we could also extract the number of transitions as len(self.multipletsdic[atom]).
+        #However that would be a redundancy with respect to the data in the atom files,
+        #and furthermore ntrans must be read at the very beginning before initializing j10, 
+        #so the choice is to read ntrans from atom file: 
+        #io_py.f90 ->hazel_py.f90 -> hazel_code.pyx -> init routine here in model.py
+
         self.atomsdic={'helium':{'10830': 1, '3888': 2, '7065': 3,'5876': 4},
             'sodium':{'5895': 1, '5889': 2}} 
         
@@ -49,10 +55,10 @@ class Model(object):
         self.order_atmospheres = []        
         self.straylight = []
         self.parametric = []
-        self.spectrum = []
         self.configuration = None
         self.n_cycles = 1
-        self.spectrum = {}  #EDGAR:confusing that self.spectrum is initialized as [] and now as {}
+        self.spectrum = []
+        self.spectrum = {}  #EDGAR:self.spectrum was initialized as [] and now as {}
         self.topologies = {}#[] EDGAR: before it was a list, now it is a dictionary
         self.atms_in_spectrum={} #EDGAR: of the kind -> {'sp1': string_with_atmosphere_order_for_sp1}
         self.straylights = []
@@ -94,6 +100,11 @@ class Model(object):
             if (self.verbose >= 1):
                 self.logger.info('PyTorch and PyTorch Geometric found. NLTE for Ca II is available')
             self.nlte_available = True
+
+        #We initialize pyhazel (and set self.ntrans) before calling add_chromosphere in use_configuration 
+        #in order to setup self.ntrans before defining j10 length.
+        #before these changes, the Hazel init was done after the next if..else.  
+        self.ntrans=hazel_code._init(atomf,verbose)   #EDGAR
         
         if (config is not None):
             if (self.verbose >= 1):
@@ -103,8 +114,6 @@ class Model(object):
             #EDGAR:n_chromospheres is set here.
             self.use_configuration(self.configuration.config_dict) 
 
-        # Initialize pyhazel    
-        hazel_code._init(atomf,verbose)   #EDGAR
 
     def __getstate__(self):
         d = self.__dict__.copy()
@@ -448,7 +457,8 @@ class Model(object):
             self.flatten_parameters_to_reference(cycle=0)        
         self.output_handler.write(self, pixel=0, randomization=randomization)
 
-    def add_spectrum(self, name, config=None, wavelength=None, topology=None, los=None, boundary=None, atom=None,
+    def add_spectrum(self, name, config=None, wavelength=None, topology=None, los=None, 
+        i0fraction=1.0,boundary=None, atom=None,
         linehazel=None, linesSIR=None, atmos_window=None, instrumental_profile=None,
         wavelength_file=None, wavelength_weight_file=None,observations_file=None, mask_file=None,
         weights_stokes_i=[None]*10,weights_stokes_q=[None]*10,weights_stokes_u=[None]*10,weights_stokes_v=[None]*10):
@@ -460,14 +470,17 @@ class Model(object):
         value['name'] =name #we add the positional argument "name" to the dictionary
 
         #EDGAR: remember that this if block can be deleted if we decide to use the same names 
-        #for the config file keywords as for the keywords of the subroutine
-        #map from config file keywords to compact names in this subroutine. Case insensitive because it was tackled when reading file
+        #for the config file keywords as for the keywords of the subroutine.
+        #Map from config file keywords to compact names in this subroutine. 
+        #Case insensitive because that was tackled when reading file
         #In config file we should only define the keywords that we want different than None
-        if (config is not None):#config is old "value" dictionary read from config file and containing all arguments of this subroutine
+        #config is old "value" dictionary read from config file and containing all arguments of this subroutine
+        if (config is not None):
             if ('Wavelength' in config):wavelength=config['Wavelength']
             if ('topology' in config):topology=config['topology']
             if ('LOS' in config):los=config['LOS']
-            if ('Boundary Condition' in config):boundary=config['Boundary Condition']
+            if ('i0fraction' in config):i0fraction=config['i0fraction']
+            if ('Boundary' in config):boundary=config['Boundary']
             if ('atom' in config):atom=config['atom']
             if ('line' in config):linehazel=config['line']
             if ('lines' in config):linesSIR=config['lines']
@@ -551,20 +564,44 @@ class Model(object):
             if (self.verbose >= 1):
                 self.logger.info('  - Using LOS {0}'.format(los))
             los = np.array(los).astype('float64')
+        #---------------------------------------------
+        if (self.verbose >= 1):
+            self.logger.info('  - Using I0fraction = {0} for normalization in spectral region {1}'.format(i0fraction,name))
+        '''
+        EDGAR: the value of boundary that enters in the call to spectrum below  
+        must be Ibackground(physical units)/I0Allen (all input and output Stokes shall always be
+        relative to the Allen I0 continuum). Then, the value given to the boundary keyword from outside 
+        must be such that is normalized to the Allen continuum. Otherwise, we have to multiply by 
+        i0fraction to assure that quantity.
+        In general this i0fraction keyword shall be ignored and assumed always to be 1.0, thus concentrating
+        all the definition of the boundary condition in the boundary keyword. 
 
+        But if the boundary keyword value was defined in main program 
+        as Ibackground(physical units)/Icont_wing (i.e. with the first wing value of I equal to 1.0), 
+        then we have to multiply by i0fraction keyword, which should then be different than 1.0 to describe
+        a background continuum that is different from Allen. 
+        (By the definition of i0fraction we have that Icont_wing is I0fraction*I0Allen).
+        
+        Example: for boundary=1, the boundary intensity given to Hazel synthesize routine should be
+        Iboundary = 1 * I0fraction*I0Allen(lambda). 
+        Then, in this section we first multiply boundary * I0fraction, 
+        and before calling hazel we shall add units multiplying by I0Allen.
+        '''
         if (boundary is None):
-            if (self.verbose >= 1):
-                self.logger.info('  - Using default boundary conditions [1,0,0,0] in spectral region {0} or read from file. Check carefully!'.format(name))
-            boundary = np.array([1.0,0.0,0.0,0.0])            
+            if (self.verbose >= 1):self.logger.info('  - Using default boundary conditions [1,0,0,0] in spectral region {0} or read from file. Check carefully!'.format(name))
+            boundary = i0fraction*np.array([1.0,0.0,0.0,0.0])  
             self.normalization = 'on-disk'
         else:
-            boundarykey=boundary
-            boundary = np.array(boundary).astype('float64')
             if (self.verbose >= 1):
-                self.logger.info('  - Using boundary condition {0}'.format(boundarykey))
-                if (boundary[0] == 0.0):
-                    self.logger.info('  - Using off-limb normalization (peak intensity)')          
-            
+                if (np.ndim(boundary[0])==0):#boundary elements are scalars [1.0,0.0,0.0,0.0]
+                    self.logger.info('  - Using constant boundary conditions {0}'.format(boundary))
+                    if (boundary[0] == 0.0):self.logger.info('  - Using off-limb normalization (peak intensity)')          
+                else:#the user already introduced float 64 arrays with spectral dependences for I.
+                    self.logger.info('  - Using spectral profiles in boundary conditions')
+                    if (boundary[0,0] == 0.0):self.logger.info('  - Using off-limb normalization (peak intensity)')          
+            boundary = i0fraction*np.array(boundary).astype('float64')#gives array([1.0,0.0,0.0,0.0]) or array of (4,Nwavelength) 
+        
+        #---------------------------------------------
         stokes_weights = []
         for st in [weights_stokes_i,weights_stokes_q,weights_stokes_u,weights_stokes_v]:
             tmp = hazel.util.tofloat(st)
@@ -612,6 +649,8 @@ class Model(object):
 
         #EDGAR: update spectrum object with the multiplets for later accesing it from synthesize at chromosphere.py
         self.spectrum[name].multiplets = self.multipletsdic[atom] 
+        #ntrans needed to define length of nbar,omega, and j10.
+        self.spectrum[name].ntrans = self.ntrans #len(self.multipletsdic[atom])
 
         #--EDGAR---------------------------------------------------------------
         #we are here defining the wavelength window for all atmospheres associated to this spectral region
@@ -636,6 +675,14 @@ class Model(object):
 
         return self.spectrum[name]
 
+
+    def check_key(dictio,keyword,default):
+        if (keyword not in dictio):
+            dictio[keyword] = default
+        elif (dictio[keyword] == 'None'):
+            dictio[keyword] = default
+        return dictio
+
     def add_spectral(self, spectral):
         """
         Programmatically add a spectral region  
@@ -648,7 +695,7 @@ class Model(object):
         spectral : dict
             Dictionary containing the following data
             'Name', 'Wavelength', 'Topology', 'Weights Stokes', 'Wavelength file', 'Wavelength weight file',
-            'Observations file', 'Mask file'
+            'Observations file', 'Mask file','i0fraction'
 
         Returns
         -------
@@ -667,35 +714,13 @@ class Model(object):
         if (self.verbose >= 1):            
             self.logger.info('Adding spectral region {0}'.format(value['name']))        
 
-        if ('wavelength file' not in value):
-            value['wavelength file'] = None
-        elif (value['wavelength file'] == 'None'):
-            value['wavelength file'] = None
+        #----EDGAR:much shorter way of checking default values------------- 
+        defaultdic={'wavelength file':None,'wavelength weight file':None,'observations file':None,
+        'stokes weights':None,'mask file':None,'los':None, 'boundary':None,'i0fraction':1.0,
+        'instrumental profile':None}#by default i0fraction must be 1.0
 
-        if ('wavelength weight file' not in value):
-            value['wavelength weight file'] = None
-        elif (value['wavelength weight file'] == 'None'):
-            value['wavelength weight file'] = None
-
-        if ('observations file' not in value):
-            value['observations file'] = None
-        elif (value['observations file'] == 'None'):
-            value['observations file'] = None
-
-        if ('stokes weights' not in value):
-            value['stokes weights'] = None
-        elif (value['stokes weights'] == 'None'):
-            value['stokes weights'] = None
-
-        if ('mask file' not in value):
-            value['mask file'] = None
-        elif (value['mask file'] == 'None'):
-            value['mask file'] = None
-
-        if ('los' not in value):
-            value['los'] = None
-        elif (value['los'] == 'None'):
-            value['los'] = None
+        for key in defaultdic:value=check_key(value,key,defaultdic[key])
+        #-----------------------------------------------------------
 
         for tmp in ['i', 'q', 'u', 'v']:
             if ('weights stokes {0}'.format(tmp) not in value):
@@ -703,16 +728,7 @@ class Model(object):
             elif (value['weights stokes {0}'.format(tmp)] == 'None'):
                 value['weights stokes {0}'.format(tmp)] = [None]*10
 
-        if ('boundary condition' not in value):
-            value['boundary condition'] = None
-        elif (value['boundary condition'] == 'None'):
-            value['boundary condition'] = None
 
-        if ('instrumental profile' not in value):
-            value['instrumental profile'] = None
-        elif (value['instrumental profile'] == 'None'):
-            value['instrumental profile'] = None        
-        
         # Wavelength file is not present
         if (value['wavelength file'] is None):
 
@@ -795,19 +811,27 @@ class Model(object):
             if (self.verbose >= 1):
                 self.logger.info('  - Using LOS {0}'.format(value['los']))
 
-        if (value['boundary condition'] is None):
-            if (self.verbose >= 1):
-                self.logger.info('  - Using default boundary conditions [1,0,0,0] in spectral region {0} or read from file. Check carefully!'.format(value['name']))
-            boundary = np.array([1.0,0.0,0.0,0.0])            
+        #this block is adapted from add_spectrum but not checked because add_spectral is deprecated
+        #---------------------- 
+        if (self.verbose >= 1):
+            self.logger.info('  - Using I0fraction = {0} for normalization in spectral region {1}'.format(value['i0fraction'],value['name']))
+
+        
+
+        if (value['boundary'] is None):
+            if (self.verbose >= 1):self.logger.info('  - Using default boundary conditions [1,0,0,0] in spectral region {0} or read from file. Check carefully!'.format(value['name']))
+            boundary = value['i0fraction']*np.array([1.0,0.0,0.0,0.0])  
             self.normalization = 'on-disk'
         else:
-            boundary = np.array(value['boundary condition']).astype('float64')
-            if (boundary[0] == 0.0):
-                if (self.verbose >= 1):
-                    self.logger.info('  - Using off-limb normalization (peak intensity)')
-
             if (self.verbose >= 1):
-                self.logger.info('  - Using boundary condition {0}'.format(value['boundary condition']))
+                if (np.ndim(value['boundary'][0])==0):#boundary elements are scalars [1.0,0.0,0.0,0.0]
+                    self.logger.info('  - Using constant boundary conditions {0}'.format(value['boundary']))
+                    if (value['boundary'][0] == 0.0):self.logger.info('  - Using off-limb normalization (peak intensity)')          
+                else:#the user already introduced float 64 arrays with spectral dependences for I.
+                    self.logger.info('  - Using spectral profiles in boundary conditions')
+                    if (value['boundary'][0,0] == 0.0):self.logger.info('  - Using off-limb normalization (peak intensity)')          
+            boundary = value['i0fraction']*np.array(value['boundary']).astype('float64')#gives array([1.0,0.0,0.0,0.0]) or array of (4,Nwavelength) 
+        #----------------------
 
         stokes_weights = []
         for st in ['i', 'q', 'u', 'v']:
@@ -863,14 +887,12 @@ class Model(object):
         #--EDGAR---------------------------------------------------------------
         #Update spectrum object with the multiplets for later accesing it from synthesize at chromosphere.py
         self.spectrum[name].multiplets = self.multipletsdic[atom] 
+        #ntrans needed to define length of nbar,omega, and j10.
+        self.spectrum[name].ntrans = self.ntrans #len(self.multipletsdic[atom])
 
-        #change the keyword name as desired
-        keyw='atmos window'#this is the old 'wavelength' keyword of add_chromosphere
+        #'atmos window'  is the old 'wavelength' keyword of add_chromosphere
         #we are here defining the wavelength window for all atmospheres associated to this spectral region
-        if ( keyw not in value):
-            value[keyw] = None
-        elif (value[keyw] == 'None'):
-            value[keyw] = None
+        value=check_key(value,'atmos window',None)
 
         if (value[keyw] is not None):#EDGAR: if not in dictionary, then take the one of current atm['spectral region']
             wvl_range = [float(k) for k in value[keyw]]
@@ -1043,7 +1065,7 @@ class Model(object):
         # This is irrelevant if a configuration file is used because this has been already done
         atm = hazel.util.lower_dict_keys(atmosphere)
         
-        self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, name=atm['name'])#EDGAR:,atom=atm['atom'])
+        self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, name=atm['name'],ntrans=self.ntrans)#EDGAR:,atom=atm['atom'])
 
         #------------------------------------------------------------------------
         """EDGAR now you can DELETE THIS BLOCK
@@ -1656,6 +1678,8 @@ class Model(object):
 
     def synthesize_spectral_region(self, spectral_region, perturbation=False): #OLD ROUTINE
         """
+        EDGAR:This routine is not called anymore: it has been substituted by synthesize_spectrum.
+
         Synthesize all atmospheres for a single spectral region and normalize to the continuum of the quiet Sun at disk center
 
         Parameters
@@ -1686,7 +1710,7 @@ class Model(object):
                     if (self.atmospheres[atm].spectrum.name == spectral_region):                        
                         ind_low, ind_top = self.atmospheres[atm].wvl_range
                         # Update the boundary condition only for the first atmosphere if several are sharing ff      
-                        if (n > 0 and k == 0):#the multiplication with i0 seems to compensate for the division a the end
+                        if (n > 0 and k == 0):#the multiplication with i0 seems to compensate for the division at the end
                             if (perturbation):
                                 stokes_out = asp.stokes_perturbed[:, ind_low:ind_top] * hazel.util.i0_allen(asp.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
                             else:
@@ -1754,7 +1778,7 @@ class Model(object):
         #EDGAR WARNING:I think normalize_ff is not working for the synthesis. 
 
         if (self.working_mode == 'inversion'):self.normalize_ff()
-        
+
         for k, v in self.spectrum.items():#k is name of the spectrum or spectral region
             self.check_filling_factors(k) #EDGAR: checking correct filling factors in composed layers
             

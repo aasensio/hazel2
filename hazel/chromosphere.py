@@ -13,7 +13,7 @@ import copy
 __all__ = ['Hazel_atmosphere']
 
 class Hazel_atmosphere(General_atmosphere):
-    def __init__(self, working_mode, name=''):#, atom='helium'):
+    def __init__(self, working_mode, name='', ntrans=0):#, atom='helium'):
     
         super().__init__('chromosphere', name=name)#, atom=atom)
 
@@ -33,7 +33,20 @@ class Hazel_atmosphere(General_atmosphere):
         self.parameters['beta'] = 1.0
         self.parameters['a'] = 0.0
         #EDGAR. j10 to be defined as independent elements, not vector:
-        self.parameters['j10'] = np.zeros(4)  
+        #It has been dynamically dimensioned to the number of transitions
+        #and the same might happens below with the corresponding pars associated to j10
+        #but caution:this probably will not work in inversions because the 
+        #inversion requires these pars to be scalars , not vectors. Probably 
+        #we will need to remove j10 from here for inversion. 
+
+        self.ntr=ntrans #taking ntrans from model object
+        #for now, they do not belong to the dictionary of parameters
+        self.j10 = np.zeros(self.ntr)  #this is j10
+        self.j20f = np.ones(self.ntr)  #these are reduction factors, not j20
+        #EDGAR: this is commented because we need to evaluate whether is possible
+        #to do inversions with radiation field anisotropies for every transition
+        #self.parameters['j10'] = np.zeros(self.ntr)  
+        #self.parameters['j20'] = np.zeros(self.ntr)  
         self.parameters['ff'] = np.log(1.0)
         
 
@@ -48,7 +61,8 @@ class Hazel_atmosphere(General_atmosphere):
         self.units['deltav'] = 'km/s'
         self.units['beta'] = ''
         self.units['a'] = ''
-        self.units['j10'] = '%' #EDGAR
+        #self.units['j10'] = '%' #EDGAR
+        #self.units['j20'] = '%' #EDGAR
         self.units['ff'] = ''
         
 
@@ -63,7 +77,8 @@ class Hazel_atmosphere(General_atmosphere):
         self.nodes['deltav'] = 0.0
         self.nodes['beta'] = 0.0
         self.nodes['a'] = 0.0
-        self.nodes['j10'] = 0.0  #EDGAR
+        #self.nodes['j10'] = 0.0   #EDGAR
+        #self.nodes['j20'] = 0.0   #EDGAR
         self.nodes['ff'] = 0.0
         
 
@@ -78,7 +93,8 @@ class Hazel_atmosphere(General_atmosphere):
         self.nodes_location['deltav'] = None
         self.nodes_location['beta'] = None
         self.nodes_location['a'] = None
-        self.nodes_location['j10'] = None  #EDGAR
+        #self.nodes_location['j10'] = None    #EDGAR
+        #self.nodes_location['j20'] = None    #EDGAR
         self.nodes_location['ff'] = None
         
 
@@ -93,7 +109,8 @@ class Hazel_atmosphere(General_atmosphere):
         self.error['deltav'] = 0.0
         self.error['beta'] = 0.0
         self.error['a'] = 0.0
-        self.error['j10'] = np.zeros(4) #EDGAR
+        #self.error['j10'] = 0.0   #EDGAR
+        #self.error['j20'] = 0.0   #EDGAR
         self.error['ff'] = 0.0 
         
 
@@ -108,7 +125,8 @@ class Hazel_atmosphere(General_atmosphere):
         self.n_nodes['deltav'] = 0
         self.n_nodes['beta'] = 0
         self.n_nodes['a'] = 0
-        self.n_nodes['j10'] = np.zeros(4) #EDGAR
+        #self.n_nodes['j10'] = 0   #EDGAR
+        #self.n_nodes['j20'] = 0   #EDGAR
         self.n_nodes['ff'] = 0
         
         
@@ -123,7 +141,8 @@ class Hazel_atmosphere(General_atmosphere):
         self.ranges['deltav'] = None
         self.ranges['beta'] = None
         self.ranges['a'] = None
-        self.ranges['j10'] = None #EDGAR
+        #self.ranges['j10'] = None #EDGAR
+        #self.ranges['j20'] = None #EDGAR
         self.ranges['ff'] = None
         
 
@@ -138,7 +157,8 @@ class Hazel_atmosphere(General_atmosphere):
         self.cycles['deltav'] = None
         self.cycles['beta'] = None
         self.cycles['a'] = None
-        self.cycles['j10'] = None  #EDGAR
+        #self.cycles['j10'] = None  #EDGAR
+        #self.cycles['j20'] = None  #EDGAR
         self.cycles['ff'] = None
         
 
@@ -153,7 +173,8 @@ class Hazel_atmosphere(General_atmosphere):
         self.epsilon['deltav'] = 0.01
         self.epsilon['beta'] = 0.01
         self.epsilon['a'] = 0.01
-        self.epsilon['j10'] = 0.01 #EDGAR
+        #self.epsilon['j10'] = 0.01  #EDGAR
+        #self.epsilon['j20'] = 0.01  #EDGAR
         self.epsilon['ff'] = 0.01
         
 
@@ -168,7 +189,8 @@ class Hazel_atmosphere(General_atmosphere):
         self.jacobian['deltav'] = 1.0
         self.jacobian['beta'] = 1.0
         self.jacobian['a'] = 1.0
-        self.jacobian['j10'] = 1.0  #EDGAR
+        #self.jacobian['j10'] = 1.0   #EDGAR
+        #self.jacobian['j20'] = 1.0   #EDGAR
         self.jacobian['ff'] = 1.0
         
 
@@ -183,7 +205,8 @@ class Hazel_atmosphere(General_atmosphere):
         self.regularization['deltav'] = None
         self.regularization['beta'] = None
         self.regularization['a'] = None
-        self.regularization['j10'] = None  #EDGAR
+        #self.regularization['j10'] = None  #EDGAR
+        #self.regularization['j20'] = None  #EDGAR
         self.regularization['ff'] = None
         
 
@@ -302,7 +325,7 @@ class Hazel_atmosphere(General_atmosphere):
 
         return B,thB,phiB,Bx,By,Bz #Bx,By,Bz can be deleted if not needed in the code 
 
-    def set_parameters(self, pars, ff=1.0,j10=np.zeros(4),m=None):
+    def set_parameters(self, pars, ff=1.0,j10=None,j20f=None,m=None):
         """
         Set the parameters of this model chromosphere
 
@@ -316,7 +339,8 @@ class Hazel_atmosphere(General_atmosphere):
 
         #EDGAR: 
         j10: array of doubles optional keyword, in percentage units. It is a vector with Ntransitions length
-
+            but in this header we init it to have 10 transitions because it cannot be predefined with 
+            self.ntr in the definition of a subroutine.
         Returns
         -------
         None
@@ -331,9 +355,25 @@ class Hazel_atmosphere(General_atmosphere):
         self.parameters['deltav'] = pars[5]
         self.parameters['beta'] = pars[6]
         self.parameters['a'] = pars[7]
-        #EDGAR: j10 is not just a number, but a vector with Ntransitions length.
-        self.parameters['j10'] = np.array(j10)#from list to array of doubles   
         self.parameters['ff'] = ff
+        
+        #EDGAR: j10 and j20f can be introduced as a float that will here be broadcasted to the number of 
+        #transitions, or directly as a list with Ntransitions (self.ntr) length.
+        if (j10 is not None):#then overwrite its default zero value set above with self.j10=np.zeros(self.ntr)
+            if (type(j10) is not list):
+                self.j10 = np.zeros(self.ntr)+ j10 #if not a list, assumed a number that sets array to j10 keyword
+            else:#is a list
+                if len(j10)!=self.ntr:raise Exception('ERROR: j10 should have {0} elements'.format(self.ntr) )
+                self.j10 = np.array(j10) #from list to array of doubles              
+
+        if (j20f is not None):#then overwrite its default 1.0 value set above with self.j20f=np.zeros(self.ntr)
+            if (type(j20f) is not list):
+                self.j20f = np.zeros(self.ntr)+ j20f #if not a list, assumed a number that sets array to j10 keyword
+            else:#is a list
+                if len(j20f)!=self.ntr:raise Exception('ERROR: j20f should have {0} elements'.format(self.ntr) )
+                self.j20f = np.array(j20f) #from list to array of doubles              
+
+
         
 
         #EDGAR: I think this is not being used because ranges are defined to none above.
@@ -345,8 +385,8 @@ class Hazel_atmosphere(General_atmosphere):
         
 
     #alias to set_parameters.:
-    def set_pars(self, pars,ff=1.0,j10=np.zeros(4),m=None):
-        return self.set_parameters(pars,ff,j10=j10,m=m)
+    def set_pars(self, pars,ff=1.0,j10=None,j20f=None,m=None):
+        return self.set_parameters(pars,ff,j10=j10,j20f=j20f,m=m)
 
     def load_reference_model(self, model_file, verbose):
         """
@@ -405,7 +445,26 @@ class Hazel_atmosphere(General_atmosphere):
             # else:                
                 # self.parameters[k] = self.reference[k]            
                             
-    def print_parameters(self, first=False, error=False):
+    def print_parameters(self, first=False, error=False): 
+        if (self.coordinates_B == 'cartesian'):
+            self.logger.info("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}".format('Bx', 'By', 'Bz', 'tau', 'v', 'deltav', 'beta', 'a'))
+            self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.parameters['Bx'], self.parameters['By'], self.parameters['Bz'], self.parameters['tau'], 
+                self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a']))
+            
+            if (error):            
+                self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.error['Bx'], self.error['By'], self.error['Bz'], self.error['tau'], 
+                self.error['v'], self.error['deltav'], self.error['beta'], self.error['a']))
+        
+        if (self.coordinates_B == 'spherical'):
+            self.logger.info("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}".format('B', 'thB', 'phiB', 'tau', 'v', 'deltav', 'beta', 'a'))
+            self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}".format(self.parameters['B'], self.parameters['thB'], self.parameters['phiB'], self.parameters['tau'], 
+                self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a']))
+            
+            if (error):            
+                self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.error['B'], self.error['thB'], self.error['phiB'], self.error['tau'], 
+                self.error['v'], self.error['deltav'], self.error['beta'], self.error['a']))
+        
+    def print_parameters_withJ10(self, first=False, error=False): 
         if (self.coordinates_B == 'cartesian'):
             self.logger.info("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}      {8}".format('Bx', 'By', 'Bz', 'tau', 'v', 'deltav', 'beta', 'a', 'j10'))
             self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}  {7:8.3f}".format(self.parameters['Bx'], self.parameters['By'], self.parameters['Bz'], self.parameters['tau'], 
@@ -450,7 +509,86 @@ class Hazel_atmosphere(General_atmosphere):
         lambdaAxisIn = self.wvl_axis - mltp[self.active_line]        
         nLambdaIn = len(lambdaAxisIn)
                         
+        '''
+        # Renormalize nbar so that its CLV is the same as that of Allen, but with a decreased I0
+        # If I don't do that, fitting profiles in the umbra is not possible. The lines become in
+        # emission because the value of the source function, a consequence of the pumping radiation,
+        # is too large. In this case, one needs to use beta to reduce the value of the source function.
+        ratio = boundaryIn[0,0] / i0_allen(mltp[self.active_line], self.spectrum.mu)
+
+        '''
+        '''-----------EDGAR: THOUGHTS CONCERNING BOUNDARY CONDITIONS------------------------------
+        
+        Concerning the above comment and the following code...
+        1) In the first layer of the transfer (where boundary cond. are applied), the value of ratio 
+        ends up being the value of I set in boundary=[1,0,0,0], because one first multiplies the intensity
+        boundary component by i0Allen, and later divides it again in ratio, hence it has no effect other
+        than setting ratio to boundary[0]=1. This 1 is a normalization corresponding to the value 
+        that the user wants to assume for the continuum intensity(e.g. 1 for Allen continuum at a given mu, 
+        or smaller values for the lower continuum intensities such as that of an umbra). 
+        Then, this value should be inferred or even inverted for fitting observations, 
+        but in synthesis we provide it.
+
+        2) The next block of code also sets the value of BoundaryIn for Hazel. The value of BoundaryIn 
+        entering Hazel in the very first boundary layer was here the i0Allen with spectral dependence 
+        because boundary=[1,0,0,0] is multiplied by i0Allen and broadcasted to wavelength in the spectrum
+        methods subroutines. In upper layers the stokes in boundaryIn is the result of previous transfer 
+        but the intensity value at the wings (boundaryIn[0,0,]) used to define 'ratio' is still the continuum intensity
+        set to 1 by the user in the boundary keyword because transfer does not affect the far wings in absence
+        of continuum opacity.
+
+        3) Then, one could think of avoiding to multiply and divide by i0Allen by just setting ratio 
+        directly to the spectrum.boundary for intensity set by the user(which is the fraction, normally 1, 
+        of the i0Allen at mu; in a dark background, of course this number should be lower, but this is set 
+        ad hoc by the user or ideally by the inversion code.)
+        However, we have to multiply and divide by I0Allen in every step in order to use the updated boundaryIn of the 
+        layer. Improving this is not important given the approximations associated to the anisotropy (see below).
+
+        4)We want the possibility of defining the boundaryIn for Hazel as the spectrum of i0Allen 
+        or, more generally, as spectral profiles introduced by the user for every Stokes parameter 
+        (for instance coming from observations or from ad hoc profiles for experiments). 
+
+        So we reuse the keyword boundary to allow the possibility 
+        of containing a provided spectral dependence or just 4 numbers (that then would be broadcasted
+        in wavelength as constant profiles as before).
+        Complementing the boundary keyword, we define the new keyword i0fraction,
+        which is just one number representing the fraction of i0Allen continuum for intensity 
+        and for normalization of Stokes vector to Icontinuum, but this keyword .
+
+        It seems correct to modify nbar as of the number of photons of continuum relative to I0Allen,
+        but this is just an approximation limited by how Hazel includes the anisotropy. 
+        The nbar does not belong to a layer, but to the rest of the 
+        atmopshere that illuminates the layer because nbar is the number of photons used to estimate radiation field tensors in
+        the SEE. One then can argue that nbar for only one layer is related to the background continuum
+        but, for multiple layers, the lower layers can modify the nbar of subsequent upper layers, which 
+        is inconsistent with using the same Allen anisotropy for all layers. 
+        Hence we would like to estimate this variation, realizing also that the nbar is not the same 
+        for line center than for the wings. As this theory is limited to zero order we just 
+        use the continuum because the spectral variation is not considered (flat spectrum aproximation).
+        The above inconsistency is an intrinsic limitation of Hazel that is directly associated to the way 
+        we introduce the radiation field tensor (the anisotropy) in the calculations. In more general cases 
+        we calculate the anisotropy layer by layer using the intensity(and polarization) that arrives to the layer after performing the 
+        radiative transfer along surrounding shells, and thus the nbar comes implicitly set by the sourroundings 
+        and modulated in the trasnfer.  
+           
+        Here, ratio only affects nbar (hence anisotropies), but not the transfer of stokes. 
+        For the first layer, ratio=boundaryIn[0,0]/i0_allen gives a fraction without units as required for 
+        ratio and nbar.boundaryIn[0,0] is later updated from previous output and the code does that fresh 
+        division again for every subsequent layer. As boundaryIn[0,0] is the continuum intensity, it does not change 
+        appreciably with the transfer in absence of continuum opacity (Hazel still does not have it anyways).
+        But if the continuum opacity is introduced or the opacity of the previous layer
+        was large in the wings, boundaryIn[0,0] decreases along the LOS, which decreases ratio too as the transfer advances.
+        The only problem with this is that the reduction of ratio (hence of nbar) is the same for all 
+        rays in the radiation field sphere, so anisotropic transfer is not considered,as explained above.
+        In any case, as boundaryIn always has physical units in every step of the transfer, it is reasonable 
+        to divide by I0Allen to get the reamaining number of photons per mode (the fraction nbar) at every layer. 
+        
+        '''
         #-------------------------------------------------
+        #we multiply by i0Allen to get units right. When introducing ad hoc the boundary 
+        #with spectral dependence, we shall do it normalized to I0Allen(instead of with physical units), 
+        #so still multiplication by I0Allen is necessary here.
+        #self.spectrum.boundary arrives already multiplied by i0fraction if necessary. 
         if (stokes is None):
             boundaryIn  = np.asfortranarray(np.zeros((4,nLambdaIn)))
             boundaryIn[0,:] = i0_allen(mltp[self.active_line], self.spectrum.mu) #hsra_continuum(mltp[self.active_line]) 
@@ -458,29 +596,48 @@ class Hazel_atmosphere(General_atmosphere):
         else:            
             boundaryIn = np.asfortranarray(stokes)
 
-        # Renormalize nbar so that its CLV is the same as that of Allen, but with a decreased I0
-        # If I don't do that, fitting profiles in the umbra is not possible. The lines become in
-        # emission because the value of the source function, a consequence of the pumping radiation,
-        # is too large. In this case, one needs to use beta to reduce the value of the source function.
-        ratio = boundaryIn[0,0] / i0_allen(mltp[self.active_line], self.spectrum.mu)
-        nbarIn = np.ones(4) * ratio
-        omegaIn = np.zeros(4) #when different than zero it is used as reduction factors in  hazel
+        '''
+        EDGAR: the value of boundary that enters here 
+        must be Ibackground(physical units)/I0Allen (all input and output Stokes shall always be
+        relative to the Allen I0 continuum). If the first value of this quantity is 1.0 then we have 
+        an Allen background. Otherwise, that first value represents the true background 
+        continuum realtive to I0Allen which can be be a fraction  of I0Allen (i.e., is the i0fraction
+        introduced in model.py as tentative keyword). 
+
+        For spectrum.boundary=1, the boundary intensity given to Hazel synthesize routine should be
+        Iboundary = 1 *I0Allen(lambda), such that it has physical units (is not relative).
+
+        spectrum.boundary is I0(physical)/I0Allen
+        boundaryIn is then spectrum.boundary*I0Allen = I0(physical)
+        then ratio=boundaryIn/I0Allen=I0(physical)/I0Allen , 
+        which is a fraction of 1.0 (relative to the I0llen), as desired for nbarIn.
+        '''
+        ratio = boundaryIn[0,0]/ i0_allen(mltp[self.active_line], self.spectrum.mu)
+
+        #nbarIn are reduction factors of nbar Allen for every transition! This means that it has 4 elements
+        #for Helium and 2 for Sodium for instance, but this number was hardcoded to 4.
+        #In addition omegaIn was wrong because it was put to zero, meaning no anisotropy,
+        #while ones would mean that we use Allen for these pars.
+        #when different than 0.0 and 1.0 they are used as reduction factors in  hazel
+        nbarIn = np.ones(self.ntr) * ratio 
+
+        omegaIn = self.j20f #np.ones(self.ntr)    #np.zeros(4) 
+        j10In = self.j10   #remind j10 and j20f are vectors (one val per transition).
+
         betaIn = self.parameters['beta']       
         #-------------------------------------------------
 
-
         dopplerWidthIn = self.parameters['deltav']
         dampingIn = self.parameters['a']
-        j10In = self.parameters['j10']#remind j10 is vector (one val per transition).
         dopplerVelocityIn = self.parameters['v']
         
         
-        #Check where self.index is updated. Is index of current chromosphere,from 1 to n_chromospheres. 
+        #Check where self.index is updated. It is index of current chromosphere,from 1 to n_chromospheres. 
         args = (self.index, B1In, hIn, tau1In, boundaryIn, transIn, anglesIn, nLambdaIn,
             lambdaAxisIn, dopplerWidthIn, dampingIn, j10In, dopplerVelocityIn,
             betaIn, nbarIn, omegaIn)
         
-        #2D opt coeffs yet, for current slab self.index
+        #2D opt coeffs yet (not height dependent), for current slab self.index
         l,stokes,epsout,etaout,stimout,error = hazel_code._synth(*args)
 
         if (error == 1):raise NumericalErrorHazel()

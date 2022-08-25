@@ -16,9 +16,12 @@ class Spectrum(object):
         self.wavelength_axis = None
         self.stokes = None
         self.stokes_perturbed = None
+        
         self.eps = None  #EDGAR
         self.eta = None
         self.stim = None
+        self.ntrans=0
+        
         self.pixel = 0
         self.boundary_single = boundary
         self.psf_spectral = None
@@ -131,15 +134,10 @@ class Spectrum(object):
         self.obs = np.zeros((4,len(wvl)))
         self.noise = np.zeros((4,len(wvl)))
         self.dof = 4.0 * len(wvl)
-        if (self.boundary_single is not None):
+
+        #self.boundary_single is array([1.0,0.0,0.0,0.0]) or float array of (4,Nwavelength) 
+        if (self.boundary_single is not None):self.set_boundary(self.boundary_single)
             
-            self.boundary = self.boundary_single[:,None] * np.ones((1,len(wvl)))
-
-            if (self.boundary_single[0] == 0.0):                
-                self.normalization = 'off-limb'
-            else:
-                self.normalization = 'on-disk'
-
         if (self.wavelength_axis_lr is not None):
             self.interpolate_to_lr = True
             self.stokes_lr = np.zeros((4,len(wvl_lr)))
@@ -272,22 +270,15 @@ class Spectrum(object):
     def set_boundary(self, boundary):
         """
         Set a new value for the boundary condition
-        
-        Parameters
-        ----------        
-        los : list or array of size 4
-            I0, Q0, U0, V0
-        
-        Returns
-        -------
-        None
-    
-        """          
-        self.boundary = boundary[:,None] * np.ones((1,len(self.wavelength_axis)))
-        if (np.all(self.boundary[0,:]) == 0.0):
-            self.normalization = 'off-limb'
-        else:
-            self.normalization = 'on-disk'
+        """         
+        #when 1D in boundary array([1,0,0,0] or similar), its shape goes from (4,) to (4,N_wavelength)
+        #otherwise, shape is already (4,N_wavelength)
+        if (np.ndim(boundary)==1):self.boundary = boundary[:,None] * np.ones((1,len(self.wavelength_axis)))
+        else:self.boundary = boundary
+
+        if (self.boundary[0,0] == 0.0):self.normalization = 'off-limb'
+        else:self.normalization = 'on-disk'
+
 
     def set_normalization(self, normalization):
         """

@@ -15,7 +15,7 @@ chs,tags=mo.add_Nchroms(['c1','c2'],ckeys,hz=[1.,3.]) #return a list with chs ob
 
 #the association between spectrum(or spectral region) with atmospheres in topology is now made here
 s1=mo.add_spectrum('s1', atom='helium',linehazel='10830',wavelength=[10826, 10833, 150], 
-	topology='c1->c2',los=[0.0,0.0,90.0], boundary=[1.0,0.0,0.0,0]) 
+	topology='c1->c2',los=[0.0,0.0,90.0], boundary=[1.0,0.0,0.0,0]) #i0fraction=1.0
 '''
 linesSIR='number' or '[number]' for adding lines to calcualte photospheres with SIR in the model
 'atm_window': [10826, 10833] when omitted it takes range in 'Wavelength'
@@ -23,6 +23,20 @@ OLD: mo.add_spectral({'name':'sp1','atom':'helium','lineHazel': '10830','Wavelen
 	'topology':'c1->c2','LOS':[0.0,0.0,90.0],'Boundary condition': [1.0,0.0,0.0,0]}) 
 here the 1 of boundary condition is the fraction of I0Allen that you assume for the background
 boundary condition and for the normalization by i0 (1 means i0Allen at disk center). 
+
+
+If a user background boundary condition is specified (via other keyword)...
+
+Actually the normalization to the continuum intensity only requires the first number of the vector
+boundary, while the other three zeros are always redundant, except when one wants to specify the
+Stokes wavelength profile in the background. So:
+1)we define an Icont normalization keyword containing the fraction of i0Allen to which we want to
+normalize the output Stokes vector.
+2)we adapt the boundary keyword to include wavelength-dependent profiles that can be defined by the user
+in the present python program
+3)we create a boundary subroutine to be called in synthesize of chromosphere.py where 
+the above boundary conditions are translated to the Hazel boundaryIn parameter in chromosphere.py and to the
+normalization to the I of the continuum. 
 
 '''
 mo.setup() 
@@ -190,16 +204,46 @@ the topologies, such that the outer loop and the if clause in synthesize_spectra
 avoided. Now the loop does not need to search over all atmospheres but just go through the ones
 belonging to that spectral region of interest.
 Fix bug when storing optical coefficients in topologies of the kind c0->c1+c2. Solved 
-using index n+k in synthesize_spectral_region.
-
-DETECTED bug in continuum of Stokes I being 2.0 instead of 1.0 in topologies of the kind 
-c0->c1+c2. This actually happens when the user forget to specify the ff's for the atmospheres
-in set_pars or set_parameters. Possible bug in old routine normalize_ff, seems not working for synthesis.
-To fix these things we add check_filling_factors routine checking and assuring that the sum of ff's in 
+using index n+k in synthesize_spectral_region. Simplification of the routine synthesize_spectral_region
+into a new routine called synthesize_spectrum, where unnecessary operations and code lines are removed.
+Detected bug in continuum of Stokes I (being 2.0 instead of 1.0) in topologies of the kind c0->c1+c2. 
+ This actually happens when the user forget to specify the ff's for the atmospheres
+in set_pars or set_parameters. Possible bug in old routine normalize_ff, it seems not working for synthesis.
+To fix these things we add check_filling_factors routine, which assures that the sum of ff's in 
 every layer with subshells amounts to 1. If not, it assumes isocontribution: ff=1/natms with nsub the number 
 of sub-atmospheres in the layer (e.g.,if nsub=2, ff=0.5). 
 
 
+#-----------------------COMMIT 12(pending) : just before SUMMER holidays:
+New procedure for introducing boundary conditions with spectral dependence. 
+Introduction of i0fraction keyword as the fraction of the true 
+background continuum intensity to the Allen continuum.
+i0fraction is included just in case we want to consider it as inversion parameter in the future, but 
+ in general it shall be avoided (is set to 1.0 by default). When defining boundary as the ratio between
+ the true physical background Stokes profiles and the I0Allen, i0fraction is already the first
+ spectral value of the boundary intensity condition, being 1 to represent i0Allen or lower for different
+ continuum backgrounds. 
+Now the boundary keyword accept either 4 scalars that will be broadcasted as constants in 
+wavelength for every Stokes, or directly 4 spectral profiles. 
+These changes shall allow to control the boundary spectral dependence and the relative level of
+continuum intensity that shall be used to normalize, allowing treating solar
+locations where I0Allen does not fit the profiles. In addition to the changes in model.py, 
+spectrum.py, and chromospehre.py to simplify and generalize the set up of the boundary condition, I 
+also added the check_key routine to simplify the setup of default keyword values 
+in the (deprecated) add_spectral subroutine.
+
+I changed the number of dimensions of j10 , nbar, and omega to ntrans, thus avoiding a hardcoded
+ value (it was hardcoded to 4). The flow is :read fortran atom%ntrans from atom file (from io_f90.py) -> 
+ init() routine in hazel_py.f90 -> init() in hazel_code.pyx -> call hazel_code._init in model.py, 
+ where self.ntrans is set and later passed to set_chromosphere (from main python program or from
+ file with use_configuration), which passes it via input parameter to initialization of Hazel chromosphere
+object, where dimensions of j10,omega and nbar are set to ntrans.  
+
+
+CAUTION: in helium.atom el valor del nbar reduction factor de la transicion 2 esta puesto 
+a 0.2 en vez de a 1.0. Verificar si esto se sobreescribe luego en el codigo y preguntar a Andres
+ por qué debe estar asi.
+--
 
 
 

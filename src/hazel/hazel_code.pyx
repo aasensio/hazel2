@@ -9,7 +9,7 @@ cdef extern:
 		double* betaInput, double* nbarInput, double* omegaInput, 
 		double* wavelengthOut, double* stokesOut,double* epsOut,double* etaOut,double* stimOut, int* error)
 		
-	void c_init(int* nchar,char* atomfile, int* verbose) #EDGAR: added nchar and atomfile
+	void c_init(int* nchar,char* atomfile, int* verbose,int* ntransOutput) #EDGAR: added nchar, atomfile, and output par ntrans
 	void c_exit(int* index)
 
 def _synth(int index=1, ar[double,ndim=1] B1Input=zeros(3), double hInput=3.0, 
@@ -81,8 +81,14 @@ def _init(str atomfile, int verbose=0):
 		int nchar = len(atomfile)
 		char* atomfileInput = ftmp
 		#int ntransOutput = 0
+		int ntransOutput = 0
 
-	c_init(&nchar, &atomfileInput[0], &verbose) #&ntransOutput
+	
+	#c_init(&nchar, &atomfileInput[0], &verbose) #&ntransOutput
+	#this calls init routine in hazel_py.f90 and return ntrans 
+	c_init(&nchar, &atomfileInput[0], &verbose, &ntransOutput)
+
+	return ntransOutput #EDGAR:now it returns ntrans when called from model.py
 
 def _exit(int index):
 		
