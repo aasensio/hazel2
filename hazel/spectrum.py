@@ -9,9 +9,9 @@ from scipy import interpolate
 __all__ = ['Spectrum']
 
 class Spectrum(object):
-    def __init__(self, wvl=None, weights=None, observed_file=None, name=None, stokes_weights=None, los=None, boundary=None, mask_file=None, 
-        instrumental_profile=None, save_all_cycles=False, root='', wvl_lr=None,lti=None,lineHazel='',lineSIR='', 
-        n_chromo=None):
+    def __init__(self, wvl=None, weights=None, observed_file=None, name=None, stokes_weights=None, 
+        los=None, boundary=None, mask_file=None, instrumental_profile=None, save_all_cycles=False, 
+        root='', wvl_lr=None,lti=None,lineHazel='',lineSIR='', n_chromo=None,synmethod=None):
         
         self.wavelength_axis = None
         self.stokes = None
@@ -21,7 +21,7 @@ class Spectrum(object):
         self.eta = None
         self.stim = None
         self.ntrans=0
-        
+
         self.pixel = 0
         self.boundary_single = boundary
         self.psf_spectral = None
@@ -42,6 +42,11 @@ class Spectrum(object):
             self.lineSIR=lineSIR #line/s for activating in Hazel chromo or in SIR photo
 
         self.multiplets=None #the set up of this is done in add_spectrum and add_spectral
+        
+        #init the list of synthesis methods used for this spectrum 
+        #In case one uses several methods along the LOS, the synthazel() routine in chromosphere.py 
+        #has the capability of extending this list
+        self.synmethods=[synmethod] #list of label numbers 
         #-------------------------------------
         if (wvl is not None):
             self.add_spectrum(n_chromo,wvl, wvl_lr)

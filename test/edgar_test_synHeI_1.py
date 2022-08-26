@@ -2,8 +2,29 @@ import hazel
 import matplotlib.pyplot as plt
 import sys
 
-mo = hazel.Model(working_mode='synthesis',atomf='helium.atom',verbose=0) #'helium.atom' is default
 
+'''
+#--------intensity profile for boundary cond----
+I0 = np.zeros((nLambda,4))   #init boundary cond. CAREFUL:simplified slab uses Io=cte
+#temp,dlamd=get_T(DoppWidth1,l0s[tran-1],atw=22.9897,vmic=vmic) #get temperature from thermal doppler width
+#I0[:,0],ww = parametric_prof3(lamAxis-0-0,dep=0.9,uu=0.,amp=varlist[kk],alpha=dlamd,
+#    gamma=0.2,rel=0.8,ratrel=0.99,sat=12,kind='2') #kind=2 requires dlamd
+I0[:,0]=I0back 
+'''
+nx=150
+s0,sx=np.ones(nx),np.zeros(nx) #s0,sx= 1, 0 is also valid
+#------------------------------------------------
+#edic={'Atompol':1,'MO effects':1,'Stim. emission':1, 'Kill coherences':0,'dcol':[0.,0.,0.]}
+#dcol=[0.,0.,0.],extrapars=edic,'helium.atom' and verbose =0 are default
+mo = hazel.Model(mode='synthesis',atomfile='helium.atom',verbose=0,apmosenc='1110') 
+'''
+ap-mo-se-nc --> atompol, magopt, stimem, nocoh = 1, 1, 1, 0  
+#nocoh =0 includes all coherences, set to level number to deactive cohs in it
+
+dcol=np.asarray([0.0,0.0,0.0])  #D^(K=1 and 2)=delta_collision, D^(K=1),D^(K=2)
+
+synMode = 5 #Opt.thin (0), DELOPAR (3),  EvolOp (5)
+'''
 ckeys={'ref frame': 'LOS'} # common args .  {'spectral region': 'sp1'} does not exist any more
 #'ref frame': 'LOS' or 'vertical'(default)
 #'coordB' : 'spherical'(DEFAULT) or 'cartesian' #keyword 'coordB' was 'coordinates for magnetic field vector'
@@ -11,12 +32,14 @@ ckeys={'ref frame': 'LOS'} # common args .  {'spectral region': 'sp1'} does not 
 #ch1=mo.add_chrom({'name': 'ch1','height': 1.0,**ckeys})  #OLD
 #ch2=mo.add_chrom({'name': 'ch2','height': 2.0,**ckeys})
 
-chs,tags=mo.add_Nchroms(['c1','c2'],ckeys,hz=[1.,3.]) #return a list with chs objects and their names
+chs,tags=mo.add_Nchroms(['c1','c2'],ckeys,hz=[1.,3.]) #NEW. return a list with chs objects and their names
 
 #the association between spectrum(or spectral region) with atmospheres in topology is now made here
-s1=mo.add_spectrum('s1', atom='helium',linehazel='10830',wavelength=[10826, 10833, 150], 
-	topology='c1->c2',los=[0.0,0.0,90.0], boundary=[1.0,0.0,0.0,0]) #i0fraction=1.0
+s1=mo.add_spectrum('s1', atom='helium',linehazel='10830',wavelength=[10826, 10833, nx], 
+	topology='c1->c2',los=[0.0,0.0,90.0],boundary=[s0,sx,sx,sx]) 
 '''
+i0fraction=1.0
+synmethod='EvolOp'
 linesSIR='number' or '[number]' for adding lines to calcualte photospheres with SIR in the model
 'atm_window': [10826, 10833] when omitted it takes range in 'Wavelength'
 OLD: mo.add_spectral({'name':'sp1','atom':'helium','lineHazel': '10830','Wavelength': [10826, 10833, 150], 
@@ -42,19 +65,19 @@ normalization to the I of the continuum.
 mo.setup() 
 '''
 plt.close()
-f, ax = plt.subplots(nrows=2, ncols=2)	;ax = ax.flatten()
+f, ax = plt.subplots(2,2)	;ax = ax.flatten()
 for j in range(5):
-	###PARS:(Bx/B,By/thB,Bz/phB,tau,v,deltav,beta,a).OPT kwds:ff(default 1.0),j10(default np.zeros(4))	
-	chs[0].set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.,0.,0.2,0.])#,j10=[1e-2,2e-2,3e-2,4e-2])
-	chs[1].set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.,0.,0.,0.])#,j10=[1e-2,2e-2,3e-2,4e-2])
+	###PARS:(Bx/B,By/thB,Bz/phB,tau,v,deltav,beta,a).OPT kwds:ff(default 1.0),j10(default np.zeros(ntr)),j20f(default np.ones(ntr)),nbar(default np.ones(ntr))	
+	chs[0].set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.,0.,0.2,0.])#,j20f=[1e-2,2e-2,3e-2,4e-2], nbar=1.0)
+	chs[1].set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.,0.,0.,0.])#,j20f=[1e-2,2e-2,3e-2,4e-2])
 	mo.synthesize() 
 	ax=mo.iplot_stokes(ax,'s1') #Interactive plot for loops
 plt.show()
 
 '''
-chs[0].set_pars([20.,10.,10.,3.,0.,7.,1.,0.02],j10=[0.,0.,0.1,0.1])
-chs[1].set_pars([20.,80.,10.,3.,6.,7.,1.,0.2],j10=[0.,0.,0.3,0.2])
-mo.synthesize() 
+chs[0].set_pars([20.,10.,10.,3.,0.,7.,1.,0.02],j10=[0.,0.,0.1,0.1]) #,j10=[0.0,0.0],j20f=[1.0,1.0]
+chs[1].set_pars([20.,80.,10.,3.,6.,7.,1.,0.2],j10=[0.,0.,0.3,0.2])#j20f are factors with default to 1.0
+mo.synthesize() #method='EvolOp',muAllen=1.0
 ax=mo.plot_stokes('s1')  #NON-interactive plot (all plotting things are inside) 
 
 f,ax2=mo.plot_coeffs('s1')
@@ -214,8 +237,9 @@ every layer with subshells amounts to 1. If not, it assumes isocontribution: ff=
 of sub-atmospheres in the layer (e.g.,if nsub=2, ff=0.5). 
 
 
-#-----------------------COMMIT 12(pending) : just before SUMMER holidays:
-New procedure for introducing boundary conditions with spectral dependence. 
+#-----------------------COMMIT 12 : 
+Allow spectral boundary conditions and better set of j10 and j20f for every transition: 
+1) New procedure for introducing boundary conditions with spectral dependence. 
 Introduction of i0fraction keyword as the fraction of the true 
 background continuum intensity to the Allen continuum.
 i0fraction is included just in case we want to consider it as inversion parameter in the future, but 
@@ -223,7 +247,7 @@ i0fraction is included just in case we want to consider it as inversion paramete
  the true physical background Stokes profiles and the I0Allen, i0fraction is already the first
  spectral value of the boundary intensity condition, being 1 to represent i0Allen or lower for different
  continuum backgrounds. 
-Now the boundary keyword accept either 4 scalars that will be broadcasted as constants in 
+2)Now the boundary keyword accept either 4 scalars that will be broadcasted as constants in 
 wavelength for every Stokes, or directly 4 spectral profiles. 
 These changes shall allow to control the boundary spectral dependence and the relative level of
 continuum intensity that shall be used to normalize, allowing treating solar
@@ -232,13 +256,49 @@ spectrum.py, and chromospehre.py to simplify and generalize the set up of the bo
 also added the check_key routine to simplify the setup of default keyword values 
 in the (deprecated) add_spectral subroutine.
 
-I changed the number of dimensions of j10 , nbar, and omega to ntrans, thus avoiding a hardcoded
+3)I changed the number of dimensions of j10 , nbar, and omega to ntrans, thus avoiding a hardcoded
  value (it was hardcoded to 4). The flow is :read fortran atom%ntrans from atom file (from io_f90.py) -> 
  init() routine in hazel_py.f90 -> init() in hazel_code.pyx -> call hazel_code._init in model.py, 
  where self.ntrans is set and later passed to set_chromosphere (from main python program or from
  file with use_configuration), which passes it via input parameter to initialization of Hazel chromosphere
-object, where dimensions of j10,omega and nbar are set to ntrans.  
+object, where dimensions of j10,omega and nbar are set to ntrans. 
+I renamed omega as j20f, because is a modulatory factor that shall multiply the j20 anisotropy. 
+Now, the introduction of j10 and j20f can be done via keyword from set_pars either providing a single
+number that shall be broadcasted to all transitions or providing a list with specific values for 
+each transition.
 
+COMMIT 13-----------------------------------------------
+
+Add nbar and j20f(external name for omega) to pars in the same fashion as did with j10.
+Change keywords working_mode and atomf to mode and atomfile in call to hazel.Model.
+Improve and shorten the initialization of model object.
+Add precision keyword to print_parameters.
+
+Pass the parameters atompol,magopt,stimem, and nocoh (read in hazel.Model with apmosenc) 
+to synthazel through normal arguments when calling Hazel_atmosphere from model/add_chromosphere.
+To do this I implemented two redudant ways, a compact one through the keyword 
+apmosenc(=Atom.Pol+Magn.Optical+Stim.Emiss.+NoCoherences)='1110' by default and 
+also introducing those pars with a dictionary for more verbosity and clarity.
+Add depolaring collisions parameters dcol=[double,double,double] to control total elastic depolarizing
+collisions(for K=1 and for K=2 together), depolarizing collisions (D^1_Q) only for multipoles K=1 
+and only for multipoles K=2(D^2_Q).
+Implement the action of all above parameters in SEE and optical coeffs.
+Delete old general fortran variables that are not used anymore.
+Pass the Hazel synthesis method to the model.synthesize routine
+
+------------------------------------------------------------
+CAUTION:
+We are only plotting eta, improve plotting routines.
+
+When only emissivity is calculated the continuum is to zero but we should still normalize
+all profile to Allen and add possibility of adding a background continuum also in the 
+case of only emissivity.
+
+
+CAUTION:
+Hazel always normalizes output to Allen(mu=1) in synthesize_spectrum, 
+but the introduced boundary conditions are assumed to be normalized to Allen at the mu 
+of the calculation(given by LOS). This is a bit inconsistent. Ask Andres which mu would he prefer.
 
 CAUTION: in helium.atom el valor del nbar reduction factor de la transicion 2 esta puesto 
 a 0.2 en vez de a 1.0. Verificar si esto se sobreescribe luego en el codigo y preguntar a Andres

@@ -26,7 +26,8 @@ import matplotlib.pyplot as plt #EDGAR: Im placing plotting routines here, but i
 __all__ = ['Model']
 
 class Model(object):
-    def __init__(self, config=None, working_mode='synthesis', atomf='helium.atom', verbose=0, debug=False, rank=0, randomization=None, root=''):
+    def __init__(self, config=None, mode='synthesis', atomfile='helium.atom',apmosenc='1110', dcol=[0.,0.,0.],
+        extrapars={}, verbose=0, debug=False, rank=0, randomization=None, root=''):
 
         np.random.seed(123)
         if (rank != 0):
@@ -48,6 +49,35 @@ class Model(object):
         self.multipletsdic={'helium':{'10830': 10829.0911, '3888': 3888.6046, '7065': 7065.7085, '5876': 5875.9663},
                             'sodium':{'5895': 5895.924, '5889': 5889.95}}
 
+        #------------------------------------
+        #Parameters in extrapars overwrite those in apmosenc.
+        #apmosenc and extrapars are mostly redudant on purpose. 
+        #apmosenc is much more compact but extrapars is there for who requires more readibility
+        #extrapars={'Atompol':1,'MO effects':1,'Stim. emission':1, 'Kill coherences':0,'dcol':[0.,0.,0.]}
+
+        apmosencl = [int(x) for x in apmosenc] #now is a list of atompol,magopt,stimem,nocoh
+        for elem in apmosencl[0:3]:
+            if (elem != 0) and (elem!=1):raise Exception("ERROR: apmosenc first values can only be zeros or ones")
+    
+        for kk,keyw in enumerate(['Atompol','MO effects','Stim. emission','Kill coherences']):
+            if (keyw in extrapars) and (extrapars[keyw]!=apmosencl[kk]):
+                apmosencl[kk]=extrapars[keyw]        
+                if (keyw!='Kill coherences') and (extrapars[keyw] != 0) and (extrapars[keyw]!=1):
+                    raise Exception("ERROR: firsts parameters in extrapars can only be zeros or ones")    
+        #EDGAR: we should also check that the nocoh value does not go beyond number of levels(pending)
+        if ('dcol' in extrapars):apmosencl.append(extrapars['dcol'])
+        else:apmosencl.append(dcol)
+        
+        self.apmosencl=apmosencl #is a list whose last element is other list with dcol
+
+        #tentative synthesis methods to be implemented
+        self.methods_dicT={0:'Emissivity',1:'Delo1',2:'Delo2',3:'Hermite',4:'Bezier',5:'EvolOp',6:'Guau'} 
+        self.methods_dicS={'Emissivity':0,'Delo1':1,'Delo2':2,'Hermite':3,'Bezier':4,'EvolOp':5,'Guau':6} 
+        self.methods_list=[ss for ss,tt in self.methods_dicS.items()] #list with only the names
+        
+        self.synmethod=5 #default that can be changed by add_spectrum and /or by synthesize.
+
+        #------------------------------------
         self.photospheres = []
         self.chromospheres = []
         self.chromospheres_order = []
@@ -61,8 +91,13 @@ class Model(object):
         self.spectrum = {}  #EDGAR:self.spectrum was initialized as [] and now as {}
         self.topologies = {}#[] EDGAR: before it was a list, now it is a dictionary
         self.atms_in_spectrum={} #EDGAR: of the kind -> {'sp1': string_with_atmosphere_order_for_sp1}
+        
+        #default mu where Allen continuum shall be taken for normalizing Stokes output
+        #the actual value is set when calling synthesize_spectrum
+        self.muAllen=1.0 
+
         self.straylights = []
-        self.working_mode = working_mode
+        self.working_mode = mode
         self.pixel = 0
         self.debug = debug
         self.use_analytical_RF_if_possible = False
@@ -104,7 +139,7 @@ class Model(object):
         #We initialize pyhazel (and set self.ntrans) before calling add_chromosphere in use_configuration 
         #in order to setup self.ntrans before defining j10 length.
         #before these changes, the Hazel init was done after the next if..else.  
-        self.ntrans=hazel_code._init(atomf,verbose)   #EDGAR
+        self.ntrans=hazel_code._init(atomfile,verbose)   #EDGAR
         
         if (config is not None):
             if (self.verbose >= 1):
@@ -133,12 +168,15 @@ class Model(object):
                 tmp += '{0}: {1}\n'.format(l, par)
         return tmp
 
-    def plot_coeffs(self,sp,ats=None):
+    def plot_coeffs(self,sp,coeff='eta',par=None,ats=None):
         f, ax = plt.subplots(nrows=2, ncols=2)  ;ax = ax.flatten()
         if sp.isascii():sp=self.spectrum[sp]
         if ats is None:ats=self.atmospheres 
-        for k,at in enumerate(ats):
-            for sto in range(4):ax[sto].plot(sp.wavelength_axis,sp.eta[k,sto,:])
+        
+        if coeff =='eta':
+            for k,at in enumerate(ats):
+                for sto in range(4):ax[sto].plot(sp.wavelength_axis,sp.eta[k,sto,:])
+        
         plt.show()
         return f,ax
 
@@ -155,7 +193,11 @@ class Model(object):
         for i in range(4):ax[i].plot(sp.wavelength_axis, sp.stokes[i,:])
         return ax
 
-     
+    def check_method(self,method):
+        if (self.verbose >= 1):self.logger.info('Synthesis method : {0}'.format(method))
+        if method not in self.methods_list:raise Exception("I do not know that Synthesis method. Stopping.")
+
+
     def use_configuration(self, config_dict):
         """
         Use a configuration file
@@ -181,8 +223,8 @@ class Model(object):
             self.logger.info('Backtracking mode : {0}'.format(self.backtracking))
         
         
-        # Working mode
-        # self.working_mode = config_dict['working mode']['action']
+        # Working mode  #EDGAR: when using conf file the keyword is still called working mode
+        # self.working_mode = config_dict['working mode']['action']  
 
         # Deal with the spectral regions        
         #tmp = config_dict['spectral regions']
@@ -458,7 +500,7 @@ class Model(object):
         self.output_handler.write(self, pixel=0, randomization=randomization)
 
     def add_spectrum(self, name, config=None, wavelength=None, topology=None, los=None, 
-        i0fraction=1.0,boundary=None, atom=None,
+        i0fraction=1.0,boundary=None, atom=None, synmethod=None,
         linehazel=None, linesSIR=None, atmos_window=None, instrumental_profile=None,
         wavelength_file=None, wavelength_weight_file=None,observations_file=None, mask_file=None,
         weights_stokes_i=[None]*10,weights_stokes_q=[None]*10,weights_stokes_u=[None]*10,weights_stokes_v=[None]*10):
@@ -482,6 +524,7 @@ class Model(object):
             if ('i0fraction' in config):i0fraction=config['i0fraction']
             if ('Boundary' in config):boundary=config['Boundary']
             if ('atom' in config):atom=config['atom']
+            if ('synmethod' in config):atom=config['synmethod']
             if ('line' in config):linehazel=config['line']
             if ('lines' in config):linesSIR=config['lines']
             if ('spectral region' in config):atmos_window=config['spectral region']
@@ -618,6 +661,22 @@ class Model(object):
     
         if (self.verbose >= 1):self.logger.info('Atom added.')
         
+        '''
+        EDGAR:The default initialization of self.synmethod was done in the init above. 
+        Below is the general set up of the synthesis method to use for synthesizing this spectrum.
+        In principle here we assume one single method per spectrum, but one could later 
+        change the method during runtime with the keyword method in synthesize(), 
+        such that a single spectrum could be synthesize with different methods in different 
+        layers during the transfer. Thats is why we do not associate a synmethod to the spectrum object,
+        although if necessary we could do it below generating a list of methods in spectrum.
+        We work with string names for the user, but internally hazel work with the numbers and the spectrum
+        list is made with numbers to shorten because we can have many layers in Hazel2.
+        '''
+        if (synmethod is not None) and (synmethod != self.methods_dicT[self.synmethod] ):
+            self.check_method(synmethod) #synmethod is a string with name, self.synmethod is the number
+            self.synmethod=self.methods_dicS[synmethod] #update self.synmethod with the number
+
+
         #EDGAR: line for Hazel chromospheres and for SIR photosphere
         #it seems lines for SIR read in add_photosphere were wrong because they were introduced programatically
         #with the field atm['spectral lines'] in add_photosphere, but there was no such a field defined anywhere 
@@ -645,7 +704,7 @@ class Model(object):
             name=name, stokes_weights=stokes_weights, los=los, boundary=boundary, 
             mask_file=mask_file, instrumental_profile=instrumental_profile, 
             root=self.root, wvl_lr=wvl_lr,lti=self.line_to_index,lineHazel=lineH,lineSIR=lineS,
-            n_chromo=self.nch)
+            n_chromo=self.nch, synmethod=self.synmethod)
 
         #EDGAR: update spectrum object with the multiplets for later accesing it from synthesize at chromosphere.py
         self.spectrum[name].multiplets = self.multipletsdic[atom] 
@@ -1064,8 +1123,9 @@ class Model(object):
         # Make sure that all keys of the input dictionary are in lower case
         # This is irrelevant if a configuration file is used because this has been already done
         atm = hazel.util.lower_dict_keys(atmosphere)
-        
-        self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, name=atm['name'],ntrans=self.ntrans)#EDGAR:,atom=atm['atom'])
+
+        self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, \
+        name=atm['name'],ntrans=self.ntrans,hazelpars=self.apmosencl)#EDGAR:,atom=atm['atom'])
 
         #------------------------------------------------------------------------
         """EDGAR now you can DELETE THIS BLOCK
@@ -1627,7 +1687,7 @@ class Model(object):
                     print("WARNING: Filling factors of layer {0} do not add up to one. Assuming iso-contribution.".format(n))            
                     for k, atm in enumerate(order):self.atmospheres[atm].parameters['ff']=1.0/len(order)
 
-    def synthesize_spectrum(self, spectral_region, perturbation=False, stokes=None,stokes_out = None,aa=-1,mu=1.0):
+    def synthesize_spectrum(self, spectral_region, method,perturbation=False, stokes=None,stokes_out = None):
         """
         Synthesize all atmospheres of a spectral region and normalize to continuum of quiet Sun at disk center
         Photospheres must be first lower and unique, stray atms should be always last higher
@@ -1635,6 +1695,7 @@ class Model(object):
         atms_in_spectrum makes unnecessary to check the asp spectral region inside the double loop below
         -----------Parameters:----------
         spectral_region : str.    Spectral region to synthesize
+        method: synthesis method for solving the RTE
         perturbation : bool
             True if you are synthesizing with a perturbation. Then, the synthesis
             is saved in spectrum.stokes_perturbed instead of spectrum.stokes
@@ -1661,14 +1722,14 @@ class Model(object):
                         if (self.use_analytical_RF):stokes, self.rf_analytical, error = \
                             self.atmospheres[atm].synthesize(stokes_out, returnRF=True, nlte=self.use_nlte)#always calls a photosphere with RF  
                         else:stokes, asp.eps[n+k,:,:],asp.eta[n+k,:,:],asp.stim[n+k,:,:],error = \
-                            self.atmospheres[atm].synthazel(stokes=stokes_out, nlte=self.use_nlte)#For single chromospheres
+                            self.atmospheres[atm].synthazel(method,stokes=stokes_out, nlte=self.use_nlte)#For single chromospheres
                     else:#if c1+c2, adds up stokes of all sub-pixels  
                         tmp,asp.eps[n+k,:,:],asp.eta[n+k,:,:],asp.stim[n+k,:,:], error = \
-                        self.atmospheres[atm].synthazel(stokes=stokes_out,nlte=self.use_nlte)
+                        self.atmospheres[atm].synthazel(method,stokes=stokes_out,nlte=self.use_nlte)
                         stokes += tmp#DOUBT:the sum of contribs of all supixels should be done at the end of the transfer
                     #-------------------------------------------------------------------
-        i0=hazel.util.i0_allen(np.mean(asp.wavelength_axis[xbot:xtop]), mu)  #at mean wavelength
-        #i0=hazel.util.i0_allen(asp.wavelength_axis[xbot:xtop], mu)[None,:] #at each wavelength
+        i0=hazel.util.i0_allen(np.mean(asp.wavelength_axis[xbot:xtop]), self.muAllen)  #at mean wavelength
+        #i0=hazel.util.i0_allen(asp.wavelength_axis[xbot:xtop], self.muAllen)[None,:] #at each wavelength
         if (self.use_analytical_RF):#CHECK this is ok out of the loop
             for k, v in self.rf_analytical.items():
                 if (k != 'ff'):v /= i0
@@ -1759,7 +1820,7 @@ class Model(object):
         if (self.verbose >= 1):
             self.logger.info('Setting NLTE for Ca II 8542 A to {0}'.format(self.use_nlte))
 
-    def synthesize(self, perturbation=False):
+    def synthesize(self, perturbation=False, method=None,muAllen=1.0):
         """
         Synthesize all atmospheres
 
@@ -1774,16 +1835,23 @@ class Model(object):
         None
 
         """
-        
-        #EDGAR WARNING:I think normalize_ff is not working for the synthesis. 
+        self.muAllen=muAllen #mu where Allen continuum shall be taken for normalizing Stokes output 
 
+        if (method is not None) and (method != self.methods_dicT[self.synmethod]):
+            print('Changing synthesis method to {0}.'.format(method))
+            self.check_method(method)
+            self.synmethod=self.methods_dicS[method]#pass from string label to number label and update self
+
+        #EDGAR: WARNING,I think normalize_ff was not working for the synthesis. 
         if (self.working_mode == 'inversion'):self.normalize_ff()
 
         for k, v in self.spectrum.items():#k is name of the spectrum or spectral region
-            self.check_filling_factors(k) #EDGAR: checking correct filling factors in composed layers
+            #EDGAR: checking correct filling factors in composed layers
+            #TBD: this kind of check should be done during setup, not in calculations time 
+            self.check_filling_factors(k)
             
             #self.synthesize_spectral_region(k, perturbation=perturbation)  #OLD          
-            self.synthesize_spectrum(k, perturbation=perturbation)   #EDGAR NEW         
+            self.synthesize_spectrum(k, self.synmethod,perturbation=perturbation)   #EDGAR NEW         
             if (v.normalization == 'off-limb'):
                 if (perturbation):
                     v.stokes_perturbed /= np.max(v.stokes_perturbed[0,:])

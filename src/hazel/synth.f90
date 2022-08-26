@@ -113,12 +113,53 @@ contains
 !         call calc_rt_coef(in_params, in_fixed, in_observation, 1)
                         
 
-if (synthesis_mode == 1) then 
-    !ESC: place here your new methods of solution with different synthesis_mode value
-endif
+!EDGAR: place here your new methods of solution with different synthesis_method value
 
-!ESC: synthesis_mode=5 is setup in hazel_py.f90 for the evolution operator    
-if (synthesis_mode == 5) then 
+!----------------------------------------------------------------------------------
+if (synthesis_method == 0) then 
+!****************       
+! ONLY EMISSIVITY
+!****************
+
+!init already done in rt_coef
+!if (.not.associated(in_fixed%epsilon)) allocate(in_fixed%epsilon(0:3,in_fixed%no))
+!if (.not.associated(in_fixed%epsilon_zeeman)) allocate(in_fixed%epsilon_zeeman(0:3,in_fixed%no))
+
+        if (in_fixed%use_atomic_pol == 1) then
+            Imax = maxval(in_fixed%epsilon(0,:))
+            do i = 0, 3
+                output(i,:) = in_fixed%epsilon(i,:) / Imax
+            enddo
+        else  
+            Imax = maxval(in_fixed%epsilon_zeeman(0,:))  !EDGAR:aqui habia solo epsilon pero deberia ser epsilon_zeeman
+            do i = 0, 3
+                output(i,:) = in_fixed%epsilon_zeeman(i,:) / Imax
+            enddo
+        endif
+    
+endif
+!----------------------------------------------------------------------------------
+if (synthesis_method == 1) then 
+    synthesis_method = 5
+endif
+!----------------------------------------------------------------------------------
+if (synthesis_method == 2) then 
+    synthesis_method = 5
+endif
+!----------------------------------------------------------------------------------
+if (synthesis_method == 3) then 
+    synthesis_method = 5
+endif
+!----------------------------------------------------------------------------------
+if (synthesis_method == 4) then 
+    synthesis_method = 5
+endif
+!----------------------------------------------------------------------------------
+if (synthesis_method == 6) then 
+    synthesis_method = 5
+endif
+!----------------------------------------------------------------------------------
+if (synthesis_method == 5) then 
 !****************       
 ! Slab case with EXACT SOLUTION
 !****************
@@ -141,13 +182,8 @@ if (synthesis_mode == 5) then
             identity(i,i) = 1.d0
         enddo
         
-        ! StokesM(1) = in_fixed%Stokes_incident(0)
-        ! StokesM(2) = in_fixed%Stokes_incident(1)
-        ! StokesM(3) = in_fixed%Stokes_incident(2)
-        ! StokesM(4) = in_fixed%Stokes_incident(3)
-
     !EDGAR: we add the possibility of using only the zeeman coeffs without atompol
-    if (in_fixed%use_atomic_pol == 1 .or. in_fixed%use_atomic_pol == -1) then
+    if (in_fixed%use_atomic_pol == 1 ) then
                     
 ! Emission              
         in_fixed%epsI = in_fixed%epsilon(0,:)
@@ -235,7 +271,6 @@ if (synthesis_mode == 5) then
             output(3,i) = Stokes0(4)
             
         enddo
-
                                                 
         ! if (in_observation%normalization == 'peak') then
         !     Imax = maxval(output(0,:))
@@ -246,13 +281,13 @@ if (synthesis_mode == 5) then
         !     output(i,:) = output(i,:) !/ Imax                
         ! enddo
 endif
+!----------------------------------------------------------------------------------
 
 
         in_fixed%total_forward_modeling = in_fixed%total_forward_modeling + 1
 
-        !
+        
         ! JDLCR: convolve all Stokes Parameters with the spectral PSF.
-        !
         call convolve(in_fixed%no, output)
 
     

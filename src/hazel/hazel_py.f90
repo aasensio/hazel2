@@ -10,27 +10,27 @@ use allen
 implicit none
 
 contains
-subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
+subroutine c_hazel(index, synMethInput,B1Input, hInput, tau1Input, boundaryInput, &
     transInput, anglesInput, nLambdaInput, lambdaAxisInput, dopplerWidthInput, dampingInput, &
     j10Input,dopplerVelocityInput, betaInput, nbarInput, omegaInput, &
+    atompolInput,magoptInput,stimemInput,nocohInput,dcolInput, & !EDGAR: too verbose for just 4 numbers
     wavelengthOut, stokesOut, epsOut, etaOut, stimOut,error) bind(c)
 
     !EDGAR: no need to read ntransInput because ntrans already initialized in atom%ntran
-    integer(c_int), intent(in) :: transInput, index!, EDGAR: index runs from 1 to n_chromo
-    integer(c_int), intent(in) :: nLambdaInput
+    integer(c_int), intent(in) :: synMethInput,transInput, index !EDGAR: index runs from 1 to n_chromo
+    integer(c_int), intent(in) :: nLambdaInput,atompolInput,magoptInput,stimemInput,nocohInput
     real(c_double), intent(in), dimension(nLambdaInput) :: lambdaAxisInput
     real(c_double), intent(in), dimension(3) :: B1Input, anglesInput
     real(c_double), intent(in), dimension(4,nLambdaInput) :: boundaryInput
     !EDGAR: dim shouuld be atom%ntran, not 4 (4 is only for Helium)
     real(c_double), intent(in), dimension(atom%ntran) :: nbarInput, omegaInput 
+    real(c_double), intent(in), dimension(3)  :: dcolInput
     !EDGAR: add j10Input . in or inout to avoid losing memory between consecutive python calls??
     real(c_double), intent(in), dimension(atom%ntran) :: j10Input  
     real(c_double), intent(in) :: hInput, tau1Input, dopplerWidthInput, dampingInput, dopplerVelocityInput, betaInput 
     real(c_double), intent(out), dimension(nLambdaInput) :: wavelengthOut
-    real(c_double), intent(out), dimension(4,nLambdaInput) :: stokesOut
-    real(c_double), intent(out), dimension(4,nLambdaInput) :: epsOut !EDGAR: containers for opt coeffs
-    real(c_double), intent(out), dimension(7,nLambdaInput) :: etaOut !EDGAR: containers for opt coeffs
-    real(c_double), intent(out), dimension(7,nLambdaInput) :: stimOut !EDGAR: containers for opt coeffs
+    real(c_double), intent(out), dimension(4,nLambdaInput) :: stokesOut,epsOut!EDGAR: containers for opt coeffs
+    real(c_double), intent(out), dimension(7,nLambdaInput) :: etaOut,stimOut !EDGAR: containers for opt coeffs
     integer(c_int), intent(out) :: error
 
     integer :: n, nterml, ntermu
@@ -57,32 +57,45 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
 
     !input_model_file = 'helium.mod'
     !input_experiment = 'init_parameters.dat'        
-    !verbose_mode = 0
     linear_solver = 0       
-    synthesis_mode = 5
+    synthesis_method = synMethInput
     working_mode = 0 !0: synthesis. 1: inversion
     ! Read the atomic model 
     ! call read_model_file(input_model_file)
+
+    use_paschen_back = 1 
     
-! Set the variables for the experiment from the parameters of the subroutine
-    isti = 1
-    imag = 1
-    idep = 0
-    
-    params(index)%nslabs = 1  !EDGAR:this is not being used anymore
-    
+    !--------------------------------
+    isti = 1  !stimulated emission term in SEE 
+    imag = 1  !Hanle term in SEE 
+    idep = 0  !depolarizing collision term in SEE
+
+    if (dcolInput(1) /= 0.0 .or. dcolInput(2) /= 0.0 .or. dcolInput(3) /= 0.0) then
+        idep = 1  
+        params%delta_collision = dcolInput(1)   
+        params%delta_collk1 = dcolInput(2)
+        params%delta_collk2 = dcolInput(3)
+    endif
+
+    ! atompol cannot be -1 anymore to kill only anisotropy (only can be 0 or 1).
+    !We can kill anisotropy for K=2 by setting j20f=0 but alignment in general does not dissapear 
+    !only killing that anisotropy because orientation can be transformed into alignment in the SEE.
+    !so, or we kill both alignment and orientation setting atompol=0 or we kill both anisotropies
+    fixed(index)%use_atomic_pol = atompolInput !0(no atompol),1 (all atompol)    
+    use_mag_opt_RT = magoptInput
+    use_stim_emission_RT = stimemInput
+ 
+    params(index)%nocoh = -99 !this absurd value makes level coherences to be fully added in SEE when nocohInput=0
+    if (nocohInput /= 0) params(index)%nocoh = nocohInput  !gives the atom level in which cohs will be deactivated
+   !--------------------------------
+
+    params(index)%nslabs = 1  !EDGAR:this is not being used anymore    
     params(index)%bgauss = B1Input(1)
     params(index)%thetabd = B1Input(2)
     params(index)%chibd = B1Input(3)
     params(index)%height = hInput
     params(index)%dtau = tau1Input
     params(index)%beta = betaInput
-
-    !EDGAR: I should put all these pars as fixed parameters and set them from outside
-    use_mag_opt_RT = 1  
-    use_stim_emission_RT = 1
-    use_paschen_back = 1
-    fixed(index)%use_atomic_pol = 1 !-1,0,1.    atomicpolInput
 
     fixed(index)%nemiss = transInput
     fixed(index)%thetad = anglesInput(1)
@@ -93,7 +106,6 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     params(index)%damping = dampingInput
     fixed(index)%damping_treatment = 0
 
-    
 ! Read the wavelength of the transition that we want to synthesize
     fixed(index)%wl = atom%wavelength(transInput)
     
@@ -156,7 +168,7 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
         !had extra dimension for the slab number. They now belong to in_fixed/fixed var.
 
         ! Fill the statistical equilibrium equations
-        call fill_SEE(params(index), fixed(index), 1)
+        call fill_SEE(params(index), fixed(index))
 
         ! If the solution of the SEE gives an error, return        
         if (error_code == 1) then
@@ -171,7 +183,7 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
         !subroutine, hence pyx file must be modified and Mod.spectrum should also contain 
         !the final vector-like etas,epsilons,etc, such that one can retrieve them.
         !velocities are considered in rt_coef.f90 with parameter va.  
-        call calc_rt_coef(params(index), fixed(index), observation(index), 1)
+        call calc_rt_coef(params(index), fixed(index), observation(index))
 
         ! If the calculation of the RT coefficients gives and error, return
         if (error_code == 1) then

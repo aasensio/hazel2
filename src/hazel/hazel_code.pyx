@@ -3,23 +3,31 @@ from numpy cimport ndarray as ar
 from numpy import empty, linspace, zeros, array
 
 cdef extern:
-	void c_hazel(int* index, double* B1Input, double* hInput, double* tau1Input, 
+	void c_hazel(int* index, int* synMethInput, double* B1Input, double* hInput, double* tau1Input, 
 		double* boundaryInput, int* transInput, double* anglesInput, int* nLambdaInput, double* lambdaAxisInput,
 		double* dopplerWidthInput, double* dampingInput, double* j10Input, double* dopplerVelocityInput, 
 		double* betaInput, double* nbarInput, double* omegaInput, 
+		int* atompolInput,int* magoptInput,int* stimemInput,int* nocohInput, double* dcolInput,
 		double* wavelengthOut, double* stokesOut,double* epsOut,double* etaOut,double* stimOut, int* error)
 		
 	void c_init(int* nchar,char* atomfile, int* verbose,int* ntransOutput) #EDGAR: added nchar, atomfile, and output par ntrans
 	void c_exit(int* index)
 
-def _synth(int index=1, ar[double,ndim=1] B1Input=zeros(3), double hInput=3.0, 
+#routine called by python synthazel
+def _synth(int index=1, int synMethInput=5, ar[double,ndim=1] B1Input=zeros(3), double hInput=3.0, 
 	double tau1Input=1.0, 
 	ar[double,ndim=2,mode='fortran'] boundaryInput=zeros((4,128)), int transInput=1, ar[double,ndim=1] anglesInput=zeros(3), 
 	int nLambdaInput=128, ar[double,ndim=1] lambdaAxisInput=linspace(-1.5,2.5,128),  
 	double dopplerWidthInput=5.0, double dampingInput=0.0, ar[double,ndim=1] j10Input=zeros(4),double dopplerVelocityInput=0.0, 
 	double betaInput=1.0, ar[double,ndim=1] nbarInput=zeros(4), 
-	ar[double,ndim=1] omegaInput=zeros(4)):
+	ar[double,ndim=1] omegaInput=zeros(4),
+	int atompolInput=1,int magoptInput=1,int stimemInput=1,int nocohInput=0, 
+	ar[double,ndim=1] dcolInput=zeros(3)):
 	
+
+	#EDGAR: 
+	#nLambdaInput, lambdaAxisInput,nLambdaInput are hardcoded to 128 points or is just an initialization?
+	#same for nbarInput and omegaInput which seems initizialized to 4 transitions.
 	"""
 	Carry out a synthesis with Hazel
 	
@@ -55,12 +63,14 @@ def _synth(int index=1, ar[double,ndim=1] B1Input=zeros(3), double hInput=3.0,
 		ar[double,ndim=2] etaOut = empty((7,nLambdaInput), order='F')
 		ar[double,ndim=2] stimOut = empty((7,nLambdaInput), order='F')
 		int error
-		
-	c_hazel(&index, &B1Input[0], &hInput, &tau1Input,  
+
+	#calls fortran routine c_hazel in hazel_py.f90
+	c_hazel(&index, &synMethInput, &B1Input[0], &hInput, &tau1Input,  
 		&boundaryInput[0,0], &transInput, &anglesInput[0], &nLambdaInput, &lambdaAxisInput[0],  
 		&dopplerWidthInput, &dampingInput, &j10Input[0], &dopplerVelocityInput, 
-		&betaInput, &nbarInput[0], &omegaInput[0], <double*> wavelengthOut.data, 
-		<double*> stokesOut.data,<double*> epsOut.data, <double*> etaOut.data,
+		&betaInput, &nbarInput[0], &omegaInput[0], 
+		&atompolInput,&magoptInput,&stimemInput,&nocohInput,&dcolInput[0],
+		<double*> wavelengthOut.data, <double*> stokesOut.data,<double*> epsOut.data, <double*> etaOut.data,
 		<double*> stimOut.data, &error)
     
 	return wavelengthOut, stokesOut, epsOut, etaOut, stimOut, error

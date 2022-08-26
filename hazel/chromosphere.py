@@ -13,202 +13,48 @@ import copy
 __all__ = ['Hazel_atmosphere']
 
 class Hazel_atmosphere(General_atmosphere):
-    def __init__(self, working_mode, name='', ntrans=0):#, atom='helium'):
+    def __init__(self, working_mode, name='', ntrans=0, hazelpars=[1,1,1,0,[0.,0.,0.]]):
     
-        super().__init__('chromosphere', name=name)#, atom=atom)
+        super().__init__('chromosphere', name=name)
 
         self.height = 3.0
         self.working_mode = working_mode
-        #self.atom = atom
-
-        self.parameters['Bx'] = 0.0
-        self.parameters['By'] = 0.0
-        self.parameters['Bz'] = 0.0
-        self.parameters['B'] = 0.0
-        self.parameters['thB'] = 0.0
-        self.parameters['phiB'] = 0.0
-        self.parameters['tau'] = 1.0
-        self.parameters['v'] = 0.0
-        self.parameters['deltav'] = 8.0
-        self.parameters['beta'] = 1.0
-        self.parameters['a'] = 0.0
-        #EDGAR. j10 to be defined as independent elements, not vector:
-        #It has been dynamically dimensioned to the number of transitions
-        #and the same might happens below with the corresponding pars associated to j10
-        #but caution:this probably will not work in inversions because the 
-        #inversion requires these pars to be scalars , not vectors. Probably 
-        #we will need to remove j10 from here for inversion. 
-
         self.ntr=ntrans #taking ntrans from model object
-        #for now, they do not belong to the dictionary of parameters
+        
+        #EDGAR. j10 and j20f(omega) dynamically dimensioned to the number of transitions
+        #For now, they are not in dict of parameters because probably will not work in inversions 
+        #because the inversion requires these pars to be scalars , not vectors. 
         self.j10 = np.zeros(self.ntr)  #this is j10
         self.j20f = np.ones(self.ntr)  #these are reduction factors, not j20
+        self.nbar = np.ones(self.ntr)  #these are reduction factors, not j20
         #EDGAR: this is commented because we need to evaluate whether is possible
         #to do inversions with radiation field anisotropies for every transition
-        #self.parameters['j10'] = np.zeros(self.ntr)  
-        #self.parameters['j20'] = np.zeros(self.ntr)  
+        #self.parameters['j10'],self.parameters['j20f'] = np.zeros(self.ntr) ,np.ones(self.ntr)  
+
+        self.atompol,self.magopt,self.stimem,self.nocoh,self.dcol = hazelpars  #extract the pars for Hazel 
+        
+        #EDGAR:much more compact way of initializing parameters
+        keyparlist=['Bx','By','Bz','B','thB','phiB','tau','v','deltav','beta','a','ff'] #,'j10', 'j20f'
+        unitslist=['G', 'G', 'G',  'G','deg','deg',  '', 'km/s','km/s', '',   '',  '']  #,'%'  , '' 
+
+        for k,key in enumerate(keyparlist):
+            self.units[key]=unitslist[k]        
+            self.nodes[key]=0.0                
+            self.nodes_location[key]= None
+            self.error[key] = 0.0        
+            self.n_nodes[key] = 0                
+            self.ranges[key] = None        
+            self.cycles[key] = None
+            self.epsilon[key] = 0.01                
+            self.jacobian[key] = 1.0
+            self.regularization[key] = None                
+            self.parameters[key]=0.0
+
+        #only parameters initialized to something different than 0.0
+        self.parameters['beta'],self.parameters['tau'] = 1.0, 1.0
+        self.parameters['deltav'] = 8.0
         self.parameters['ff'] = np.log(1.0)
-        
 
-        self.units['Bx'] = 'G'
-        self.units['By'] = 'G'
-        self.units['Bz'] = 'G'
-        self.units['B'] = 'G'
-        self.units['thB'] = 'deg'
-        self.units['phiB'] = 'deg'
-        self.units['tau'] = ''
-        self.units['v'] = 'km/s'
-        self.units['deltav'] = 'km/s'
-        self.units['beta'] = ''
-        self.units['a'] = ''
-        #self.units['j10'] = '%' #EDGAR
-        #self.units['j20'] = '%' #EDGAR
-        self.units['ff'] = ''
-        
-
-        self.nodes['Bx'] = 0.0
-        self.nodes['By'] = 0.0
-        self.nodes['Bz'] = 0.0        
-        self.nodes['B'] = 0.0
-        self.nodes['thB'] = 0.0
-        self.nodes['phiB'] = 0.0
-        self.nodes['tau'] = 0.0
-        self.nodes['v'] = 0.0
-        self.nodes['deltav'] = 0.0
-        self.nodes['beta'] = 0.0
-        self.nodes['a'] = 0.0
-        #self.nodes['j10'] = 0.0   #EDGAR
-        #self.nodes['j20'] = 0.0   #EDGAR
-        self.nodes['ff'] = 0.0
-        
-
-        self.nodes_location['Bx'] = None
-        self.nodes_location['By'] = None
-        self.nodes_location['Bz'] = None       
-        self.nodes_location['B'] = None
-        self.nodes_location['thB'] = None
-        self.nodes_location['phiB'] = None
-        self.nodes_location['tau'] = None
-        self.nodes_location['v'] = None
-        self.nodes_location['deltav'] = None
-        self.nodes_location['beta'] = None
-        self.nodes_location['a'] = None
-        #self.nodes_location['j10'] = None    #EDGAR
-        #self.nodes_location['j20'] = None    #EDGAR
-        self.nodes_location['ff'] = None
-        
-
-        self.error['Bx'] = 0.0
-        self.error['By'] = 0.0
-        self.error['Bz'] = 0.0
-        self.error['B'] = 0.0
-        self.error['thB'] = 0.0
-        self.error['phiB'] = 0.0
-        self.error['tau'] = 0.0
-        self.error['v'] = 0.0
-        self.error['deltav'] = 0.0
-        self.error['beta'] = 0.0
-        self.error['a'] = 0.0
-        #self.error['j10'] = 0.0   #EDGAR
-        #self.error['j20'] = 0.0   #EDGAR
-        self.error['ff'] = 0.0 
-        
-
-        self.n_nodes['Bx'] = 0
-        self.n_nodes['By'] = 0
-        self.n_nodes['Bz'] = 0        
-        self.n_nodes['B'] = 0
-        self.n_nodes['thB'] = 0
-        self.n_nodes['phiB'] = 0
-        self.n_nodes['tau'] = 0
-        self.n_nodes['v'] = 0
-        self.n_nodes['deltav'] = 0
-        self.n_nodes['beta'] = 0
-        self.n_nodes['a'] = 0
-        #self.n_nodes['j10'] = 0   #EDGAR
-        #self.n_nodes['j20'] = 0   #EDGAR
-        self.n_nodes['ff'] = 0
-        
-        
-        self.ranges['Bx'] = None
-        self.ranges['By'] = None
-        self.ranges['Bz'] = None
-        self.ranges['B'] = None
-        self.ranges['thB'] = None
-        self.ranges['phiB'] = None
-        self.ranges['tau'] = None
-        self.ranges['v'] = None
-        self.ranges['deltav'] = None
-        self.ranges['beta'] = None
-        self.ranges['a'] = None
-        #self.ranges['j10'] = None #EDGAR
-        #self.ranges['j20'] = None #EDGAR
-        self.ranges['ff'] = None
-        
-
-        self.cycles['Bx'] = None
-        self.cycles['By'] = None
-        self.cycles['Bz'] = None  
-        self.cycles['B'] = None
-        self.cycles['thB'] = None
-        self.cycles['phiB'] = None
-        self.cycles['tau'] = None
-        self.cycles['v'] = None
-        self.cycles['deltav'] = None
-        self.cycles['beta'] = None
-        self.cycles['a'] = None
-        #self.cycles['j10'] = None  #EDGAR
-        #self.cycles['j20'] = None  #EDGAR
-        self.cycles['ff'] = None
-        
-
-        self.epsilon['Bx'] = 0.01
-        self.epsilon['By'] = 0.01
-        self.epsilon['Bz'] = 0.01
-        self.epsilon['B'] = 0.01
-        self.epsilon['thB'] = 0.01
-        self.epsilon['phiB'] = 0.01
-        self.epsilon['tau'] = 0.01
-        self.epsilon['v'] = 0.01
-        self.epsilon['deltav'] = 0.01
-        self.epsilon['beta'] = 0.01
-        self.epsilon['a'] = 0.01
-        #self.epsilon['j10'] = 0.01  #EDGAR
-        #self.epsilon['j20'] = 0.01  #EDGAR
-        self.epsilon['ff'] = 0.01
-        
-
-        self.jacobian['Bx'] = 1.0
-        self.jacobian['By'] = 1.0
-        self.jacobian['Bz'] = 1.0
-        self.jacobian['B'] = 1.0
-        self.jacobian['thB'] = 1.0
-        self.jacobian['phiB'] = 1.0
-        self.jacobian['tau'] = 1.0
-        self.jacobian['v'] = 1.0
-        self.jacobian['deltav'] = 1.0
-        self.jacobian['beta'] = 1.0
-        self.jacobian['a'] = 1.0
-        #self.jacobian['j10'] = 1.0   #EDGAR
-        #self.jacobian['j20'] = 1.0   #EDGAR
-        self.jacobian['ff'] = 1.0
-        
-
-        self.regularization['Bx'] = None
-        self.regularization['By'] = None
-        self.regularization['Bz'] = None
-        self.regularization['B'] = None
-        self.regularization['thB'] = None
-        self.regularization['phiB'] = None
-        self.regularization['tau'] = None
-        self.regularization['v'] = None
-        self.regularization['deltav'] = None
-        self.regularization['beta'] = None
-        self.regularization['a'] = None
-        #self.regularization['j10'] = None  #EDGAR
-        #self.regularization['j20'] = None  #EDGAR
-        self.regularization['ff'] = None
-        
 
     def select_coordinate_system(self):
         #EDGAR: if you choose one coordB, this pops the other one out
@@ -325,7 +171,7 @@ class Hazel_atmosphere(General_atmosphere):
 
         return B,thB,phiB,Bx,By,Bz #Bx,By,Bz can be deleted if not needed in the code 
 
-    def set_parameters(self, pars, ff=1.0,j10=None,j20f=None,m=None):
+    def set_parameters(self, pars, ff=1.0,j10=None,j20f=None,nbar=None,m=None):
         """
         Set the parameters of this model chromosphere
 
@@ -373,6 +219,12 @@ class Hazel_atmosphere(General_atmosphere):
                 if len(j20f)!=self.ntr:raise Exception('ERROR: j20f should have {0} elements'.format(self.ntr) )
                 self.j20f = np.array(j20f) #from list to array of doubles              
 
+        if (nbar is not None):#then overwrite its default zero value set above with self.j10=np.zeros(self.ntr)
+            if (type(nbar) is not list):
+                self.nbar = np.zeros(self.ntr)+ nbar #if not a list, assumed a number that sets array to j10 keyword
+            else:#is a list
+                if len(nbar)!=self.ntr:raise Exception('ERROR: nbar should have {0} elements'.format(self.ntr) )
+                self.nbar = np.array(nbar) #from list to array of doubles              
 
         
 
@@ -445,49 +297,31 @@ class Hazel_atmosphere(General_atmosphere):
             # else:                
                 # self.parameters[k] = self.reference[k]            
                             
-    def print_parameters(self, first=False, error=False): 
+    def print_parameters(self, first=False, error=False,pre='8.3f'): #EDGAR: now you can modify the precision at once here
         if (self.coordinates_B == 'cartesian'):
             self.logger.info("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}".format('Bx', 'By', 'Bz', 'tau', 'v', 'deltav', 'beta', 'a'))
-            self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.parameters['Bx'], self.parameters['By'], self.parameters['Bz'], self.parameters['tau'], 
-                self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a']))
+            self.logger.info("{0:{pp}}  {1:{pp}}  {2:{pp}}  {3:{pp}}  {4:{pp}}  {5:{pp}}  {6:{pp}}  {7:{pp}}".format(self.parameters['Bx'], self.parameters['By'], self.parameters['Bz'], self.parameters['tau'], 
+                self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a'],pp=pre))
             
             if (error):            
-                self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.error['Bx'], self.error['By'], self.error['Bz'], self.error['tau'], 
-                self.error['v'], self.error['deltav'], self.error['beta'], self.error['a']))
+                self.logger.info("{0:{pp}}  {1:{pp}}  {2:{pp}}  {3:{pp}}  {4:{pp}}  {5:{pp}}  {6:{pp}}  {7:{pp}}".format(self.error['Bx'], self.error['By'], self.error['Bz'], self.error['tau'], 
+                self.error['v'], self.error['deltav'], self.error['beta'], self.error['a'],pp=pre))
         
         if (self.coordinates_B == 'spherical'):
             self.logger.info("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}".format('B', 'thB', 'phiB', 'tau', 'v', 'deltav', 'beta', 'a'))
-            self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}".format(self.parameters['B'], self.parameters['thB'], self.parameters['phiB'], self.parameters['tau'], 
-                self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a']))
+            self.logger.info("{0:{pp}}  {1:{pp}}  {2:{pp}}  {3:{pp}}  {4:{pp}}  {5:{pp}}  {6:{pp}}".format(self.parameters['B'], self.parameters['thB'], self.parameters['phiB'], self.parameters['tau'], 
+                self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a'],pp=pre))
             
             if (error):            
-                self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.error['B'], self.error['thB'], self.error['phiB'], self.error['tau'], 
-                self.error['v'], self.error['deltav'], self.error['beta'], self.error['a']))
-        
-    def print_parameters_withJ10(self, first=False, error=False): 
-        if (self.coordinates_B == 'cartesian'):
-            self.logger.info("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}      {8}".format('Bx', 'By', 'Bz', 'tau', 'v', 'deltav', 'beta', 'a', 'j10'))
-            self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}  {7:8.3f}".format(self.parameters['Bx'], self.parameters['By'], self.parameters['Bz'], self.parameters['tau'], 
-                self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a'], self.parameters['j10']))
-            
-            if (error):            
-                self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}  {7:8.3f}".format(self.error['Bx'], self.error['By'], self.error['Bz'], self.error['tau'], 
-                self.error['v'], self.error['deltav'], self.error['beta'], self.error['a'], self.error['j10']))
-        
-        if (self.coordinates_B == 'spherical'):
-            self.logger.info("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}      {8}".format('B', 'thB', 'phiB', 'tau', 'v', 'deltav', 'beta', 'a', 'j10'))
-            self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.parameters['B'], self.parameters['thB'], self.parameters['phiB'], self.parameters['tau'], 
-                self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a'], self.parameters['j10']))
-            
-            if (error):            
-                self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}  {7:8.3f}".format(self.error['B'], self.error['thB'], self.error['phiB'], self.error['tau'], 
-                self.error['v'], self.error['deltav'], self.error['beta'], self.error['a'], self.error['j10']))
-        
+                self.logger.info("{0:{pp}}  {1:{pp}}  {2:{pp}}  {3:{pp}}  {4:{pp}}  {5:{pp}}  {6:{pp}}  {7:{pp}}".format(self.error['B'], self.error['thB'], self.error['phiB'], self.error['tau'], 
+                self.error['v'], self.error['deltav'], self.error['beta'], self.error['a'],pp=pre))
 
-    def synthazel(self,stokes=None, returnRF=False, nlte=None,epsout=None, etaout=None, stimout=None):
+
+    def synthazel(self,method,stokes=None, returnRF=False, nlte=None,epsout=None, etaout=None, stimout=None):
         """
         Carry out the synthesis and returns the Stokes parameters directly from python user main program.
         ----------Parameters----------
+        method = synthesis method for Hazel
         stokes : float
         An array of size [4 x nLambda] with the input Stokes parameter.                
         -------Returns-------
@@ -500,6 +334,8 @@ class Hazel_atmosphere(General_atmosphere):
             self.nodes_to_model()            
             self.to_physical()
         
+        self.spectrum.synmethods.append(method) #here method is already a number
+
         B1In = np.asarray([self.parameters['B'],self.parameters['thB'], self.parameters['phiB']])
         hIn = self.height
         tau1In = self.parameters['tau']
@@ -618,13 +454,13 @@ class Hazel_atmosphere(General_atmosphere):
         #for Helium and 2 for Sodium for instance, but this number was hardcoded to 4.
         #In addition omegaIn was wrong because it was put to zero, meaning no anisotropy,
         #while ones would mean that we use Allen for these pars.
-        #when different than 0.0 and 1.0 they are used as reduction factors in  hazel
-        nbarIn = np.ones(self.ntr) * ratio 
-
-        omegaIn = self.j20f #np.ones(self.ntr)    #np.zeros(4) 
+        #when different than 0.0 and 1.0 they are used as modulatory factors in  hazel
+        nbarIn = self.nbar * ratio #np.ones(self.ntr) * ratio
+        omegaIn = self.j20f #np.ones(self.ntr)    #Not anymore np.zeros(4) 
         j10In = self.j10   #remind j10 and j20f are vectors (one val per transition).
 
-        betaIn = self.parameters['beta']       
+        betaIn = self.parameters['beta']      
+
         #-------------------------------------------------
 
         dopplerWidthIn = self.parameters['deltav']
@@ -633,9 +469,9 @@ class Hazel_atmosphere(General_atmosphere):
         
         
         #Check where self.index is updated. It is index of current chromosphere,from 1 to n_chromospheres. 
-        args = (self.index, B1In, hIn, tau1In, boundaryIn, transIn, anglesIn, nLambdaIn,
+        args = (self.index, method, B1In, hIn, tau1In, boundaryIn, transIn, anglesIn, nLambdaIn,
             lambdaAxisIn, dopplerWidthIn, dampingIn, j10In, dopplerVelocityIn,
-            betaIn, nbarIn, omegaIn)
+            betaIn, nbarIn, omegaIn, self.atompol,self.magopt,self.stimem,self.nocoh,np.asarray(self.dcol) )
         
         #2D opt coeffs yet (not height dependent), for current slab self.index
         l,stokes,epsout,etaout,stimout,error = hazel_code._synth(*args)
