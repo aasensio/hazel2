@@ -233,7 +233,7 @@ subroutine c_hazel(index, synMethInput,B1Input, hInput, tau1Input, boundaryInput
     !   etaOutput(4,3,:) = -(mag_opt(1,:) - mag_opt_stim(1,:))
 
     !The folowing output is more useful, more compact 
-    !New block that requires to set up again the atomicPolInput parameter.
+    !Requires set up of the atomicPolInput parameter.
     !Note that inner optical coeffs start in index 0 while Out optical coeffs in 1.
     if (fixed(index)%use_atomic_pol==0)then !when no atompol case, we extract only zeeman coefs.
         do i = 1, 4
@@ -257,6 +257,10 @@ subroutine c_hazel(index, synMethInput,B1Input, hInput, tau1Input, boundaryInput
         enddo
     
     endif
+
+    !eta_i=eta^A_i - eta^S_i and idem for rho (rho_i=rho^A_i - rho^S_i)
+    !eta_i(1:4)=etaOut(1:4) - stimOut(1:4)
+    !rho_i(1:3)=etaOut(5:7) - stimOut(5:7)  
 !-----------------------------------------------------------------------------
 
     params(index)%dopplerVelocityInput_old = dopplerVelocityInput

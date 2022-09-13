@@ -13,9 +13,12 @@ import copy
 __all__ = ['Hazel_atmosphere']
 
 class Hazel_atmosphere(General_atmosphere):
-    def __init__(self, working_mode, name='', ntrans=0, hazelpars=[1,1,1,0,[0.,0.,0.]]):
+    def __init__(self, working_mode, name='', ntrans=0, hazelpars=None):
     
         super().__init__('chromosphere', name=name)
+
+        #check/init mutable keywords to avoid memory preservation among function/class calls
+        if hazelpars is None:hazelpars=[1,1,1,0,[0.,0.,0.]]
 
         self.height = 3.0
         self.working_mode = working_mode
@@ -30,9 +33,11 @@ class Hazel_atmosphere(General_atmosphere):
         #EDGAR: this is commented because we need to evaluate whether is possible
         #to do inversions with radiation field anisotropies for every transition
         #self.parameters['j10'],self.parameters['j20f'] = np.zeros(self.ntr) ,np.ones(self.ntr)  
-
         self.atompol,self.magopt,self.stimem,self.nocoh,self.dcol = hazelpars  #extract the pars for Hazel 
         
+        self.dna= {}#None #init memory of pars for doing mutations faster (it is updated in set_pars below)
+
+
         #EDGAR:much more compact way of initializing parameters
         keyparlist=['Bx','By','Bz','B','thB','phiB','tau','v','deltav','beta','a','ff'] #,'j10', 'j20f'
         unitslist=['G', 'G', 'G',  'G','deg','deg',  '', 'km/s','km/s', '',   '',  '']  #,'%'  , '' 
@@ -171,6 +176,17 @@ class Hazel_atmosphere(General_atmosphere):
 
         return B,thB,phiB,Bx,By,Bz #Bx,By,Bz can be deleted if not needed in the code 
 
+    def get_dna(self):
+        #extract dna of previous experiment in a way that is readable by set_pars directly
+        #j10, j20f, and nbar are stored before always as a list of ntrans elements
+                
+        #extract dna of atmosphere of previous experiment
+        pars=[val[1] for val in self.dna.items()][0:8]
+        kwds={'ff':self.dna['ff'],'j10':self.dna['j10'], 'j20f':self.dna['j20f'],'nbar': self.dna['nbar']}
+
+        return pars,kwds
+
+
     def set_parameters(self, pars, ff=1.0,j10=None,j20f=None,nbar=None,m=None):
         """
         Set the parameters of this model chromosphere
@@ -191,7 +207,6 @@ class Hazel_atmosphere(General_atmosphere):
         -------
         None
         """
-        
         self.parameters['B'],self.parameters['thB'],self.parameters['phiB'], \
         self.parameters['Bx'],self.parameters['By'],self.parameters['Bz']= \
         self.get_B_Hazel(pars[0],pars[1],pars[2]) 
@@ -212,21 +227,38 @@ class Hazel_atmosphere(General_atmosphere):
                 if len(j10)!=self.ntr:raise Exception('ERROR: j10 should have {0} elements'.format(self.ntr) )
                 self.j10 = np.array(j10) #from list to array of doubles              
 
-        if (j20f is not None):#then overwrite its default 1.0 value set above with self.j20f=np.zeros(self.ntr)
+        if (j20f is not None):#then overwrite its default 1.0 value set above
             if (type(j20f) is not list):
-                self.j20f = np.zeros(self.ntr)+ j20f #if not a list, assumed a number that sets array to j10 keyword
+                self.j20f = np.zeros(self.ntr)+ j20f #if not a list, assumed a number that sets array to j20f keyword
             else:#is a list
                 if len(j20f)!=self.ntr:raise Exception('ERROR: j20f should have {0} elements'.format(self.ntr) )
                 self.j20f = np.array(j20f) #from list to array of doubles              
 
-        if (nbar is not None):#then overwrite its default zero value set above with self.j10=np.zeros(self.ntr)
+        if (nbar is not None):#then overwrite its default 1.0 value set above
             if (type(nbar) is not list):
                 self.nbar = np.zeros(self.ntr)+ nbar #if not a list, assumed a number that sets array to j10 keyword
             else:#is a list
                 if len(nbar)!=self.ntr:raise Exception('ERROR: nbar should have {0} elements'.format(self.ntr) )
                 self.nbar = np.array(nbar) #from list to array of doubles              
 
-        
+
+        #CREATES DNA combining pars with ff,j10j20f,nbar
+        #AS LIST: add extra pars as lists to the pars list--> dna=pars.append(ff,list(self.j10),list(self.j20f),list(self.nbar)) 
+        #AS DICTIONARY with keys 'B1','B2','B3','tau','v','deltav','beta','a','ff', 'j10','j20f','nbar' 
+        #we are storing the last extrapars as introduced by user,  without the above modifications
+        self.dna['B1']=pars[0]
+        self.dna['B2']=pars[1]
+        self.dna['B3']=pars[2]
+        self.dna['tau']=pars[3]
+        self.dna['v']=pars[4]         #dna memory exposed to / required for future mutations
+        self.dna['deltav']=pars[5]
+        self.dna['beta']=pars[6]
+        self.dna['a']=pars[7]
+        self.dna['ff']=ff
+        self.dna['j10']=j10
+        self.dna['j20f']=j20f
+        self.dna['nbar']=nbar
+
 
         #EDGAR: I think this is not being used because ranges are defined to none above.
         # Check that parameters are inside borders by clipping inside the interval with a border of 1e-8
@@ -237,8 +269,8 @@ class Hazel_atmosphere(General_atmosphere):
         
 
     #alias to set_parameters.:
-    def set_pars(self, pars,ff=1.0,j10=None,j20f=None,m=None):
-        return self.set_parameters(pars,ff,j10=j10,j20f=j20f,m=m)
+    def set_pars(self, pars,ff=1.0,j10=None,j20f=None,nbar=None,m=None):
+        return self.set_parameters(pars,ff,j10=j10,j20f=j20f,nbar=nbar,m=m)
 
     def load_reference_model(self, model_file, verbose):
         """
@@ -466,8 +498,7 @@ class Hazel_atmosphere(General_atmosphere):
         dopplerWidthIn = self.parameters['deltav']
         dampingIn = self.parameters['a']
         dopplerVelocityIn = self.parameters['v']
-        
-        
+
         #Check where self.index is updated. It is index of current chromosphere,from 1 to n_chromospheres. 
         args = (self.index, method, B1In, hIn, tau1In, boundaryIn, transIn, anglesIn, nLambdaIn,
             lambdaAxisIn, dopplerWidthIn, dampingIn, j10In, dopplerVelocityIn,

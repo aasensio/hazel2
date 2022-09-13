@@ -614,7 +614,9 @@ contains
 ! Emissivity
 !		epsilon = PH * freq / (4.d0*PI) * Bul * (2.d0*PH*freq**3) / PC**2 * epsilon
 !		epsilon_zeeman = PH * freq / (4.d0*PI) * Bul * (2.d0*PH*freq**3) / PC**2 * epsilon_zeeman
-				
+		
+		!print*,(2.d0*PH*freq**3) / PC**2  
+
 		in_fixed%epsilon = (2.d0*PH*freq**3) / PC**2 * in_fixed%epsilon
 		in_fixed%epsilon_zeeman = (2.d0*PH*freq**3) / PC**2 * in_fixed%epsilon_zeeman
 

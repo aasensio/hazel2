@@ -1,6 +1,6 @@
 import hazel
 import matplotlib.pyplot as plt
-import sys
+import sys, gc
 
 
 '''
@@ -16,12 +16,12 @@ s0,sx=np.ones(nx),np.zeros(nx) #s0,sx= 1, 0 is also valid
 #------------------------------------------------
 #edic={'Atompol':1,'MO effects':1,'Stim. emission':1, 'Kill coherences':0,'dcol':[0.,0.,0.]}
 #dcol=[0.,0.,0.],extrapars=edic,'helium.atom' and verbose =0 are default
-mo = hazel.Model(mode='synthesis',atomfile='helium.atom',verbose=0,apmosenc='1110') 
+mo = hazel.Model(mode='synthesis',atomfile='helium.atom',verbose=0,apmosekc='1110') 
 '''
 ap-mo-se-nc --> atompol, magopt, stimem, nocoh = 1, 1, 1, 0  
 #nocoh =0 includes all coherences, set to level number to deactive cohs in it
 
-dcol=np.asarray([0.0,0.0,0.0])  #D^(K=1 and 2)=delta_collision, D^(K=1),D^(K=2)
+dcol=[0.0,0.0,0.0]  #D^(K=1 and 2)=delta_collision, D^(K=1),D^(K=2)
 
 synMode = 5 #Opt.thin (0), DELOPAR (3),  EvolOp (5)
 '''
@@ -62,25 +62,34 @@ the above boundary conditions are translated to the Hazel boundaryIn parameter i
 normalization to the I of the continuum. 
 
 '''
-mo.setup() 
+f,ax=mo.setup() 
 '''
 plt.close()
-f, ax = plt.subplots(2,2)	;ax = ax.flatten()
+#f, ax = plt.subplots(2,2)	;ax = ax.flatten()
 for j in range(5):
 	###PARS:(Bx/B,By/thB,Bz/phB,tau,v,deltav,beta,a).OPT kwds:ff(default 1.0),j10(default np.zeros(ntr)),j20f(default np.ones(ntr)),nbar(default np.ones(ntr))	
 	chs[0].set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.,0.,0.2,0.])#,j20f=[1e-2,2e-2,3e-2,4e-2], nbar=1.0)
 	chs[1].set_pars([20.*j,10.*j,10.*j,3.,0.,8.,1.,0.02],j10=[0.,0.,0.,0.])#,j20f=[1e-2,2e-2,3e-2,4e-2])
-	mo.synthesize() 
-	ax=mo.iplot_stokes(ax,'s1') #Interactive plot for loops
+	mo.synthesize(plot='s1',ax) #muAllen=1.0, method='EvolOp','Emissivity', plot=['s1',ax]
+	#ax=mo.iplot_stokes('s1',ax) #Interactive plot for loops
 plt.show()
 
 '''
 chs[0].set_pars([20.,10.,10.,3.,0.,7.,1.,0.02],j10=[0.,0.,0.1,0.1]) #,j10=[0.0,0.0],j20f=[1.0,1.0]
 chs[1].set_pars([20.,80.,10.,3.,6.,7.,1.,0.2],j10=[0.,0.,0.3,0.2])#j20f are factors with default to 1.0
-mo.synthesize() #method='EvolOp',muAllen=1.0
-ax=mo.plot_stokes('s1')  #NON-interactive plot (all plotting things are inside) 
+ax=mo.synthesize(plot=['s1',ax]) #muAllen=1.0, method='EvolOp','Emissivity', plot=['s1',ax]
+#synthesize can calculate many spectra but only plot one specified spectrum
+#ax=mo.plot_stokes('s1',ax=ax)  #NON-interactive plot (all plotting things are inside) 
 
 f,ax2=mo.plot_coeffs('s1')
+
+'''gestion de objetos en memoria con el garbache collector
+del mo
+print(gc.get_threshold())#gc.set_threshold(900, 15, 15)
+n = gc.collect(generation=1)
+print(n)
+'''
+
 
 #TBD:
 
@@ -274,22 +283,56 @@ Change keywords working_mode and atomf to mode and atomfile in call to hazel.Mod
 Improve and shorten the initialization of model object.
 Add precision keyword to print_parameters.
 
-Pass the parameters atompol,magopt,stimem, and nocoh (read in hazel.Model with apmosenc) 
+Pass the parameters atompol,magopt,stimem, and nocoh (read in hazel.Model with apmosekc) 
 to synthazel through normal arguments when calling Hazel_atmosphere from model/add_chromosphere.
 To do this I implemented two redudant ways, a compact one through the keyword 
-apmosenc(=Atom.Pol+Magn.Optical+Stim.Emiss.+NoCoherences)='1110' by default and 
+apmosekc(=Atom.Pol+Magn.Optical+Stim.Emiss.+NoCoherences)='1110' by default and 
 also introducing those pars with a dictionary for more verbosity and clarity.
 Add depolaring collisions parameters dcol=[double,double,double] to control total elastic depolarizing
 collisions(for K=1 and for K=2 together), depolarizing collisions (D^1_Q) only for multipoles K=1 
 and only for multipoles K=2(D^2_Q).
 Implement the action of all above parameters in SEE and optical coeffs.
-Delete old general fortran variables that are not used anymore.
-Pass the Hazel synthesis method to the model.synthesize routine
+Delete some old general fortran variables and routines that are not used anymore.
+Select the Hazel synthesis method, passing it to Hazel via add_spectrum (for all atmospheres) 
+and also redundantly via model.synthesize() for each atmosphere individually if required. Addition
+of Emissivity method and of the verification logic for reading and selecting different methods.   
+
+COMMIT 14-----------------------------------------------
+
+Update add_spectral (deprecated version still called when reading from file) 
+to be paired with add_spectrum. Introduce plotting capabilities in model.setup() and model.synthesize()
+routines, thus clearing the main python program of disturbing plotting comands. Add build_coeffs() for 
+obtaining the total optical coeffcients of the K matrix. Develop plotting routines
+of optical coefficients.
 
 ------------------------------------------------------------
-CAUTION:
-We are only plotting eta, improve plotting routines.
 
+COMMIT 15
+
+Model.mutates() assumes that chromospheres, magnetic field reference frame, and topologies 
+are already added and fixed, but accepts modifications (mutations) of some input parameters
+ of the previous experiment.The possible pars to mutate are:
+1)model pars: apmosekc,dcol
+2)chromosphere pars: B1,B2,B3,tau,v delta,beta,a,ff(check),j10,j20f,nbar.
+Future mutable parameters are :i0Allen, hz, LOS,boundary,synmethod. 
+Added improved plotting capabilities(optical coefficients,fractional polarization,comparison of mutations,
+axes labels,using and returning automatic figures and axes). The plotting code is encapsulated in four main
+routines: Model.synthesize(),Model.mutates(),Model.plot_coeffs(), and Model.fractional_polarization().      
+I could not add the capacity of plotting the windows in different positions because I cannot change my
+backend to anything different than MacOs.
+
+------------------------
+
+
+
+CAUTION:
+it seems that emissivisities are 5 orders of magnitude smaller than etas for all stokes parameters
+in the example that we are using in sodium tests. Is this ok or did I make a mistake when adding stimulated
+emission? CHECK 
+2hnu3/c2=2e-3 at NaD1 frequencies
+
+
+CAUTION:
 When only emissivity is calculated the continuum is to zero but we should still normalize
 all profile to Allen and add possibility of adding a background continuum also in the 
 case of only emissivity.
@@ -303,12 +346,10 @@ of the calculation(given by LOS). This is a bit inconsistent. Ask Andres which m
 CAUTION: in helium.atom el valor del nbar reduction factor de la transicion 2 esta puesto 
 a 0.2 en vez de a 1.0. Verificar si esto se sobreescribe luego en el codigo y preguntar a Andres
  por qué debe estar asi.
+
+CAUTION:for some reason I cannot access othe backends from Hazel conda environment
+I use MacOs backend. Qt5,Qt4, Wx, and TkAgg are not working.
 --
-
-
-
-Reintroduce  UseAtomicPol (which is set always to 1 in hazel_pz.f90) and similar parameters.
-Start to add all your Hazel1 changes to Hazel2.
 clean commments
 
 '''

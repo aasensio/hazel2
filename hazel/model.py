@@ -23,11 +23,42 @@ import logging
 import sys
 import matplotlib.pyplot as plt #EDGAR: Im placing plotting routines here, but is a bit ugly
 
+
+labdic = {'z1':r'$\mathrm{z \, [Mm]}$',
+        'tt':r'$\mathrm{T\,[kK]}$','tit':r'$\mathrm{Temperature}$',
+        'vdop':r'$\mathrm{V^{dop}_z \,[D.u.]}$',
+        'b':r'$\mathrm{|B| \,[G]}$','tb':r'$\mathrm{\theta_B \,[Degrees]}$',
+        'cb':r'$\mathrm{\chi_B \,[Degrees]}$',
+        'frokq':r'$\{\rho}^K_Q/\rho^0_0$',
+        'xx0':r'$\mathrm{\lambda-\lambda_0[{\AA}]}$',  
+        'xx':r'$\mathrm{\lambda[{\AA}]}$',  
+        'iic':r'$\mathrm{I/I_c}$','qi':r'$\mathrm{Q/I}$','ui':r'$\mathrm{U/I}$', 
+        'vi':r'$\mathrm{V/I}$','qic':r'$\mathrm{Q/I_c}$','uic':r'$\mathrm{U/I_c}$', 'vic':r'$\mathrm{V/I_c}$', 
+        'epsi':r'$\mathrm{\epsilon_I}$','epsq':r'$\mathrm{\epsilon_Q}$','epsu':r'$\mathrm{\epsilon_U}$',
+        'epsv':r'$\mathrm{\epsilon_V}$','etai':r'$\mathrm{\eta_I}$','etaq':r'$\mathrm{\eta_Q}$',
+        'etau':r'$\mathrm{\eta_U}$','etav':r'$\mathrm{\eta_V}$','rhoq':r'$\mathrm{\rho_Q}$',
+        'rhou':r'$\mathrm{\rho_U}$','rhov':r'$\mathrm{\rho_V}$'
+        }
+
+
+def mylab(lab):
+    return labdic.get(lab,lab) #return the input keyword string if lab is not in labdic
+
+'''
+def latex1(str):
+    return r'$\mathrm{z \,{0} [Mm]}$'.format(str) 
+'''
+
+
 __all__ = ['Model']
 
 class Model(object):
-    def __init__(self, config=None, mode='synthesis', atomfile='helium.atom',apmosenc='1110', dcol=[0.,0.,0.],
-        extrapars={}, verbose=0, debug=False, rank=0, randomization=None, root=''):
+    def __init__(self, config=None, mode='synthesis', atomfile='helium.atom',apmosekc='1110', dcol=None,
+        extrapars=None, verbose=0, debug=False,rank=0, randomization=None, plotit=False, root=''):
+
+        #check/init mutable keywords at starting to avoid having memory of them among function/class calls
+        if extrapars is None:extrapars={}
+        if dcol is None:dcol=[0.,0.,0.]
 
         np.random.seed(123)
         if (rank != 0):
@@ -43,40 +74,37 @@ class Model(object):
         #so the choice is to read ntrans from atom file: 
         #io_py.f90 ->hazel_py.f90 -> hazel_code.pyx -> init routine here in model.py
 
+        self.atomfile=atomfile #memory for mutations
+
         self.atomsdic={'helium':{'10830': 1, '3888': 2, '7065': 3,'5876': 4},
             'sodium':{'5895': 1, '5889': 2}} 
         
         self.multipletsdic={'helium':{'10830': 10829.0911, '3888': 3888.6046, '7065': 7065.7085, '5876': 5875.9663},
                             'sodium':{'5895': 5895.924, '5889': 5889.95}}
 
-        #------------------------------------
-        #Parameters in extrapars overwrite those in apmosenc.
-        #apmosenc and extrapars are mostly redudant on purpose. 
-        #apmosenc is much more compact but extrapars is there for who requires more readibility
-        #extrapars={'Atompol':1,'MO effects':1,'Stim. emission':1, 'Kill coherences':0,'dcol':[0.,0.,0.]}
+        self.apmosekc=apmosekc #memory for mutations, must be before get_apmosekcl
+        self.dcol=dcol #memory for mutations, must be before get_apmosekcl
 
-        apmosencl = [int(x) for x in apmosenc] #now is a list of atompol,magopt,stimem,nocoh
-        for elem in apmosencl[0:3]:
-            if (elem != 0) and (elem!=1):raise Exception("ERROR: apmosenc first values can only be zeros or ones")
-    
-        for kk,keyw in enumerate(['Atompol','MO effects','Stim. emission','Kill coherences']):
-            if (keyw in extrapars) and (extrapars[keyw]!=apmosencl[kk]):
-                apmosencl[kk]=extrapars[keyw]        
-                if (keyw!='Kill coherences') and (extrapars[keyw] != 0) and (extrapars[keyw]!=1):
-                    raise Exception("ERROR: firsts parameters in extrapars can only be zeros or ones")    
-        #EDGAR: we should also check that the nocoh value does not go beyond number of levels(pending)
-        if ('dcol' in extrapars):apmosencl.append(extrapars['dcol'])
-        else:apmosencl.append(dcol)
-        
-        self.apmosencl=apmosencl #is a list whose last element is other list with dcol
+        #apmosekcL is List whose last element is other list with dcol
+        self.apmosekcl=self.get_apmosekcl(apmosekc,dcol,extrapars) 
 
-        #tentative synthesis methods to be implemented
+        self.plotit=plotit
+        self.plotscale=3
+        self.labelf1='1'
+        self.labelf2='2'
+        self.labelf3='3'
+        self.f1=None
+        self.f3=None
+        self.ax1= None
+        self.ax3=None
+        self.lock_fractional=None
+
+        #synthesis methods to be implemented
         self.methods_dicT={0:'Emissivity',1:'Delo1',2:'Delo2',3:'Hermite',4:'Bezier',5:'EvolOp',6:'Guau'} 
         self.methods_dicS={'Emissivity':0,'Delo1':1,'Delo2':2,'Hermite':3,'Bezier':4,'EvolOp':5,'Guau':6} 
         self.methods_list=[ss for ss,tt in self.methods_dicS.items()] #list with only the names
         
-        self.synmethod=5 #default that can be changed by add_spectrum and /or by synthesize.
-
+        self.synmethod=5 #5 is default and can be changed by add_spectrum and /or by synthesize.
         #------------------------------------
         self.photospheres = []
         self.chromospheres = []
@@ -168,35 +196,496 @@ class Model(object):
                 tmp += '{0}: {1}\n'.format(l, par)
         return tmp
 
-    def plot_coeffs(self,sp,coeff='eta',par=None,ats=None):
-        f, ax = plt.subplots(nrows=2, ncols=2)  ;ax = ax.flatten()
-        if sp.isascii():sp=self.spectrum[sp]
-        if ats is None:ats=self.atmospheres 
+    def get_apmosekcl(self,apmosekc,dcol,extrapars):
+        '''
+        Parameters in extrapars overwrite those in apmosekc.
+        apmosekc and extrapars are mostly redudant on purpose. 
+        apmosekc is much more compact but extrapars is there for who requires more readibility
+        extrapars={'Atompol':1,'MO effects':1,'Stim. emission':1, 'Kill coherences':0,'dcol':[0.,0.,0.]}
+        '''
+        apmosekcl = [int(x) for x in apmosekc] #now is a list of atompol,magopt,stimem,nocoh
+        for elem in apmosekcl[0:3]:
+            if (elem != 0) and (elem!=1):raise Exception("ERROR: apmosekc first values can only be zeros or ones")
+        #EDGAR: we should also check that the nocoh value does not go beyond number of levels(pending)
+
+        for kk,keyw in enumerate(['Atompol','MO effects','Stim. emission','Kill coherences']):
+            if (keyw in extrapars) and (extrapars[keyw]!=apmosekcl[kk]):
+                apmosekcl[kk]=extrapars[keyw]        
+                if (keyw!='Kill coherences') and (extrapars[keyw] != 0) and (extrapars[keyw]!=1):
+                    raise Exception("ERROR: firsts parameters in extrapars can only be zeros or ones")    
         
-        if coeff =='eta':
-            for k,at in enumerate(ats):
-                for sto in range(4):ax[sto].plot(sp.wavelength_axis,sp.eta[k,sto,:])
+        if ('dcol' in extrapars):apmosekcl.append(extrapars['dcol'])
+        else:apmosekcl.append(dcol)
+
+        return apmosekcl
+
+    '''
+    #EDGAR: this routine will not work if the backend is not compatible. 
+    #By default I use MacOs backend, whose canvas does not have the window attribute.
+
+    def move_figure(self,f, x, y):
+        """Move figure's upper left corner to pixel (x, y)"""
+        backend = matplotlib.get_backend()
+        print(backend)
+        if backend == 'TkAgg':
+            f.canvas.manager.window.wm_geometry("+%d+%d" % (x, y))
+        elif backend == 'WXAgg':
+            f.canvas.manager.window.SetPosition((x, y))
+        else:
+            # This works for QT and GTK
+            # You can also use window.setGeometry
+            f.canvas.manager.window.move(x, y)
+    '''
+
+    def setup_set_figure(self,scale=3):
+        pscale=self.plotscale
+        if scale!=pscale:pscale=scale
+
+        plt.close('all')  
+        plt.rcParams.update({'font.size': pscale*2.4})
         
+        #fig, axs = plt.subplots(2, 2,figsize=(pscale*2,pscale*2))  
+        self.f1, ax = plt.subplots(2, 2,figsize=(pscale*2,pscale*2),label=self.labelf1)  
+        self.ax1 = ax.flatten()
+
+        #start_x, start_y, dx, dy = self.f1.figbbox.extents
+        #self.move_figure(self.f1,505,500)
+        
+
+    def toggle_visible(self, fig,visible=True):
+        fig.set_visible(not fig.get_visible()) #if invisible, make it visible, or viceversa
+        plt.draw()
+
+    def remove_fig(self,fig_id):
+        '''
+        plt.close(X) X can be:
+        *None*: the current figure
+        .Figure: the given .Figure instance
+        int: a figure number
+        str: a figure name
+        'all': all figures
+        '''
+        if (self.verbose >= 1):self.logger.info('Before removing_fig():',plt.get_figlabels()) #plt.get_fignums()
+        
+        plt.close(fig_id)
+        if self.f1 is not None:
+            self.f1.canvas.manager.close()
+            self.f1= None
+        
+        if (self.verbose >= 1):self.logger.info('After removing_fig():',plt.get_figlabels()) #plt.get_fignums()
+        
+        plt.draw()
+
+
+    def fractional_polarization(self,sp,scale=3,tf=4,ax=None,lab=['iic','qi','ui','vi']): 
+        '''
+        Compares fractional and not fractional polarization.
+        This routine is valid when fractional polarization is not implemented in synthesize_spectrum
+        '''
+        pscale=self.plotscale
+        if scale!=pscale:pscale=scale
+
+        plt.rcParams.update({'font.size': pscale*tf})
+        if type(sp) is not hazel.spectrum.Spectrum:sp=self.spectrum[sp]
+
+        if ax is None:
+            f, ax = plt.subplots(nrows=2, ncols=2,figsize=(pscale*2,pscale*2))  
+            ax = ax.flatten()
+
+        labs=[r'$P/I_c$',r'$P/I$']
+        
+        for i in range(4):
+            if i==0:
+                ax[i].plot(sp.wavelength_axis, sp.stokes[i,:],color='r')
+            else:
+                l1,=ax[i].plot(sp.wavelength_axis, sp.stokes[i,:],color='r')
+                l2,=ax[i].plot(sp.wavelength_axis, sp.stokes[i,:]/sp.stokes[0,:],color='k')
+                
+            ax[i].set_title(mylab(lab[i]))
+            if i>1:ax[i].set_xlabel(mylab('xx'))
+        
+        #f.legend(tuple(lines), tuple(labs), loc=(0.1,0.1), bbox_to_anchor=(0.1, 0.3))
+        plt.gcf().legend(tuple([l1,l2]), tuple(labs))#loc=(0.1,0.1), bbox_to_anchor=(0.1, 0.3))
+
+        plt.tight_layout()
         plt.show()
+        
+        return 
+
+
+    def plot_stokes(self,sp,scale=3,tf=4,fractional=False,lab=None): 
+        '''
+        Routine called by synthesize to plot stokes profiles either fractional 
+        or normalized to continuum 
+        '''
+        if fractional:lab=['iic','qi','ui','vi']
+        else:lab=['iic','qic','uic','vic']
+
+        pscale=self.plotscale
+        if scale!=pscale:pscale=scale
+
+        plt.rcParams.update({'font.size': pscale*tf})
+        if type(sp) is not hazel.spectrum.Spectrum:sp=self.spectrum[sp]
+
+        if self.ax1 is None:setup_set_figure()
+
+        for i in range(4): 
+            if i ==0:
+                self.ax1[i].plot(sp.wavelength_axis, sp.stokes[i,:])
+            else:
+                if fractional:self.ax1[i].plot(sp.wavelength_axis, sp.stokes[i,:]/sp.stokes[0,:])
+                else:self.ax1[i].plot(sp.wavelength_axis, sp.stokes[i,:])
+            
+            self.ax1[i].set_title(mylab(lab[i]))#,size=8 + 0.7*pscale)
+            if i>1:self.ax1[i].set_xlabel(mylab('xx'))#,size=8 +0.7*pscale)#,labelpad=lp)
+        
+        plt.tight_layout()
+        plt.show()
+        
+        return 
+
+
+    def plot_stokes_direct(self,sp,scale=3,tf=4,lab=None): 
+        '''
+        This plots stokes profiles normalized to continuum directly from spectrum object
+        without considering fractional polarization 
+        '''
+        if lab is None:lab=['iic','qic','uic','vic']
+
+        pscale=self.plotscale
+        if scale!=pscale:pscale=scale
+
+        plt.rcParams.update({'font.size': pscale*tf})
+        if type(sp) is not hazel.spectrum.Spectrum:sp=self.spectrum[sp]
+
+        if self.ax1 is None:setup_set_figure()
+
+        for i in range(4): 
+            self.ax1[i].plot(sp.wavelength_axis, sp.stokes[i,:])
+            self.ax1[i].set_title(mylab(lab[i]))#,size=8 + 0.7*pscale)
+            if i>1:self.ax1[i].set_xlabel(mylab('xx'))#,size=8 +0.7*pscale)#,labelpad=lp)
+        
+        plt.tight_layout()
+        plt.show()
+        
+        return 
+
+    def build_coeffs(self,sp,ats=None):
+        '''
+        eta_i=eta^A_i - eta^S_i and idem for rho (rho_i=rho^A_i - rho^S_i)
+        From fortran vars in hazel_py.f90:
+        !eta_i(1:4)=eta(1:4) - stim(1:4)  
+        !rho_i(1:3)=eta(5:7) - stim(5:7)  
+        From here: etas=sp.eta[aa,s,:]-sp.stim(aa,s,:) con s =0,1,2,3
+                   rhos=idem con s =4,5,6
+
+        Hazel build the total opt coeffs internally for the different 
+        synthesis methods but it does not store them in runtime. We do it now, at the end.
+        '''
+        #from string to hazel.spectrum.Spectrum 
+        if type(sp) is not hazel.spectrum.Spectrum:sp=self.spectrum[sp]
+
+        sp.etas=sp.eta[:,0:4,:]-sp.stim[:,0:4,:]
+        sp.rhos= np.zeros_like(sp.etas)
+        sp.rhos[:,1:4,:]=sp.eta[:,4:7,:]-sp.stim[:,4:7,:]
+
+        codic1={'epsi':sp.eps[:,0,:],'epsq':sp.eps[:,1,:],'epsu':sp.eps[:,2,:],'epsv':sp.stim[:,3,:],
+            'etai':sp.etas[:,0,:],'etaq':sp.etas[:,1,:],'etau':sp.etas[:,2,:],'etav':sp.etas[:,3,:],
+            'rhoq':sp.rhos[:,0,:],'rhou':sp.rhos[:,1,:],'rhov':sp.rhos[:,2,:]}
+
+        codic2={'eps':sp.eps,'etas':sp.etas,'rhos':sp.rhos}
+
+        return codic1,codic2 
+
+    def plot_coeffs(self,sp,coefs=None,par=None,ats=None,scale=2,figsize=None,tf=4):
+        if type(sp) is not hazel.spectrum.Spectrum:sp=self.spectrum[sp]
+        
+        pscale=self.plotscale
+        if scale!=pscale:pscale=scale
+
+        #----------------------------------
+        #EDGAR:consider only the atmospheres in sp.
+        #self.atms_in_spectrum[sp.name] --->. [['c0'], ['c1','c2']]
+        if ats is None:ats=self.atms_in_spectrum[sp.name]#ats=self.atmospheres
+
+        labs=[]
+        #get name of atmospheres in sp
+        for n, order in enumerate(self.atms_in_spectrum[sp.name] ): #n run layers along the ray
+            for k, atm_name in enumerate(order):  #k runs subpixels of topologies c1+c2                                                  
+                #at=self.atmospheres[atm]
+                labs.append(atm_name)
+        lines=[]
+        #----------------------------------
+        
+        cd,cd2=self.build_coeffs(sp) #set sp.etas and sp.rhos
+        #cds={**cd, **cd2} #merge the two dictionaries
+        
+        #font = {'family' : 'normal','weight' : 'bold', 'size'   : 22}
+        #matplotlib.rc('font', **font)
+        plt.rcParams.update({'font.size': pscale*tf})
+
+        if coefs is None:#default    
+            if figsize is not None:fs=figsize
+            else:fs=(pscale*4,pscale*3)
+            
+            lab=['epsi','epsq','epsu','epsv','etai','etaq','etau','etav','','rhoq','rhou','rhov']
+
+            alp=[1.,1.,1.] #make plots of MO terms transparent when not used in the calculation 
+            if self.apmosekcl[1]==0:alp[2]=0.3
+
+            f, ax = plt.subplots(nrows=3, ncols=4,figsize=fs,label=self.labelf2)
+            for cc,coef in enumerate(['eps','etas','rhos']):
+                for k,at in enumerate(ats):
+                    for sto in range(4):
+                        lx, =ax[cc,sto].plot(sp.wavelength_axis,cd2[coef][k,sto,:],alpha=alp[cc]) 
+                        ax[cc,sto].set_title(mylab(lab[4*cc+sto]))
+                        ax[cc,sto].set_xlabel(mylab('xx'))
+        
+                        if (sto==0) and (cc ==2):lines.append(lx)
+            f.legend(tuple(lines), tuple(labs), loc=(0.1,0.1), bbox_to_anchor=(0.1, 0.3))
+        else:
+            f, ax = plt.subplots(nrows=1, ncols=len(coefs),figsize=(pscale*len(coefs),pscale),label=self.labelf2)
+            for cc,coef in enumerate(coefs):
+                alp=1.#make plots of MO terms transparent when not used in the calculation 
+                if (self.apmosekcl[1]=='0' and coef[0:3]=='rho'):alp=0.3
+                if coef in cd:
+                    for k,at in enumerate(ats):
+                        ax[cc].plot(sp.wavelength_axis,cd[coef][k,:],alpha=alp)
+                        ax[cc].set_title(mylab(coefs[cc]))
+                        ax[cc].set_xlabel(mylab('xx'))
+
+                else:
+                    raise Exception("Names can only be epsi,epsq,epsu,epsv,etai,etaq,etau,etav,rhoq,rhou,or rhov.")
+
+        plt.tight_layout()
+        plt.show()
+
         return f,ax
-
-    def plot_stokes(self,sp):
-        if sp.isascii():sp=self.spectrum[sp]
-        plt.close()#to avoid accumulation of previous figures in memory 
-        f, ax = plt.subplots(nrows=2, ncols=2)  ;ax = ax.flatten()
-        for i in range(4):ax[i].plot(sp.wavelength_axis,sp.stokes[i,:])
-        plt.show()
-        return ax
-
-    def iplot_stokes(self,ax,sp): 
-        if sp.isascii():sp=self.spectrum[sp]
-        for i in range(4):ax[i].plot(sp.wavelength_axis, sp.stokes[i,:])
-        return ax
 
     def check_method(self,method):
         if (self.verbose >= 1):self.logger.info('Synthesis method : {0}'.format(method))
-        if method not in self.methods_list:raise Exception("I do not know that Synthesis method. Stopping.")
+        if method not in self.methods_list:raise Exception("I do not know that synthesis method. Stopping.")
 
+
+    def mutates(self,spec,parsdic=None,\
+        B1=None,B2=None,B3=None, tau=None,v=None,deltav=None, beta=None,a=None,ff=None,\
+        j10=None,j20f=None,nbar=None, \
+        apmosekc=None,dcol=None,compare=True,frac=None,fractional=False,ax=None):
+        '''
+        EDGAR: New routine to create mutations in the synthesis Model, such that one can repeat an experiment just changing
+        a few parameters from a previous synthesis. 
+        The versatility of reading pars both from parsdic and from keywords, and the checking of 
+        the pars as done originally when setting up the model, make this routine cumbersome.
+
+        apmosekc,dcol,ref_frame, hz  topology,los,boundary,, 
+        
+        Due to the Python behavior, newmo=self is just a reference assignment where both variable names 
+        point to the same object, it would only create newmo as a pointer to the object self, 
+        without truly performing an indepedent copy. For doing a copy of arrays one has np.copy(). 
+        For objects/dictionaries we have deepcopy. 
+     
+        Parsdic (and any other mutable type,lists or dictionaries) defined as keyword parameters
+        will no reset their values between function calls, so having memory of previous  mutates()
+        calls from main. If we do not want to use a DTO class or avoid parsdic, then we need to define its
+        default to None and make the following check at the beggining of this function. 
+        '''
+        if parsdic is None:parsdic={}
+
+        if frac is True:fractional=True #abreviated keyword for fractional
+
+        #EDGAR: Substitute next block by next line and check result
+        #keywords = dict(locals())#retrieve keywords as dictionary
+        #print(keywords)
+        #inefficient way of passing pars through keywords: by copying them to parsdic
+        #NOTE: apmosekc is introduced always as keyword, but the specific paraemters to which ap-mo-se-kc
+        #makes reference can also be specifically introduced via parsdic dictionary.
+        #that is why the four long keywords contained in extrapars_list are not considered in the next
+        #block to include them in parsdic, because they are already there and never as individual keywords
+        if apmosekc is not None:parsdic['apmosekc']=apmosekc
+        if dcol is not None:parsdic['dcol']=dcol
+        if B1 is not None:parsdic['B1']=B1
+        if B2 is not None:parsdic['B2']=B2
+        if B3 is not None:parsdic['B3']=B3
+        if tau is not None:parsdic['tau']=tau
+        if v is not None:parsdic['v']=v
+        if deltav is not None:parsdic['deltav']=deltav
+        if beta is not None:parsdic['beta']=beta
+        if a is not None:parsdic['a']=a
+        if ff is not None:parsdic['ff']=ff
+        if j10 is not None:parsdic['j10']=j10
+        if j20f is not None:parsdic['j20f']=j20f
+        if nbar is not None:parsdic['nbar']=nbar
+
+
+        #----these vars could be extracted out as global to avoid repetition--------
+        message="Unknown mutable parameter. The options are:  \n Atompol, MO effects,Stim. emission, Kill coherences, B1, B2, B3 ...{0}"
+
+        '''Identify Model object parameters to be changed. 
+        First, general parameters of the Model: apmosekc, dcol and their product apmosekcl'''
+        extrapars_list=['Atompol','MO effects','Stim. emission','Kill coherences']
+        #parameters of chromosphere objects
+        atmpars=['B1','B2','B3','tau','v','deltav','beta','a','ff','j10','j20f','nbar']
+        #parameters that can be mutated for now 
+        checkdictio={'apmosekc':None,'dcol':None,'Atompol':None,'MO effects':None,'Stim. emission':None,'Kill coherences':None,
+            'B1': None, 'B2': None, 'B3': None,'tau':None,'v':None,'deltav':None,'beta':None,
+            'a':None,'ff':None,'j10':None,'j20f':None,'nbar':None}
+        #------------------------------------------------------------------------------------------------
+        extrapars={}
+        mutating_keys=[]
+
+        newmo= copy.deepcopy(self) #here we are already copying the spectrum objects inside spectrum
+        
+        '''kill ghost figure f1 appearing when replicating the model object.
+        Closes eventual open figures/axes to avoid the deep copy of the object plot axes.
+        otherwise, an ugly copy of the figure in self.ax0 will pop up when calling again a plt.show''' 
+        if newmo.f1 is not None:
+            newmo.f1.set_label('deletef1')
+            newmo.remove_fig('deletef1')#newmo.f1)
+        if newmo.f3 is not None:
+            newmo.f3.set_label('deletef3')
+            newmo.remove_fig('deletef3')#newmo.f1)
+
+
+        if (len(parsdic)!=0): #if parsdic is not empty (default is {}) we shall ignore mutation keywords!
+            #write a list of all possible parameters and check whether the inputs are compatible/valid
+            for elem in parsdic:
+                if (elem not in checkdictio):raise Exception(message.format(elem))
+
+            apmosekc=self.apmosekc
+            dcol=self.dcol
+            #build the extrapars dictionary (if its keywords are in parsdic) to call get_apmosekcl()
+            for elem in extrapars_list:
+                if (elem in parsdic):extrapars[elem]=parsdic[elem]
+            #if (len(extrapars)!=0) or ('apmosekc' in parsdic)
+            if ('apmosekc' in parsdic):apmosekc=parsdic['apmosekc']
+            if ('dcol' in parsdic):dcol=parsdic['dcol']
+            if (len(extrapars)!=0) or ('apmosekc' in parsdic) or ('dcol' in parsdic):#update self.apmosekcl
+                newmo.apmosekcl=newmo.get_apmosekcl(apmosekc,dcol,extrapars)
+                #newmo.apmosekcl=self.get_apmosekcl(apmosekc,dcol,extrapars)
+
+            for key in atmpars:#key=[atm_number,value]#key value. list mutating keys for atmospheres
+                if (key in parsdic):mutating_keys.append(key) #ONLY FOR ATM PARS!
+
+        else:#then we shall read mutation pars only from keywords
+            if (apmosekc is not None) or (dcol is not None): #if one of them must be updated
+                if (apmosekc is None):apmosekc=self.apmosekc #let the other as in original model
+                if (dcol is None):dcol=self.dcol              #let the other as in original model
+                newmo.apmosekcl=newmo.get_apmosekcl(apmosekc,dcol,{}) #and update + check
+                #newmo.apmosekcl=self.get_apmosekcl(apmosekc,dcol,{}) #and update + check
+
+            #if (B1 is not None):mutating_keys.append(B1)
+
+        #--------------------------------------------------------------------------------
+        #Close and reopen Hazel seems to be necessary in order to properly detect the
+        #updated values of j10,j20f,and nbar 
+        newmo.exit_hazel()   
+        newmo.ntrans=hazel_code._init(self.atomfile,0) #We initialize pyhazel (and setup self.ntrans) with verbose=0 
+
+        if type(spec) is not hazel.spectrum.Spectrum:spec=self.spectrum[spec]
+        '''        
+        original spectrum was already duplicated when duplicated de Model object. 
+        Here we just get a pointer to it maintaining the name of spectrum 
+        '''
+        newspec=newmo.spectrum[spec.name] #just for shortening sintaxis
+        '''
+        Here we decide to leave same name, but we make here explicit how to proceed otherwise.
+        If we wish to change the name of the new spectrum in the new object
+        we have to change it everywhere (in self.topologies and in atms_in_spectrum):
+        '''
+        newspecname=spec.name #same name
+        #substitute the key spec.name by newspecname in all dictionaries:
+        newmo.spectrum[newspecname]= newmo.spectrum.pop(spec.name) 
+        newmo.atms_in_spectrum[newspecname]= newmo.atms_in_spectrum.pop(spec.name)
+        newmo.topologies[newspecname]= newmo.topologies.pop(spec.name) #{'sp1':'ch1->ch2'}
+       
+        '''Now we reset spectrum without calling model.add_spectrum again (inefficient).
+        We only need to reset the optical coeffs and stokes, and change few pars in 
+        spectrum object: LOS, BOUNDARY.'''        
+
+        #spectrum.add_spectrum (NOT model.add_spectrum) to reset spectrum
+        wvl=newspec.wavelength_axis
+        wvl_lr=newspec.wavelength_axis_lr 
+        wvl_range = [np.min(wvl), np.max(wvl)]#used below
+        newspec.add_spectrum(newmo.nch, wvl, wvl_lr)#reset stokes, eps, eta, stim, etas, rhos
+        '''
+        We could directly modify hazelpars in atmopsheres(with this line in
+        chromosphere.py: self.atompol,self.magopt,self.stimem,self.nocoh,self.dcol = hazelpars) 
+        without updating apmosekcl in model, but we take advantage of update in Model to make input checks
+        '''
+        if (self.verbose >= 1):self.logger.info('Mutating atmospheric pars...')
+        #run over the existing atmospheres of this spectrum topology and set pars
+        for n, order in enumerate(newmo.atms_in_spectrum[newspecname] ): #n run layers along the ray
+            for k, atm in enumerate(order):  #k runs subpixels of topologies c1+c2                                                  
+                at=newmo.atmospheres[atm]
+
+                """
+                Activate this spectrum with add_active_line for all existing atmospheres.
+                In normal setup, activate_lines is called after adding all atmospheres in topology.
+                """         
+                at.add_active_line(spectrum=newspec, wvl_range=np.array(wvl_range))
+
+                #SET HAZELPARS: self.atompol,self.magopt,self.stimem,self.nocoh,self.dcol = hazelpars                
+                at.atompol,at.magopt,at.stimem,at.nocoh,at.dcol = newmo.apmosekcl 
+                #print(at.atompol,at.magopt,at.stimem,at.nocoh,at.dcol)
+
+                #key=[atm_number,value]#key value. Produce mutation updating atm.dna[key]            
+                for key in mutating_keys:#print(key,parsdic[key][0],parsdic[key][1])
+                    #if in selected layer mutate one layer at a time for every parameter,
+                    #but layer can be different among parameters
+                    if (parsdic[key][0]==n+k):at.dna[key]=parsdic[key][1] #mutates dna.  #print(key,n+k)
+                pars,kwds=at.get_dna() #get updated dna pars of this single atmosphere                     
+                at.set_pars(pars,**kwds)#ff=at.atm_dna[8],j10=at.atm_dna[9],j20f=at.atm_dna[10],nbar=at.atm_dna[11]) 
+                        
+        #--------------------------------------------------------------------------------
+        #Synthesize the new spectrum FROM the new model object:
+        newmo.synthesize(method=self.methods_dicT[newmo.synmethod],muAllen=newmo.muAllen,obj=self)
+        if (self.verbose >= 1):self.logger.info('Spectrum {0} has mutated.'.format(spec.name))
+        
+        if (compare is True):self.compare_mutation(spec,newspec,fractional=fractional) 
+        
+        return newmo,newspec
+
+
+    def compare_mutation(self,sp,newsp,scale=3,tf=2.4,ls='dashed',fractional=False,
+        lab=['iic','qic','uic','vic']):
+
+        #all plots in compare_mutation will always be done with the fractional keyword set 
+        #in the very first call to mutates and compare_mutation in main to avoid ill comparisons.
+        if self.lock_fractional is None:self.lock_fractional=fractional
+        else:fractional=self.lock_fractional
+
+        if fractional:lab=['iic','qi','ui','vi']
+        else:lab=['iic','qic','uic','vic']            
+
+        #font = {'family' : 'normal','weight' : 'bold', 'size'   : 22}
+        #matplotlib.rc('font', **font)
+        pscale=self.plotscale
+        if scale!=pscale:pscale=scale
+        plt.rcParams.update({'font.size': pscale*tf})
+        
+        if self.ax3 is None:#create and arrange axes, plot old spectra
+            self.f3, ax = plt.subplots(2,2,figsize=(pscale*2,pscale*2),label=self.labelf3)#'Mutations (Model.ax2)')  
+            self.ax3 = ax.flatten()    
+
+            #to make it alwayss visible , the original first one is plot last one with dashed black line 
+            self.ax3[0].plot(sp.wavelength_axis,sp.stokes[0,:],linestyle=ls,color='k')
+        
+            for i in range(1,4):
+                if fractional:self.ax3[i].plot(sp.wavelength_axis,sp.stokes[i,:]/sp.stokes[0,:],linestyle=ls,color='k')
+                else:self.ax3[i].plot(sp.wavelength_axis,sp.stokes[i,:],linestyle=ls,color='k')
+            
+            for i in range(4):
+                self.ax3[i].set_title(mylab(lab[i]))#,size=8 + 0.7*pscale)
+                if i>1:self.ax3[i].set_xlabel(mylab('xx'))#,size=8 +0.7*pscale)#,labelpad=lp)
+
+        #plot mutated spectra
+        self.ax3[0].plot(newsp.wavelength_axis,newsp.stokes[0,:])
+        for i in range(1,4):
+            if fractional:self.ax3[i].plot(newsp.wavelength_axis,newsp.stokes[i,:]/newsp.stokes[0,:])
+            else:self.ax3[i].plot(newsp.wavelength_axis,newsp.stokes[i,:])
+
+        plt.tight_layout()
+        plt.show()
 
     def use_configuration(self, config_dict):
         """
@@ -485,6 +974,10 @@ class Model(object):
         #if (self.verbose >= 1):#EDGAR: print number of Hazel chromospheres/slabs
         #    self.logger.info('N_chromospheres',self.n_chromospheres)
 
+        #if self.plotit:
+        self.setup_set_figure() #self.fig and self.ax are created here
+        
+        #return f,ax
         #return self.n_chromospheres
 
     def open_output(self):
@@ -499,25 +992,34 @@ class Model(object):
             self.flatten_parameters_to_reference(cycle=0)        
         self.output_handler.write(self, pixel=0, randomization=randomization)
 
+
     def add_spectrum(self, name, config=None, wavelength=None, topology=None, los=None, 
         i0fraction=1.0,boundary=None, atom=None, synmethod=None,
         linehazel=None, linesSIR=None, atmos_window=None, instrumental_profile=None,
         wavelength_file=None, wavelength_weight_file=None,observations_file=None, mask_file=None,
-        weights_stokes_i=[None]*10,weights_stokes_q=[None]*10,weights_stokes_u=[None]*10,weights_stokes_v=[None]*10):
+        weights_stokes_i=None,weights_stokes_q=None,weights_stokes_u=None,weights_stokes_v=None):
         """
         Similar to add_spectral but with keywords and more compact.
         Programmatically add a spectral region
         """
-        value = dict(locals()) #CAUTION: this must be the first line to retrieve keywords as dictionary
+        #init keywords that are mutable types : before they were directly inittialized to [None]*10
+        #in header, which prevents resetting between function calls 
+        if weights_stokes_i is None:weights_stokes_i=[None]*10
+        if weights_stokes_q is None:weights_stokes_q=[None]*10
+        if weights_stokes_u is None:weights_stokes_u=[None]*10
+        if weights_stokes_v is None:weights_stokes_v=[None]*10
+
+        value = dict(locals()) #retrieve keywords as dictionary
         value['name'] =name #we add the positional argument "name" to the dictionary
 
-        #EDGAR: remember that this if block can be deleted if we decide to use the same names 
+        #EDGAR: this if block can be deleted if we decide to use the same names 
         #for the config file keywords as for the keywords of the subroutine.
         #Map from config file keywords to compact names in this subroutine. 
         #Case insensitive because that was tackled when reading file
         #In config file we should only define the keywords that we want different than None
         #config is old "value" dictionary read from config file and containing all arguments of this subroutine
         if (config is not None):
+            #for k, val in config.items(): --> you run over dictionary elements faster with this            
             if ('Wavelength' in config):wavelength=config['Wavelength']
             if ('topology' in config):topology=config['topology']
             if ('LOS' in config):los=config['LOS']
@@ -693,6 +1195,7 @@ class Model(object):
 
         #Count chromospheres for defining optical coeffs containers, now that all atmospheres have been added
         self.nch=0  #n_chromospheres=0    
+        #careful:is this the number of chromospheres added or the number associated to spectrum??
         for k, atm in self.atmospheres.items():            
             if (atm.type == 'chromosphere'):self.nch += 1 #should be equal to self.n_chromospheres.
 
@@ -746,7 +1249,8 @@ class Model(object):
         """
         Programmatically add a spectral region  
 
-        EDGAR:In future versions this subroutine could be exchanged by add_spectrum
+        EDGAR:In future versions this subroutine could be deleted in exchange to add_spectrum, which shorter
+        and more efficient. Then, remember to call add_spectrum when reading experiment from file.
 
         Parameters
         ----------
@@ -754,7 +1258,7 @@ class Model(object):
         spectral : dict
             Dictionary containing the following data
             'Name', 'Wavelength', 'Topology', 'Weights Stokes', 'Wavelength file', 'Wavelength weight file',
-            'Observations file', 'Mask file','i0fraction'
+            'Observations file', 'Mask file','i0fraction','Boundary', 'Synmethod'
 
         Returns
         -------
@@ -776,7 +1280,7 @@ class Model(object):
         #----EDGAR:much shorter way of checking default values------------- 
         defaultdic={'wavelength file':None,'wavelength weight file':None,'observations file':None,
         'stokes weights':None,'mask file':None,'los':None, 'boundary':None,'i0fraction':1.0,
-        'instrumental profile':None}#by default i0fraction must be 1.0
+        'instrumental profile':None,'synmethod':None}#by default i0fraction must be 1.0
 
         for key in defaultdic:value=check_key(value,key,defaultdic[key])
         #-----------------------------------------------------------
@@ -890,6 +1394,11 @@ class Model(object):
                     self.logger.info('  - Using spectral profiles in boundary conditions')
                     if (value['boundary'][0,0] == 0.0):self.logger.info('  - Using off-limb normalization (peak intensity)')          
             boundary = value['i0fraction']*np.array(value['boundary']).astype('float64')#gives array([1.0,0.0,0.0,0.0]) or array of (4,Nwavelength) 
+
+        if (value['synmethod'] is not None) and (value['synmethod'] != self.methods_dicT[self.synmethod] ):
+            self.check_method(value['synmethod']) #synmethod is a string with name, self.synmethod is the number
+            self.synmethod=self.methods_dicS[value['synmethod']] #update self.synmethod with the number
+
         #----------------------
 
         stokes_weights = []
@@ -936,7 +1445,7 @@ class Model(object):
             name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, 
             mask_file=mask_file, instrumental_profile=value['instrumental profile'], 
             root=self.root, wvl_lr=wvl_lr,lti=self.line_to_index,lineHazel=lineH,lineSIR=lineS,
-            n_chromo=self.nch)
+            n_chromo=self.nch, synmethod=self.synmethod)
         #we send line_to_index and lines to be activated to this Spectrum object for accessing them later from everywhere
         #we could then remove self.line_to_index from here
         #and we could now remove all what has to do with spectrum from add_chromosphere and add_photosphere
@@ -1125,7 +1634,7 @@ class Model(object):
         atm = hazel.util.lower_dict_keys(atmosphere)
 
         self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, \
-        name=atm['name'],ntrans=self.ntrans,hazelpars=self.apmosencl)#EDGAR:,atom=atm['atom'])
+        name=atm['name'],ntrans=self.ntrans,hazelpars=self.apmosekcl)#EDGAR:,atom=atm['atom'])
 
         #------------------------------------------------------------------------
         """EDGAR now you can DELETE THIS BLOCK
@@ -1564,10 +2073,11 @@ class Model(object):
                 sir_code.init(v.index, nblend, lines, atom, istage, wvl, zeff, energy, loggf,
                     mult1, mult2, design1, design2, tam1, tam2, alfa, sigma, lambda0, lambda1, n_steps)
 
+    #EDGAR: BUG the exit function defined in pyx file had an undersacore. Now it works
     def exit_hazel(self):
         for k, v in self.atmospheres.items():            
             if (v.type == 'chromosphere'):
-                hazel_code.exit(v.index)
+                hazel_code._exit(v.index) 
 
     def add_topology(self, atmosphere_order,specname):
         """
@@ -1687,7 +2197,7 @@ class Model(object):
                     print("WARNING: Filling factors of layer {0} do not add up to one. Assuming iso-contribution.".format(n))            
                     for k, atm in enumerate(order):self.atmospheres[atm].parameters['ff']=1.0/len(order)
 
-    def synthesize_spectrum(self, spectral_region, method,perturbation=False, stokes=None,stokes_out = None):
+    def synthesize_spectrum(self, spectral_region, method,perturbation=False, stokes=None,stokes_out = None,fractional=False):
         """
         Synthesize all atmospheres of a spectral region and normalize to continuum of quiet Sun at disk center
         Photospheres must be first lower and unique, stray atms should be always last higher
@@ -1699,6 +2209,7 @@ class Model(object):
         perturbation : bool
             True if you are synthesizing with a perturbation. Then, the synthesis
             is saved in spectrum.stokes_perturbed instead of spectrum.stokes
+        fractional: to calculate emergent Stokes profiles as normalized to continuum or as divided by I(lambda)
         --------------------------------
         for a topology c0->c1+c2 the following inside the loops  gives:
         print(self.atms_in_spectrum[spectral_region])  #0 , [['c0'], ['c1','c2']] #all the chain of atmospehres
@@ -1730,9 +2241,12 @@ class Model(object):
                     #-------------------------------------------------------------------
         i0=hazel.util.i0_allen(np.mean(asp.wavelength_axis[xbot:xtop]), self.muAllen)  #at mean wavelength
         #i0=hazel.util.i0_allen(asp.wavelength_axis[xbot:xtop], self.muAllen)[None,:] #at each wavelength
-        if (self.use_analytical_RF):#CHECK this is ok out of the loop
+        if (self.use_analytical_RF):#EDGAR CAUTION: verify this is ok out of the loop 
             for k, v in self.rf_analytical.items():
-                if (k != 'ff'):v /= i0
+                if (k != 'ff'):v /= i0  #EDGAR CAUTION: fractional keyword does not affect here
+
+        if fractional:i0=stokes[0,:] #when fractional, P(lambda)/I(lambda) will be stored in spectrum object
+        
         if (perturbation):asp.stokes_perturbed[:,xbot:xtop] = stokes/ i0
         else:asp.stokes[:,xbot:xtop] = stokes/ i0
 
@@ -1802,7 +2316,7 @@ class Model(object):
 
                         if (self.use_analytical_RF):
                             for k, v in self.rf_analytical.items():
-                                if (k != 'ff'):v /= i0
+                                if (k != 'ff'):v /= i0 
 
                         if (perturbation):asp.stokes_perturbed[:, ind_low:ind_top] = stokes / i0#[None,:]
                         else:asp.stokes[:, ind_low:ind_top] = stokes / i0#[None,:]
@@ -1820,7 +2334,7 @@ class Model(object):
         if (self.verbose >= 1):
             self.logger.info('Setting NLTE for Ca II 8542 A to {0}'.format(self.use_nlte))
 
-    def synthesize(self, perturbation=False, method=None,muAllen=1.0):
+    def synthesize(self, perturbation=False, method=None,muAllen=1.0,frac=None,fractional=False,obj=None,plot=None,ax=None):
         """
         Synthesize all atmospheres
 
@@ -1835,15 +2349,20 @@ class Model(object):
         None
 
         """
+        if frac is True:fractional=frac #abreviated keyword to fractional
+
         self.muAllen=muAllen #mu where Allen continuum shall be taken for normalizing Stokes output 
 
         if (method is not None) and (method != self.methods_dicT[self.synmethod]):
+            #print(method,self.methods_dicT[self.synmethod])
             print('Changing synthesis method to {0}.'.format(method))
             self.check_method(method)
             self.synmethod=self.methods_dicS[method]#pass from string label to number label and update self
 
         #EDGAR: WARNING,I think normalize_ff was not working for the synthesis. 
-        if (self.working_mode == 'inversion'):self.normalize_ff()
+        if (self.working_mode == 'inversion'):
+            self.normalize_ff()
+            fractional=False #always work with Stokes/Icont in inversions.
 
         for k, v in self.spectrum.items():#k is name of the spectrum or spectral region
             #EDGAR: checking correct filling factors in composed layers
@@ -1851,7 +2370,11 @@ class Model(object):
             self.check_filling_factors(k)
             
             #self.synthesize_spectral_region(k, perturbation=perturbation)  #OLD          
-            self.synthesize_spectrum(k, self.synmethod,perturbation=perturbation)   #EDGAR NEW         
+            self.synthesize_spectrum(k, self.synmethod,perturbation=perturbation)   #EDGAR NEW
+            #we never call synthesize with fractional=True to avoid storing the fractional
+            #polarization in spectrum and thus avoid possible mistakes
+            #the fractional polarization shall only be shown in plotting
+
             if (v.normalization == 'off-limb'):
                 if (perturbation):
                     v.stokes_perturbed /= np.max(v.stokes_perturbed[0,:])
@@ -1871,7 +2394,17 @@ class Model(object):
                         v.stokes_perturbed_lr[i,:] = np.interp(v.wavelength_axis_lr, v.wavelength_axis, v.stokes_perturbed[i,:])
                     else:                        
                         v.stokes_lr[i,:] = np.interp(v.wavelength_axis_lr, v.wavelength_axis, v.stokes[i,:])                    
-                            
+
+            
+            if (plot is not None):#plot called inside loops
+                if (k == plot):self.plot_stokes(plot,fractional=fractional)
+            else:#plot is None because synthesize routine was called without intention of plotting or from mutation
+                if obj is None:self.remove_fig(self.labelf1)#self.f1)
+                
+            
+            
+        #return ax
+
     def find_active_parameters(self, cycle):
         """
         Find all active parameters in all active atmospheres in the current cycle

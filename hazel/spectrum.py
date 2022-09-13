@@ -20,6 +20,8 @@ class Spectrum(object):
         self.eps = None  #EDGAR
         self.eta = None
         self.stim = None
+        self.etas = None#total coeffs
+        self.rhos = None#total coeffs
         self.ntrans=0
 
         self.pixel = 0
@@ -134,7 +136,11 @@ class Spectrum(object):
         self.eps = np.zeros((nch,4,len(wvl))) 
         self.eta = np.zeros((nch,7,len(wvl))) 
         self.stim = np.zeros((nch,7,len(wvl))) 
-        
+
+        #only used at the end of the calculation when building the total opt coeffs for output
+        self.etas=np.zeros((nch,4,len(wvl))) 
+        self.rhos = np.zeros((nch,3,len(wvl)))
+
         self.stray = np.zeros((4,len(wvl)))
         self.obs = np.zeros((4,len(wvl)))
         self.noise = np.zeros((4,len(wvl)))
