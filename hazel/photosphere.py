@@ -128,13 +128,14 @@ class SIR_atmosphere(General_atmosphere):
         for l in lines[:-1]:
             print(l[:-1])
 
-    def add_active_line(self, lines, spectrum, wvl_range, verbose):
+    def add_active_line(self, spectrum, wvl_range, verbose):
+        #def add_active_line(self, lines, spectrum, wvl_range, verbose):
         """
         Add an active lines in this atmosphere
         
         Parameters
         ----------
-        lines : str
+        lines : str  ---> we removed lines because is already contained in spectrum as self.lineSIR
             Line to activate
         spectrum : Spectrum
             Spectrum object
@@ -147,7 +148,7 @@ class SIR_atmosphere(General_atmosphere):
     
         """
         
-        self.lines = lines        
+        self.lines = spectrum.lineSIR        
         self.wvl_range_lambda = wvl_range
 
         ind_low = (np.abs(spectrum.wavelength_axis - wvl_range[0])).argmin()

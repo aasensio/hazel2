@@ -21,18 +21,91 @@ import scipy.optimize
 import warnings
 import logging
 import sys
+import matplotlib.pyplot as plt #EDGAR: Im placing plotting routines here, but is a bit ugly
+
+
+labdic = {'z1':r'$\mathrm{z \, [Mm]}$',
+        'tt':r'$\mathrm{T\,[kK]}$','tit':r'$\mathrm{Temperature}$',
+        'vdop':r'$\mathrm{V^{dop}_z \,[D.u.]}$',
+        'b':r'$\mathrm{|B| \,[G]}$','tb':r'$\mathrm{\theta_B \,[Degrees]}$',
+        'cb':r'$\mathrm{\chi_B \,[Degrees]}$',
+        'frokq':r'$\{\rho}^K_Q/\rho^0_0$',
+        'xx0':r'$\mathrm{\lambda-\lambda_0[{\AA}]}$',  
+        'xx':r'$\mathrm{\lambda[{\AA}]}$',  
+        'iic':r'$\mathrm{I/I_c}$','qi':r'$\mathrm{Q/I}$','ui':r'$\mathrm{U/I}$', 
+        'vi':r'$\mathrm{V/I}$','qic':r'$\mathrm{Q/I_c}$','uic':r'$\mathrm{U/I_c}$', 'vic':r'$\mathrm{V/I_c}$', 
+        'epsi':r'$\mathrm{\epsilon_I}$','epsq':r'$\mathrm{\epsilon_Q}$','epsu':r'$\mathrm{\epsilon_U}$',
+        'epsv':r'$\mathrm{\epsilon_V}$','etai':r'$\mathrm{\eta_I}$','etaq':r'$\mathrm{\eta_Q}$',
+        'etau':r'$\mathrm{\eta_U}$','etav':r'$\mathrm{\eta_V}$','rhoq':r'$\mathrm{\rho_Q}$',
+        'rhou':r'$\mathrm{\rho_U}$','rhov':r'$\mathrm{\rho_V}$'
+        }
+
+
+def mylab(lab):
+    return labdic.get(lab,lab) #return the input keyword string if lab is not in labdic
+
+'''
+def latex1(str):
+    return r'$\mathrm{z \,{0} [Mm]}$'.format(str) 
+'''
 
 
 __all__ = ['Model']
 
 class Model(object):
-    def __init__(self, config=None, working_mode='synthesis', verbose=0, debug=False, rank=0, randomization=None, root=''):
+    def __init__(self, config=None, mode='synthesis', atomfile='helium.atom',apmosekc='1110', dcol=None,
+        extrapars=None, verbose=0, debug=False,rank=0, randomization=None, plotit=False, root=''):
+
+        #check/init mutable keywords at starting to avoid having memory of them among function/class calls
+        if extrapars is None:extrapars={}
+        if dcol is None:dcol=[0.,0.,0.]
 
         np.random.seed(123)
-
         if (rank != 0):
             return
+
+        #EDGAR: dictionary of dictionaries with possible atoms and lines with their indexes for HAZEL atmospheres and spectra        
+        #A variation of this dict to add more atoms and lines requires to do similar changes in 
+        #multiplets dict in general_atmosphere object (atmosphere.py). 
+        #It'd be more elegant to encapsulate all together in atomsdic.
+        #From here we could also extract the number of transitions as len(self.multipletsdic[atom]).
+        #However that would be a redundancy with respect to the data in the atom files,
+        #and furthermore ntrans must be read at the very beginning before initializing j10, 
+        #so the choice is to read ntrans from atom file: 
+        #io_py.f90 ->hazel_py.f90 -> hazel_code.pyx -> init routine here in model.py
+
+        self.atomfile=atomfile #memory for mutations
+
+        self.atomsdic={'helium':{'10830': 1, '3888': 2, '7065': 3,'5876': 4},
+            'sodium':{'5895': 1, '5889': 2}} 
         
+        self.multipletsdic={'helium':{'10830': 10829.0911, '3888': 3888.6046, '7065': 7065.7085, '5876': 5875.9663},
+                            'sodium':{'5895': 5895.924, '5889': 5889.95}}
+
+        self.apmosekc=apmosekc #memory for mutations, must be before get_apmosekcl
+        self.dcol=dcol #memory for mutations, must be before get_apmosekcl
+
+        #apmosekcL is List whose last element is other list with dcol
+        self.apmosekcl=self.get_apmosekcl(apmosekc,dcol,extrapars) 
+
+        self.plotit=plotit
+        self.plotscale=3
+        self.labelf1='1'
+        self.labelf2='2'
+        self.labelf3='3'
+        self.f1=None
+        self.f3=None
+        self.ax1= None
+        self.ax3=None
+        self.lock_fractional=None
+
+        #synthesis methods to be implemented
+        self.methods_dicT={0:'Emissivity',1:'Delo1',2:'Delo2',3:'Hermite',4:'Bezier',5:'EvolOp',6:'Guau'} 
+        self.methods_dicS={'Emissivity':0,'Delo1':1,'Delo2':2,'Hermite':3,'Bezier':4,'EvolOp':5,'Guau':6} 
+        self.methods_list=[ss for ss,tt in self.methods_dicS.items()] #list with only the names
+        
+        self.synmethod=5 #5 is default and can be changed by add_spectrum and /or by synthesize.
+        #------------------------------------
         self.photospheres = []
         self.chromospheres = []
         self.chromospheres_order = []
@@ -40,13 +113,19 @@ class Model(object):
         self.order_atmospheres = []        
         self.straylight = []
         self.parametric = []
-        self.spectrum = []
         self.configuration = None
         self.n_cycles = 1
-        self.spectrum = {}
-        self.topologies = []
+        self.spectrum = []
+        self.spectrum = {}  #EDGAR:self.spectrum was initialized as [] and now as {}
+        self.topologies = {}#[] EDGAR: before it was a list, now it is a dictionary
+        self.atms_in_spectrum={} #EDGAR: of the kind -> {'sp1': string_with_atmosphere_order_for_sp1}
+        
+        #default mu where Allen continuum shall be taken for normalizing Stokes output
+        #the actual value is set when calling synthesize_spectrum
+        self.muAllen=1.0 
+
         self.straylights = []
-        self.working_mode = working_mode
+        self.working_mode = mode
         self.pixel = 0
         self.debug = debug
         self.use_analytical_RF_if_possible = False
@@ -84,16 +163,20 @@ class Model(object):
             if (self.verbose >= 1):
                 self.logger.info('PyTorch and PyTorch Geometric found. NLTE for Ca II is available')
             self.nlte_available = True
+
+        #We initialize pyhazel (and set self.ntrans) before calling add_chromosphere in use_configuration 
+        #in order to setup self.ntrans before defining j10 length.
+        #before these changes, the Hazel init was done after the next if..else.  
+        self.ntrans=hazel_code._init(atomfile,verbose)   #EDGAR
         
         if (config is not None):
             if (self.verbose >= 1):
                 self.logger.info('Using configuration from file : {0}'.format(config))
             self.configuration = Configuration(config)
 
-            self.use_configuration(self.configuration.config_dict)
-        
-        # Initialize pyhazel
-        hazel_code._init()        
+            #EDGAR:n_chromospheres is set here.
+            self.use_configuration(self.configuration.config_dict) 
+
 
     def __getstate__(self):
         d = self.__dict__.copy()
@@ -113,7 +196,497 @@ class Model(object):
                 tmp += '{0}: {1}\n'.format(l, par)
         return tmp
 
+    def get_apmosekcl(self,apmosekc,dcol,extrapars):
+        '''
+        Parameters in extrapars overwrite those in apmosekc.
+        apmosekc and extrapars are mostly redudant on purpose. 
+        apmosekc is much more compact but extrapars is there for who requires more readibility
+        extrapars={'Atompol':1,'MO effects':1,'Stim. emission':1, 'Kill coherences':0,'dcol':[0.,0.,0.]}
+        '''
+        apmosekcl = [int(x) for x in apmosekc] #now is a list of atompol,magopt,stimem,nocoh
+        for elem in apmosekcl[0:3]:
+            if (elem != 0) and (elem!=1):raise Exception("ERROR: apmosekc first values can only be zeros or ones")
+        #EDGAR: we should also check that the nocoh value does not go beyond number of levels(pending)
+
+        for kk,keyw in enumerate(['Atompol','MO effects','Stim. emission','Kill coherences']):
+            if (keyw in extrapars) and (extrapars[keyw]!=apmosekcl[kk]):
+                apmosekcl[kk]=extrapars[keyw]        
+                if (keyw!='Kill coherences') and (extrapars[keyw] != 0) and (extrapars[keyw]!=1):
+                    raise Exception("ERROR: firsts parameters in extrapars can only be zeros or ones")    
+        
+        if ('dcol' in extrapars):apmosekcl.append(extrapars['dcol'])
+        else:apmosekcl.append(dcol)
+
+        return apmosekcl
+
+    '''
+    #EDGAR: this routine will not work if the backend is not compatible. 
+    #By default I use MacOs backend, whose canvas does not have the window attribute.
+
+    def move_figure(self,f, x, y):
+        """Move figure's upper left corner to pixel (x, y)"""
+        backend = matplotlib.get_backend()
+        print(backend)
+        if backend == 'TkAgg':
+            f.canvas.manager.window.wm_geometry("+%d+%d" % (x, y))
+        elif backend == 'WXAgg':
+            f.canvas.manager.window.SetPosition((x, y))
+        else:
+            # This works for QT and GTK
+            # You can also use window.setGeometry
+            f.canvas.manager.window.move(x, y)
+    '''
+
+    def setup_set_figure(self,scale=3):
+        pscale=self.plotscale
+        if scale!=pscale:pscale=scale
+
+        plt.close('all')  
+        plt.rcParams.update({'font.size': pscale*2.4})
+        
+        #fig, axs = plt.subplots(2, 2,figsize=(pscale*2,pscale*2))  
+        self.f1, ax = plt.subplots(2, 2,figsize=(pscale*2,pscale*2),label=self.labelf1)  
+        self.ax1 = ax.flatten()
+
+        #start_x, start_y, dx, dy = self.f1.figbbox.extents
+        #self.move_figure(self.f1,505,500)
+        
+
+    def toggle_visible(self, fig,visible=True):
+        fig.set_visible(not fig.get_visible()) #if invisible, make it visible, or viceversa
+        plt.draw()
+
+    def remove_fig(self,fig_id):
+        '''
+        plt.close(X) X can be:
+        *None*: the current figure
+        .Figure: the given .Figure instance
+        int: a figure number
+        str: a figure name
+        'all': all figures
+        '''
+        if (self.verbose >= 1):self.logger.info('Before removing_fig():',plt.get_figlabels()) #plt.get_fignums()
+        
+        plt.close(fig_id)
+        if self.f1 is not None:
+            self.f1.canvas.manager.close()
+            self.f1= None
+        
+        if (self.verbose >= 1):self.logger.info('After removing_fig():',plt.get_figlabels()) #plt.get_fignums()
+        
+        plt.draw()
+
+
+    def fractional_polarization(self,sp,scale=3,tf=4,ax=None,lab=['iic','qi','ui','vi']): 
+        '''
+        Compares fractional and not fractional polarization.
+        This routine is valid when fractional polarization is not implemented in synthesize_spectrum
+        '''
+        pscale=self.plotscale
+        if scale!=pscale:pscale=scale
+
+        plt.rcParams.update({'font.size': pscale*tf})
+        if type(sp) is not hazel.spectrum.Spectrum:sp=self.spectrum[sp]
+
+        if ax is None:
+            f, ax = plt.subplots(nrows=2, ncols=2,figsize=(pscale*2,pscale*2))  
+            ax = ax.flatten()
+
+        labs=[r'$P/I_c$',r'$P/I$']
+        
+        for i in range(4):
+            if i==0:
+                ax[i].plot(sp.wavelength_axis, sp.stokes[i,:],color='r')
+            else:
+                l1,=ax[i].plot(sp.wavelength_axis, sp.stokes[i,:],color='r')
+                l2,=ax[i].plot(sp.wavelength_axis, sp.stokes[i,:]/sp.stokes[0,:],color='k')
+                
+            ax[i].set_title(mylab(lab[i]))
+            if i>1:ax[i].set_xlabel(mylab('xx'))
+        
+        #f.legend(tuple(lines), tuple(labs), loc=(0.1,0.1), bbox_to_anchor=(0.1, 0.3))
+        plt.gcf().legend(tuple([l1,l2]), tuple(labs))#loc=(0.1,0.1), bbox_to_anchor=(0.1, 0.3))
+
+        plt.tight_layout()
+        plt.show()
+        
+        return 
+
+
+    def plot_stokes(self,sp,scale=3,tf=4,fractional=False,lab=None): 
+        '''
+        Routine called by synthesize to plot stokes profiles either fractional 
+        or normalized to continuum 
+        '''
+        if fractional:lab=['iic','qi','ui','vi']
+        else:lab=['iic','qic','uic','vic']
+
+        pscale=self.plotscale
+        if scale!=pscale:pscale=scale
+
+        plt.rcParams.update({'font.size': pscale*tf})
+        if type(sp) is not hazel.spectrum.Spectrum:sp=self.spectrum[sp]
+
+        if self.ax1 is None:setup_set_figure()
+
+        for i in range(4): 
+            if i ==0:
+                self.ax1[i].plot(sp.wavelength_axis, sp.stokes[i,:])
+            else:
+                if fractional:self.ax1[i].plot(sp.wavelength_axis, sp.stokes[i,:]/sp.stokes[0,:])
+                else:self.ax1[i].plot(sp.wavelength_axis, sp.stokes[i,:])
             
+            self.ax1[i].set_title(mylab(lab[i]))#,size=8 + 0.7*pscale)
+            if i>1:self.ax1[i].set_xlabel(mylab('xx'))#,size=8 +0.7*pscale)#,labelpad=lp)
+        
+        plt.tight_layout()
+        plt.show()
+        
+        return 
+
+
+    def plot_stokes_direct(self,sp,scale=3,tf=4,lab=None): 
+        '''
+        This plots stokes profiles normalized to continuum directly from spectrum object
+        without considering fractional polarization 
+        '''
+        if lab is None:lab=['iic','qic','uic','vic']
+
+        pscale=self.plotscale
+        if scale!=pscale:pscale=scale
+
+        plt.rcParams.update({'font.size': pscale*tf})
+        if type(sp) is not hazel.spectrum.Spectrum:sp=self.spectrum[sp]
+
+        if self.ax1 is None:setup_set_figure()
+
+        for i in range(4): 
+            self.ax1[i].plot(sp.wavelength_axis, sp.stokes[i,:])
+            self.ax1[i].set_title(mylab(lab[i]))#,size=8 + 0.7*pscale)
+            if i>1:self.ax1[i].set_xlabel(mylab('xx'))#,size=8 +0.7*pscale)#,labelpad=lp)
+        
+        plt.tight_layout()
+        plt.show()
+        
+        return 
+
+    def build_coeffs(self,sp,ats=None):
+        '''
+        eta_i=eta^A_i - eta^S_i and idem for rho (rho_i=rho^A_i - rho^S_i)
+        From fortran vars in hazel_py.f90:
+        !eta_i(1:4)=eta(1:4) - stim(1:4)  
+        !rho_i(1:3)=eta(5:7) - stim(5:7)  
+        From here: etas=sp.eta[aa,s,:]-sp.stim(aa,s,:) con s =0,1,2,3
+                   rhos=idem con s =4,5,6
+
+        Hazel build the total opt coeffs internally for the different 
+        synthesis methods but it does not store them in runtime. We do it now, at the end.
+        '''
+        #from string to hazel.spectrum.Spectrum 
+        if type(sp) is not hazel.spectrum.Spectrum:sp=self.spectrum[sp]
+
+        sp.etas=sp.eta[:,0:4,:]-sp.stim[:,0:4,:]
+        sp.rhos= np.zeros_like(sp.etas)
+        sp.rhos[:,1:4,:]=sp.eta[:,4:7,:]-sp.stim[:,4:7,:]
+
+        codic1={'epsi':sp.eps[:,0,:],'epsq':sp.eps[:,1,:],'epsu':sp.eps[:,2,:],'epsv':sp.stim[:,3,:],
+            'etai':sp.etas[:,0,:],'etaq':sp.etas[:,1,:],'etau':sp.etas[:,2,:],'etav':sp.etas[:,3,:],
+            'rhoq':sp.rhos[:,0,:],'rhou':sp.rhos[:,1,:],'rhov':sp.rhos[:,2,:]}
+
+        codic2={'eps':sp.eps,'etas':sp.etas,'rhos':sp.rhos}
+
+        return codic1,codic2 
+
+    def plot_coeffs(self,sp,coefs=None,par=None,ats=None,scale=2,figsize=None,tf=4):
+        if type(sp) is not hazel.spectrum.Spectrum:sp=self.spectrum[sp]
+        
+        pscale=self.plotscale
+        if scale!=pscale:pscale=scale
+
+        #----------------------------------
+        #EDGAR:consider only the atmospheres in sp.
+        #self.atms_in_spectrum[sp.name] --->. [['c0'], ['c1','c2']]
+        if ats is None:ats=self.atms_in_spectrum[sp.name]#ats=self.atmospheres
+
+        labs=[]
+        #get name of atmospheres in sp
+        for n, order in enumerate(self.atms_in_spectrum[sp.name] ): #n run layers along the ray
+            for k, atm_name in enumerate(order):  #k runs subpixels of topologies c1+c2                                                  
+                #at=self.atmospheres[atm]
+                labs.append(atm_name)
+        lines=[]
+        #----------------------------------
+        
+        cd,cd2=self.build_coeffs(sp) #set sp.etas and sp.rhos
+        #cds={**cd, **cd2} #merge the two dictionaries
+        
+        #font = {'family' : 'normal','weight' : 'bold', 'size'   : 22}
+        #matplotlib.rc('font', **font)
+        plt.rcParams.update({'font.size': pscale*tf})
+
+        if coefs is None:#default    
+            if figsize is not None:fs=figsize
+            else:fs=(pscale*4,pscale*3)
+            
+            lab=['epsi','epsq','epsu','epsv','etai','etaq','etau','etav','','rhoq','rhou','rhov']
+
+            alp=[1.,1.,1.] #make plots of MO terms transparent when not used in the calculation 
+            if self.apmosekcl[1]==0:alp[2]=0.3
+
+            f, ax = plt.subplots(nrows=3, ncols=4,figsize=fs,label=self.labelf2)
+            for cc,coef in enumerate(['eps','etas','rhos']):
+                for k,at in enumerate(ats):
+                    for sto in range(4):
+                        lx, =ax[cc,sto].plot(sp.wavelength_axis,cd2[coef][k,sto,:],alpha=alp[cc]) 
+                        ax[cc,sto].set_title(mylab(lab[4*cc+sto]))
+                        ax[cc,sto].set_xlabel(mylab('xx'))
+        
+                        if (sto==0) and (cc ==2):lines.append(lx)
+            f.legend(tuple(lines), tuple(labs), loc=(0.1,0.1), bbox_to_anchor=(0.1, 0.3))
+        else:
+            f, ax = plt.subplots(nrows=1, ncols=len(coefs),figsize=(pscale*len(coefs),pscale),label=self.labelf2)
+            for cc,coef in enumerate(coefs):
+                alp=1.#make plots of MO terms transparent when not used in the calculation 
+                if (self.apmosekcl[1]=='0' and coef[0:3]=='rho'):alp=0.3
+                if coef in cd:
+                    for k,at in enumerate(ats):
+                        ax[cc].plot(sp.wavelength_axis,cd[coef][k,:],alpha=alp)
+                        ax[cc].set_title(mylab(coefs[cc]))
+                        ax[cc].set_xlabel(mylab('xx'))
+
+                else:
+                    raise Exception("Names can only be epsi,epsq,epsu,epsv,etai,etaq,etau,etav,rhoq,rhou,or rhov.")
+
+        plt.tight_layout()
+        plt.show()
+
+        return f,ax
+
+    def check_method(self,method):
+        if (self.verbose >= 1):self.logger.info('Synthesis method : {0}'.format(method))
+        if method not in self.methods_list:raise Exception("I do not know that synthesis method. Stopping.")
+
+
+    def mutates(self,spec,parsdic=None,\
+        B1=None,B2=None,B3=None, tau=None,v=None,deltav=None, beta=None,a=None,ff=None,\
+        j10=None,j20f=None,nbar=None, \
+        apmosekc=None,dcol=None,compare=True,frac=None,fractional=False,ax=None):
+        '''
+        EDGAR: New routine to create mutations in the synthesis Model, such that one can repeat an experiment just changing
+        a few parameters from a previous synthesis. 
+        The versatility of reading pars both from parsdic and from keywords, and the checking of 
+        the pars as done originally when setting up the model, make this routine cumbersome.
+
+        apmosekc,dcol,ref_frame, hz  topology,los,boundary,, 
+        
+        Due to the Python behavior, newmo=self is just a reference assignment where both variable names 
+        point to the same object, it would only create newmo as a pointer to the object self, 
+        without truly performing an indepedent copy. For doing a copy of arrays one has np.copy(). 
+        For objects/dictionaries we have deepcopy. 
+     
+        Parsdic (and any other mutable type,lists or dictionaries) defined as keyword parameters
+        will no reset their values between function calls, so having memory of previous  mutates()
+        calls from main. If we do not want to use a DTO class or avoid parsdic, then we need to define its
+        default to None and make the following check at the beggining of this function. 
+        '''
+        if parsdic is None:parsdic={}
+
+        if frac is True:fractional=True #abreviated keyword for fractional
+
+        #EDGAR: Substitute next block by next line and check result
+        #keywords = dict(locals())#retrieve keywords as dictionary
+        #print(keywords)
+        #inefficient way of passing pars through keywords: by copying them to parsdic
+        #NOTE: apmosekc is introduced always as keyword, but the specific paraemters to which ap-mo-se-kc
+        #makes reference can also be specifically introduced via parsdic dictionary.
+        #that is why the four long keywords contained in extrapars_list are not considered in the next
+        #block to include them in parsdic, because they are already there and never as individual keywords
+        if apmosekc is not None:parsdic['apmosekc']=apmosekc
+        if dcol is not None:parsdic['dcol']=dcol
+        if B1 is not None:parsdic['B1']=B1
+        if B2 is not None:parsdic['B2']=B2
+        if B3 is not None:parsdic['B3']=B3
+        if tau is not None:parsdic['tau']=tau
+        if v is not None:parsdic['v']=v
+        if deltav is not None:parsdic['deltav']=deltav
+        if beta is not None:parsdic['beta']=beta
+        if a is not None:parsdic['a']=a
+        if ff is not None:parsdic['ff']=ff
+        if j10 is not None:parsdic['j10']=j10
+        if j20f is not None:parsdic['j20f']=j20f
+        if nbar is not None:parsdic['nbar']=nbar
+
+
+        #----these vars could be extracted out as global to avoid repetition--------
+        message="Unknown mutable parameter. The options are:  \n Atompol, MO effects,Stim. emission, Kill coherences, B1, B2, B3 ...{0}"
+
+        '''Identify Model object parameters to be changed. 
+        First, general parameters of the Model: apmosekc, dcol and their product apmosekcl'''
+        extrapars_list=['Atompol','MO effects','Stim. emission','Kill coherences']
+        #parameters of chromosphere objects
+        atmpars=['B1','B2','B3','tau','v','deltav','beta','a','ff','j10','j20f','nbar']
+        #parameters that can be mutated for now 
+        checkdictio={'apmosekc':None,'dcol':None,'Atompol':None,'MO effects':None,'Stim. emission':None,'Kill coherences':None,
+            'B1': None, 'B2': None, 'B3': None,'tau':None,'v':None,'deltav':None,'beta':None,
+            'a':None,'ff':None,'j10':None,'j20f':None,'nbar':None}
+        #------------------------------------------------------------------------------------------------
+        extrapars={}
+        mutating_keys=[]
+
+        newmo= copy.deepcopy(self) #here we are already copying the spectrum objects inside spectrum
+        
+        '''kill ghost figure f1 appearing when replicating the model object.
+        Closes eventual open figures/axes to avoid the deep copy of the object plot axes.
+        otherwise, an ugly copy of the figure in self.ax0 will pop up when calling again a plt.show''' 
+        if newmo.f1 is not None:
+            newmo.f1.set_label('deletef1')
+            newmo.remove_fig('deletef1')#newmo.f1)
+        if newmo.f3 is not None:
+            newmo.f3.set_label('deletef3')
+            newmo.remove_fig('deletef3')#newmo.f1)
+
+
+        if (len(parsdic)!=0): #if parsdic is not empty (default is {}) we shall ignore mutation keywords!
+            #write a list of all possible parameters and check whether the inputs are compatible/valid
+            for elem in parsdic:
+                if (elem not in checkdictio):raise Exception(message.format(elem))
+
+            apmosekc=self.apmosekc
+            dcol=self.dcol
+            #build the extrapars dictionary (if its keywords are in parsdic) to call get_apmosekcl()
+            for elem in extrapars_list:
+                if (elem in parsdic):extrapars[elem]=parsdic[elem]
+            #if (len(extrapars)!=0) or ('apmosekc' in parsdic)
+            if ('apmosekc' in parsdic):apmosekc=parsdic['apmosekc']
+            if ('dcol' in parsdic):dcol=parsdic['dcol']
+            if (len(extrapars)!=0) or ('apmosekc' in parsdic) or ('dcol' in parsdic):#update self.apmosekcl
+                newmo.apmosekcl=newmo.get_apmosekcl(apmosekc,dcol,extrapars)
+                #newmo.apmosekcl=self.get_apmosekcl(apmosekc,dcol,extrapars)
+
+            for key in atmpars:#key=[atm_number,value]#key value. list mutating keys for atmospheres
+                if (key in parsdic):mutating_keys.append(key) #ONLY FOR ATM PARS!
+
+        else:#then we shall read mutation pars only from keywords
+            if (apmosekc is not None) or (dcol is not None): #if one of them must be updated
+                if (apmosekc is None):apmosekc=self.apmosekc #let the other as in original model
+                if (dcol is None):dcol=self.dcol              #let the other as in original model
+                newmo.apmosekcl=newmo.get_apmosekcl(apmosekc,dcol,{}) #and update + check
+                #newmo.apmosekcl=self.get_apmosekcl(apmosekc,dcol,{}) #and update + check
+
+            #if (B1 is not None):mutating_keys.append(B1)
+
+        #--------------------------------------------------------------------------------
+        #Close and reopen Hazel seems to be necessary in order to properly detect the
+        #updated values of j10,j20f,and nbar 
+        newmo.exit_hazel()   
+        newmo.ntrans=hazel_code._init(self.atomfile,0) #We initialize pyhazel (and setup self.ntrans) with verbose=0 
+
+        if type(spec) is not hazel.spectrum.Spectrum:spec=self.spectrum[spec]
+        '''        
+        original spectrum was already duplicated when duplicated de Model object. 
+        Here we just get a pointer to it maintaining the name of spectrum 
+        '''
+        newspec=newmo.spectrum[spec.name] #just for shortening sintaxis
+        '''
+        Here we decide to leave same name, but we make here explicit how to proceed otherwise.
+        If we wish to change the name of the new spectrum in the new object
+        we have to change it everywhere (in self.topologies and in atms_in_spectrum):
+        '''
+        newspecname=spec.name #same name
+        #substitute the key spec.name by newspecname in all dictionaries:
+        newmo.spectrum[newspecname]= newmo.spectrum.pop(spec.name) 
+        newmo.atms_in_spectrum[newspecname]= newmo.atms_in_spectrum.pop(spec.name)
+        newmo.topologies[newspecname]= newmo.topologies.pop(spec.name) #{'sp1':'ch1->ch2'}
+       
+        '''Now we reset spectrum without calling model.add_spectrum again (inefficient).
+        We only need to reset the optical coeffs and stokes, and change few pars in 
+        spectrum object: LOS, BOUNDARY.'''        
+
+        #spectrum.add_spectrum (NOT model.add_spectrum) to reset spectrum
+        wvl=newspec.wavelength_axis
+        wvl_lr=newspec.wavelength_axis_lr 
+        wvl_range = [np.min(wvl), np.max(wvl)]#used below
+        newspec.add_spectrum(newmo.nch, wvl, wvl_lr)#reset stokes, eps, eta, stim, etas, rhos
+        '''
+        We could directly modify hazelpars in atmopsheres(with this line in
+        chromosphere.py: self.atompol,self.magopt,self.stimem,self.nocoh,self.dcol = hazelpars) 
+        without updating apmosekcl in model, but we take advantage of update in Model to make input checks
+        '''
+        if (self.verbose >= 1):self.logger.info('Mutating atmospheric pars...')
+        #run over the existing atmospheres of this spectrum topology and set pars
+        for n, order in enumerate(newmo.atms_in_spectrum[newspecname] ): #n run layers along the ray
+            for k, atm in enumerate(order):  #k runs subpixels of topologies c1+c2                                                  
+                at=newmo.atmospheres[atm]
+
+                """
+                Activate this spectrum with add_active_line for all existing atmospheres.
+                In normal setup, activate_lines is called after adding all atmospheres in topology.
+                """         
+                at.add_active_line(spectrum=newspec, wvl_range=np.array(wvl_range))
+
+                #SET HAZELPARS: self.atompol,self.magopt,self.stimem,self.nocoh,self.dcol = hazelpars                
+                at.atompol,at.magopt,at.stimem,at.nocoh,at.dcol = newmo.apmosekcl 
+                #print(at.atompol,at.magopt,at.stimem,at.nocoh,at.dcol)
+
+                #key=[atm_number,value]#key value. Produce mutation updating atm.dna[key]            
+                for key in mutating_keys:#print(key,parsdic[key][0],parsdic[key][1])
+                    #if in selected layer mutate one layer at a time for every parameter,
+                    #but layer can be different among parameters
+                    if (parsdic[key][0]==n+k):at.dna[key]=parsdic[key][1] #mutates dna.  #print(key,n+k)
+                pars,kwds=at.get_dna() #get updated dna pars of this single atmosphere                     
+                at.set_pars(pars,**kwds)#ff=at.atm_dna[8],j10=at.atm_dna[9],j20f=at.atm_dna[10],nbar=at.atm_dna[11]) 
+                        
+        #--------------------------------------------------------------------------------
+        #Synthesize the new spectrum FROM the new model object:
+        newmo.synthesize(method=self.methods_dicT[newmo.synmethod],muAllen=newmo.muAllen,obj=self)
+        if (self.verbose >= 1):self.logger.info('Spectrum {0} has mutated.'.format(spec.name))
+        
+        if (compare is True):self.compare_mutation(spec,newspec,fractional=fractional) 
+        
+        return newmo,newspec
+
+
+    def compare_mutation(self,sp,newsp,scale=3,tf=2.4,ls='dashed',fractional=False,
+        lab=['iic','qic','uic','vic']):
+
+        #all plots in compare_mutation will always be done with the fractional keyword set 
+        #in the very first call to mutates and compare_mutation in main to avoid ill comparisons.
+        if self.lock_fractional is None:self.lock_fractional=fractional
+        else:fractional=self.lock_fractional
+
+        if fractional:lab=['iic','qi','ui','vi']
+        else:lab=['iic','qic','uic','vic']            
+
+        #font = {'family' : 'normal','weight' : 'bold', 'size'   : 22}
+        #matplotlib.rc('font', **font)
+        pscale=self.plotscale
+        if scale!=pscale:pscale=scale
+        plt.rcParams.update({'font.size': pscale*tf})
+        
+        if self.ax3 is None:#create and arrange axes, plot old spectra
+            self.f3, ax = plt.subplots(2,2,figsize=(pscale*2,pscale*2),label=self.labelf3)#'Mutations (Model.ax2)')  
+            self.ax3 = ax.flatten()    
+
+            #to make it alwayss visible , the original first one is plot last one with dashed black line 
+            self.ax3[0].plot(sp.wavelength_axis,sp.stokes[0,:],linestyle=ls,color='k')
+        
+            for i in range(1,4):
+                if fractional:self.ax3[i].plot(sp.wavelength_axis,sp.stokes[i,:]/sp.stokes[0,:],linestyle=ls,color='k')
+                else:self.ax3[i].plot(sp.wavelength_axis,sp.stokes[i,:],linestyle=ls,color='k')
+            
+            for i in range(4):
+                self.ax3[i].set_title(mylab(lab[i]))#,size=8 + 0.7*pscale)
+                if i>1:self.ax3[i].set_xlabel(mylab('xx'))#,size=8 +0.7*pscale)#,labelpad=lp)
+
+        #plot mutated spectra
+        self.ax3[0].plot(newsp.wavelength_axis,newsp.stokes[0,:])
+        for i in range(1,4):
+            if fractional:self.ax3[i].plot(newsp.wavelength_axis,newsp.stokes[i,:]/newsp.stokes[0,:])
+            else:self.ax3[i].plot(newsp.wavelength_axis,newsp.stokes[i,:])
+
+        plt.tight_layout()
+        plt.show()
+
     def use_configuration(self, config_dict):
         """
         Use a configuration file
@@ -127,11 +700,6 @@ class Model(object):
         -------
         None
         """        
-
-        # Deal with the spectral regions        
-        tmp = config_dict['spectral regions']
-
-
         # Output file
         self.output_file = config_dict['working mode']['output file']
 
@@ -144,13 +712,57 @@ class Model(object):
             self.logger.info('Backtracking mode : {0}'.format(self.backtracking))
         
         
-        # Working mode
-        # self.working_mode = config_dict['working mode']['action']
+        # Working mode  #EDGAR: when using conf file the keyword is still called working mode
+        # self.working_mode = config_dict['working mode']['action']  
 
-        # Add spectral regions
+        # Deal with the spectral regions        
+        #tmp = config_dict['spectral regions']
+        # EDGAR: Add spectral regions. 
+        #We now move this block after adding atmopsheres below
+        #for key, value in config_dict['spectral regions'].items():
+        #    self.add_spectral(value)  
+
+
+        # Deal with the atmospheres----------------------------------------------------------------
+        tmp = config_dict['atmospheres']
+        self.atmospheres = {}
+
+        if (self.verbose >= 1):
+            self.logger.info('Adding atmospheres')
+
+        for key, value in tmp.items():
+            
+            if ('photosphere' in key):
+                if (self.verbose >=1):
+                    self.logger.info('  - New available photosphere : {0}'.format(value['name']))
+
+                self.add_photosphere(value)
+                                                            
+            if ('chromosphere' in key):
+                if (self.verbose >= 1):
+                    self.logger.info('  - New available chromosphere : {0}'.format(value['name']))
+
+                self.add_chromosphere(value)
+                                            
+            if ('parametric' in key):
+                if (self.verbose >= 1):
+                    self.logger.info('  - New available parametric : {0}'.format(value['name']))
+
+                self.add_parametric(value)
+
+            if ('straylight' in key):
+                if (self.verbose >= 1):
+                    self.logger.info('  - New available straylight : {0}'.format(value['name']))
+
+                self.add_straylight(value)
+        # ----------------------------------------------------------------
+       
+        # Add spectral regions. EDGAR: it create self.spectrum and add value['topologies'] to self.topologies
         for key, value in config_dict['spectral regions'].items():
-            self.add_spectral(value)
-
+            #EDGAR: if Andres likes the new add_spectrum shift to the second choice
+            self.add_spectral(value) #option 1: use old routine add_spectral reading config file as before
+            #self.add_spectrum(value['name'],config=value) #option 2: use new routine add_spectrum 
+        # ----------------------------------------------------------------
         # Set number of cycles if present
         if (self.working_mode == 'inversion'):
             if ('number of cycles' in config_dict['working mode']):
@@ -208,41 +820,12 @@ class Model(object):
         if (self.verbose >= 1):
             self.logger.info('Saving all cycles : {0}'.format(self.save_all_cycles))
         
-        # Deal with the atmospheres
-        tmp = config_dict['atmospheres']
 
-        self.atmospheres = {}
-
-        if (self.verbose >= 1):
-            self.logger.info('Adding atmospheres')
-
-        for key, value in tmp.items():
-            
-            if ('photosphere' in key):
-                if (self.verbose >=1):
-                    self.logger.info('  - New available photosphere : {0}'.format(value['name']))
-
-                self.add_photosphere(value)
-                                                            
-            if ('chromosphere' in key):
-                if (self.verbose >= 1):
-                    self.logger.info('  - New available chromosphere : {0}'.format(value['name']))
-
-                self.add_chromosphere(value)
-                                            
-            if ('parametric' in key):
-                if (self.verbose >= 1):
-                    self.logger.info('  - New available parametric : {0}'.format(value['name']))
-
-                self.add_parametric(value)
-
-            if ('straylight' in key):
-                if (self.verbose >= 1):
-                    self.logger.info('  - New available straylight : {0}'.format(value['name']))
-
-                self.add_straylight(value)
-
-        self.setup()
+        #EDGAR: setup requires values in self.topologies that were added in add_spectral
+        #we want create global optical coeffs in add_spectral together with stokes var
+        #to create global coeffs we require n_chromospheres because is set in setup.
+        self.setup()#EDGAR:n_chromospheres is set here. 
+        
 
     def setup(self):
         """
@@ -257,19 +840,21 @@ class Model(object):
         -------
         None
         """
-                            
+              
         # Adding topologies
         if (self.verbose >= 1):
             self.logger.info("Adding topologies") 
-        for value in self.topologies:
-            self.add_topology(value)
+        #for value in self.topologies:
+        #    self.add_topology(value)
+        for specname, value in self.topologies.items():
+            self.add_topology(value,specname)
 
         # Remove unused atmospheres defined in the configuration file and not in the topology
         if (self.verbose >= 1):
             self.logger.info("Removing unused atmospheres")
         self.remove_unused_atmosphere()        
 
-        # Calculate indices for atmospheres
+        # Calculate indices for atmospheres, n_chromospheres is set here
         index_chromosphere = 1
         index_photosphere = 1
         self.n_photospheres = 0
@@ -280,9 +865,15 @@ class Model(object):
                 index_photosphere += 1
                 self.n_photospheres += 1
             if (v.type == 'chromosphere'):
-                v.index = index_chromosphere
-                index_chromosphere += 1
+                v.index = index_chromosphere 
+                index_chromosphere += 1  
                 self.n_chromospheres += 1
+        #EDGAR:index_chromosphere and index_photosphere could be avoided using v.index as counting variable.
+        #Also, as the variation of v.index happens all inside the above loop, that parameter endsup being equal
+        #to n_chromospheres, hence most of this loop looks unnecessary.
+
+        if (self.verbose >= 1):#EDGAR: print number of Hazel chromospheres/slabs
+            self.logger.info('N_chromospheres at setup',self.n_chromospheres)
 
         # Use analytical RFs if only photospheres are defined
         if (self.n_chromospheres == 0 and self.use_analytical_RF_if_possible):
@@ -379,7 +970,16 @@ class Model(object):
 
             if (self.verbose >= 1):
                 self.logger.info('Total number of free parameters in all cycles : {0}'.format(self.n_free_parameters))
+
+        #if (self.verbose >= 1):#EDGAR: print number of Hazel chromospheres/slabs
+        #    self.logger.info('N_chromospheres',self.n_chromospheres)
+
+        #if self.plotit:
+        self.setup_set_figure() #self.fig and self.ax are created here
         
+        #return f,ax
+        #return self.n_chromospheres
+
     def open_output(self):
         self.output_handler = Generic_output_file(self.output_file)        
         self.output_handler.open(self)
@@ -392,16 +992,273 @@ class Model(object):
             self.flatten_parameters_to_reference(cycle=0)        
         self.output_handler.write(self, pixel=0, randomization=randomization)
 
+
+    def add_spectrum(self, name, config=None, wavelength=None, topology=None, los=None, 
+        i0fraction=1.0,boundary=None, atom=None, synmethod=None,
+        linehazel=None, linesSIR=None, atmos_window=None, instrumental_profile=None,
+        wavelength_file=None, wavelength_weight_file=None,observations_file=None, mask_file=None,
+        weights_stokes_i=None,weights_stokes_q=None,weights_stokes_u=None,weights_stokes_v=None):
+        """
+        Similar to add_spectral but with keywords and more compact.
+        Programmatically add a spectral region
+        """
+        #init keywords that are mutable types : before they were directly inittialized to [None]*10
+        #in header, which prevents resetting between function calls 
+        if weights_stokes_i is None:weights_stokes_i=[None]*10
+        if weights_stokes_q is None:weights_stokes_q=[None]*10
+        if weights_stokes_u is None:weights_stokes_u=[None]*10
+        if weights_stokes_v is None:weights_stokes_v=[None]*10
+
+        value = dict(locals()) #retrieve keywords as dictionary
+        value['name'] =name #we add the positional argument "name" to the dictionary
+
+        #EDGAR: this if block can be deleted if we decide to use the same names 
+        #for the config file keywords as for the keywords of the subroutine.
+        #Map from config file keywords to compact names in this subroutine. 
+        #Case insensitive because that was tackled when reading file
+        #In config file we should only define the keywords that we want different than None
+        #config is old "value" dictionary read from config file and containing all arguments of this subroutine
+        if (config is not None):
+            #for k, val in config.items(): --> you run over dictionary elements faster with this            
+            if ('Wavelength' in config):wavelength=config['Wavelength']
+            if ('topology' in config):topology=config['topology']
+            if ('LOS' in config):los=config['LOS']
+            if ('i0fraction' in config):i0fraction=config['i0fraction']
+            if ('Boundary' in config):boundary=config['Boundary']
+            if ('atom' in config):atom=config['atom']
+            if ('synmethod' in config):atom=config['synmethod']
+            if ('line' in config):linehazel=config['line']
+            if ('lines' in config):linesSIR=config['lines']
+            if ('spectral region' in config):atmos_window=config['spectral region']
+            if ('instrumental profile' in config):instrumental_profile=config['instrumental profile']
+            if ('wavelength file' in config):wavelength_file=config['wavelength file']
+            if ('wavelength weight file' in config):wavelength_weight_file=config['wavelength weight file']
+            if ('observations file' in config):observations_file=config['observations file']
+            if ('mask file' in config):mask_file=config['mask file']
+            if ('weights stokes i' in config):weights_stokes_i=config['weights stokes i']
+            if ('weights stokes q' in config):weights_stokes_q=config['weights stokes q']
+            if ('weights stokes u' in config):weights_stokes_u=config['weights stokes u']
+            if ('weights stokes v' in config):weights_stokes_v=config['weights stokes v']
+
+
+        if (self.verbose >= 1):            
+            self.logger.info('Adding spectral region {0}'.format(name))        
+    
+        # Wavelength file is not present
+        #if (value['wavelength file'] is None):
+        if (wavelength_file is None): #the "is" keyword is used to evaluate whether something is None or not
+            # If wavelength is defined            
+            if (wavelength is not None): #if ('wavelength' in value):
+                axis = wavelength
+                wvl = np.linspace(float(axis[0]), float(axis[1]), int(axis[2]))                
+                wvl_lr = None
+                if (self.verbose >= 1):
+                    self.logger.info('  - Using wavelength axis from {0} to {1} with {2} steps'.format(float(axis[0]), float(axis[1]), int(axis[2])))
+            else:
+                raise Exception('Wavelength range is not defined. Please, use "Wavelength" or "Wavelength file"')
+        else:
+            # If both observed and synthetic wavelength points are given
+            if (wavelength is not None):
+                axis = wavelength
+                if (len(axis) != 3):
+                    raise Exception("Wavelength range is not given in the format: lower, upper, steps")
+                wvl = np.linspace(float(axis[0]), float(axis[1]), int(axis[2]))
+                if (self.verbose >= 1):
+                    self.logger.info('  - Using wavelength axis from {0} to {1} with {2} steps'.format(float(axis[0]), float(axis[1]), int(axis[2])))
+                    self.logger.info('  - Reading wavelength axis from {0}'.format(wavelength_file))
+                wvl_lr = np.loadtxt(self.root + wavelength_file)
+            else:
+                if (self.verbose >= 1):
+                    self.logger.info('  - Reading wavelength axis from {0}'.format(wavelength_file))
+                wvl = np.loadtxt(self.root + wavelength_file)
+                wvl_lr = None
+                
+        if (wavelength_weight_file is None):
+            if (self.verbose >= 1 and self.working_mode == 'inversion'):
+                self.logger.info('  - Setting all wavelength weights to 1')
+            weights = np.ones((4,len(wvl)))
+        else:
+            if (self.verbose >= 1):
+                self.logger.info('  - Reading wavelength weights from {0}'.format(wavelength_weight_file))
+            weights = np.loadtxt(self.root + wavelength_weight_file, skiprows=1).T
+
+        # Observations file not present
+        if (observations_file is None):
+            if (self.working_mode == 'inversion'):
+                raise Exception("Inversion mode without observations is not allowed.")            
+        else:
+            if (self.verbose >= 1):
+                self.logger.info('  - Using observations from {0}'.format(observations_file))
+            
+        if (self.verbose >= 1):
+            if (mask_file is None):            
+                self.logger.info('  - No mask for pixels')
+            else:
+                self.logger.info('  - Using mask from {0}'.format(mask_file))
+
+        if (self.verbose >= 1):
+            if (instrumental_profile is None): 
+                self.logger.info('  - No instrumental profile')
+            else:
+                self.logger.info('  - Instrumental profile : {0}'.format(instrumental_profile))
+
+        if (los is None):
+            if (self.working_mode == 'synthesis'):
+                raise Exception("You need to provide the LOS for spectral region {0}".format(name))
+        else:
+            if (self.verbose >= 1):
+                self.logger.info('  - Using LOS {0}'.format(los))
+            los = np.array(los).astype('float64')
+        #---------------------------------------------
+        if (self.verbose >= 1):
+            self.logger.info('  - Using I0fraction = {0} for normalization in spectral region {1}'.format(i0fraction,name))
+        '''
+        EDGAR: the value of boundary that enters in the call to spectrum below  
+        must be Ibackground(physical units)/I0Allen (all input and output Stokes shall always be
+        relative to the Allen I0 continuum). Then, the value given to the boundary keyword from outside 
+        must be such that is normalized to the Allen continuum. Otherwise, we have to multiply by 
+        i0fraction to assure that quantity.
+        In general this i0fraction keyword shall be ignored and assumed always to be 1.0, thus concentrating
+        all the definition of the boundary condition in the boundary keyword. 
+
+        But if the boundary keyword value was defined in main program 
+        as Ibackground(physical units)/Icont_wing (i.e. with the first wing value of I equal to 1.0), 
+        then we have to multiply by i0fraction keyword, which should then be different than 1.0 to describe
+        a background continuum that is different from Allen. 
+        (By the definition of i0fraction we have that Icont_wing is I0fraction*I0Allen).
+        
+        Example: for boundary=1, the boundary intensity given to Hazel synthesize routine should be
+        Iboundary = 1 * I0fraction*I0Allen(lambda). 
+        Then, in this section we first multiply boundary * I0fraction, 
+        and before calling hazel we shall add units multiplying by I0Allen.
+        '''
+        if (boundary is None):
+            if (self.verbose >= 1):self.logger.info('  - Using default boundary conditions [1,0,0,0] in spectral region {0} or read from file. Check carefully!'.format(name))
+            boundary = i0fraction*np.array([1.0,0.0,0.0,0.0])  
+            self.normalization = 'on-disk'
+        else:
+            if (self.verbose >= 1):
+                if (np.ndim(boundary[0])==0):#boundary elements are scalars [1.0,0.0,0.0,0.0]
+                    self.logger.info('  - Using constant boundary conditions {0}'.format(boundary))
+                    if (boundary[0] == 0.0):self.logger.info('  - Using off-limb normalization (peak intensity)')          
+                else:#the user already introduced float 64 arrays with spectral dependences for I.
+                    self.logger.info('  - Using spectral profiles in boundary conditions')
+                    if (boundary[0,0] == 0.0):self.logger.info('  - Using off-limb normalization (peak intensity)')          
+            boundary = i0fraction*np.array(boundary).astype('float64')#gives array([1.0,0.0,0.0,0.0]) or array of (4,Nwavelength) 
+        
+        #---------------------------------------------
+        stokes_weights = []
+        for st in [weights_stokes_i,weights_stokes_q,weights_stokes_u,weights_stokes_v]:
+            tmp = hazel.util.tofloat(st)
+            tmp = [i if i is not None else 1.0 for i in tmp]
+            stokes_weights.append(tmp)
+        stokes_weights = np.array(stokes_weights)
+        
+        #EDGAR: atom, line_to_index and line keywords moved to add_spectral
+        if (atom is not None) and (atom in self.atomsdic):
+            self.atom=atom#self.atom can be deleted because is not used anywhere else
+            self.line_to_index=self.atomsdic[atom]
+        else:
+            raise Exception('Atom is not specified or not in the database. Please, define a valid atom.')
+    
+        if (self.verbose >= 1):self.logger.info('Atom added.')
+        
+        '''
+        EDGAR:The default initialization of self.synmethod was done in the init above. 
+        Below is the general set up of the synthesis method to use for synthesizing this spectrum.
+        In principle here we assume one single method per spectrum, but one could later 
+        change the method during runtime with the keyword method in synthesize(), 
+        such that a single spectrum could be synthesize with different methods in different 
+        layers during the transfer. Thats is why we do not associate a synmethod to the spectrum object,
+        although if necessary we could do it below generating a list of methods in spectrum.
+        We work with string names for the user, but internally hazel work with the numbers and the spectrum
+        list is made with numbers to shorten because we can have many layers in Hazel2.
+        '''
+        if (synmethod is not None) and (synmethod != self.methods_dicT[self.synmethod] ):
+            self.check_method(synmethod) #synmethod is a string with name, self.synmethod is the number
+            self.synmethod=self.methods_dicS[synmethod] #update self.synmethod with the number
+
+
+        #EDGAR: line for Hazel chromospheres and for SIR photosphere
+        #it seems lines for SIR read in add_photosphere were wrong because they were introduced programatically
+        #with the field atm['spectral lines'] in add_photosphere, but there was no such a field defined anywhere 
+        lineH, lineS = '', ''
+        if (linehazel is not None) and (linehazel in self.atomsdic[atom]):
+            lineH=linehazel #e.g. '10830'.  Lines for activating in Hazel atmos
+            if (self.verbose >= 1):self.logger.info("    * Adding HAZEL line : {0}".format(lineH))
+        else:
+            if (linesSIR is not None):#same for SIR lines #SIR photospheres have NOT been checked
+                lineS = [int(k) for k in list(linesSIR)] #we moved this from add_photosphere
+                if (self.verbose >= 1):self.logger.info("    * Adding SIR line : {0}".format(lineS))
+            else:
+                raise Exception('Line is not specified or not in the database. Please, define a valid line.')
+
+        #Count chromospheres for defining optical coeffs containers, now that all atmospheres have been added
+        self.nch=0  #n_chromospheres=0    
+        #careful:is this the number of chromospheres added or the number associated to spectrum??
+        for k, atm in self.atmospheres.items():            
+            if (atm.type == 'chromosphere'):self.nch += 1 #should be equal to self.n_chromospheres.
+
+        if (self.verbose >= 1):self.logger.info('N_chromospheres before setup',self.nch)
+
+
+        #initialize here the optical coefficient containers with self.nch dimension:
+        self.spectrum[name] = Spectrum(wvl=wvl, weights=weights, observed_file=observations_file, 
+            name=name, stokes_weights=stokes_weights, los=los, boundary=boundary, 
+            mask_file=mask_file, instrumental_profile=instrumental_profile, 
+            root=self.root, wvl_lr=wvl_lr,lti=self.line_to_index,lineHazel=lineH,lineSIR=lineS,
+            n_chromo=self.nch, synmethod=self.synmethod)
+
+        #EDGAR: update spectrum object with the multiplets for later accesing it from synthesize at chromosphere.py
+        self.spectrum[name].multiplets = self.multipletsdic[atom] 
+        #ntrans needed to define length of nbar,omega, and j10.
+        self.spectrum[name].ntrans = self.ntrans #len(self.multipletsdic[atom])
+
+        #--EDGAR---------------------------------------------------------------
+        #we are here defining the wavelength window for all atmospheres associated to this spectral region
+        if (atmos_window is not None):#EDGAR: if not in dictionary, then take the one of current spectral region
+            wvl_range = [float(k) for k in atmos_window]
+        else:
+            wvl_range = [np.min(self.spectrum[name].wavelength_axis), np.max(self.spectrum[name].wavelength_axis)]
+
+        #self.topologies.append(topology)#'ph1->ch1+ch2'
+        self.topologies[name]=topology# anade una entrada del tipo {'sp1':'ch1->ch2'}
+        
+        """
+        Activate this spectrum with add_active_line for all existing atmospheres.
+        Part of this routine was previously inside every add_atmosphere routine.
+        Now all spectral and atmospheric actions and routines are disentangled. 
+        Activate_lines is now called after adding all atmospheres in topology.
+        """
+        if (self.verbose >= 1):self.logger.info('Activating lines in atmospheres',self.nch)
+        for k, atm in self.atmospheres.items():            
+            atm.add_active_line(spectrum=self.spectrum[name], wvl_range=np.array(wvl_range))
+                        
+
+        return self.spectrum[name]
+
+
+    def check_key(dictio,keyword,default):
+        if (keyword not in dictio):
+            dictio[keyword] = default
+        elif (dictio[keyword] == 'None'):
+            dictio[keyword] = default
+        return dictio
+
     def add_spectral(self, spectral):
         """
-        Programmatically add a spectral region
+        Programmatically add a spectral region  
+
+        EDGAR:In future versions this subroutine could be deleted in exchange to add_spectrum, which shorter
+        and more efficient. Then, remember to call add_spectrum when reading experiment from file.
 
         Parameters
         ----------
+        name: string name of the dictionary
         spectral : dict
             Dictionary containing the following data
             'Name', 'Wavelength', 'Topology', 'Weights Stokes', 'Wavelength file', 'Wavelength weight file',
-            'Observations file', 'Mask file'
+            'Observations file', 'Mask file','i0fraction','Boundary', 'Synmethod'
 
         Returns
         -------
@@ -413,39 +1270,20 @@ class Model(object):
         # already done
         value = hazel.util.lower_dict_keys(spectral)
 
+        #just add the name of the spectrum to the dictionary to keep a fully self-explained dictionary
+        #by working directly with name instead of with value['name'] the following code would be more rea
+        #value['name']=name 
     
         if (self.verbose >= 1):            
             self.logger.info('Adding spectral region {0}'.format(value['name']))        
 
-        if ('wavelength file' not in value):
-            value['wavelength file'] = None
-        elif (value['wavelength file'] == 'None'):
-            value['wavelength file'] = None
+        #----EDGAR:much shorter way of checking default values------------- 
+        defaultdic={'wavelength file':None,'wavelength weight file':None,'observations file':None,
+        'stokes weights':None,'mask file':None,'los':None, 'boundary':None,'i0fraction':1.0,
+        'instrumental profile':None,'synmethod':None}#by default i0fraction must be 1.0
 
-        if ('wavelength weight file' not in value):
-            value['wavelength weight file'] = None
-        elif (value['wavelength weight file'] == 'None'):
-            value['wavelength weight file'] = None
-
-        if ('observations file' not in value):
-            value['observations file'] = None
-        elif (value['observations file'] == 'None'):
-            value['observations file'] = None
-
-        if ('stokes weights' not in value):
-            value['stokes weights'] = None
-        elif (value['stokes weights'] == 'None'):
-            value['stokes weights'] = None
-
-        if ('mask file' not in value):
-            value['mask file'] = None
-        elif (value['mask file'] == 'None'):
-            value['mask file'] = None
-
-        if ('los' not in value):
-            value['los'] = None
-        elif (value['los'] == 'None'):
-            value['los'] = None
+        for key in defaultdic:value=check_key(value,key,defaultdic[key])
+        #-----------------------------------------------------------
 
         for tmp in ['i', 'q', 'u', 'v']:
             if ('weights stokes {0}'.format(tmp) not in value):
@@ -453,16 +1291,7 @@ class Model(object):
             elif (value['weights stokes {0}'.format(tmp)] == 'None'):
                 value['weights stokes {0}'.format(tmp)] = [None]*10
 
-        if ('boundary condition' not in value):
-            value['boundary condition'] = None
-        elif (value['boundary condition'] == 'None'):
-            value['boundary condition'] = None
 
-        if ('instrumental profile' not in value):
-            value['instrumental profile'] = None
-        elif (value['instrumental profile'] == 'None'):
-            value['instrumental profile'] = None        
-        
         # Wavelength file is not present
         if (value['wavelength file'] is None):
 
@@ -545,19 +1374,32 @@ class Model(object):
             if (self.verbose >= 1):
                 self.logger.info('  - Using LOS {0}'.format(value['los']))
 
-        if (value['boundary condition'] is None):
-            if (self.verbose >= 1):
-                self.logger.info('  - Using default boundary conditions [1,0,0,0] in spectral region {0} or read from file. Check carefully!'.format(value['name']))
-            boundary = np.array([1.0,0.0,0.0,0.0])            
+        #this block is adapted from add_spectrum but not checked because add_spectral is deprecated
+        #---------------------- 
+        if (self.verbose >= 1):
+            self.logger.info('  - Using I0fraction = {0} for normalization in spectral region {1}'.format(value['i0fraction'],value['name']))
+
+        
+
+        if (value['boundary'] is None):
+            if (self.verbose >= 1):self.logger.info('  - Using default boundary conditions [1,0,0,0] in spectral region {0} or read from file. Check carefully!'.format(value['name']))
+            boundary = value['i0fraction']*np.array([1.0,0.0,0.0,0.0])  
             self.normalization = 'on-disk'
         else:
-            boundary = np.array(value['boundary condition']).astype('float64')
-            if (boundary[0] == 0.0):
-                if (self.verbose >= 1):
-                    self.logger.info('  - Using off-limb normalization (peak intensity)')
-
             if (self.verbose >= 1):
-                self.logger.info('  - Using boundary condition {0}'.format(value['boundary condition']))
+                if (np.ndim(value['boundary'][0])==0):#boundary elements are scalars [1.0,0.0,0.0,0.0]
+                    self.logger.info('  - Using constant boundary conditions {0}'.format(value['boundary']))
+                    if (value['boundary'][0] == 0.0):self.logger.info('  - Using off-limb normalization (peak intensity)')          
+                else:#the user already introduced float 64 arrays with spectral dependences for I.
+                    self.logger.info('  - Using spectral profiles in boundary conditions')
+                    if (value['boundary'][0,0] == 0.0):self.logger.info('  - Using off-limb normalization (peak intensity)')          
+            boundary = value['i0fraction']*np.array(value['boundary']).astype('float64')#gives array([1.0,0.0,0.0,0.0]) or array of (4,Nwavelength) 
+
+        if (value['synmethod'] is not None) and (value['synmethod'] != self.methods_dicT[self.synmethod] ):
+            self.check_method(value['synmethod']) #synmethod is a string with name, self.synmethod is the number
+            self.synmethod=self.methods_dicS[value['synmethod']] #update self.synmethod with the number
+
+        #----------------------
 
         stokes_weights = []
         for st in ['i', 'q', 'u', 'v']:
@@ -567,12 +1409,85 @@ class Model(object):
         
         stokes_weights = np.array(stokes_weights)
         
-        self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, 
-            name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, mask_file=mask_file, instrumental_profile=value['instrumental profile'], root=self.root, wvl_lr=wvl_lr)
 
-        self.topologies.append(value['topology'])
-        
+        #EDGAR: atom, line_to_index and line keywords moved to add_spectral
+        if ('atom' in value) and (value['atom']in self.atomsdic):
+            self.atom=value['atom']#self.atom can be deleted because is not used anywhere else
+            self.line_to_index=self.atomsdic[value['atom']]
+        else:
+            raise Exception('Atom is not specified or not in the database. Please, define a valid atom.')
     
+        if (self.verbose >= 1):self.logger.info('Atom added.')
+        
+        #EDGAR: line for Hazel chromospheres and for SIR photosphere
+        #it seems lines for SIR read in add_photosphere were wrong because they were introduced programatically
+        #with the field atm['spectral lines'] in add_photosphere, but there was no such a field defined anywhere 
+        lineH, lineS = '', ''
+        if ('linehazel' in value) and (value['linehazel'] in self.atomsdic[value['atom']]):
+            lineH=value['linehazel'] #e.g. '10830'.  Lines for activating in Hazel atmos
+            if (self.verbose >= 1):self.logger.info("    * Adding HAZEL line : {0}".format(lineH))
+        else:
+            if ('linesir' in value):#same for SIR lines #SIR photospheres have NOT been checked
+                lineS = [int(k) for k in list(value['linesir'])] #we moved this from add_photosphere
+                if (self.verbose >= 1):self.logger.info("    * Adding SIR line : {0}".format(lineS))
+            else:
+                raise Exception('Line is not specified or not in the database. Please, define a valid line.')
+
+        self.nch=0  #n_chromospheres=0    
+        for k, atm in self.atmospheres.items():            
+            if (atm.type == 'chromosphere'):self.nch += 1 #should be equal to self.n_chromospheres.
+        
+        if (self.verbose >= 1):self.logger.info('N_chromospheres before setup',self.nch)
+
+
+        #EDGAR:inside here there is the add_spectrum routine setting up self.spectrum['spx'].wavelength_axis used below 
+        self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, 
+            name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, 
+            mask_file=mask_file, instrumental_profile=value['instrumental profile'], 
+            root=self.root, wvl_lr=wvl_lr,lti=self.line_to_index,lineHazel=lineH,lineSIR=lineS,
+            n_chromo=self.nch, synmethod=self.synmethod)
+        #we send line_to_index and lines to be activated to this Spectrum object for accessing them later from everywhere
+        #we could then remove self.line_to_index from here
+        #and we could now remove all what has to do with spectrum from add_chromosphere and add_photosphere
+        #so that add_spectral and add_atmos can be invoked in any order
+
+
+        #--EDGAR---------------------------------------------------------------
+        #Update spectrum object with the multiplets for later accesing it from synthesize at chromosphere.py
+        self.spectrum[name].multiplets = self.multipletsdic[atom] 
+        #ntrans needed to define length of nbar,omega, and j10.
+        self.spectrum[name].ntrans = self.ntrans #len(self.multipletsdic[atom])
+
+        #'atmos window'  is the old 'wavelength' keyword of add_chromosphere
+        #we are here defining the wavelength window for all atmospheres associated to this spectral region
+        value=check_key(value,'atmos window',None)
+
+        if (value[keyw] is not None):#EDGAR: if not in dictionary, then take the one of current atm['spectral region']
+            wvl_range = [float(k) for k in value[keyw]]
+        else:
+            wvl_range = [np.min(self.spectrum[value['name']].wavelength_axis), np.max(self.spectrum[value['name']].wavelength_axis)]
+
+        topo=value['topology']
+        #self.topologies.append(topo)#'ph1->ch1+ch2'  #if topologies is a list
+        self.topologies[name]=topo# anade una entrada del tipo {'sp1':'ch1->ch2'}  #now topology is dictionary
+        
+        #this gives just string names:
+        #list_of_lists=[k.split('+') for k in topo.split('->')] #[['ph1'], ['ch1', 'ch2']]
+        #list_of_atms=[item for sublist in list_of_lists for item in sublist]#['ph1', 'ch1', 'ch2']
+    
+        """
+        Activate this spectrum with add_active_line for all existing atmospheres.
+        Part of this routine was previously inside every add_atmosphere routine.
+        Now all spectral and atmospheric actions and routines are disentangled. 
+        Activate_lines is now called after adding all atmospheres in topology but before passing pars.
+        """
+        if (self.verbose >= 1):self.logger.info('Activating lines in atmospheres',self.nch)
+        for k, atm in self.atmospheres.items():            
+            atm.add_active_line(spectrum=self.spectrum[value['name']], wvl_range=np.array(wvl_range))
+
+
+        #--------------------------------------------------------------------
+
     def add_photosphere(self, atmosphere):
         """
         Programmatically add a photosphere
@@ -595,7 +1510,7 @@ class Model(object):
         atm = hazel.util.lower_dict_keys(atmosphere)
 
         self.atmospheres[atm['name']] = SIR_atmosphere(working_mode=self.working_mode, name=atm['name'], verbose=self.verbose)
-        lines = [int(k) for k in list(atm['spectral lines'])]
+        
 
         # If NLTE is available because PyTorch and PyTorch Geom are available
         # check whether the line is needed in NLTE or not
@@ -608,7 +1523,8 @@ class Model(object):
                     self.logger.info("    * Line in NLTE if available")
         else:
             self.atmospheres[atm['name']].nlte = False
-                
+        
+        """  EDGAR:   now you can DELETE this block   
         if ('wavelength' not in atm):
             atm['wavelength'] = None
         elif (atm['wavelength'] == 'None'):
@@ -619,20 +1535,32 @@ class Model(object):
         else:
             wvl_range = [np.min(self.spectrum[atm['spectral region']].wavelength_axis), np.max(self.spectrum[atm['spectral region']].wavelength_axis)]
 
-        if ('reference frame' in atm):
-            if ('line-of-sight' in atm['reference frame']):
-                self.atmospheres[atm['name']].reference_frame = 'line-of-sight'
-            if ('vertical' in atm['reference frame']):
+        #lines = [int(k) for k in list(atm['spectral lines'])] #we want lines to be set in add_spectral
+        #self.atmospheres[atm['name']].add_active_line(lines=lines, spectrum=self.spectrum[atm['spectral region']], 
+        #    wvl_range=np.array(wvl_range), verbose=self.verbose) #EDGAR ,  OLD version
+                    
+        self.atmospheres[atm['name']].add_active_line(spectrum=self.spectrum[atm['spectral region']], 
+            wvl_range=np.array(wvl_range), verbose=self.verbose)
+        """
+
+        #EDGAR:more efficient set up of reference frame
+        refkey=''
+        self.atmospheres[atm['name']].reference_frame = 'line-of-sight'#always for photospheres
+        if ('reference frame' in atm):refkey='reference frame'
+        if ('ref frame' in atm):refkey='ref frame' #short keyword alias
+        if ('vertical' in atm[refkey]):
                 raise Exception('Magnetic fields in photospheres are always in the line-of-sight reference frame.')
-        else:
-            self.atmospheres[atm['name']].reference_frame = 'line-of-sight'
+
+        #if ('reference frame' in atm):
+        #    if ('line-of-sight' in atm['reference frame'] or 'LOS' in atm['reference frame']):
+        #        self.atmospheres[atm['name']].reference_frame = 'line-of-sight'
+        #    if ('vertical' in atm['reference frame']):
+        #        raise Exception('Magnetic fields in photospheres are always in the line-of-sight reference frame.')
+        #else:
+        #    self.atmospheres[atm['name']].reference_frame = 'line-of-sight'
 
         if (self.verbose >= 1):
-            self.logger.info("    * Adding line : {0}".format(lines))
             self.logger.info("    * Magnetic field reference frame : {0}".format(self.atmospheres[atm['name']].reference_frame))
-                    
-        self.atmospheres[atm['name']].add_active_line(lines=lines, spectrum=self.spectrum[atm['spectral region']], 
-            wvl_range=np.array(wvl_range), verbose=self.verbose)
 
         if (self.atmospheres[atm['name']].graphnet_nlte is not None):
             self.set_nlte(True)
@@ -688,7 +1616,12 @@ class Model(object):
         ----------
         atmosphere : dict
             Dictionary containing the following data
-            'Name', 'Spectral region', 'Height', 'Line', 'Wavelength', 'Reference atmospheric model',
+            'Name', 'Spectral region', 'Height', 'Line', 'Wavelength',
+            ...
+            magnetic field reference frame
+            coordinates for magnetic field parameters
+            ...
+            'Reference atmospheric model',
             'Ranges', 'Nodes'
 
         Returns
@@ -697,32 +1630,53 @@ class Model(object):
         """
 
         # Make sure that all keys of the input dictionary are in lower case
-        # This is irrelevant if a configuration file is used because this has been
-        # already done
+        # This is irrelevant if a configuration file is used because this has been already done
         atm = hazel.util.lower_dict_keys(atmosphere)
-        
-        self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, name=atm['name'], atom='sodium')
 
+        self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, \
+        name=atm['name'],ntrans=self.ntrans,hazelpars=self.apmosekcl)#EDGAR:,atom=atm['atom'])
+
+        #------------------------------------------------------------------------
+        """EDGAR now you can DELETE THIS BLOCK
+        #the only thing of this block that cannot be known from add_spectrum is atm['wavelength']
+        #so we need to store it associated to every atmosphere. This is a bit of nonsense because
+        #although we would define a spectral window associted to each atmosphere, it is also true
+        #that they would all be the same for a same radiative transfer / spectrum topology.
+        #so we only have to define a single spectral window ('wavelength') associated to all
+        #atmospheres of a same spectral region (or of a same spectrum as we shall rename it).
+        #and this have to be done from add_spectrum, although it would be done for each atmosphere,
+        #together with the activation of the line.
+        
         if ('wavelength' not in atm):
             atm['wavelength'] = None
         elif (atm['wavelength'] == 'None'):
             atm['wavelength'] = None
 
-        if (atm['wavelength'] is not None):
+        if (atm['wavelength'] is not None):#EDGAR: if not in dictionary, then take the one of current atm['spectral region']
             wvl_range = [float(k) for k in atm['wavelength']]
         else:
             wvl_range = [np.min(self.spectrum[atm['spectral region']].wavelength_axis), np.max(self.spectrum[atm['spectral region']].wavelength_axis)]
 
-        self.atmospheres[atm['name']].add_active_line(line=atm['line'], spectrum=self.spectrum[atm['spectral region']], 
+        #all this could be done in add_spectral (after adding all atmospheres of topology but before passing 
+        #parameters) in a for for every atmopshere
+        #self.atmospheres[atm['name']].add_active_line(line=atm['line'], spectrum=self.spectrum[atm['spectral region']], 
+        #    wvl_range=np.array(wvl_range)) #OLD
+        #now line is taken from spectrum, not from atmosphere, we could instead read it from model object adding key line=self.line
+        self.atmospheres[atm['name']].add_active_line(spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
+        """
+        #------------------------------------------------------------------------
 
-        if ('reference frame' in atm):
-            if (atm['reference frame'] == 'line-of-sight'):
+        #EDGAR: more efficient and flexible reference frame set up
+        refkey=''
+        self.atmospheres[atm['name']].reference_frame = 'vertical'#default
+        if ('reference frame' in atm):refkey='reference frame'
+        if ('ref frame' in atm):refkey='ref frame' #short keyword alias
+        if (refkey != ''):#desired reference frame has been specified
+            if (atm[refkey] == 'line-of-sight' or atm[refkey] == 'LOS'):
                 self.atmospheres[atm['name']].reference_frame = 'line-of-sight'
-            if (atm['reference frame'] == 'vertical'):
-                self.atmospheres[atm['name']].reference_frame = 'vertical'
-        else:
-            self.atmospheres[atm['name']].reference_frame = 'vertical'
+            elif (atm[refkey] != 'vertical'):
+                raise Exception('Error: wrong specification of reference frame.')
 
         if (self.verbose >= 1):
             self.logger.info("    * Adding line : {0}".format(atm['line']))
@@ -748,14 +1702,15 @@ class Model(object):
                             self.atmospheres[atm['name']].regularization[k2] = None
                         else:
                             self.atmospheres[atm['name']].regularization[k2] = v
-        
-        if ('coordinates for magnetic field vector' in atm):
-            if (atm['coordinates for magnetic field vector'] == 'cartesian'):
+        #EDGAR : now 'coordinates for magnetic field vector' is 'coordB' 
+        #but remember to write it here in lower case (see above)
+        if ('coordb' in atm):
+            if (atm['coordb'] == 'cartesian'):
                 self.atmospheres[atm['name']].coordinates_B = 'cartesian'
-            if (atm['coordinates for magnetic field vector'] == 'spherical'):
+            if (atm['coordb'] == 'spherical'):
                 self.atmospheres[atm['name']].coordinates_B = 'spherical'
         else:
-            self.atmospheres[atm['name']].coordinates_B = 'cartesian'
+            self.atmospheres[atm['name']].coordinates_B = 'spherical' #default
 
         self.atmospheres[atm['name']].select_coordinate_system()
 
@@ -781,8 +1736,25 @@ class Model(object):
                 for k2, v2 in self.atmospheres[atm['name']].parameters.items():
                     if (k.lower() == k2.lower()):                            
                         self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)
-                            
-            
+        #EDGAR: return directly the dict entry with the name of the chromo that has been just added
+        return self.atmospheres[atm['name']] 
+
+    def add_chrom(self, atmosphere):#EDGAR: alias to add_chromosphere
+        return self.add_chromosphere(atmosphere)
+
+    def add_Nchroms(self,tags,ckey,hz=None):
+        '''
+        Add N chromospheres with a list of tags/names(e.g.['c1','c2']), 
+        a dictionary of common paraemters (ckeys), and 
+        a list of specific heigths as optional keyword.
+        '''
+        if (hz is None):hz=[0.0]*len(tags)
+        chout=[]
+        for kk,ch in enumerate(tags):
+            chout.append(self.add_chromosphere({'name': ch,'height': hz[kk],**ckey}))
+
+        return chout, tags
+
     def add_parametric(self, atmosphere):
         """
         Programmatically add a parametric atmosphere
@@ -805,7 +1777,8 @@ class Model(object):
         atm = hazel.util.lower_dict_keys(atmosphere)
 
         self.atmospheres[atm['name']] = Parametric_atmosphere(working_mode=self.working_mode)
-
+        
+        """EDGAR you can now delete this block
         if ('wavelength' not in atm):
             atm['wavelength'] = None
         elif (atm['wavelength'] == 'None'):
@@ -818,6 +1791,7 @@ class Model(object):
 
         self.atmospheres[atm['name']].add_active_line(spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
+        """
 
         if ('ranges' in atm):
             for k, v in atm['ranges'].items():
@@ -880,7 +1854,8 @@ class Model(object):
         atm = hazel.util.lower_dict_keys(atmosphere)
 
         self.atmospheres[atm['name']] = Straylight_atmosphere(working_mode=self.working_mode)
-                
+        
+        """
         if ('wavelength' not in atm):
             atm['wavelength'] = None
         elif (atm['wavelength'] == 'None'):
@@ -893,6 +1868,7 @@ class Model(object):
 
         self.atmospheres[atm['name']].add_active_line(spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
+        """
 
         if ('ranges' in atm):
             for k, v in atm['ranges'].items():
@@ -1097,14 +2073,23 @@ class Model(object):
                 sir_code.init(v.index, nblend, lines, atom, istage, wvl, zeff, energy, loggf,
                     mult1, mult2, design1, design2, tam1, tam2, alfa, sigma, lambda0, lambda1, n_steps)
 
+    #EDGAR: BUG the exit function defined in pyx file had an undersacore. Now it works
     def exit_hazel(self):
         for k, v in self.atmospheres.items():            
             if (v.type == 'chromosphere'):
-                hazel_code.exit(v.index)
+                hazel_code._exit(v.index) 
 
-    def add_topology(self, atmosphere_order):
+    def add_topology(self, atmosphere_order,specname):
         """
-        Add a new topology
+        Add a new topology.
+        EDGAR: A topology is always associated to a spectrum. Hence these two aspects should be
+        related in such a way that we know exactly the atmospheres by the name of the spectrum 
+        (i.e. by the name of the spectral region). If this is done, then in synthesize_spectral_region
+        we dont need to run over all atmospheres, but only through those linked to the spectrum name.
+        For carrying out the radiative transfer, we need then a routine get_transfer_path 
+        that returns the list of atmosphere objects (order) in the self.order_atmospheres list
+        associated to the spectrum name.
+        
 
         Parameters
         ----------
@@ -1129,8 +2114,11 @@ class Model(object):
             
             tmp = []
             for n in name:
-                tmp.append(n)
-                self.atmospheres[n].active = True
+                if (n in self.atmospheres):#EDGAR:check that atmosphres in topology were add before
+                    tmp.append(n)
+                    self.atmospheres[n].active = True
+                else:
+                    raise Exception("Atmosphere {0} has not been add. Revise the slab names.".format(name))
 
             order.append(tmp)
         
@@ -1142,6 +2130,8 @@ class Model(object):
                 raise Exception("Straylight components can only be at the last position of a topology.")
         
         self.order_atmospheres.append(order)
+        
+        self.atms_in_spectrum[specname]=order  #new for making synthesize_spectral_region easier
 
         # Check that there are no two photospheres linked with ->
         # because they do not make any sense
@@ -1156,6 +2146,8 @@ class Model(object):
         if (len(n_photospheres_linked) != len(set(n_photospheres_linked))):
             raise Exception("There are several photospheres linked with ->. This is not allowed.")
                         
+        
+
     def normalize_ff(self):
         """
         Normalize all filling factors so that they add to one to avoid later problems.
@@ -1196,9 +2188,73 @@ class Model(object):
                             self.atmospheres[atm].parameters['ff'] = ff / total_ff
                             self.atmospheres[atm].parameters['ff'] = physical_to_transformed(self.atmospheres[atm].parameters['ff'], -0.00001, 1.00001)
 
+    def check_filling_factors(self, spectral_region):
+        for n, order in enumerate(self.atms_in_spectrum[spectral_region] ): #n run layers along the ray
+            if (len(order) > 1):#k runs subpixels of topologies c1+c2                                                  
+                count=0
+                for k, atm in enumerate(order):count+=self.atmospheres[atm].parameters['ff']
+                if (count!=1.0):
+                    print("WARNING: Filling factors of layer {0} do not add up to one. Assuming iso-contribution.".format(n))            
+                    for k, atm in enumerate(order):self.atmospheres[atm].parameters['ff']=1.0/len(order)
 
-    def synthesize_spectral_region(self, spectral_region, perturbation=False):
+    def synthesize_spectrum(self, spectral_region, method,perturbation=False, stokes=None,stokes_out = None,fractional=False):
         """
+        Synthesize all atmospheres of a spectral region and normalize to continuum of quiet Sun at disk center
+        Photospheres must be first lower and unique, stray atms should be always last higher
+        Stokes and stokes_out are local variables initialized in header (not intended to be inputs!).
+        atms_in_spectrum makes unnecessary to check the asp spectral region inside the double loop below
+        -----------Parameters:----------
+        spectral_region : str.    Spectral region to synthesize
+        method: synthesis method for solving the RTE
+        perturbation : bool
+            True if you are synthesizing with a perturbation. Then, the synthesis
+            is saved in spectrum.stokes_perturbed instead of spectrum.stokes
+        fractional: to calculate emergent Stokes profiles as normalized to continuum or as divided by I(lambda)
+        --------------------------------
+        for a topology c0->c1+c2 the following inside the loops  gives:
+        print(self.atms_in_spectrum[spectral_region])  #0 , [['c0'], ['c1','c2']] #all the chain of atmospehres
+        print(n,order)        #0,['c0'] and 1,['c1','c2'] #the current layer
+        print(k,atm)            #0,c0 / 0,c1 1,c2 (con chX los nombres(strings) de las atms)
+        """        
+        for n, order in enumerate(self.atms_in_spectrum[spectral_region] ): #n run layers along the ray
+            for k, atm in enumerate(order):  #k runs subpixels of topologies c1+c2                                                  
+                self.atmospheres[atm].line_to_index=self.line_to_index#update line_to_index in atm/hazel synthesize with that in add_spectral. 
+                asp=self.atmospheres[atm].spectrum #for local compact notation
+
+                xbot, xtop = self.atmospheres[atm].wvl_range
+                if (n > 0 and k == 0):stokes_out = stokes[:,xbot:xtop] #Update boundary cond. for layers above bottom one      
+            
+                if (self.atmospheres[atm].type == 'straylight'):#call to synthesize in stray.py 
+                    stokes, error = self.atmospheres[atm].synthesize(nlte=self.use_nlte) 
+                    if (error == 1):raise 
+                    stokes += (1.0 - self.atmospheres[atm].parameters['ff']) * stokes_out                            
+                else: #chromospheres and photospheres
+                    if (k == 0):#1st subelement of c1+c2 layer, or just the element in single layers 
+                        if (self.use_analytical_RF):stokes, self.rf_analytical, error = \
+                            self.atmospheres[atm].synthesize(stokes_out, returnRF=True, nlte=self.use_nlte)#always calls a photosphere with RF  
+                        else:stokes, asp.eps[n+k,:,:],asp.eta[n+k,:,:],asp.stim[n+k,:,:],error = \
+                            self.atmospheres[atm].synthazel(method,stokes=stokes_out, nlte=self.use_nlte)#For single chromospheres
+                    else:#if c1+c2, adds up stokes of all sub-pixels  
+                        tmp,asp.eps[n+k,:,:],asp.eta[n+k,:,:],asp.stim[n+k,:,:], error = \
+                        self.atmospheres[atm].synthazel(method,stokes=stokes_out,nlte=self.use_nlte)
+                        stokes += tmp#DOUBT:the sum of contribs of all supixels should be done at the end of the transfer
+                    #-------------------------------------------------------------------
+        i0=hazel.util.i0_allen(np.mean(asp.wavelength_axis[xbot:xtop]), self.muAllen)  #at mean wavelength
+        #i0=hazel.util.i0_allen(asp.wavelength_axis[xbot:xtop], self.muAllen)[None,:] #at each wavelength
+        if (self.use_analytical_RF):#EDGAR CAUTION: verify this is ok out of the loop 
+            for k, v in self.rf_analytical.items():
+                if (k != 'ff'):v /= i0  #EDGAR CAUTION: fractional keyword does not affect here
+
+        if fractional:i0=stokes[0,:] #when fractional, P(lambda)/I(lambda) will be stored in spectrum object
+        
+        if (perturbation):asp.stokes_perturbed[:,xbot:xtop] = stokes/ i0
+        else:asp.stokes[:,xbot:xtop] = stokes/ i0
+
+
+    def synthesize_spectral_region(self, spectral_region, perturbation=False): #OLD ROUTINE
+        """
+        EDGAR:This routine is not called anymore: it has been substituted by synthesize_spectrum.
+
         Synthesize all atmospheres for a single spectral region and normalize to the continuum of the quiet Sun at disk center
 
         Parameters
@@ -1219,52 +2275,51 @@ class Model(object):
 
         # Loop over all atmospheres        
         for i, atmospheres in enumerate(self.order_atmospheres):
-            
             for n, order in enumerate(atmospheres):
-                                                                
                 for k, atm in enumerate(order):                    
-                    
-                    if (self.atmospheres[atm].spectrum.name == spectral_region):                        
-                        
-                        # Update the boundary condition only for the first atmosphere if several are sharing ff      
-                        if (n > 0 and k == 0):
-                            ind_low, ind_top = self.atmospheres[atm].wvl_range
-                            
-                            if (perturbation):
-                                stokes_out = self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top] * hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
-                            else:
-                                stokes_out = self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top] * hazel.util.i0_allen(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
+                    #EDGAR: updating line_to_index seen by atmosphere and by hazel synthesize
+                    #with the self.line_to_index known from add_spectral: 
+                    self.atmospheres[atm].line_to_index=self.line_to_index 
+                    asp=self.atmospheres[atm].spectrum
 
+                    if (self.atmospheres[atm].spectrum.name == spectral_region):                        
+                        ind_low, ind_top = self.atmospheres[atm].wvl_range
+                        # Update the boundary condition only for the first atmosphere if several are sharing ff      
+                        if (n > 0 and k == 0):#the multiplication with i0 seems to compensate for the division at the end
+                            if (perturbation):
+                                stokes_out = asp.stokes_perturbed[:, ind_low:ind_top] * hazel.util.i0_allen(asp.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
+                            else:
+                                stokes_out = asp.stokes[:, ind_low:ind_top] * hazel.util.i0_allen(asp.wavelength_axis[ind_low:ind_top], 1.0)[None,:]
+                        
+                        #EDGAR: photospheres must be first lower and unique, stray atms should be always last higher,
+                        #and I guess chromospheres can be alone and as many as desired
                         if (self.atmospheres[atm].type == 'straylight'):
-                            stokes, error = self.atmospheres[atm].synthesize(nlte=self.use_nlte)
+                            #EDGAR:these are stray synthesis routines(no stokes_out, and are type 'straylight').
+                            stokes, error = self.atmospheres[atm].synthesize(nlte=self.use_nlte) #call to synthesize routine in stray.py 
                             if (error == 1):
                                 raise 
                             stokes += (1.0 - self.atmospheres[atm].parameters['ff']) * stokes_out                            
-                        else:
-                            if (k == 0):                                
+                        else: #for types chromosphere and photosphere
+                            if (k == 0): #k=0 is the lower atmosphere, either a PHOTOSPHERE or a CHROMOSPHERE in my tests                               
                                 if (self.use_analytical_RF):
                                     stokes, self.rf_analytical, error = self.atmospheres[atm].synthesize(stokes_out, returnRF=True, nlte=self.use_nlte)
-                                else:                                    
-                                    stokes, error = self.atmospheres[atm].synthesize(stokes_out, nlte=self.use_nlte)
-                            else:             
-                                tmp, error = self.atmospheres[atm].synthesize(stokes_out, nlte=self.use_nlte)
-                                stokes += tmp
-                                    
-                        ind_low, ind_top = self.atmospheres[atm].wvl_range
-                        
-                        mean_wvl = np.mean(self.atmospheres[atm].spectrum.wavelength_axis[ind_low:ind_top])
-                        i0 = hazel.util.i0_allen(mean_wvl, 1.0)
+                                else:
+                                    stokes, asp.eps[n+k,:,:],asp.eta[n+k,:,:],asp.stim[n+k,:,:],error = self.atmospheres[atm].synthesize(stokes=stokes_out, nlte=self.use_nlte)
+                            else: 
+                                tmp,asp.eps[n+k,:,:],asp.eta[n+k,:,:],asp.stim[n+k,:,:], error = self.atmospheres[atm].synthesize(stokes=stokes_out,nlte=self.use_nlte)
+                                stokes += tmp  #EDGAR:we are adding current result to previous last one
+                                
+                        #-------------------------------------------------------------------
+                        # Divide by i0: why are we dividing by i0 in every step of the radiative trasnfer??
+                        mean_wvl = np.mean(asp.wavelength_axis[ind_low:ind_top])
+                        i0 = hazel.util.i0_allen(mean_wvl, 1.0) #print(i0)
 
-                        # Divide by i0
                         if (self.use_analytical_RF):
                             for k, v in self.rf_analytical.items():
-                                if (k != 'ff'):
-                                    v /= i0
+                                if (k != 'ff'):v /= i0 
 
-                        if (perturbation):
-                            self.atmospheres[atm].spectrum.stokes_perturbed[:, ind_low:ind_top] = stokes / i0#[None,:]
-                        else:                            
-                            self.atmospheres[atm].spectrum.stokes[:, ind_low:ind_top] = stokes / i0#[None,:]
+                        if (perturbation):asp.stokes_perturbed[:, ind_low:ind_top] = stokes / i0#[None,:]
+                        else:asp.stokes[:, ind_low:ind_top] = stokes / i0#[None,:]
     
     def set_nlte(self, option):
         """
@@ -1279,7 +2334,7 @@ class Model(object):
         if (self.verbose >= 1):
             self.logger.info('Setting NLTE for Ca II 8542 A to {0}'.format(self.use_nlte))
 
-    def synthesize(self, perturbation=False):
+    def synthesize(self, perturbation=False, method=None,muAllen=1.0,frac=None,fractional=False,obj=None,plot=None,ax=None):
         """
         Synthesize all atmospheres
 
@@ -1294,11 +2349,32 @@ class Model(object):
         None
 
         """
+        if frac is True:fractional=frac #abreviated keyword to fractional
 
+        self.muAllen=muAllen #mu where Allen continuum shall be taken for normalizing Stokes output 
+
+        if (method is not None) and (method != self.methods_dicT[self.synmethod]):
+            #print(method,self.methods_dicT[self.synmethod])
+            print('Changing synthesis method to {0}.'.format(method))
+            self.check_method(method)
+            self.synmethod=self.methods_dicS[method]#pass from string label to number label and update self
+
+        #EDGAR: WARNING,I think normalize_ff was not working for the synthesis. 
         if (self.working_mode == 'inversion'):
             self.normalize_ff()
-        for k, v in self.spectrum.items():
-            self.synthesize_spectral_region(k, perturbation=perturbation)            
+            fractional=False #always work with Stokes/Icont in inversions.
+
+        for k, v in self.spectrum.items():#k is name of the spectrum or spectral region
+            #EDGAR: checking correct filling factors in composed layers
+            #TBD: this kind of check should be done during setup, not in calculations time 
+            self.check_filling_factors(k)
+            
+            #self.synthesize_spectral_region(k, perturbation=perturbation)  #OLD          
+            self.synthesize_spectrum(k, self.synmethod,perturbation=perturbation)   #EDGAR NEW
+            #we never call synthesize with fractional=True to avoid storing the fractional
+            #polarization in spectrum and thus avoid possible mistakes
+            #the fractional polarization shall only be shown in plotting
+
             if (v.normalization == 'off-limb'):
                 if (perturbation):
                     v.stokes_perturbed /= np.max(v.stokes_perturbed[0,:])
@@ -1318,7 +2394,17 @@ class Model(object):
                         v.stokes_perturbed_lr[i,:] = np.interp(v.wavelength_axis_lr, v.wavelength_axis, v.stokes_perturbed[i,:])
                     else:                        
                         v.stokes_lr[i,:] = np.interp(v.wavelength_axis_lr, v.wavelength_axis, v.stokes[i,:])                    
-                            
+
+            
+            if (plot is not None):#plot called inside loops
+                if (k == plot):self.plot_stokes(plot,fractional=fractional)
+            else:#plot is None because synthesize routine was called without intention of plotting or from mutation
+                if obj is None:self.remove_fig(self.labelf1)#self.f1)
+                
+            
+            
+        #return ax
+
     def find_active_parameters(self, cycle):
         """
         Find all active parameters in all active atmospheres in the current cycle
@@ -1398,8 +2484,6 @@ class Model(object):
         None
 
         """
-        self.synthesize()
-
         if (not compute_rf):            
             return
 
