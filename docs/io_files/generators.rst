@@ -33,8 +33,22 @@ In this case, `tmp` contains a dictionary `obs` with the following keys with the
     In [1]: tmp.obs.keys()
     Out[1]: dict_keys(['stokes', 'sigma', 'los', 'boundary', 'wavelength', 'weights', 'mask'])
 
-You can then fill up these arrays with the appropriate data and finally save the observations
-with:
+The sizes of the arrays are:
+
+::
+
+    In [1]: for k in tmp.obs.keys():
+                print(k, tmp.obs[k].shape)
+    Out[1]: stokes (1, 128, 4)
+            sigma (1, 128, 4)
+            los (1, 3)
+            boundary (1, 128, 4)
+            wavelength (128,)
+            weights (128, 4)
+            mask (1,)
+
+where the first index is the pixel number. Even in 1D models, you will always have this first index. You can then 
+fill up these arrays with the appropriate data and finally save the observations with:
 
 ::
 

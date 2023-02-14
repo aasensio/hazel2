@@ -309,7 +309,10 @@ class Iterator(object):
 
                 elif tag == tags.EXIT:                    
                     closed_workers += 1
-                    pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers='{0} finished'.format(source), elapsed='{0:6.3f} s <{1:6.3f} s>'.format(self.elapsed, self.avg_elapsed))                    
+                    if (self.elapsed == 'Numerical error'):
+                        pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers='{0} finished with numerical error'.format(source))
+                    else:
+                        pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers='{0} finished'.format(source), elapsed='{0:6.3f} s <{1:6.3f} s>'.format(self.elapsed, self.avg_elapsed))
 
     def mpi_workers_work(self):
         """
