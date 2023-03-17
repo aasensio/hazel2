@@ -119,7 +119,7 @@ class Straylight_atmosphere(General_atmosphere):
 
         self.model_handler = Generic_stray_file(model_file)
         self.model_handler.open()
-        out, ff = self.model_handler.read(pixel=0)
+        out, ff = self.model_handler.read(pixel=0)        
         self.model_handler.close()
         
         self.set_parameters(out, ff)

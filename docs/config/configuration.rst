@@ -70,7 +70,7 @@ atmospheres (described below) will produce the synthetic profiles for this regio
 * ``Straylight file`` (optional) defines the file with the straylight. See :ref:`input` for more information.
 * ``Mask file`` (optional) defines a mask to invert only a selection of pixels from an input file. See :ref:`input` for more information.
 * ``Weights Stokes`` (optional) defines the weights for all Stokes parameters and cycles. If absent, they will be considered to be 1.
-* ``Instrumental profile`` (optional) defines the instrumental profile. It can be absent, equal to ``None``, a float giving the width of a Gaussian PSF or a file with the PSF (given with two columns with wavelength displacement in A and PSF).
+* ``Instrumental profile`` (optional) defines the instrumental profile. It can be absent, equal to ``None``, a float giving the width (measured in km/s) of a Gaussian PSF (exp(-lambda**2/sigma**2), with sigma computed from the width, after transforming from velocity to wavelength units) or a file with the PSF (given with two columns with wavelength displacement in A and PSF).
 
 Atmospheres
 -----------

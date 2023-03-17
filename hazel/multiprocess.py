@@ -151,7 +151,7 @@ class Iterator(object):
                     else:
                         self.model.synthesize()
                         self.model.flatten_parameters_to_reference(cycle=0)
-
+                    
                     self.model.output_handler.write(self.model, pixel=i, randomization=loop)
         
         if (self.model.working_mode == 'inversion'):

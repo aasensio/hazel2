@@ -108,7 +108,7 @@ class General_atmosphere(object):
     
         """
         
-        for k, v in self.parameters.items():            
+        for k, v in self.parameters.items():
             if (self.ranges[k] is not None):
                 lower = self.ranges[k][0] #- self.eps_borders
                 upper = self.ranges[k][1] #+ self.eps_borders
@@ -147,7 +147,7 @@ class General_atmosphere(object):
         -------
         None
         """            
-        self.nodes_to_model()
+        self.nodes_to_model()        
         self.reference = copy.deepcopy(self.parameters)
         self.nodes_location =  copy.deepcopy(self.nodes_location)
     

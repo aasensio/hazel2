@@ -304,11 +304,12 @@ class Hazel_atmosphere(General_atmosphere):
         self.model_handler = Generic_hazel_file(model_file)
         self.model_handler.open()
         out, ff = self.model_handler.read(pixel=0)
+        
         self.model_handler.close()
 
         self.set_parameters(out, ff)
 
-        self.init_reference(check_borders=True)
+        self.init_reference(check_borders=True)        
 
     def nodes_to_model(self):
         """
@@ -322,17 +323,17 @@ class Hazel_atmosphere(General_atmosphere):
         -------
         None
         """         
-        for k, v in self.nodes.items():            
+        for k, v in self.nodes.items():
             # if (self.n_nodes[k] > 0):                
-            self.parameters[k] = self.reference[k] + np.squeeze(self.nodes[k])
+            self.parameters[k] = self.reference[k] + np.squeeze(self.nodes[k])            
             # else:                
                 # self.parameters[k] = self.reference[k]            
                             
     def print_parameters(self, first=False, error=False):
         if (self.coordinates_B == 'cartesian'):
-            self.logger.info("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}".format('Bx', 'By', 'Bz', 'tau', 'v', 'deltav', 'beta', 'a'))
-            self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.parameters['Bx'], self.parameters['By'], self.parameters['Bz'], self.parameters['tau'], 
-                self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a']))
+            self.logger.info("     {0}        {1}        {2}        {3}       {4}       {5}      {6}      {7}     {8}".format('Bx', 'By', 'Bz', 'tau', 'v', 'deltav', 'beta', 'a', 'ff'))
+            self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}   {8:8.3f}".format(self.parameters['Bx'], self.parameters['By'], self.parameters['Bz'], self.parameters['tau'], 
+                self.parameters['v'], self.parameters['deltav'], self.parameters['beta'], self.parameters['a'], self.parameters['ff']))
             
             if (error):            
                 self.logger.info("{0:8.3f}  {1:8.3f}  {2:8.3f}  {3:8.3f}  {4:8.3f}  {5:8.3f}  {6:8.3f}  {7:8.3f}".format(self.error['Bx'], self.error['By'], self.error['Bz'], self.error['tau'], 
@@ -367,7 +368,7 @@ class Hazel_atmosphere(General_atmosphere):
         
 
         if (self.working_mode == 'inversion'):
-            self.nodes_to_model()            
+            self.nodes_to_model()
             self.to_physical()
 
         

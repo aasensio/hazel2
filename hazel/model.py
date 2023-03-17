@@ -389,7 +389,7 @@ class Model(object):
 
     def write_output(self, randomization=0):
         if (self.working_mode == 'synthesis'):
-            self.flatten_parameters_to_reference(cycle=0)        
+            self.flatten_parameters_to_reference(cycle=0)
         self.output_handler.write(self, pixel=0, randomization=randomization)
 
     def add_spectral(self, spectral):
@@ -462,7 +462,7 @@ class Model(object):
             value['instrumental profile'] = None
         elif (value['instrumental profile'] == 'None'):
             value['instrumental profile'] = None        
-        
+                
         # Wavelength file is not present
         if (value['wavelength file'] is None):
 
@@ -490,8 +490,8 @@ class Model(object):
                 if (self.verbose >= 1):
                     self.logger.info('  - Reading wavelength axis from {0}'.format(value['wavelength file']))
                 wvl = np.loadtxt(self.root + value['wavelength file'])
-                wvl_lr = None
-                
+                wvl_lr = None                                
+        
         if (value['wavelength weight file'] is None):
             if (self.verbose >= 1 and self.working_mode == 'inversion'):
                 self.logger.info('  - Setting all wavelength weights to 1')
@@ -890,7 +890,7 @@ class Model(object):
             wvl_range = [float(k) for k in atm['wavelength']]
         else:
             wvl_range = [np.min(self.spectrum[atm['spectral region']].wavelength_axis), np.max(self.spectrum[atm['spectral region']].wavelength_axis)]
-
+        
         self.atmospheres[atm['name']].add_active_line(spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range))
 
@@ -1141,7 +1141,7 @@ class Model(object):
             if (self.atmospheres[atm].type == 'straylight'):
                 raise Exception("Straylight components can only be at the last position of a topology.")
         
-        self.order_atmospheres.append(order)
+        self.order_atmospheres.append(order)        
 
         # Check that there are no two photospheres linked with ->
         # because they do not make any sense
@@ -1156,7 +1156,7 @@ class Model(object):
         if (len(n_photospheres_linked) != len(set(n_photospheres_linked))):
             raise Exception("There are several photospheres linked with ->. This is not allowed.")
                         
-    def normalize_ff(self):
+    def normalize_ff_old(self):
         """
         Normalize all filling factors so that they add to one to avoid later problems.
         We use a softmax function to make sure they all add to one and can be unconstrained
@@ -1171,30 +1171,76 @@ class Model(object):
         -------
         None
         """
-
+                
         for atmospheres in self.order_atmospheres:
             for order in atmospheres:
 
                 total_ff = 0.0
-                for atm in order:            
+                for atm in order:
                     if (self.atmospheres[atm].type != 'straylight'):
-                        if (self.working_mode == 'inversion'):                            
-                            self.atmospheres[atm].parameters['ff'], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1]
+                        if (self.working_mode == 'inversion'):                                                        
                             ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
                         else:
                             ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], -0.00001, 1.00001)
                         total_ff += ff
 
-                for atm in order:                    
+                for atm in order:
                     if (self.atmospheres[atm].type != 'straylight'):
                         if (self.working_mode == 'inversion'):
-                            ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
-                            self.atmospheres[atm].parameters['ff'] = ff / total_ff
-                            self.atmospheres[atm].parameters['ff'] = physical_to_transformed(self.atmospheres[atm].parameters['ff'], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
+                            ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])                            
+                            self.atmospheres[atm].parameters['ff'] = physical_to_transformed(ff / total_ff, self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
+                            # self.atmospheres[atm].nodes['ff'] = physical_to_transformed(ff / total_ff, self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
                         else:
                             ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], -0.00001, 1.00001)
-                            self.atmospheres[atm].parameters['ff'] = ff / total_ff
-                            self.atmospheres[atm].parameters['ff'] = physical_to_transformed(self.atmospheres[atm].parameters['ff'], -0.00001, 1.00001)
+                            self.atmospheres[atm].parameters['ff'] = physical_to_transformed(ff / total_ff, -0.00001, 1.00001)
+                            # self.atmospheres[atm].nodes['ff'] = physical_to_transformed(ff / total_ff, -0.00001, 1.00001)
+
+    def normalize_ff(self, nodes):
+        """
+        Normalize all filling factors so that they add to one to avoid later problems.
+        We use a softmax function to make sure they all add to one and can be unconstrained
+
+        ff_i = exp(x_i) / sum(exp(x_i))
+
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+        """
+                
+        for atmospheres in self.order_atmospheres:
+            for order in atmospheres:
+
+                total_ff = 0.0
+                indices = {}
+                for atm in order:
+                    if (self.atmospheres[atm].type != 'straylight'):
+                        for i, node in enumerate(self.active_meta):
+                            if ((node['atm'] == atm) and (node['parameter'] == 'ff')):
+                                indices[atm] = i
+                                break                               
+                
+                
+                total_ff = 0.0
+                for k, v in indices.items():                    
+                    if (self.working_mode == 'inversion'): 
+                        total_ff += transformed_to_physical(nodes[v], self.atmospheres[k].ranges['ff'][0], self.atmospheres[k].ranges['ff'][1])
+                    else:
+                        total_ff = sum([transformed_to_physical(ff, -0.00001, 1.00001) for ff in nodes[indices]])
+                                
+                for atm in order:
+                    if (self.atmospheres[atm].type != 'straylight'):
+                        if (self.working_mode == 'inversion'):                            
+                            ff = transformed_to_physical(nodes[indices[atm]], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
+                            nodes[indices[atm]] = physical_to_transformed(ff / total_ff, self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
+                        else:
+                            ff = transformed_to_physical(nodes[indices[atm]], -0.00001, 1.00001)                            
+                            nodes[indices[atm]] = physical_to_transformed(ff / total_ff, -0.00001, 1.00001)
+
+        return nodes
 
 
     def synthesize_spectral_region(self, spectral_region, perturbation=False):
@@ -1222,7 +1268,7 @@ class Model(object):
             
             for n, order in enumerate(atmospheres):
                                                                 
-                for k, atm in enumerate(order):                    
+                for k, atm in enumerate(order):
                     
                     if (self.atmospheres[atm].spectrum.name == spectral_region):                        
                         
@@ -1293,10 +1339,10 @@ class Model(object):
         -------
         None
 
-        """
+        """        
+        # if (self.working_mode == 'inversion'):
+            # self.normalize_ff()
 
-        if (self.working_mode == 'inversion'):
-            self.normalize_ff()
         for k, v in self.spectrum.items():
             self.synthesize_spectral_region(k, perturbation=perturbation)            
             if (v.normalization == 'off-limb'):
@@ -1470,7 +1516,7 @@ class Model(object):
                                     self.logger.info("   * Coupling RF to {0} - {1}".format(par2['parameter'], par2['atm']))
                                 self.atmospheres[par2['atm']].nodes[par2['parameter']] = nodes + perturbation
                                     
-                    # Synthesize
+                    # Synthesize                    
                     self.synthesize(perturbation=True)
                                                     
                     # And come back to the original value of the nodes
@@ -1592,7 +1638,9 @@ class Model(object):
 
         """
 
-        n_active_pars = len(self.active_meta)  
+        nodes = self.normalize_ff(nodes)
+        
+        n_active_pars = len(self.active_meta)
 
         # Modify all active parameters
         for par in self.active_meta:
@@ -1611,6 +1659,7 @@ class Model(object):
                     
                     self.atmospheres[par['atm']].nodes[par['parameter']] = nodes[left:right]
                     self.atmospheres[par['atm']].parameters[par['parameter']] = copy.copy(self.atmospheres[par2['atm']].parameters[par2['parameter']])
+        
                     
 
     def modified_svd_inverse(self, H, tol=1e-8):
@@ -2004,8 +2053,8 @@ class Model(object):
             # Main Levenberg-Marquardt algorithm
             self.synthesize_and_compute_rf(compute_rf=True)
             chi2, dchi2, ddchi2 = self.compute_chi2()       
-
-            while keepon:                                
+            
+            while keepon:
                 
                 # Simple parabolic backtracking
                 if (self.backtracking == 'parabolic'):
@@ -2049,16 +2098,19 @@ class Model(object):
 
                 # New solution
                 # Clip the new solution so that the step is resaonable
-                new_solution = self.nodes + np.clip(delta, -self.step_limiter_inversion, self.step_limiter_inversion)
+                delta_solution = np.clip(delta, -self.step_limiter_inversion, self.step_limiter_inversion)
+
+                new_solution = self.nodes + delta_solution
+                
                 self.set_new_model(new_solution)
 
-                # Clip the new solution so that the step is resaonable
-                self.nodes += np.clip(delta, -self.step_limiter_inversion, self.step_limiter_inversion)
+                # Update the nodes of the model clipping the new solution so that the step is reasonable
+                # self.nodes += delta_solution
+                self.nodes = copy.copy(new_solution)
 
                 self.synthesize_and_compute_rf(compute_rf=True)
 
-                chi2, dchi2, ddchi2 = self.compute_chi2()
-                
+                chi2, dchi2, ddchi2 = self.compute_chi2()                
 
                 rel = 2.0 * (chi2 - bestchi2) / (chi2 + bestchi2)
 
@@ -2092,7 +2144,7 @@ class Model(object):
                     keepon = False
 
                 iteration += 1
-                                        
+            
             self.set_new_model(self.nodes)
 
             # Calculate final chi2
