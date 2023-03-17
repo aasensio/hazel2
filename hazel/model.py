@@ -1156,44 +1156,44 @@ class Model(object):
         if (len(n_photospheres_linked) != len(set(n_photospheres_linked))):
             raise Exception("There are several photospheres linked with ->. This is not allowed.")
                         
-    def normalize_ff_old(self):
-        """
-        Normalize all filling factors so that they add to one to avoid later problems.
-        We use a softmax function to make sure they all add to one and can be unconstrained
+    # def normalize_ff_old(self):
+    #     """
+    #     Normalize all filling factors so that they add to one to avoid later problems.
+    #     We use a softmax function to make sure they all add to one and can be unconstrained
 
-        ff_i = exp(x_i) / sum(exp(x_i))
+    #     ff_i = exp(x_i) / sum(exp(x_i))
 
-        Parameters
-        ----------
-        None
+    #     Parameters
+    #     ----------
+    #     None
         
-        Returns
-        -------
-        None
-        """
+    #     Returns
+    #     -------
+    #     None
+    #     """
                 
-        for atmospheres in self.order_atmospheres:
-            for order in atmospheres:
+    #     for atmospheres in self.order_atmospheres:
+    #         for order in atmospheres:
 
-                total_ff = 0.0
-                for atm in order:
-                    if (self.atmospheres[atm].type != 'straylight'):
-                        if (self.working_mode == 'inversion'):                                                        
-                            ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
-                        else:
-                            ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], -0.00001, 1.00001)
-                        total_ff += ff
+    #             total_ff = 0.0
+    #             for atm in order:
+    #                 if (self.atmospheres[atm].type != 'straylight'):
+    #                     if (self.working_mode == 'inversion'):                                                        
+    #                         ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
+    #                     else:
+    #                         ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], -0.00001, 1.00001)
+    #                     total_ff += ff
 
-                for atm in order:
-                    if (self.atmospheres[atm].type != 'straylight'):
-                        if (self.working_mode == 'inversion'):
-                            ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])                            
-                            self.atmospheres[atm].parameters['ff'] = physical_to_transformed(ff / total_ff, self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
-                            # self.atmospheres[atm].nodes['ff'] = physical_to_transformed(ff / total_ff, self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
-                        else:
-                            ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], -0.00001, 1.00001)
-                            self.atmospheres[atm].parameters['ff'] = physical_to_transformed(ff / total_ff, -0.00001, 1.00001)
-                            # self.atmospheres[atm].nodes['ff'] = physical_to_transformed(ff / total_ff, -0.00001, 1.00001)
+    #             for atm in order:
+    #                 if (self.atmospheres[atm].type != 'straylight'):
+    #                     if (self.working_mode == 'inversion'):
+    #                         ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])                            
+    #                         self.atmospheres[atm].parameters['ff'] = physical_to_transformed(ff / total_ff, self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
+    #                         # self.atmospheres[atm].nodes['ff'] = physical_to_transformed(ff / total_ff, self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
+    #                     else:
+    #                         ff = transformed_to_physical(self.atmospheres[atm].parameters['ff'], -0.00001, 1.00001)
+    #                         self.atmospheres[atm].parameters['ff'] = physical_to_transformed(ff / total_ff, -0.00001, 1.00001)
+    #                         # self.atmospheres[atm].nodes['ff'] = physical_to_transformed(ff / total_ff, -0.00001, 1.00001)
 
     def normalize_ff(self, nodes):
         """
@@ -1223,22 +1223,23 @@ class Model(object):
                                 indices[atm] = i
                                 break                               
                 
-                
-                total_ff = 0.0
-                for k, v in indices.items():                    
-                    if (self.working_mode == 'inversion'): 
-                        total_ff += transformed_to_physical(nodes[v], self.atmospheres[k].ranges['ff'][0], self.atmospheres[k].ranges['ff'][1])
-                    else:
-                        total_ff = sum([transformed_to_physical(ff, -0.00001, 1.00001) for ff in nodes[indices]])
-                                
-                for atm in order:
-                    if (self.atmospheres[atm].type != 'straylight'):
-                        if (self.working_mode == 'inversion'):                            
-                            ff = transformed_to_physical(nodes[indices[atm]], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
-                            nodes[indices[atm]] = physical_to_transformed(ff / total_ff, self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
+                # If filling factors are active
+                if (len(indices) != 0):
+                    total_ff = 0.0
+                    for k, v in indices.items():                    
+                        if (self.working_mode == 'inversion'): 
+                            total_ff += transformed_to_physical(nodes[v], self.atmospheres[k].ranges['ff'][0], self.atmospheres[k].ranges['ff'][1])
                         else:
-                            ff = transformed_to_physical(nodes[indices[atm]], -0.00001, 1.00001)                            
-                            nodes[indices[atm]] = physical_to_transformed(ff / total_ff, -0.00001, 1.00001)
+                            total_ff = sum([transformed_to_physical(ff, -0.00001, 1.00001) for ff in nodes[indices]])
+                                    
+                    for atm in order:
+                        if (self.atmospheres[atm].type != 'straylight'):
+                            if (self.working_mode == 'inversion'):                            
+                                ff = transformed_to_physical(nodes[indices[atm]], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
+                                nodes[indices[atm]] = physical_to_transformed(ff / total_ff, self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
+                            else:
+                                ff = transformed_to_physical(nodes[indices[atm]], -0.00001, 1.00001)                            
+                                nodes[indices[atm]] = physical_to_transformed(ff / total_ff, -0.00001, 1.00001)
 
         return nodes
 
