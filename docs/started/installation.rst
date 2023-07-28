@@ -50,8 +50,8 @@ If you also want to use the GUI, you need to add two new dependencies:
 Remember to add `ipython` if you are using this shell to run |hazel2|. Otherwise, it will use
 `ipython` from another environment and you can get confused.
 
-If you want to use the NLTE neural option for synthesizing the Ca II 854.2 nm line, the packages ``pytorch``
-and ``pytorch_geometric`` should be installed. Take a look at the documentation for `PyTorch <https://pytorch.org/>`_
+If you want to use the NLTE neural option for synthesizing the Ca II 854.2 nm line, the packages ``pytorch``,
+``pytorch_geometric`` and ``pytorch-scatter`` should be installed. Take a look at the documentation for `PyTorch <https://pytorch.org/>`_
 and `PyTorch Geometric <https://pytorch-geometric.readthedocs.io/en/latest/>`_ for more information.
 
 Installation from source

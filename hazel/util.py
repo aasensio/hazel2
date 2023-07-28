@@ -64,6 +64,9 @@ def toint(l):
 def tofloat(l):
     return [float(x) if isfloat(x) else None for x in l]
 
+def tofloat_list(l):
+    return [[float(g) if isfloat(g) else None for g in x.split()] for x in l]
+
 def tobool(l):
     return True if l == 'True' else False
 
@@ -145,3 +148,9 @@ def show_tree(hdf5_file):
 
     tr = LeftAligned(draw=BoxStyle(gfx = chrs, horiz_len=1))
     print(tr(tree))
+
+# Function that returns the index of the closest values in an array
+def find_nearest(array, values):
+    array = np.asarray(array)
+    idx = [(np.abs(array - value)).argmin().astype('int') for value in values]
+    return idx

@@ -2,7 +2,7 @@ from collections import OrderedDict
 import numpy as np
 import os
 from hazel.atmosphere import General_atmosphere
-from hazel.util import i0_allen
+from hazel.util import i0_allen, find_nearest
 from hazel.codes import sir_code
 from hazel.io import Generic_SIR_file
 import scipy.interpolate as interp
@@ -47,6 +47,24 @@ class SIR_atmosphere(General_atmosphere):
         self.nodes_location['Bz'] = None
         self.nodes_location['ff'] = None
         self.nodes_location['vmac'] = None
+
+        self.nodes_logtau['T'] = None
+        self.nodes_logtau['vmic'] = None
+        self.nodes_logtau['v'] = None
+        self.nodes_logtau['Bx'] = None
+        self.nodes_logtau['By'] = None
+        self.nodes_logtau['Bz'] = None
+        self.nodes_logtau['ff'] = None
+        self.nodes_logtau['vmac'] = None
+
+        self.nodes_index['T'] = None
+        self.nodes_index['vmic'] = None
+        self.nodes_index['v'] = None
+        self.nodes_index['Bx'] = None
+        self.nodes_index['By'] = None
+        self.nodes_index['Bz'] = None
+        self.nodes_index['ff'] = None
+        self.nodes_index['vmac'] = None
 
         self.n_nodes['T'] = 0
         self.n_nodes['vmic'] = 0
@@ -164,10 +182,10 @@ class SIR_atmosphere(General_atmosphere):
                     path = str(__file__).split('/')
                     checkpoint = '/'.join(path[0:-1])+'/data/20211114-131045_best.prd.pth'
                     if (verbose >= 1):
-                        self.logger.info('    * Reading NLTE Neural Network')
+                        self.logger.info('    * Reading NLTE Neural Network')                    
                     self.graphnet_nlte = Forward(checkpoint=checkpoint, verbose=verbose)
                                         
-    def interpolate_nodes(self, log_tau, reference, nodes):
+    def interpolate_nodes(self, log_tau, reference, nodes, nodes_location):
         """
         Generate a model atmosphere by interpolating the defined nodes. The interpolation
         order depends on the number of nodes.
@@ -190,34 +208,43 @@ class SIR_atmosphere(General_atmosphere):
         n_nodes = len(nodes)
         n_depth = len(log_tau)
 
+        nodes_given = False
+        if (nodes_location is not None):
+            nodes_given = True
+
         if (n_nodes == 0):
-            return reference, 0
-        
+            return reference, 0            
+
+        # Find position of nodes. When they are not given, they are equally spaced
+        # in log tau. If they are given, we find the closest points in the grid        
+        if (nodes_given):
+            log_tau_pos = nodes_location
+            if (len(log_tau_pos) != n_nodes):
+                raise ValueError('The number of manually set nodes is not the same as the number of declared nodes')
+            pos = find_nearest(log_tau, log_tau_pos)
+        else:
+            if (n_nodes == 1):
+                pos = np.array([n_depth//2])
+                log_tau_pos = log_tau[pos]
+            else:
+                pos = np.linspace(0, n_depth-1, n_nodes, dtype=int)
+                log_tau_pos = log_tau[pos]
+
+        # print(f'nodes_loc: {nodes_location}, nodes_given: {nodes_given}, n_nodes:{n_nodes}, logt: {log_tau_pos}, pos:{pos}')
+
         if (n_nodes == 1):
             return reference + nodes[0], n_depth//2
-
-        # if (n_nodes >= 2):
-        #     # pos = np.linspace(n_depth-1, 0, n_nodes+2, dtype=int)[1:-1]
-        #     pos = np.linspace(n_depth-1, 0, n_nodes, dtype=int)
-        #     f = interp.PchipInterpolator(log_tau[pos], nodes, extrapolate=True)            
-        #     return reference + f(log_tau), pos
         
         if (n_nodes == 2):
-            # pos = np.linspace(0, n_depth-1, n_nodes+2, dtype=int)[1:-1]
-            pos = np.linspace(0, n_depth-1, n_nodes, dtype=int)
-            f = interp.interp1d(log_tau[pos], nodes, 'linear', bounds_error=False, fill_value='extrapolate')
+            f = interp.interp1d(log_tau_pos, nodes, 'linear', bounds_error=False, fill_value='extrapolate')
             return reference + f(log_tau), pos
 
         if (n_nodes == 3):
-            # pos = np.linspace(0, n_depth-1, n_nodes+2, dtype=int)[1:-1]
-            pos = np.linspace(0, n_depth-1, n_nodes, dtype=int)
-            f = interp.interp1d(log_tau[pos], nodes, 'quadratic', bounds_error=False, fill_value='extrapolate')            
+            f = interp.interp1d(log_tau_pos, nodes, 'quadratic', bounds_error=False, fill_value='extrapolate')            
             return reference + f(log_tau), pos
 
-        if (n_nodes > 3):
-            # pos = np.linspace(n_depth-1, 0, n_nodes+2, dtype=int)[1:-1]
-            pos = np.linspace(n_depth-1, 0, n_nodes, dtype=int)
-            f = interp.PchipInterpolator(log_tau[pos], nodes, extrapolate=True)            
+        if (n_nodes > 3):            
+            f = interp.PchipInterpolator(log_tau_pos, nodes, extrapolate=True)
             return reference + f(log_tau), pos
 
     def interpolate_nodes_rf(self, log_tau, reference, nodes, lower, upper):
@@ -446,7 +473,7 @@ class SIR_atmosphere(General_atmosphere):
         """        
         for k, v in self.nodes.items():
             if (self.n_nodes[k] > 0):                
-                self.parameters[k], self.nodes_location[k] = self.interpolate_nodes(self.log_tau, self.reference[k], self.nodes[k])
+                self.parameters[k], self.nodes_index[k] = self.interpolate_nodes(self.log_tau, self.reference[k], self.nodes[k], self.nodes_logtau[k])
             else:
                 self.parameters[k] = self.reference[k]
 
@@ -489,8 +516,8 @@ class SIR_atmosphere(General_atmosphere):
     def print_parameters(self, first=False, error=False):        
         for k, v in self.parameters.items():            
             if (self.n_nodes[k] > 0):
-                if (k != 'ff' and k != 'vmac'):
-                    pars = v[self.nodes_location[k]]                    
+                if (k != 'ff' and k != 'vmac'):                    
+                    pars = v[self.nodes_index[k]]
                     self.logger.info('{0} -> {1}'.format(k, pars))
                 else:
                     self.logger.info('{0} -> {1}'.format(k, v))

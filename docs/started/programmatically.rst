@@ -101,7 +101,7 @@ A new SIR atmosphere can be added by calling the following method of ``Model``:
 
 ::
 
-    mod.add_photosphere({'Name': 'ch1', 'Spectral region': 'spec1', 'Spectral lines': [300,], 
+    mod.add_photosphere({'Name': 'ph1', 'Spectral region': 'spec1', 'Spectral lines': [300,], 
         'Wavelength': [10826, 10833]})
 
 * ``Name``
@@ -120,7 +120,7 @@ method of the atmosphere:
 
 ::
 
-    mod.atmospheres['ch1'].set_parameters(model, ff, vmac)
+    mod.atmospheres['ph1'].set_parameters(model, ff, vmac)
 
 where ``model`` is an array of size (nz,8) with the model atmosphere, ff 
 is the filling factor and vmac is the macroturbulent velocity. The columns are, in order: :math:`\log \tau`, T, Pe, vmic, v, Bx, By, Bz.
@@ -156,9 +156,10 @@ method of the atmosphere:
 
 ::
 
-    mod.atmospheres['te1'].set_parameters([10833, 0.1, 0.5, 0.0, 1.0])
+    mod.atmospheres['te1'].set_parameters([10833, 0.1, 0.5, 0.0], 1.0)
 
-where the parameters are, in order: :math:`\lambda_0`, :math:`\sigma`, d, a, ff.
+where the parameters are, in order: :math:`\lambda_0`, :math:`\sigma`, d, a, with the filling factor given
+at the end ff.
 
 Working with straylight
 -----------------------
@@ -186,9 +187,9 @@ method of the atmosphere:
 
 ::
 
-    mod.atmospheres['st1'].set_parameters([0.0, 1.0])
+    mod.atmospheres['st1'].set_parameters([0.0, 1.0], 1.0)
 
-where the parameters are, in order: v, ff.
+where the parameters are, in order: stray light profile, v and the filling factor ff at the end.
 
 Finalizing setup
 ----------------

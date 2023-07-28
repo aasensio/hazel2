@@ -45,9 +45,11 @@ class General_atmosphere(object):
 
         self.parameters = OrderedDict()
         self.nodes_location = OrderedDict()
+        self.nodes_logtau = OrderedDict()
+        self.nodes_index = OrderedDict()
         self.ranges = OrderedDict()
         self.regularization = OrderedDict()
-        self.cycles = OrderedDict()
+        self.cycles = OrderedDict()        
         self.n_nodes = OrderedDict()
         self.nodes = OrderedDict()
         self.epsilon = OrderedDict()
@@ -91,7 +93,7 @@ class General_atmosphere(object):
 
         self.reference_cycle = [None] * n_cycles
         self.error_cycle = [None] * n_cycles
-        self.nodes_location_cycle = [None] * n_cycles
+        self.nodes_logtau_cycle = [None] * n_cycles
 
     def to_physical(self):
         """
@@ -149,12 +151,12 @@ class General_atmosphere(object):
         """            
         self.nodes_to_model()        
         self.reference = copy.deepcopy(self.parameters)
-        self.nodes_location =  copy.deepcopy(self.nodes_location)
+        self.nodes_logtau =  copy.deepcopy(self.nodes_logtau)
     
         if (cycle is not None):
             self.to_physical()        
             self.reference_cycle[cycle] = copy.deepcopy(self.parameters)
-            self.nodes_location_cycle[cycle] =  copy.deepcopy(self.nodes_location)
+            self.nodes_logtau_cycle[cycle] =  copy.deepcopy(self.nodes_logtau)
             self.error_cycle[cycle] = copy.deepcopy(self.error)
 
     def reset_reference(self):

@@ -25,6 +25,7 @@ from distutils.unixccompiler import UnixCCompiler
 from setuptools.command.build_ext import build_ext
 from distutils.dep_util import newer_group
 from distutils import log
+from Cython.Build import cythonize
 
 import os
 import platform
@@ -243,7 +244,7 @@ setup_config = dict(
     license='GNU General Public License, version 3 (GPLv3)',
     platforms='OS Independent',
     install_requires=['numpy','scipy','configobj','h5py','astropy','tqdm','cython'],
-    ext_modules=[lib_sir, lib_hazel],
+    ext_modules=cythonize([lib_sir, lib_hazel]),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
@@ -267,7 +268,7 @@ setup_config = dict(
     cmdclass={'build_ext': BuildExtSubclass}
 )
 
-if __name__ == "__main__":
+if __name__ == "__main__":    
     setup(**setup_config)
 
 #    Attempt to remove the *.c files

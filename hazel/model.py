@@ -84,6 +84,9 @@ class Model(object):
             if (self.verbose >= 1):
                 self.logger.info('PyTorch and PyTorch Geometric found. NLTE for Ca II is available')
             self.nlte_available = True
+        else:
+            if (self.verbose >= 1):
+                self.logger.info('PyTorch and PyTorch Geometric not found. NLTE for Ca II cannot be used')
         
         if (config is not None):
             if (self.verbose >= 1):
@@ -645,7 +648,7 @@ class Model(object):
                             self.atmospheres[atm['name']].ranges[k2] = None
                         else:
                             self.atmospheres[atm['name']].ranges[k2] = hazel.util.tofloat(v)
-
+        
         for k2, v2 in self.atmospheres[atm['name']].parameters.items():
             self.atmospheres[atm['name']].regularization[k2] = None
 
@@ -672,7 +675,13 @@ class Model(object):
             for k, v in atm['nodes'].items():
                 for k2, v2 in self.atmospheres[atm['name']].parameters.items():
                     if (k.lower() == k2.lower()):
-                        self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)                
+                        self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)
+
+        if ('nodes location' in atm):
+            for k, v in atm['nodes location'].items():
+                for k2, v2 in self.atmospheres[atm['name']].parameters.items():
+                    if (k.lower() == k2.lower()):                        
+                        self.atmospheres[atm['name']].nodes_location[k2] = hazel.util.tofloat_list(v)
 
         if ('temperature change to recompute departure coefficients' in atm):
             self.atmospheres[atm['name']].t_change_departure = float(atm['temperature change to recompute departure coefficients'])
@@ -1398,6 +1407,11 @@ class Model(object):
                                     self.atmospheres[atm].nodes[l] = np.zeros(par[cycle])
 
                                     self.atmospheres[atm].n_nodes[l] = par[cycle]
+
+                                    # Set the position of the nodes if available in the configuration file
+                                    if (self.atmospheres[atm].type == 'photosphere'):                                        
+                                        if (self.atmospheres[atm].nodes_location[l] is not None):
+                                            self.atmospheres[atm].nodes_logtau[l] = self.atmospheres[atm].nodes_location[l][cycle]
 
                                     right += par[cycle]
                                     
