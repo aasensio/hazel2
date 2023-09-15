@@ -3,5 +3,7 @@ include hazel/data/LINEAS
 include src/sir/PARAMETER
 include VERSION.txt
 include test/*.ini
+include src/sir/*.pyx
+include src/hazel/*.pyx
 exclude src/sir/*.c
 exclude src/hazel/*.c 
