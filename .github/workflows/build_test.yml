@@ -28,7 +28,8 @@ jobs:
 
       - name: Build
         run: |
-          python setup.py develop
+          conda list
+          pip install -e .
 
       - name: Test with pytest
         run: |          
