@@ -7,6 +7,9 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
 
     steps:
       - uses: actions/checkout@v2
@@ -18,8 +21,7 @@ jobs:
           channels: conda-forge          
           channel-priority: strict
 
-      - name: Installation
-        shell: bash -l {0}
+      - name: Installation        
         run: |          
           conda info -a
           conda list
@@ -29,7 +31,7 @@ jobs:
       - name: Build
         run: |
           conda list
-          pip install -e .
+          python setup.py develop
 
       - name: Test with pytest
         run: |          
