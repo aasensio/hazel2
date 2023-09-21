@@ -19,6 +19,7 @@ jobs:
           # $CONDA is an environment variable pointing to the root of the miniconda directory
           $CONDA/bin/conda install -c conda-forge Cython numpy scipy h5py sphinx sphinx_rtd_theme ipython nbsphinx tqdm astropy configobj matplotlib numpydoc mpich mpi4py pytest-cov zarr gfortran_linux-64 
           pip install coveralls
+          pip install Cython
 
       - name: Test with pytest
         run: |
