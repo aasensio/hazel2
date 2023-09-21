@@ -244,8 +244,7 @@ class SIR_atmosphere(General_atmosphere):
             return reference + f(log_tau), pos
 
         if (n_nodes > 3):            
-            order = np.argsort(log_tau_pos)
-            f = interp.PchipInterpolator(log_tau_pos[order], nodes[order], extrapolate=True)
+            f = interp.PchipInterpolator(log_tau_pos, nodes, extrapolate=True)
             return reference + f(log_tau), pos
 
     def interpolate_nodes_rf(self, log_tau, reference, nodes, lower, upper):

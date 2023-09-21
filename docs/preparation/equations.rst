@@ -155,7 +155,7 @@ transfer equation:
    .. math::
 
       {\bf I}={\rm e}^{-{\mathbf{K}^{*}}\tau}\,{\bf I}_{\rm sun}\,+\,\left[{\mathbf{K}^{*}}\right]^{-1}\,
-      \left( \mathbf{1} - {\rm e}^{-{\mathbf{K}^{*}}\tau} \right) \,\mathbf{S},
+      \left( \mathbf{1} - {\rm e}^{-{\mathbf{K}^{*}}\tau} \right) \,\beta \,\mathbf{S},
       \label{eq:slab_peo}
 
    where :math:`\mathbf{I}_{\rm sun}` is the Stokes vector that
