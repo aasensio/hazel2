@@ -1,0 +1,30 @@
+# https://autobencoder.com/2020-08-24-conda-actions/
+
+name: Build and test
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.10
+      - name: Install dependencies
+        run: |
+          # $CONDA is an environment variable pointing to the root of the miniconda directory
+          $CONDA/bin/conda install -c conda-forge cython numpy scipy h5py sphinx sphinx_rtd_theme ipython nbsphinx tqdm astropy configobj matplotlib numpydoc mpich mpi4py pytest-cov zarr gfortran_linux-64 
+          pip install coveralls
+          python setup.py develop
+
+      - name: Test with pytest
+        run: |
+          py.test -v --cov hazel
+
+      - name: Coveralls
+        run: |
+          coveralls
