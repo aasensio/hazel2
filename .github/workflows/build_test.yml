@@ -37,6 +37,10 @@ jobs:
         run: |          
           py.test -v --cov hazel
 
-      - name: Coveralls
-        run: |
-          coveralls
+      - name: Publish to coveralls.io
+        uses: coverallsapp/github-action@v1.1.2
+        with:
+          github-token: ${{ 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 }}
+
+      # - name: Build wheels
+        # uses: pypa/cibuildwheel@v2.16.0
