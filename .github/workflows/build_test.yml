@@ -35,12 +35,13 @@ jobs:
 
       - name: Test with pytest
         run: |          
-          py.test -v --cov hazel
+          py.test -v --cov-report lcov --cov hazel
 
       - name: Publish to coveralls.io
         uses: coverallsapp/github-action@v1.1.2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: coverage.lcov
 
       # - name: Build wheels
         # uses: pypa/cibuildwheel@v2.16.0
