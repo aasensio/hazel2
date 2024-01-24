@@ -58,8 +58,8 @@ class Spectrum(object):
                 f = interpolate.interp1d(tmp[:,0] + self.wavelength_axis[n//2-1], tmp[:,1], kind='cubic', fill_value=0.0, bounds_error=False)                
                 self.psf_spectral = f(self.wavelength_axis)
             else:
-                sigma = float(instrumental_profile) * np.mean(self.wavelength_axis) / c.to('km/s').value                
-                self.psf_spectral = np.exp(-(self.wavelength_axis - self.wavelength_axis[n//2-1])**2 / 2*(sigma**2))
+                sigma = float(instrumental_profile) * np.mean(self.wavelength_axis) / c.to('km/s').value
+                self.psf_spectral = np.exp(-(self.wavelength_axis - self.wavelength_axis[n//2-1])**2 / (2*(sigma**2)))
 
             self.psf_spectral /= np.sum(self.psf_spectral)
                 
