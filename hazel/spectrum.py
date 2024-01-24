@@ -59,7 +59,7 @@ class Spectrum(object):
                 self.psf_spectral = f(self.wavelength_axis)
             else:
                 sigma = float(instrumental_profile) * np.mean(self.wavelength_axis) / c.to('km/s').value                
-                self.psf_spectral = np.exp(-(self.wavelength_axis - self.wavelength_axis[n//2-1])**2 / sigma**2)
+                self.psf_spectral = np.exp(-(self.wavelength_axis - self.wavelength_axis[n//2-1])**2 / 2*(sigma**2))
 
             self.psf_spectral /= np.sum(self.psf_spectral)
                 
