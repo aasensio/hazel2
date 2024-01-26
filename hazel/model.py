@@ -1364,9 +1364,9 @@ class Model(object):
             if (v.psf_spectral is not None):                
                 for i in range(4):
                     if (perturbation):
-                        v.stokes_perturbed[i,:] = scipy.signal.convolve(v.stokes_perturbed[i,:], v.psf_spectral, mode='same', method='auto')
+                        v.stokes_perturbed[i,:] = scipy.ndimage.convolve(v.stokes_perturbed[i,:], v.psf_spectral, mode='nearest')
                     else:
-                        v.stokes[i,:] = scipy.signal.convolve(v.stokes[i,:], v.psf_spectral, mode='same', method='auto')
+                        v.stokes[i,:] = scipy.ndimage.convolve(v.stokes[i,:], v.psf_spectral, mode='nearest')
             
             if (v.interpolate_to_lr):
                 for i in range(4):
