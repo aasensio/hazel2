@@ -26,6 +26,7 @@ classifiers = [
     'Topic :: Scientific/Engineering',
     'Topic :: Scientific/Engineering :: Physics',
 ]
+dynamic = ["license", "keywords", "dependecies"]
 
 [project.urls]
 "Homepage" = "https://github.com/aasensio/hazel2"
