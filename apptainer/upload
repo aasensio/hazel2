@@ -1,0 +1,1 @@
+curl -T hazel.sif --user 'aasensio' 'https://cloud.iac.es/remote.php/dav/files/F00AA55A-3D9E-4B19-A6F7-0EBD138CCF5D/hazel2/hazel.sif' --anyauth 

@@ -1,0 +1,14 @@
+Bootstrap: docker
+From: continuumio/miniconda3
+%post
+    conda update -y conda
+    conda install -y -c conda-forge cython numpy h5py tqdm scipy astropy mpich mpi4py configobj gfortran_linux-64 gcc_linux-64 asciitree matplotlib
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+    pip install torch_geometric
+    pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.2.0+cpu.html
+    . /opt/conda/etc/profile.d/conda.sh
+    conda activate base 
+    git clone https://github.com/aasensio/hazel2.git
+    cd hazel2
+    python setup.py install 
+    conda clean -afy
