@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *.c
 *.h5
-*.pth
+#*.pth
 *.sif
 
 # C extensions
