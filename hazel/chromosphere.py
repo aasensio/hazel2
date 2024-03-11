@@ -269,7 +269,7 @@ class Hazel_atmosphere(General_atmosphere):
         if (self.working_mode == 'inversion'):
             for k, v in self.parameters.items():
                 if (self.ranges[k] is not None):
-                    self.parameters[k] = np.clip(v, self.ranges[k][0] + 1e-8, self.ranges[k][1] - 1e-8)
+                    self.parameters[k] = np.clip(v, self.ranges[k][0] + 1e-5, self.ranges[k][1] - 1e-5)
                 
     def load_reference_model(self, model_file, verbose):
         """

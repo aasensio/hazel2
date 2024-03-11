@@ -235,16 +235,21 @@ class SIR_atmosphere(General_atmosphere):
         if (n_nodes == 1):
             return reference + nodes[0], n_depth//2
         
-        if (n_nodes == 2):
+        if (n_nodes == 2):            
             f = interp.interp1d(log_tau_pos, nodes, 'linear', bounds_error=False, fill_value='extrapolate')
             return reference + f(log_tau), pos
 
-        if (n_nodes == 3):
+        if (n_nodes == 3):            
             f = interp.interp1d(log_tau_pos, nodes, 'quadratic', bounds_error=False, fill_value='extrapolate')            
             return reference + f(log_tau), pos
 
-        if (n_nodes > 3):            
-            f = interp.PchipInterpolator(log_tau_pos, nodes, extrapolate=True)
+        if (n_nodes > 3):                      
+            if (np.all(np.diff(log_tau_pos) < 0)):
+                log_tau_pos_temp = log_tau_pos[::-1]
+                nodes_temp = nodes[::-1]
+                f = interp.PchipInterpolator(log_tau_pos_temp, nodes_temp, extrapolate=True)
+            else:
+                f = interp.PchipInterpolator(log_tau_pos, nodes, extrapolate=True)
             return reference + f(log_tau), pos
 
     def interpolate_nodes_rf(self, log_tau, reference, nodes, lower, upper):
