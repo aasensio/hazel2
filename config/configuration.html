@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3.2. Step-by-step description &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="3.3. Topology" href="topology.html" />
+    <link rel="prev" title="3.1. Examples" href="examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../started/installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../started.html">2. Basic usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../config.html">3. Configuration</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="examples.html">3.1. Examples</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">3.2. Step-by-step description</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#working-mode">3.2.1. Working mode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#spectral-regions">3.2.2. Spectral regions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#atmospheres">3.2.3. Atmospheres</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#photospheres">3.2.3.1. Photospheres</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#chromospheres">3.2.3.2. Chromospheres</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parametric">3.2.3.3. Parametric</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#straylight">3.2.3.4. Straylight</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="topology.html">3.3. Topology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="regularization.html">3.4. Regularization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../io_files.html">4. Input/output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparation.html">5. Data preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">6. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../config.html"><span class="section-number">3. </span>Configuration</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">3.2. </span>Step-by-step description</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/config/configuration.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="step-by-step-description">
+<span id="configuration"></span><h1><span class="section-number">3.2. </span>Step-by-step description<a class="headerlink" href="#step-by-step-description" title="Link to this heading">¶</a></h1>
+<p>All configuration options are described here. Note that some of them are optional
+and can be absent from the configuration file. If this is the case, a default
+value will be used.</p>
+<section id="working-mode">
+<h2><span class="section-number">3.2.1. </span>Working mode<a class="headerlink" href="#working-mode" title="Link to this heading">¶</a></h2>
+<p>The first part of the configuration file represents very general properties.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Working</span> <span class="n">mode</span><span class="p">]</span>
+<span class="n">Output</span> <span class="n">file</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">h5</span>
+<span class="n">Number</span> <span class="n">of</span> <span class="n">cycles</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">Maximum</span> <span class="n">iterations</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">Relative</span> <span class="n">error</span> <span class="o">=</span> <span class="mf">1e-4</span>
+<span class="n">Backtracking</span> <span class="o">=</span> <span class="s1">&#39;brent&#39;</span>
+<span class="n">Save</span> <span class="nb">all</span> <span class="n">cycles</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Ouput</span> <span class="pre">file</span></code>: defines the output file, which is usually an HDF5 or FITS file. It should always be present, otherwise you won’t get any output.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Number</span> <span class="pre">of</span> <span class="pre">cycles</span></code> (optional) : is a global variable to select the number of cycles to carry out during inversion. It can be used to neglect the number of cycles that will be described later in the configuration file.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Maximum</span> <span class="pre">iterations</span></code> (optional, default is 10) : maximum number of iterations per cycle to carry out</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Relative</span> <span class="pre">error</span></code> (optional, default is 1e-4) : relative error when to stop iterating</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Backtracking</span></code> (optional, default is <code class="docutils literal notranslate"><span class="pre">brent</span></code>) : method to be used for the computation of the optimal Levenberg-Marquardt parameter. Two options are available: <code class="docutils literal notranslate"><span class="pre">parabolic</span></code> (which uses parabolic interpolation) and <code class="docutils literal notranslate"><span class="pre">brent</span></code> (which uses the Brent algorithm, which should be more efficient)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">all</span> <span class="pre">cycles</span></code> (optional, default is <code class="docutils literal notranslate"><span class="pre">False</span></code>) : True if you want to save the result of all cycles in the inversion.</p></li>
+</ul>
+</section>
+<section id="spectral-regions">
+<h2><span class="section-number">3.2.2. </span>Spectral regions<a class="headerlink" href="#spectral-regions" title="Link to this heading">¶</a></h2>
+<p>The <cite>spectral regions</cite> are considered as the main objects in Hazel v2.0. You can
+add any number of spectral regions, which will cover the observed region or the
+region you desire for your synthesis. One also needs to define which topology of
+atmospheres (described below) will produce the synthetic profiles for this region.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Spectral</span> <span class="n">regions</span><span class="p">]</span>
+    <span class="p">[[</span><span class="n">Region</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">,</span> <span class="mi">150</span>
+    <span class="n">Topology</span> <span class="o">=</span> <span class="n">ph2</span> <span class="o">-&gt;</span> <span class="n">ch1</span> <span class="o">-&gt;</span> <span class="n">te1</span> <span class="c1">#-&gt; st1</span>
+    <span class="n">LOS</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">90.0</span>
+    <span class="n">Boundary</span> <span class="n">condition</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>       <span class="c1"># I/Ic(mu=1), Q/Ic(mu=1), U/Ic(mu=1), V/Ic(mu=1)</span>
+    <span class="n">Wavelength</span> <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;observations/10830.wavelength&#39;</span>
+    <span class="n">Wavelength</span> <span class="n">weight</span> <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;observations/10830.weights&#39;</span>
+    <span class="n">Observations</span> <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;observations/10830_stokes.h5&#39;</span>
+    <span class="n">Straylight</span> <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;observations/10830_stray.1d&#39;</span>
+    <span class="n">Mask</span> <span class="n">file</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">Weights</span> <span class="n">Stokes</span> <span class="n">I</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+    <span class="n">Weights</span> <span class="n">Stokes</span> <span class="n">Q</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+    <span class="n">Weights</span> <span class="n">Stokes</span> <span class="n">U</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+    <span class="n">Weights</span> <span class="n">Stokes</span> <span class="n">V</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+    <span class="n">Instrumental</span> <span class="n">profile</span> <span class="o">=</span> <span class="mf">3.0</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Name</span></code>: defines the name of the spectral region. Programmatically, one can have access to the spectrum of each spectral region by using <code class="docutils literal notranslate"><span class="pre">mod.spectrum['spec1'].stokes</span></code>. This name is also used in the output file to refer to each region.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Wavelength</span></code> (optional) : defines the lower, upper and number of points in the wavelength axis. It can be absent if a file with the wavelength axis is provided.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Topology</span></code> defines the combination of atmospheres that are used to synthesize the Stokes parameters in this spectral region. See <a class="reference internal" href="topology.html#topology"><span class="std std-ref">Topology</span></a> for more details on the syntax.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LOS</span></code> (mandatory for synthesis) defines the line-of-sight angles: <span class="math notranslate nohighlight">\(\theta_\mathrm{LOS}\)</span>, <span class="math notranslate nohighlight">\(\phi_\mathrm{LOS}\)</span> and <span class="math notranslate nohighlight">\(\gamma_\mathrm{LOS}\)</span></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Boundary</span> <span class="pre">condition</span></code> (mandatory for synthesis) defines the boundary condition normalized to the continuum intensity on the quiet Sun at disk center</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Wavelength</span> <span class="pre">file</span></code> (optional) defines which wavelength file to be used. See <span class="xref std std-ref">input</span> for more information about the format.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Wavelength</span> <span class="pre">weight</span> <span class="pre">file</span></code> (optional) defines the wavelength weights to be used during inversion, in case one wants to weight parts of the spectrum during the inversion.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Observations</span> <span class="pre">file</span></code> (optional) defines the file with the observations. See <span class="xref std std-ref">input</span> for more information.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Straylight</span> <span class="pre">file</span></code> (optional) defines the file with the straylight. See <span class="xref std std-ref">input</span> for more information.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Mask</span> <span class="pre">file</span></code> (optional) defines a mask to invert only a selection of pixels from an input file. See <span class="xref std std-ref">input</span> for more information.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Weights</span> <span class="pre">Stokes</span></code> (optional) defines the weights for all Stokes parameters and cycles. If absent, they will be considered to be 1.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Instrumental</span> <span class="pre">profile</span></code> (optional) defines the instrumental profile. It can be absent, equal to <code class="docutils literal notranslate"><span class="pre">None</span></code>, a float giving the width (measured in km/s) of a Gaussian PSF (exp(-lambda**2/sigma**2), with sigma computed from the width, after transforming from velocity to wavelength units) or a file with the PSF (given with two columns with wavelength displacement in A and PSF).</p></li>
+</ul>
+</section>
+<section id="atmospheres">
+<h2><span class="section-number">3.2.3. </span>Atmospheres<a class="headerlink" href="#atmospheres" title="Link to this heading">¶</a></h2>
+<p>The last part of the configuration file defines all atmospheres to be used during the
+synthesis. Note that an arbitrary number of atmospheres can be defined. If they are
+not used because they are not part of any topology, they will be removed from the
+calculation. We distinguish four types of atmospheres:</p>
+<ul class="simple">
+<li><p>Photospheres</p></li>
+<li><p>Chromospheres</p></li>
+<li><p>Parametric</p></li>
+<li><p>Straylight</p></li>
+</ul>
+<section id="photospheres">
+<h3><span class="section-number">3.2.3.1. </span>Photospheres<a class="headerlink" href="#photospheres" title="Link to this heading">¶</a></h3>
+<p>Photospheres are always in the lower part of the atmosphere and so need to be defined
+in the first level of the topology. They are synthesized in local thermodynamic equilibrium
+using SIR. The magnetic field is <em>always</em> given with respect to the line-of-sight, like
+in SIR (contrary to those of chromospheres) and the reference direction for Q is
+then defined as the zero azimuth (like in SIR).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Atmospheres</span><span class="p">]</span>
+
+    <span class="p">[[</span><span class="n">Photosphere</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">ph1</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;photospheres/model_photosphere.1d&#39;</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>
+    <span class="n">Spectral</span> <span class="n">lines</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
+    <span class="n">NLTE</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">Temperature</span> <span class="n">change</span> <span class="n">to</span> <span class="n">recompute</span> <span class="n">departure</span> <span class="n">coefficients</span> <span class="o">=</span> <span class="mf">5.0</span>
+    <span class="n">Reference</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">line</span><span class="o">-</span><span class="n">of</span><span class="o">-</span><span class="n">sight</span>
+
+        <span class="p">[[[</span><span class="n">Ranges</span><span class="p">]]]</span>
+        <span class="n">T</span>      <span class="o">=</span> <span class="o">-</span><span class="mf">3000.0</span><span class="p">,</span> <span class="mf">3000.0</span>
+        <span class="n">vmic</span>   <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">3.0</span>
+        <span class="n">v</span>      <span class="o">=</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">10.0</span>
+        <span class="n">Bx</span>     <span class="o">=</span> <span class="o">-</span><span class="mf">1000.0</span><span class="p">,</span> <span class="mf">1000.0</span>
+        <span class="n">By</span>     <span class="o">=</span> <span class="o">-</span><span class="mf">1000.0</span><span class="p">,</span> <span class="mf">1000.0</span>
+        <span class="n">Bz</span>     <span class="o">=</span> <span class="o">-</span><span class="mf">1000.0</span><span class="p">,</span> <span class="mf">1000.0</span>
+        <span class="n">ff</span>     <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span>
+        <span class="n">vmac</span>   <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span>
+
+        <span class="p">[[[</span><span class="n">Nodes</span><span class="p">]]]</span>
+        <span class="n">T</span>      <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span>
+        <span class="n">vmic</span>   <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">v</span>      <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">Bx</span>     <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">By</span>     <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">Bz</span>     <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">ff</span>     <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">vmac</span>   <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+        <span class="p">[[[</span><span class="n">Regularization</span><span class="p">]]]</span>
+        <span class="n">T</span>      <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">vmic</span>   <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">v</span>      <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">Bx</span>     <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">By</span>     <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">Bz</span>     <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">vmac</span>   <span class="o">=</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Name</span></code> : defines the name of the atmosphere. This will be used in the output file to refer to the parameters of this specific atmosphere.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference</span> <span class="pre">atmospheric</span> <span class="pre">model</span></code> (optional) : defines the input file for this atmosphere. The format is described in <span class="xref std std-ref">input</span>. If the format is 1D, it will be used for all pixels (in inversion mode). If you want a different model for all pixels, use 3D formats.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Spectral</span> <span class="pre">region</span></code> : defines the spectral region associated with this atmosphere.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Wavelength</span></code> (optional): defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time. If absent or <a href="#id1"><span class="problematic" id="id2">`</span></a>None’, then the whole spectral region is synthesized.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Spectral</span> <span class="pre">lines</span></code> : it is a comma-separated list of lines to synthesize from the <a class="reference internal" href="../preparation/photospheric.html#photospheric-lines"><span class="std std-ref">List of photospheric lines</span></a>. Note that if you only want one line, you should use a comma at the end. The list of available lines</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">NLTE</span></code> (optional, default is <code class="docutils literal notranslate"><span class="pre">False</span></code>): defines whether the line should be treated in NLTE. At the moment, only valid for the Ca II 8542 A line (line number 301).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Temperature</span> <span class="pre">change</span> <span class="pre">to</span> <span class="pre">recompute</span> <span class="pre">departure</span> <span class="pre">coefficients</span></code> (optional, default is 0): temperature change during the inversion iterations to recompute the departure coefficients.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference</span> <span class="pre">frame</span></code>: reference frame to give the components of the magnetic field: <code class="docutils literal notranslate"><span class="pre">line-of-sight</span></code> or <code class="docutils literal notranslate"><span class="pre">vertical</span></code> (default).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Ranges</span></code> : ranges of variation of each parameter. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, consider it unconstrained. If not, it will be constrained to the range using a logit transform (with a small <span class="math notranslate nohighlight">\(\epsilon\)</span> to avoid under/overflow when close to the border).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Nodes</span></code> : defines the number of nodes in each cycle when doing inversions. It is possible to couple parameters with those of another atmosphere by using the name of the atmosphere instead of the number of nodes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Regularization</span></code> : add regularization to the parameters. See <a class="reference internal" href="regularization.html#regularization"><span class="std std-ref">Regularization</span></a>.</p></li>
+</ul>
+</section>
+<section id="chromospheres">
+<h3><span class="section-number">3.2.3.2. </span>Chromospheres<a class="headerlink" href="#chromospheres" title="Link to this heading">¶</a></h3>
+<p>Chromospheres are synthesized with slabs of constant physical properties always above photospheres (if any). An arbitrary
+number of chromospheres can be used, either with filling factor or one above the other. Note that the magnetic
+field is always given with respect to the local vertical, contrary to photospheres, which are given
+relative to the line of sight.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Atmospheres</span><span class="p">]</span>
+
+    <span class="p">[[</span><span class="n">Chromosphere</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">ch1</span>                                              <span class="c1"># Name of the atmosphere component</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>                                 <span class="c1"># Spectral region to be used for synthesis</span>
+    <span class="n">Height</span> <span class="o">=</span> <span class="mf">3.0</span>                                            <span class="c1"># Height of the slab</span>
+    <span class="n">Line</span> <span class="o">=</span> <span class="mi">10830</span>                                            <span class="c1"># 10830, 5876</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>                         <span class="c1"># Wavelength range used for synthesis</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;chromospheres/model_chromosphere.1d&#39;</span>    <span class="c1">#File with model parameters</span>
+    <span class="n">Coordinates</span> <span class="k">for</span> <span class="n">magnetic</span> <span class="n">field</span> <span class="n">vector</span> <span class="o">=</span> <span class="s1">&#39;cartesian&#39;</span>
+
+        <span class="p">[[[</span><span class="n">Ranges</span><span class="p">]]]</span>
+        <span class="n">Bx</span>     <span class="o">=</span> <span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span>
+        <span class="n">By</span>     <span class="o">=</span> <span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span>
+        <span class="n">Bz</span>     <span class="o">=</span> <span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span>
+        <span class="n">tau</span>    <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">2.0</span>
+        <span class="n">v</span>      <span class="o">=</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">10.0</span>
+        <span class="n">deltav</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">12.0</span>
+        <span class="n">beta</span>   <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span>
+        <span class="n">a</span>      <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span>
+        <span class="n">ff</span>     <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span>
+
+
+        <span class="p">[[[</span><span class="n">Nodes</span><span class="p">]]]</span>
+        <span class="n">Bx</span>     <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">By</span>     <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">Bz</span>     <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">tau</span>    <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">v</span>      <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">deltav</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">beta</span>   <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">a</span>      <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">ff</span>     <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Name</span></code> : defines the name of the atmosphere. This will be used in the output file to refer to the parameters of this specific atmosphere.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference</span> <span class="pre">atmospheric</span> <span class="pre">model</span></code> (optional) : defines the input file for this atmosphere. The format is described in <span class="xref std std-ref">input</span>. If the format is 1D, it will be used for all pixels (in inversion mode). If you want a different model for all pixels, use 3D formats.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Spectral</span> <span class="pre">region</span></code> : defines the spectral region associated with this atmosphere.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Wavelength</span></code> (optional): defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time. If absent or <a href="#id3"><span class="problematic" id="id4">`</span></a>None’, then the whole spectral region is synthesized.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Line</span></code> : which of the He I lines to consider (5876, 10830, …)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference</span> <span class="pre">frame</span></code> : it defines the reference system in which the magnetic field is measured. <code class="docutils literal notranslate"><span class="pre">line-of-sight</span></code> or <code class="docutils literal notranslate"><span class="pre">vertical</span></code> (traditional mode for Hazel v2.0). If absent, <code class="docutils literal notranslate"><span class="pre">vertical</span></code> is used by default.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Height</span></code> : height of the slab in arcsec.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Ranges</span></code> : ranges of variation of each parameter. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, consider it unconstrained. If not, it will be constrained to the range.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Nodes</span></code> : defines the number of nodes in each cycle when doing inversions. It is possible to couple parameters with those of another atmosphere by using the name of the atmosphere instead of the number of nodes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Regularization</span></code> : add regularization to the parameters. See <a class="reference internal" href="regularization.html#regularization"><span class="std std-ref">Regularization</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Coordinates</span> <span class="pre">for</span> <span class="pre">magnetic</span> <span class="pre">field</span> <span class="pre">vector</span></code> (optional) : defines the coordinates used for defining the magnetic field vector. If <code class="docutils literal notranslate"><span class="pre">cartesian</span></code> is used, then you need to define <code class="docutils literal notranslate"><span class="pre">Bx</span></code>, <code class="docutils literal notranslate"><span class="pre">By</span></code> and <code class="docutils literal notranslate"><span class="pre">Bz</span></code> as variables in the ranges, nodes, etc. If <code class="docutils literal notranslate"><span class="pre">spherical</span></code> is used, then the variables are termed <code class="docutils literal notranslate"><span class="pre">B</span></code>, <code class="docutils literal notranslate"><span class="pre">thB</span></code> and <code class="docutils literal notranslate"><span class="pre">phiB</span></code>.</p></li>
+</ul>
+</section>
+<section id="parametric">
+<h3><span class="section-number">3.2.3.3. </span>Parametric<a class="headerlink" href="#parametric" title="Link to this heading">¶</a></h3>
+<p>Parametric atmospheres are used to synthesize any systematics that can be affecting the
+observations. Things like telluric lines, fringes, smooth continua form part of this. You can
+always correct from them during data reduction, but Hazel v2.0 allows you to add them
+during the fit. The curently available parametric atmosphere is just a Voigt function.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Atmospheres</span><span class="p">]</span>
+
+    <span class="p">[[</span><span class="n">Parametric</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">te1</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;telluric/model_telluric.1d&#39;</span>    <span class="c1"># File with model parameters</span>
+    <span class="n">Type</span> <span class="o">=</span> <span class="n">Gaussian</span>           <span class="c1"># Gaussian, Voigt, MoGaussian, MoVoigt</span>
+
+        <span class="p">[[[</span><span class="n">Ranges</span><span class="p">]]]</span>
+        <span class="n">Lambda0</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+        <span class="n">Sigma</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.5</span>
+        <span class="n">Depth</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.8</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.2</span>
+        <span class="n">ff</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span>
+
+        <span class="p">[[[</span><span class="n">Nodes</span><span class="p">]]]</span>
+        <span class="n">Lambda0</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">Sigma</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">Depth</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">ff</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Name</span></code> : defines the name of the atmosphere. This will be used in the output file to refer to the parameters of this specific atmosphere.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference</span> <span class="pre">atmospheric</span> <span class="pre">model</span></code> (optional) : defines the input file for this atmosphere. The format is described in <span class="xref std std-ref">input</span>. If the format is 1D, it will be used for all pixels (in inversion mode). If you want a different model for all pixels, use 3D formats.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Spectral</span> <span class="pre">region</span></code> : defines the spectral region associated with this atmosphere.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Wavelength</span></code> (optional): defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time. If absent or <a href="#id5"><span class="problematic" id="id6">`</span></a>None’, then the whole spectral region is synthesized.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Type</span></code> : type of parametric atmosphere, from the available selection <code class="docutils literal notranslate"><span class="pre">Voigt</span></code>/<code class="docutils literal notranslate"><span class="pre">MoVoigt</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Ranges</span></code> : ranges of variation of each parameter. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, consider it unconstrained. If not, it will be constrained to the range.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Nodes</span></code> : defines the number of nodes in each cycle when doing inversions</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Regularization</span></code> : add regularization to the parameters. See <a class="reference internal" href="regularization.html#regularization"><span class="std std-ref">Regularization</span></a>.</p></li>
+</ul>
+</section>
+<section id="straylight">
+<h3><span class="section-number">3.2.3.4. </span>Straylight<a class="headerlink" href="#straylight" title="Link to this heading">¶</a></h3>
+<p>Straylight components are always added to the final spectrum with a filling factor and a possible velocity shift.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Atmospheres</span><span class="p">]</span>
+
+    <span class="p">[[</span><span class="n">Straylight</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">st1</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;straylight/model_stray.1d&#39;</span>    <span class="c1"># File with model parameters</span>
+
+        <span class="p">[[[</span><span class="n">Ranges</span><span class="p">]]]</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+        <span class="n">ff</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span>
+
+        <span class="p">[[[</span><span class="n">Nodes</span><span class="p">]]]</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">ff</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Name</span></code> : defines the name of the atmosphere. This will be used in the output file to refer to the parameters of this specific atmosphere.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference</span> <span class="pre">atmospheric</span> <span class="pre">model</span></code> (optional) : defines the input file for this atmosphere. The format is described in <span class="xref std std-ref">input</span>. If the format is 1D, it will be used for all pixels (in inversion mode). If you want a different model for all pixels, use 3D formats.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Spectral</span> <span class="pre">region</span></code> : defines the spectral region associated with this atmosphere.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Wavelength</span></code> (optional): defines the ranges to be used for the synthesis of this atmosphere. This is interesting if you only want this atmosphere to synthesize part of the observed spectrum, which will affect the computing time. If absent or <a href="#id7"><span class="problematic" id="id8">`</span></a>None’, then the whole spectral region is synthesized.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Ranges</span></code> : ranges of variation of each parameter. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, consider it unconstrained. If not, it will be constrained to the range.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Nodes</span></code> : defines the number of nodes in each cycle when doing inversions</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Regularization</span></code> : add regularization to the parameters. See <a class="reference internal" href="regularization.html#regularization"><span class="std std-ref">Regularization</span></a>.</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="examples.html" class="btn btn-neutral float-left" title="3.1. Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="topology.html" class="btn btn-neutral float-right" title="3.3. Topology" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

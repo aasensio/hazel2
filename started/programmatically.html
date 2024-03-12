@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2.5. Programmatically &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="3. Configuration" href="../config.html" />
+    <link rel="prev" title="2.4. Inversion" href="inversion.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../started.html">2. Basic usage</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="general.html">2.1. General description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic.html">2.2. Using the code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="synthesis.html">2.3. Synthesis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="inversion.html">2.4. Inversion</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">2.5. Programmatically</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-a-model">2.5.1. Creating a model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adding-a-spectral-region">2.5.2. Adding a spectral region</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#working-with-chromospheres">2.5.3. Working with chromospheres</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#adding-a-chromosphere">2.5.3.1. Adding a chromosphere</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#changing-the-parameters-of-the-chromosphere">2.5.3.2. Changing the parameters of the chromosphere</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#working-with-photospheres">2.5.4. Working with photospheres</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#adding-a-photosphere">2.5.4.1. Adding a photosphere</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#changing-the-parameters-of-the-photosphere">2.5.4.2. Changing the parameters of the photosphere</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#working-with-parametric-models">2.5.5. Working with parametric models</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#adding-a-parametric-model">2.5.5.1. Adding a parametric model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#changing-the-parameters-of-the-parametric-model">2.5.5.2. Changing the parameters of the parametric model</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#working-with-straylight">2.5.6. Working with straylight</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#adding-a-straylight">2.5.6.1. Adding a straylight</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#changing-the-parameters-of-the-straylight">2.5.6.2. Changing the parameters of the straylight</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#finalizing-setup">2.5.7. Finalizing setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#synthesis">2.5.8. Synthesis</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">3. Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io_files.html">4. Input/output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparation.html">5. Data preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">6. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../started.html"><span class="section-number">2. </span>Basic usage</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">2.5. </span>Programmatically</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/started/programmatically.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="programmatically">
+<span id="id1"></span><h1><span class="section-number">2.5. </span>Programmatically<a class="headerlink" href="#programmatically" title="Link to this heading">¶</a></h1>
+<p>Hazel v2.0 can be used programmatically, which can be used for simple calculations or
+if more advanced synthesis/inversion strategies are required.</p>
+<section id="creating-a-model">
+<h2><span class="section-number">2.5.1. </span>Creating a model<a class="headerlink" href="#creating-a-model" title="Link to this heading">¶</a></h2>
+<p>The first step is to create a model. By default, the model is created in synthesis mode.
+The verbosity level can be selected with the <code class="docutils literal notranslate"><span class="pre">verbose</span></code> keyword.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">hazel</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;synthesis&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">Model</span></code> class defines the following two properties: <code class="docutils literal notranslate"><span class="pre">atmospheres</span></code> and <code class="docutils literal notranslate"><span class="pre">spectrum</span></code>. The
+first one contains all the atmospheric information, and one interacts with it when changing
+and/or accessing the properties of each atmosphere. The second one contains all the spectral
+information, including the synthesized Stokes parameters or the observations.</p>
+</section>
+<section id="adding-a-spectral-region">
+<h2><span class="section-number">2.5.2. </span>Adding a spectral region<a class="headerlink" href="#adding-a-spectral-region" title="Link to this heading">¶</a></h2>
+<p>The first step is to define a spectral region of interest.
+The model class has an <code class="docutils literal notranslate"><span class="pre">add_spectral</span></code> method that generates new spectral
+regions. A dictionary with the information needs to be passed to the
+function. Note that many of them are optional and many are only used
+in inversion mode.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">,</span> <span class="mi">150</span><span class="p">],</span> <span class="s1">&#39;topology&#39;</span><span class="p">:</span> <span class="s1">&#39;ch1&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;LOS&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">90.0</span><span class="p">],</span> <span class="s1">&#39;Boundary condition&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]}</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_spectral</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The explanation for all keys of the dictionary are the same as those explained in <a class="reference internal" href="../config/examples.html#configuration"><span class="std std-ref">Examples</span></a>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Name</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Wavelength</span></code> (optional if a wavelength file is passed)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Topology</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Stokes</span> <span class="pre">weights</span></code> (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LOS</span></code> (mandatory for synthesis)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Boundary</span> <span class="pre">condition</span></code> (mandatory for synthesis)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Wavelength</span> <span class="pre">file</span></code> (optional if a wavelength axis is passed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Wavelength</span> <span class="pre">weight</span> <span class="pre">file</span></code> (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Observations</span> <span class="pre">file</span></code> (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Straylight</span> <span class="pre">file</span></code> (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Mask</span> <span class="pre">file</span></code> (optional)</p></li>
+</ul>
+</section>
+<section id="working-with-chromospheres">
+<h2><span class="section-number">2.5.3. </span>Working with chromospheres<a class="headerlink" href="#working-with-chromospheres" title="Link to this heading">¶</a></h2>
+<section id="adding-a-chromosphere">
+<h3><span class="section-number">2.5.3.1. </span>Adding a chromosphere<a class="headerlink" href="#adding-a-chromosphere" title="Link to this heading">¶</a></h3>
+<p>A new Hazel chromosphere is added by calling the following method of <code class="docutils literal notranslate"><span class="pre">Model</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span><span class="o">.</span><span class="n">add_chromosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ch1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Height&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="s1">&#39;Line&#39;</span><span class="p">:</span> <span class="s1">&#39;10830&#39;</span><span class="p">,</span> <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">]})</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Name</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Spectral</span> <span class="pre">region</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Height</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Line</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Wavelength</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference</span> <span class="pre">atmospheric</span> <span class="pre">model</span></code> (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Ranges</span></code> (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Nodes</span></code> (optional)</p></li>
+</ul>
+<p>In this case, the properties of the newly created atmosphere can be accessed in the
+dictionary element <code class="docutils literal notranslate"><span class="pre">mod.atmospheres['ch1']</span></code>. All atmospheres are indexed by
+the given name.</p>
+</section>
+<section id="changing-the-parameters-of-the-chromosphere">
+<h3><span class="section-number">2.5.3.2. </span>Changing the parameters of the chromosphere<a class="headerlink" href="#changing-the-parameters-of-the-chromosphere" title="Link to this heading">¶</a></h3>
+<p>Once defined, the model parameters can be changed by calling the <code class="docutils literal notranslate"><span class="pre">set_parameters</span></code>
+method of the atmosphere:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span><span class="o">.</span><span class="n">atmospheres</span><span class="p">[</span><span class="s1">&#39;ch1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">100.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">8.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span><span class="mf">1.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where the parameters are, in order: Bx, By, Bz, <span class="math notranslate nohighlight">\(\tau\)</span>, v, <span class="math notranslate nohighlight">\(\Delta v\)</span>, <span class="math notranslate nohighlight">\(\beta\)</span>, a. The filling
+factor is passed as the second parameter.</p>
+</section>
+</section>
+<section id="working-with-photospheres">
+<h2><span class="section-number">2.5.4. </span>Working with photospheres<a class="headerlink" href="#working-with-photospheres" title="Link to this heading">¶</a></h2>
+<section id="adding-a-photosphere">
+<h3><span class="section-number">2.5.4.1. </span>Adding a photosphere<a class="headerlink" href="#adding-a-photosphere" title="Link to this heading">¶</a></h3>
+<p>A new SIR atmosphere can be added by calling the following method of <code class="docutils literal notranslate"><span class="pre">Model</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span><span class="o">.</span><span class="n">add_photosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ph1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral lines&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">300</span><span class="p">,],</span>
+    <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">]})</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Name</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Spectral</span> <span class="pre">region</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Spectral</span> <span class="pre">lines</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Wavelength</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference</span> <span class="pre">atmospheric</span> <span class="pre">model</span></code> (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Ranges</span></code> (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Nodes</span></code> (optional)</p></li>
+</ul>
+</section>
+<section id="changing-the-parameters-of-the-photosphere">
+<h3><span class="section-number">2.5.4.2. </span>Changing the parameters of the photosphere<a class="headerlink" href="#changing-the-parameters-of-the-photosphere" title="Link to this heading">¶</a></h3>
+<p>Once defined, the model parameters can be changed by calling the <code class="docutils literal notranslate"><span class="pre">set_parameters</span></code>
+method of the atmosphere:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span><span class="o">.</span><span class="n">atmospheres</span><span class="p">[</span><span class="s1">&#39;ph1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">ff</span><span class="p">,</span> <span class="n">vmac</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">model</span></code> is an array of size (nz,8) with the model atmosphere, ff
+is the filling factor and vmac is the macroturbulent velocity. The columns are, in order: <span class="math notranslate nohighlight">\(\log \tau\)</span>, T, Pe, vmic, v, Bx, By, Bz.
+If Pe is negative, the electron pressure will be calculated in synthesis mode
+assuming hydrostatic equilibrium. On the other hand, it is always calculated
+in hydrostatic equilibrium in inversion mode.</p>
+</section>
+</section>
+<section id="working-with-parametric-models">
+<h2><span class="section-number">2.5.5. </span>Working with parametric models<a class="headerlink" href="#working-with-parametric-models" title="Link to this heading">¶</a></h2>
+<section id="adding-a-parametric-model">
+<h3><span class="section-number">2.5.5.1. </span>Adding a parametric model<a class="headerlink" href="#adding-a-parametric-model" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span><span class="o">.</span><span class="n">add_parametric</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;te1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Type&#39;</span><span class="p">:</span> <span class="s1">&#39;Voigt&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">]})</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Name</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Spectral</span> <span class="pre">region</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Type</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Wavelength</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference</span> <span class="pre">atmospheric</span> <span class="pre">model</span></code> (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Ranges</span></code> (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Nodes</span></code> (optional)</p></li>
+</ul>
+</section>
+<section id="changing-the-parameters-of-the-parametric-model">
+<h3><span class="section-number">2.5.5.2. </span>Changing the parameters of the parametric model<a class="headerlink" href="#changing-the-parameters-of-the-parametric-model" title="Link to this heading">¶</a></h3>
+<p>Once defined, the model parameters can be changed by calling the <code class="docutils literal notranslate"><span class="pre">set_parameters</span></code>
+method of the atmosphere:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span><span class="o">.</span><span class="n">atmospheres</span><span class="p">[</span><span class="s1">&#39;te1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">([</span><span class="mi">10833</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="mf">1.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where the parameters are, in order: <span class="math notranslate nohighlight">\(\lambda_0\)</span>, <span class="math notranslate nohighlight">\(\sigma\)</span>, d, a, with the filling factor given
+at the end ff.</p>
+</section>
+</section>
+<section id="working-with-straylight">
+<h2><span class="section-number">2.5.6. </span>Working with straylight<a class="headerlink" href="#working-with-straylight" title="Link to this heading">¶</a></h2>
+<section id="adding-a-straylight">
+<h3><span class="section-number">2.5.6.1. </span>Adding a straylight<a class="headerlink" href="#adding-a-straylight" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span><span class="o">.</span><span class="n">add_parametric</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;st1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">]})</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Name</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Spectral</span> <span class="pre">region</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Wavelength</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Reference</span> <span class="pre">atmospheric</span> <span class="pre">model</span></code> (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Ranges</span></code> (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Nodes</span></code> (optional)</p></li>
+</ul>
+</section>
+<section id="changing-the-parameters-of-the-straylight">
+<h3><span class="section-number">2.5.6.2. </span>Changing the parameters of the straylight<a class="headerlink" href="#changing-the-parameters-of-the-straylight" title="Link to this heading">¶</a></h3>
+<p>Once defined, the model parameters can be changed by calling the <code class="docutils literal notranslate"><span class="pre">set_parameters</span></code>
+method of the atmosphere:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span><span class="o">.</span><span class="n">atmospheres</span><span class="p">[</span><span class="s1">&#39;st1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="mf">1.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where the parameters are, in order: stray light profile, v and the filling factor ff at the end.</p>
+</section>
+</section>
+<section id="finalizing-setup">
+<h2><span class="section-number">2.5.7. </span>Finalizing setup<a class="headerlink" href="#finalizing-setup" title="Link to this heading">¶</a></h2>
+<p>Once all spectral regions and atmospheres are added, we need to finalize the
+setup by invoking:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="synthesis">
+<h2><span class="section-number">2.5.8. </span>Synthesis<a class="headerlink" href="#synthesis" title="Link to this heading">¶</a></h2>
+<p>The model can be synthesized by calling the <code class="docutils literal notranslate"><span class="pre">synthesize</span></code> method of <code class="docutils literal notranslate"><span class="pre">Model</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span><span class="o">.</span><span class="n">synthesize</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Finally, the emergent Stokes parameters can be accessed, for each spectral region,
+by examining <code class="docutils literal notranslate"><span class="pre">mod.spectrum['spec1'].stokes</span></code>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="inversion.html" class="btn btn-neutral float-left" title="2.4. Inversion" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../config.html" class="btn btn-neutral float-right" title="3. Configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>5.2. How to deal with boundary conditions &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.3. Basic Equations" href="../preparation/equations.html" />
+    <link rel="prev" title="5.1. Data preparation" href="../preparation/prepareData.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../started/installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../started.html">2. Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">3. Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io_files.html">4. Input/output files</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../preparation.html">5. Data preparation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../preparation/prepareData.html">5.1. Data preparation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">5.2. How to deal with boundary conditions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Disk-center">5.2.1. Disk center</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Away-from-disk-center">5.2.2. Away from disk center</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../preparation/equations.html">5.3. Basic Equations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../preparation/ambiguities.html">5.4. Ambiguities in the Hanle effect in the saturation regime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../preparation/photospheric.html">5.5. List of photospheric lines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../preparation/refsys.html">5.6. The reference system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../preparation/atomicModels.html">5.7. Atomic models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">6. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../preparation.html"><span class="section-number">5. </span>Data preparation</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">5.2. </span>How to deal with boundary conditions</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notebooks/boundary_conditions.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="How-to-deal-with-boundary-conditions">
+<h1><span class="section-number">5.2. </span>How to deal with boundary conditions<a class="headerlink" href="#How-to-deal-with-boundary-conditions" title="Link to this heading">¶</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">pl</span>
+<span class="kn">import</span> <span class="nn">hazel</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/scratch/miniconda3.7/envs/hazel/lib/python3.7/importlib/_bootstrap.py:219: RuntimeWarning: numpy.dtype size changed, may indicate binary incompatibility. Expected 88 from C header, got 96 from PyObject
+  return f(*args, **kwds)
+</pre></div></div>
+</div>
+<p>All profiles in Hazel are assumed to be normalized to the quiet Sun at disk center. Let’s do a few experiments to get a grasp at how profiles depend on the observing conditions. To facilitate things, let us wrap the experiments in a function that we can call with different parameters.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">synthesize</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">boundaryI</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+
+    <span class="n">thetaB</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">phiB</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="c1"># Test a photosphere</span>
+    <span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;synthesis&#39;</span><span class="p">)</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">add_spectral</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10835</span><span class="p">,</span> <span class="mi">150</span><span class="p">],</span> <span class="s1">&#39;topology&#39;</span><span class="p">:</span> <span class="s1">&#39;ph1&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;LOS&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">theta</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">90.0</span><span class="p">],</span> <span class="s1">&#39;Boundary condition&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">boundaryI</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]})</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">add_photosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ph1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral lines&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">300</span><span class="p">],</span>
+                         <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10835</span><span class="p">],</span> <span class="s1">&#39;Reference atmospheric model&#39;</span><span class="p">:</span> <span class="s1">&#39;photospheres/init_spot.1d&#39;</span><span class="p">})</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">synthesize</span><span class="p">()</span>
+
+    <span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">wavelength_axis</span><span class="p">,</span> <span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">stokes</span><span class="p">[</span><span class="mi">0</span><span class="p">,:])</span>
+
+    <span class="c1"># Test a chromosphere</span>
+    <span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;synthesis&#39;</span><span class="p">)</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">add_spectral</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10835</span><span class="p">,</span> <span class="mi">150</span><span class="p">],</span> <span class="s1">&#39;topology&#39;</span><span class="p">:</span> <span class="s1">&#39;ch1&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;LOS&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">theta</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">90.0</span><span class="p">],</span> <span class="s1">&#39;Boundary condition&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">boundaryI</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]})</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">add_chromosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ch1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Height&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s1">&#39;Line&#39;</span><span class="p">:</span> <span class="s1">&#39;10830&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10835</span><span class="p">],</span> <span class="s1">&#39;Reference frame&#39;</span><span class="p">:</span> <span class="s1">&#39;line-of-sight&#39;</span><span class="p">})</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+
+
+    <span class="n">mod</span><span class="o">.</span><span class="n">atmospheres</span><span class="p">[</span><span class="s1">&#39;ch1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">8.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span><span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">synthesize</span><span class="p">()</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">wavelength_axis</span><span class="p">,</span> <span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">stokes</span><span class="p">[</span><span class="mi">0</span><span class="p">,:])</span>
+
+    <span class="c1"># Test a photosphere+chromosphere</span>
+    <span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;synthesis&#39;</span><span class="p">)</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">add_spectral</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10835</span><span class="p">,</span> <span class="mi">150</span><span class="p">],</span> <span class="s1">&#39;topology&#39;</span><span class="p">:</span> <span class="s1">&#39;ph1-&gt;ch1&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;LOS&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">theta</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">90.0</span><span class="p">],</span> <span class="s1">&#39;Boundary condition&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">boundaryI</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]})</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">add_photosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ph1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral lines&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">300</span><span class="p">],</span>
+                         <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10835</span><span class="p">],</span> <span class="s1">&#39;Reference atmospheric model&#39;</span><span class="p">:</span> <span class="s1">&#39;photospheres/init_spot.1d&#39;</span><span class="p">})</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">add_chromosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ch1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Height&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s1">&#39;Line&#39;</span><span class="p">:</span> <span class="s1">&#39;10830&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10835</span><span class="p">],</span> <span class="s1">&#39;Reference frame&#39;</span><span class="p">:</span> <span class="s1">&#39;line-of-sight&#39;</span><span class="p">})</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+
+    <span class="n">mod</span><span class="o">.</span><span class="n">atmospheres</span><span class="p">[</span><span class="s1">&#39;ch1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">8.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span><span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">synthesize</span><span class="p">()</span>
+
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">wavelength_axis</span><span class="p">,</span> <span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">stokes</span><span class="p">[</span><span class="mi">0</span><span class="p">,:])</span>
+</pre></div>
+</div>
+</div>
+<section id="Disk-center">
+<h2><span class="section-number">5.2.1. </span>Disk center<a class="headerlink" href="#Disk-center" title="Link to this heading">¶</a></h2>
+<p>Let us assume that we are at disk center and synthesize the profile emerging from a photosphere, a chromosphere and the combination of the two:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">synthesize</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_boundary_conditions_5_0.png" src="../_images/notebooks_boundary_conditions_5_0.png" />
+</div>
+</div>
+<p>As you can see, the emergent profiles are normalized to one, as one would expect for a disk center observation. For such an observation, in inversion mode, the observed profiles should be then normalized to unit continuum because we are placed at disk center.</p>
+<p>When a photosphere is present, the continuum value will be automatically inferred in inversion mode by adapting the temperature. Any other subsequent chromosphere above the photosphere will function with the correct boundary condition. However, if only a chromosphere is present it is mandatory to define the appropriate boundary condition. As you can see in the following, the effect of the boundary condition only affects the case of a single chromosphere:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">synthesize</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">boundaryI</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_boundary_conditions_7_0.png" src="../_images/notebooks_boundary_conditions_7_0.png" />
+</div>
+</div>
+<p>The reason for that is that a chromosphere is modeled in Hazel as a slab and, therefore, one needs to give the Stokes profiles that are entering the slab from below and there is no general way of inferring it from the observations. For this reason, Hazel just gives you the option to enter the boundary conditions as a parameter. Note that this is important in case you are inverting sunspots because you have to modify the boundary condition appropriately to define the darker regions.</p>
+</section>
+<section id="Away-from-disk-center">
+<h2><span class="section-number">5.2.2. </span>Away from disk center<a class="headerlink" href="#Away-from-disk-center" title="Link to this heading">¶</a></h2>
+<p>Let us consider now what happens when we are not at disk center.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">synthesize</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="mi">45</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_boundary_conditions_10_0.png" src="../_images/notebooks_boundary_conditions_10_0.png" />
+</div>
+</div>
+<p>As you see, the continuum is now smaller than one, and compatible with the center-to-limb variation in the quiet Sun:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">45</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">)</span>
+<span class="n">clv</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">i0_allen</span><span class="p">(</span><span class="mi">10830</span><span class="p">,</span><span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">hazel</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">i0_allen</span><span class="p">(</span><span class="mi">10830</span><span class="p">,</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CLV = </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">clv</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CLV = 0.9167817591620029
+</pre></div></div>
+</div>
+<p>For such an observation, in inversion mode, the observed profiles should be then normalized to the quiet Sun continuum at disk center. Equivalently, one can normalize to the quiet Sun in the observed map at the given heliocentric angle and then correct the profiles by the estimated CLV given above.</p>
+<p>As a summary:</p>
+<ol class="arabic simple">
+<li><p>If you have a photosphere, just normalize the profiles to the continuum of the quiet Sun at disk center and the photosphere will adapt the temperature to produce the correct continuum.</p></li>
+<li><p>If you only have chromospheres, then you need to define the appropriate boundary condition (in units of the quiet Sun continuum at disk center). Then, if you are dealing with sunspots or darker regions, you need to modify the boundary conditions appropriately to consider the darker continuum.</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../preparation/prepareData.html" class="btn btn-neutral float-left" title="5.1. Data preparation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../preparation/equations.html" class="btn btn-neutral float-right" title="5.3. Basic Equations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>6.1. Synthesis in programmatic mode &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="6.2. Synthesis with a configuration file" href="conf_synthesis.html" />
+    <link rel="prev" title="6. Examples" href="../examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../started/installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../started.html">2. Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">3. Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io_files.html">4. Input/output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparation.html">5. Data preparation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">6. Examples</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">6.1. Synthesis in programmatic mode</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Simple-synthesis-in-a-chromosphere">6.1.1. Simple synthesis in a chromosphere</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Synthesizing-with-several-atmospheres">6.1.2. Synthesizing with several atmospheres</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Synthesizing-with-several-chromospheres">6.1.3. Synthesizing with several chromospheres</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#One-atmosphere-on-top-of-the-other">6.1.3.1. One atmosphere on top of the other</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Atmospheres-with-filling-factors">6.1.3.2. Atmospheres with filling factors</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="conf_synthesis.html">6.2. Synthesis with a configuration file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conf_inversion.html">6.3. Inversion with a configuration file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parallel.html">6.4. Inversion of a 3D cube</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parallel_synth.html">6.5. Synthesis of a 3D cube</a></li>
+<li class="toctree-l2"><a class="reference internal" href="external_optimizer.html">6.6. Using an external optimizer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html"><span class="section-number">6. </span>Examples</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">6.1. </span>Synthesis in programmatic mode</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notebooks/prog_synthesis.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Synthesis-in-programmatic-mode">
+<h1><span class="section-number">6.1. </span>Synthesis in programmatic mode<a class="headerlink" href="#Synthesis-in-programmatic-mode" title="Link to this heading">¶</a></h1>
+<section id="Simple-synthesis-in-a-chromosphere">
+<h2><span class="section-number">6.1.1. </span>Simple synthesis in a chromosphere<a class="headerlink" href="#Simple-synthesis-in-a-chromosphere" title="Link to this heading">¶</a></h2>
+<p>For simple calculations, like synthesizing spectral lines in simple models, Hazel v2.0 can be used in programmatic mode. For instance, let us generate a spectral window in the near-infrared and synthesize the He I 10830 A line with some parameters.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">pl</span>
+<span class="kn">import</span> <span class="nn">hazel</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">hazel</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+<span class="n">label</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="s1">&#39;Q&#39;</span><span class="p">,</span> <span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="s1">&#39;V&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+1.9.0
+</pre></div></div>
+</div>
+<p>Let’s first do a simple experiment in which we synthesize the 10830 A line for a set of parameters. Let’s first instantiating a <code class="docutils literal notranslate"><span class="pre">hazel</span></code> model. We set the verbosity to a high level as an example but you should lower it when doing calculations to avoid crowding your terminal:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;synthesis&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>The first thing to do with the model is to add a spectral region for our synthesis.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span><span class="o">.</span><span class="n">add_spectral</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">,</span> <span class="mi">150</span><span class="p">],</span> <span class="s1">&#39;topology&#39;</span><span class="p">:</span> <span class="s1">&#39;ch1&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;LOS&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">90.0</span><span class="p">],</span> <span class="s1">&#39;Boundary condition&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2018-05-07 12:35:53,388 - Adding spectral region spec1
+2018-05-07 12:35:53,391 -   - Using wavelength axis from 10826.0 to 10833.0 with 150 steps
+2018-05-07 12:35:53,393 -   - Not mask for pixels
+2018-05-07 12:35:53,396 -   - Using LOS [0.0, 0.0, 90.0]
+2018-05-07 12:35:53,398 -   - Using boundary condition [0.0, 0.0, 90.0]
+</pre></div></div>
+</div>
+<p>Note that we need to define the angles defining the line-of-sight, the boundary condition, the wavelength range, the name and the topology. We specify in this case that the topology is just a single chromosphere that we label as <code class="docutils literal notranslate"><span class="pre">ch1</span></code>. We need now to define this chromosphere:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span><span class="o">.</span><span class="n">add_chromosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ch1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Height&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s1">&#39;Line&#39;</span><span class="p">:</span> <span class="s1">&#39;10830&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">]})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2018-05-07 12:35:54,348 -     * Adding line : 10830
+</pre></div></div>
+</div>
+<p>Now that we have defined all elements of the synthesis, we finish the setup by invoking the following, which will add all topologies to the spectrum and remove unused atmospheres (if any):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2018-05-07 12:35:55,146 - Adding topologies
+2018-05-07 12:35:55,149 -   - ch1
+2018-05-07 12:35:55,151 - Removing unused atmospheres
+2018-05-07 12:35:55,152 - Number of pixels to read : 1
+</pre></div></div>
+</div>
+<p>It’s time now to modify the parameters of the chromosphere and do some plots. You can have access to the wavelength axis and to the synthetic spectrum by accessing the <code class="docutils literal notranslate"><span class="pre">wavelength_axis</span></code>and <code class="docutils literal notranslate"><span class="pre">stokes</span></code> properties of <code class="docutils literal notranslate"><span class="pre">mod.spectrum[name]</span></code>, where <code class="docutils literal notranslate"><span class="pre">name</span></code>is the name given to the spectral region.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+        <span class="n">mod</span><span class="o">.</span><span class="n">atmospheres</span><span class="p">[</span><span class="s1">&#39;ch1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">([</span><span class="mf">50.0</span><span class="o">*</span><span class="n">j</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">100.0</span><span class="o">*</span><span class="n">j</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">8.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">mod</span><span class="o">.</span><span class="n">synthesize</span><span class="p">()</span>
+        <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">wavelength_axis</span> <span class="o">-</span> <span class="mi">10830</span><span class="p">,</span> <span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">stokes</span><span class="p">[</span><span class="n">i</span><span class="p">,:])</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Wavelength - 10830[$\AA$]&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">/Ic&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+
+<span class="n">pl</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/scratch/miniconda3/envs/py36/lib/python3.6/site-packages/matplotlib/figure.py:2267: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+  warnings.warn(&#34;This figure includes Axes that are not compatible &#34;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_prog_synthesis_13_1.png" src="../_images/notebooks_prog_synthesis_13_1.png" />
+</div>
+</div>
+<p>As another example, let’s generate a profile for an off-limb observation. To this end, we just simply select <span class="math notranslate nohighlight">\(\theta_\mathrm{obs}=90^\circ\)</span> and set the boundary condition of intensity to zero.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;synthesis&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_spectral</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">,</span> <span class="mi">150</span><span class="p">],</span> <span class="s1">&#39;topology&#39;</span><span class="p">:</span> <span class="s1">&#39;ch1&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;LOS&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">90.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">90.0</span><span class="p">],</span> <span class="s1">&#39;Boundary condition&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]})</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_chromosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ch1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Height&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s1">&#39;Line&#39;</span><span class="p">:</span> <span class="s1">&#39;10830&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">]})</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+
+<span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+        <span class="n">mod</span><span class="o">.</span><span class="n">atmospheres</span><span class="p">[</span><span class="s1">&#39;ch1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">([</span><span class="mf">50.0</span><span class="o">*</span><span class="n">j</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">100.0</span><span class="o">*</span><span class="n">j</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">8.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">mod</span><span class="o">.</span><span class="n">synthesize</span><span class="p">()</span>
+        <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">wavelength_axis</span> <span class="o">-</span> <span class="mi">10830</span><span class="p">,</span> <span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">stokes</span><span class="p">[</span><span class="n">i</span><span class="p">,:])</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Wavelength - 10830[$\AA$]&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">/Ic&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+
+<span class="n">pl</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2018-05-07 12:35:08,343 - Adding spectral region spec1
+2018-05-07 12:35:08,345 -   - Using wavelength axis from 10826.0 to 10833.0 with 150 steps
+2018-05-07 12:35:08,346 -   - Not mask for pixels
+2018-05-07 12:35:08,348 -   - Using LOS [90.0, 0.0, 90.0]
+2018-05-07 12:35:08,349 -   - Using off-limb normalization (peak intensity)
+2018-05-07 12:35:08,351 -   - Using boundary condition [90.0, 0.0, 90.0]
+2018-05-07 12:35:08,353 -     * Adding line : 10830
+2018-05-07 12:35:08,355 - Adding topologies
+2018-05-07 12:35:08,357 -   - ch1
+2018-05-07 12:35:08,359 - Removing unused atmospheres
+2018-05-07 12:35:08,360 - Number of pixels to read : 1
+/scratch/miniconda3/envs/py36/lib/python3.6/site-packages/matplotlib/figure.py:2267: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+  warnings.warn(&#34;This figure includes Axes that are not compatible &#34;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_prog_synthesis_15_1.png" src="../_images/notebooks_prog_synthesis_15_1.png" />
+</div>
+</div>
+</section>
+<section id="Synthesizing-with-several-atmospheres">
+<h2><span class="section-number">6.1.2. </span>Synthesizing with several atmospheres<a class="headerlink" href="#Synthesizing-with-several-atmospheres" title="Link to this heading">¶</a></h2>
+<p>Now that we know how to compute a single atmosphere, let’s complicate things a little and add a photosphere below the chromosphere. We define again the spectral region and add a photosphere and a chromosphere. For the photosphere, it’s easier to pass a 1D model that will be automatically read and used. If not, then you would need to read the model yourself and change the parameters. The file contents follows:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">cat</span> photospheres/model_photosphere.1d
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ff
+1.0
+
+  logtau     T        Pe           vmic        v            Bx           By         Bz
+  1.2000   8879.7  2.99831E+03  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+  1.1000   8720.2  2.46927E+03  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+  1.0000   8551.0  1.98933E+03  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+  0.9000   8372.2  1.56782E+03  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+  0.8000   8183.7  1.20874E+03  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+  0.7000   7985.6  9.11633E+02  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+  0.6000   7777.9  6.72597E+02  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+  0.5000   7557.6  4.75281E+02  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+  0.4000   7326.3  3.25088E+02  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+  0.3000   7083.8  2.15232E+02  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+  0.2000   6860.1  1.43137E+02  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+  0.1000   6640.1  9.38622E+01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+  0.0000   6424.0  6.06914E+01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -0.1000   6239.3  4.15733E+01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -0.2000   6072.2  2.91055E+01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -0.3000   5922.8  2.08261E+01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -0.4000   5777.8  1.53184E+01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -0.5000   5643.8  1.15489E+01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -0.6000   5520.8  8.92457E+00  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -0.7000   5409.8  7.08599E+00  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -0.8000   5310.4  5.77373E+00  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -0.9000   5222.4  4.82788E+00  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -1.0000   5140.4  4.03386E+00  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -1.1000   5067.0  3.41302E+00  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -1.2000   5002.4  2.92422E+00  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -1.3000   4937.5  2.49379E+00  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -1.4000   4876.8  2.13513E+00  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -1.5000   4820.4  1.83529E+00  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -1.6000   4765.7  1.57718E+00  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -1.7000   4714.0  1.35790E+00  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -1.8000   4665.2  1.17127E+00  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -1.9000   4617.4  1.01011E+00  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -2.0000   4571.7  8.71864E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -2.1000   4527.9  7.53168E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -2.2000   4485.7  6.50980E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -2.3000   4445.3  5.63044E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -2.4000   4406.6  4.87321E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -2.5000   4369.9  4.22256E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -2.6000   4335.0  3.66210E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -2.7000   4302.0  3.17890E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -2.8000   4271.8  2.76597E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -2.9000   4243.9  2.41060E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -3.0000   4218.4  2.10432E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -3.1000   4199.1  1.84897E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -3.2000   4184.1  1.63125E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -3.3000   4173.3  1.44504E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -3.4000   4169.3  1.28638E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -3.5000   4170.8  1.15030E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -3.6000   4177.9  1.03325E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -3.7000   4194.8  9.26851E-02  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -3.8000   4219.3  8.32714E-02  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -3.9000   4251.5  7.49313E-02  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -4.0000   4309.5  6.58077E-02  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -4.1000   4384.3  5.71418E-02  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -4.2000   4475.8  4.90563E-02  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -4.3000   4632.6  5.07160E-02  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -4.4000   4830.3  5.72114E-02  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -4.5000   5069.1  7.04217E-02  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -4.6000   5261.7  8.84299E-02  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -4.7000   5451.7  1.17157E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -4.8000   5639.2  1.63763E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -4.9000   5779.7  1.85029E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -5.0000   5895.5  1.93060E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -5.1000   5986.5  1.86025E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -5.2000   6078.6  1.78837E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -5.3000   6158.9  1.65029E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -5.4000   6227.4  1.46178E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -5.5000   6300.0  1.33777E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -5.6000   6368.8  1.21921E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -5.7000   6433.7  1.10655E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -5.8000   6525.9  1.07495E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -5.9000   6629.7  1.07811E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+ -6.0000   6745.3  1.11634E-01  0.000E+00  0.0000E+00   5.0000E+02    0.0000E+00  0.0000E+00
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;synthesis&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_spectral</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">,</span> <span class="mi">150</span><span class="p">],</span> <span class="s1">&#39;topology&#39;</span><span class="p">:</span> <span class="s1">&#39;ph1-&gt;ch1&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;LOS&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">90.0</span><span class="p">],</span> <span class="s1">&#39;Boundary condition&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]})</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_chromosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ch1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Height&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s1">&#39;Line&#39;</span><span class="p">:</span> <span class="s1">&#39;10830&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">]})</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_photosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ph1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral lines&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">300</span><span class="p">],</span>
+                      <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">],</span> <span class="s1">&#39;Reference atmospheric model&#39;</span><span class="p">:</span> <span class="s1">&#39;model_photosphere.1d&#39;</span><span class="p">})</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2018-05-03 12:38:22,043 - Adding spectral region spec1
+2018-05-03 12:38:22,045 -   - Using wavelength axis from 10826.0 to 10833.0 with 150 steps
+2018-05-03 12:38:22,047 -   - Not mask for pixels
+2018-05-03 12:38:22,049 -   - Using LOS [0.0, 0.0, 90.0]
+2018-05-03 12:38:22,051 -   - Using boundary condition [0.0, 0.0, 90.0]
+2018-05-03 12:38:22,053 -     * Adding line : 10830
+2018-05-03 12:38:22,058 -     * Adding line : [300]
+2018-05-03 12:38:22,063 -     * Reading 1D model model_photosphere.1d as reference
+2018-05-03 12:38:22,073 - Adding topologies
+2018-05-03 12:38:22,075 -   - ph1-&gt;ch1
+2018-05-03 12:38:22,077 - Removing unused atmospheres
+2018-05-03 12:38:22,078 - Number of pixels to read : 1
+</pre></div></div>
+</div>
+<p>And then do the plots again by changing the velocity of the chromospheric component.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+        <span class="n">mod</span><span class="o">.</span><span class="n">atmospheres</span><span class="p">[</span><span class="s1">&#39;ch1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">([</span><span class="mf">50.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">100.0</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="o">-</span><span class="mf">20.0</span><span class="o">+</span><span class="mi">4</span><span class="o">*</span><span class="n">j</span><span class="p">,</span><span class="mf">8.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">mod</span><span class="o">.</span><span class="n">synthesize</span><span class="p">()</span>
+        <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">wavelength_axis</span><span class="p">,</span> <span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">stokes</span><span class="p">[</span><span class="n">i</span><span class="p">,:])</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Wavelength [$\AA$]&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">/Ic&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">10826</span><span class="p">,</span><span class="mi">10832</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_prog_synthesis_21_0.png" src="../_images/notebooks_prog_synthesis_21_0.png" />
+</div>
+</div>
+</section>
+<section id="Synthesizing-with-several-chromospheres">
+<h2><span class="section-number">6.1.3. </span>Synthesizing with several chromospheres<a class="headerlink" href="#Synthesizing-with-several-chromospheres" title="Link to this heading">¶</a></h2>
+<p>Chromospheres (and atmospheres in general) in Hazel can be combined with filling factors (using <code class="docutils literal notranslate"><span class="pre">+</span></code>) or as stacked atmospheres (using <code class="docutils literal notranslate"><span class="pre">-&gt;</span></code>). We provide a few examples of that.</p>
+<section id="One-atmosphere-on-top-of-the-other">
+<h3><span class="section-number">6.1.3.1. </span>One atmosphere on top of the other<a class="headerlink" href="#One-atmosphere-on-top-of-the-other" title="Link to this heading">¶</a></h3>
+<p>Let’s stack two chromospheres together with a photosphere below.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;synthesis&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_spectral</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">,</span> <span class="mi">150</span><span class="p">],</span> <span class="s1">&#39;topology&#39;</span><span class="p">:</span> <span class="s1">&#39;ph1-&gt;ch1-&gt;ch2&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;LOS&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">90.0</span><span class="p">],</span> <span class="s1">&#39;Boundary condition&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]})</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_chromosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ch1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Height&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s1">&#39;Line&#39;</span><span class="p">:</span> <span class="s1">&#39;10830&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">]})</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_chromosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ch2&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Height&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s1">&#39;Line&#39;</span><span class="p">:</span> <span class="s1">&#39;10830&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">]})</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_photosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ph1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral lines&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">300</span><span class="p">],</span>
+                      <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">],</span> <span class="s1">&#39;Reference atmospheric model&#39;</span><span class="p">:</span> <span class="s1">&#39;model_photosphere.1d&#39;</span><span class="p">})</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2018-05-03 12:40:40,531 - Adding spectral region spec1
+2018-05-03 12:40:40,532 -   - Using wavelength axis from 10826.0 to 10833.0 with 150 steps
+2018-05-03 12:40:40,535 -   - Not mask for pixels
+2018-05-03 12:40:40,537 -   - Using LOS [0.0, 0.0, 90.0]
+2018-05-03 12:40:40,538 -   - Using boundary condition [0.0, 0.0, 90.0]
+2018-05-03 12:40:40,540 -     * Adding line : 10830
+2018-05-03 12:40:40,542 -     * Adding line : 10830
+2018-05-03 12:40:40,544 -     * Adding line : [300]
+2018-05-03 12:40:40,547 -     * Reading 1D model model_photosphere.1d as reference
+2018-05-03 12:40:40,551 - Adding topologies
+2018-05-03 12:40:40,553 -   - ph1-&gt;ch1-&gt;ch2
+2018-05-03 12:40:40,554 - Removing unused atmospheres
+2018-05-03 12:40:40,556 - Number of pixels to read : 1
+</pre></div></div>
+</div>
+<p>Now we synthesize the emergent Stokes parameters by changing the velocity of the second component.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">):</span>
+<span class="c1">#    Bx, By, Bz, tau, v, delta, beta, a</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">atmospheres</span><span class="p">[</span><span class="s1">&#39;ch1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">([</span><span class="mf">50.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">100.0</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">8.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">atmospheres</span><span class="p">[</span><span class="s1">&#39;ch2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">([</span><span class="mf">50.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">100.0</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mi">2</span><span class="o">*</span><span class="n">j</span><span class="p">,</span><span class="mf">8.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">synthesize</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+        <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">wavelength_axis</span><span class="p">,</span> <span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">stokes</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span> <span class="n">color</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">autumn</span><span class="p">(</span><span class="mi">25</span><span class="o">*</span><span class="n">j</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Wavelength [$\AA$]&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">/Ic&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">10826</span><span class="p">,</span><span class="mi">10832</span><span class="p">])</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_prog_synthesis_28_0.png" src="../_images/notebooks_prog_synthesis_28_0.png" />
+</div>
+</div>
+</section>
+<section id="Atmospheres-with-filling-factors">
+<h3><span class="section-number">6.1.3.2. </span>Atmospheres with filling factors<a class="headerlink" href="#Atmospheres-with-filling-factors" title="Link to this heading">¶</a></h3>
+<p>And now we combine the atmospheres with a filling factor.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;synthesis&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_spectral</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">,</span> <span class="mi">150</span><span class="p">],</span> <span class="s1">&#39;topology&#39;</span><span class="p">:</span> <span class="s1">&#39;ph1-&gt;ch1+ch2&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;LOS&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">90.0</span><span class="p">],</span> <span class="s1">&#39;Boundary condition&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]})</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_chromosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ch1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Height&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s1">&#39;Line&#39;</span><span class="p">:</span> <span class="s1">&#39;10830&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">]})</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_chromosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ch2&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Height&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s1">&#39;Line&#39;</span><span class="p">:</span> <span class="s1">&#39;10830&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">]})</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_photosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ph1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral lines&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">300</span><span class="p">],</span>
+                      <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">],</span> <span class="s1">&#39;Reference atmospheric model&#39;</span><span class="p">:</span> <span class="s1">&#39;model_photosphere.1d&#39;</span><span class="p">})</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2018-05-03 12:41:41,841 - Adding spectral region spec1
+2018-05-03 12:41:41,844 -   - Using wavelength axis from 10826.0 to 10833.0 with 150 steps
+2018-05-03 12:41:41,848 -   - Not mask for pixels
+2018-05-03 12:41:41,852 -   - Using LOS [0.0, 0.0, 90.0]
+2018-05-03 12:41:41,853 -   - Using boundary condition [0.0, 0.0, 90.0]
+2018-05-03 12:41:41,855 -     * Adding line : 10830
+2018-05-03 12:41:41,856 -     * Adding line : 10830
+2018-05-03 12:41:41,858 -     * Adding line : [300]
+2018-05-03 12:41:41,859 -     * Reading 1D model model_photosphere.1d as reference
+2018-05-03 12:41:41,863 - Adding topologies
+2018-05-03 12:41:41,864 -   - ph1-&gt;ch1+ch2
+2018-05-03 12:41:41,866 - Removing unused atmospheres
+2018-05-03 12:41:41,868 - Number of pixels to read : 1
+</pre></div></div>
+</div>
+<p>Note that filling factors will be combined so that they add up to 1. This way, it is unnecessary to set them by hand to add to 1, it is automatically done by the code. We combine two atmospheres with different velocities and we gradually change the filling factor from 0 to 1.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">):</span>
+<span class="c1">#    Bx, By, Bz, tau, v, delta, beta, a</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">atmospheres</span><span class="p">[</span><span class="s1">&#39;ch1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">([</span><span class="mf">50.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">100.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">10.0</span><span class="p">,</span><span class="mf">8.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span> <span class="n">j</span><span class="o">/</span><span class="mf">10.0</span><span class="p">)</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">atmospheres</span><span class="p">[</span><span class="s1">&#39;ch2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">([</span><span class="mf">50.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">100.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span><span class="mf">8.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span> <span class="mf">1.0</span><span class="o">-</span><span class="n">j</span><span class="o">/</span><span class="mf">10.0</span><span class="p">)</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">synthesize</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+        <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">wavelength_axis</span><span class="p">,</span> <span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">stokes</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span> <span class="n">color</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">autumn</span><span class="p">(</span><span class="mi">25</span><span class="o">*</span><span class="n">j</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Wavelength [$\AA$]&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">/Ic&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">10826</span><span class="p">,</span><span class="mi">10832</span><span class="p">])</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_prog_synthesis_33_0.png" src="../_images/notebooks_prog_synthesis_33_0.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../examples.html" class="btn btn-neutral float-left" title="6. Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="conf_synthesis.html" class="btn btn-neutral float-right" title="6.2. Synthesis with a configuration file" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

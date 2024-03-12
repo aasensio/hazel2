@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2.3. Synthesis &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="2.4. Inversion" href="inversion.html" />
+    <link rel="prev" title="2.2. Using the code" href="basic.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../started.html">2. Basic usage</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="general.html">2.1. General description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic.html">2.2. Using the code</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">2.3. Synthesis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="inversion.html">2.4. Inversion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="programmatically.html">2.5. Programmatically</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">3. Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io_files.html">4. Input/output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparation.html">5. Data preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">6. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../started.html"><span class="section-number">2. </span>Basic usage</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">2.3. </span>Synthesis</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/started/synthesis.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="synthesis">
+<h1><span class="section-number">2.3. </span>Synthesis<a class="headerlink" href="#synthesis" title="Link to this heading">¶</a></h1>
+<p>This is the simplest use of the code because it should always work once the input
+and configuration files are correctly defined. A typical configuration file for
+the synthesis mode follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Hazel configuration File</span>
+
+<span class="p">[</span><span class="n">Working</span> <span class="n">mode</span><span class="p">]</span>
+<span class="n">Output</span> <span class="n">file</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">h5</span>
+
+
+<span class="p">[</span><span class="n">Spectral</span> <span class="n">regions</span><span class="p">]</span>
+    <span class="p">[[</span><span class="n">Region</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">,</span> <span class="mi">150</span>
+    <span class="n">Topology</span> <span class="o">=</span> <span class="n">ph1</span> <span class="o">-&gt;</span> <span class="n">ch1</span> <span class="o">-&gt;</span> <span class="n">te1</span> <span class="o">-&gt;</span> <span class="n">st1</span>
+    <span class="n">Stokes</span> <span class="n">weights</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+    <span class="n">LOS</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">90.0</span>
+    <span class="n">Boundary</span> <span class="n">condition</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>       <span class="c1"># I/Ic(mu=1), Q/Ic(mu=1), U/Ic(mu=1), V/Ic(mu=1)</span>
+    <span class="n">Wavelength</span> <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;observations/10830.wavelength&#39;</span>
+    <span class="n">Wavelength</span> <span class="n">weight</span> <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;observations/10830.weights&#39;</span>
+
+<span class="p">[</span><span class="n">Atmospheres</span><span class="p">]</span>
+
+    <span class="p">[[</span><span class="n">Photosphere</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">ph1</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;photospheres/model_photosphere.1d&#39;</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>
+    <span class="n">Spectral</span> <span class="n">lines</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
+
+    <span class="p">[[</span><span class="n">Chromosphere</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">ch1</span>                                              <span class="c1"># Name of the atmosphere component</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>                                 <span class="c1"># Spectral region to be used for synthesis</span>
+    <span class="n">Height</span> <span class="o">=</span> <span class="mf">3.0</span>                                            <span class="c1"># Height of the slab</span>
+    <span class="n">Line</span> <span class="o">=</span> <span class="mi">10830</span>                                            <span class="c1"># 10830, 5876</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>                         <span class="c1"># Wavelength range used for synthesis</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;chromospheres/model_chromosphere.1d&#39;</span>    <span class="c1"># File with model parameters</span>
+
+    <span class="p">[[</span><span class="n">Parametric</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">te1</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;telluric/model_telluric.1d&#39;</span>    <span class="c1"># File with model parameters</span>
+    <span class="n">Type</span> <span class="o">=</span> <span class="n">Gaussian</span>           <span class="c1"># Gaussian, Voigt, MoGaussian, MoVoigt</span>
+
+    <span class="p">[[</span><span class="n">Straylight</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">st1</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;straylight/model_stray.1d&#39;</span>    <span class="c1"># File with model parameters</span>
+</pre></div>
+</div>
+<p>This configuration file defines a spectral region in the near infrared that contains four different atmospheres, one
+after the other. The first one is a photosphere, with the physical conditions been read from the <code class="docutils literal notranslate"><span class="pre">photospheres/model_photosphere.1d</span></code>
+file. Note that all files in this example are 1D so the result is just a single synthesis. But you might
+as well use 3D files (as described in <span class="xref std std-ref">input</span>) and the output would be the synthesis for many pixels. The second
+component is a chromosphere, the third is used to add a telluric component and the fourth one is
+a straylight contamination.</p>
+<p>In the case of a 1D model, you can easily do the synthesis by invoking, assuming that the configuration file
+is saved on <code class="docutils literal notranslate"><span class="pre">conf.ini</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf.ini&#39;</span><span class="p">,</span> <span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;synthesis&#39;</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">open_output</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">synthesize</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">write_output</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">close_output</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The output is described in <a class="reference internal" href="../io_files/output.html#output"><span class="std std-ref">Output files</span></a>. For 3D cases, we recommend the user to
+use iterators. Otherwise, one needs to manually read the observations at every pixel.
+For instance, one can do the synthesis for many pixels using 3D atmospheres in serial
+model by invoking:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">iterator</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Iterator</span><span class="p">(</span><span class="n">use_mpi</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf.ini&#39;</span><span class="p">,</span> <span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;synthesis&#39;</span><span class="p">)</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">use_model</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">mod</span><span class="p">)</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">run_all_pixels</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>or the following piece of code if many cores are to be used. Remember that
+this piece of code needs to be called with a call to the MPI <code class="docutils literal notranslate"><span class="pre">mpiexec</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mpiexec</span> <span class="o">-</span><span class="n">n</span> <span class="n">n_nodes</span> <span class="n">python</span> <span class="n">inversion</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">inversion.py</span></code> contains the following piece of code:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">iterator</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Iterator</span><span class="p">(</span><span class="n">use_mpi</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rank</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_mpi_invh5.ini&#39;</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">)</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">use_model</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">mod</span><span class="p">)</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">run_all_pixels</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="basic.html" class="btn btn-neutral float-left" title="2.2. Using the code" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="inversion.html" class="btn btn-neutral float-right" title="2.4. Inversion" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>5.4. Ambiguities in the Hanle effect in the saturation regime &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.5. List of photospheric lines" href="photospheric.html" />
+    <link rel="prev" title="5.3. Basic Equations" href="equations.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../started/installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../started.html">2. Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">3. Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io_files.html">4. Input/output files</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../preparation.html">5. Data preparation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="prepareData.html">5.1. Data preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/boundary_conditions.html">5.2. How to deal with boundary conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="equations.html">5.3. Basic Equations</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">5.4. Ambiguities in the Hanle effect in the saturation regime</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#phi-b-phi-b">5.4.1. <span class="math notranslate nohighlight">\(\Phi_B’=\Phi_B\)</span></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#phi-b-phi-b-pi">5.4.2. <span class="math notranslate nohighlight">\(\Phi_B’=\Phi_B+\pi\)</span></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#phi-b-phi-b-pi-2">5.4.3. <span class="math notranslate nohighlight">\(\Phi_B’=\Phi_B+\pi/2\)</span></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">5.4.4. <span class="math notranslate nohighlight">\(\Phi_B’=\Phi_B-\pi/2\)</span></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="photospheric.html">5.5. List of photospheric lines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="refsys.html">5.6. The reference system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="atomicModels.html">5.7. Atomic models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">6. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../preparation.html"><span class="section-number">5. </span>Data preparation</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">5.4. </span>Ambiguities in the Hanle effect in the saturation regime</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/preparation/ambiguities.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ambiguities-in-the-hanle-effect-in-the-saturation-regime">
+<h1><span class="section-number">5.4. </span>Ambiguities in the Hanle effect in the saturation regime<a class="headerlink" href="#ambiguities-in-the-hanle-effect-in-the-saturation-regime" title="Link to this heading">¶</a></h1>
+<p>In the saturation regime of the Hanle effect, Stokes <span class="math notranslate nohighlight">\(Q\)</span> and
+<span class="math notranslate nohighlight">\(U\)</span> are insensitive to the field strength, but are sensitive to
+the geometry of the field. For a <span class="math notranslate nohighlight">\(J=0 \to J=1\)</span> transition, the
+linear polarization can be written as:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+Q &amp;=&amp; \frac{q}{2} \left( 3 \cos^2 \theta_B-1 \right) \sin^2\Theta_B \cos 2\Phi_B \nonumber \\
+U &amp;=&amp; \frac{q}{2} \left( 3 \cos^2 \theta_B-1 \right) \sin^2\Theta_B \sin 2\Phi_B.\end{aligned}\end{split}\]</div>
+<p>These expressions contain a mixture of angles to make it clear that the
+polarization amplitude depends on both the angle between the vertical
+and the magnetic field and between the magnetic field and the
+line-of-sight (LOS).</p>
+<p>The coordinates of the magnetic field vector <span class="math notranslate nohighlight">\(\mathbf{B}\)</span> in the
+reference system of the vertical and the reference system of the LOS
+are:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+\mathbf{B} &amp;=&amp; B \left(\sin \theta_B \cos \phi_B \mathbf{i}+\sin \theta_B \sin \phi_B \mathbf{j}+\cos \theta_B \mathbf{k} \right) \nonumber \\
+\mathbf{B} &amp;=&amp; B \left(\sin \Theta_B \cos \Phi_B \mathbf{i}'+\sin \Theta_B \sin \Phi_B \mathbf{j}'+\cos \Theta_B \mathbf{k}' \right),\end{aligned}\end{split}\]</div>
+<p>where the unit vectors are related by a simple rotation:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+\mathbf{i}' &amp;=&amp; \cos \theta \mathbf{i} - \sin \theta \mathbf{k} \nonumber \\
+\mathbf{k}' &amp;=&amp; \sin \theta \mathbf{i} + \cos \theta \mathbf{k}.\end{aligned}\end{split}\]</div>
+<p>Introducing these relations on the expression for the magnetic field,
+we find that the following has to be fulfilled, given that the magnetic
+field vector is the same in both reference systems:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+\sin \theta_B \cos \phi_B &amp;=&amp; \sin \Theta_B \cos \Phi_B \cos \theta + \cos \Theta_B + \sin \theta \nonumber \\
+\sin \theta_B \sin \phi_B &amp;=&amp; \sin \Theta_B \sin \Phi_B \nonumber \\
+\cos \theta_B &amp;=&amp; \cos \Theta_B \cos \theta - \sin \Theta_B \cos \Phi_B \sin \theta.\end{aligned}\end{split}\]</div>
+<p>Solving the previous three equations in the two directions, we find the
+following transformations between the angles in the vertical reference
+system and the LOS reference system:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\begin{split}  \begin{aligned}
+  \cos \Theta_B &amp;=&amp; \cos\theta \cos\theta_B + \sin\theta \sin\theta_B \cos\phi_B \nonumber \\
+  \sin \Theta_B &amp;=&amp; +\sqrt{1-\cos^2\Theta_B} \nonumber \\
+  \cos \Phi_B &amp;=&amp; \frac{\cos\theta \sin\theta_B \cos\phi_B - \cos\theta_B \sin\theta}{\sin \Theta_B} \nonumber \\
+  \sin \Phi_B &amp;=&amp; \frac{\sin\theta_B \sin\phi_B}{\sin\Theta_B}\end{aligned}\end{split}\\and\end{aligned}\end{align} \]</div>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+\cos \theta_B &amp;=&amp; \cos\theta \cos\Theta_B - \sin\theta \sin\Theta_B \cos\Phi_B \nonumber \\
+\sin \theta_B &amp;=&amp; +\sqrt{1-\cos^2\theta_B} \nonumber \\
+\cos \phi_B &amp;=&amp; \frac{\cos\theta \sin\Theta_B \cos\Phi_B + \cos\Theta_B \sin\theta}{\sin \theta_B} \nonumber \\
+\sin \phi_B &amp;=&amp; \frac{\sin\Theta_B \sin\Phi_B}{\sin\theta_B}.\end{aligned}\end{split}\]</div>
+<p>Note that, since <span class="math notranslate nohighlight">\(\Theta_B \in [0,\pi]\)</span>, we can safely use the
+square root and take the positive value. In order to transform from one
+reference system to the other, we can compute the inclination easily by
+inverting the sinus or the cosinus. However, the situation is different
+for the azimuth, because the range of variation is <span class="math notranslate nohighlight">\([-\pi,\pi]\)</span>.
+Therefore, one has to compute the cosinus and the sinus separately and
+the decide which is the correct quadrant fo the angle in terms of the
+signs of both quantities.</p>
+<p>Four possible kinds of ambiguities can exist for the Stokes <span class="math notranslate nohighlight">\(Q\)</span>
+and <span class="math notranslate nohighlight">\(U\)</span> parameters. The idea is that <span class="math notranslate nohighlight">\(\Phi_B\)</span> can be
+modified and still obtain the same <span class="math notranslate nohighlight">\(Q\)</span> and <span class="math notranslate nohighlight">\(U\)</span> by properly
+adjusting the value of <span class="math notranslate nohighlight">\(\Theta_B\)</span>. It is clear that, given that
+the term that can be used to compensate for the change in the azimuth on
+the LOS reference system is the same for Stokes <span class="math notranslate nohighlight">\(Q\)</span> and <span class="math notranslate nohighlight">\(U\)</span>,
+we can only compensate for changes in the sign. Therefore, we have the
+following potential ambiguities:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+\Phi_B' &amp;=&amp; \Phi_B \nonumber \\
+\Phi_B' &amp;=&amp; \Phi_B -\pi/2 \nonumber \\
+\Phi_B' &amp;=&amp; \Phi_B + \pi/2 \nonumber \\
+\Phi_B' &amp;=&amp; \Phi_B + \pi.\end{aligned}\end{split}\]</div>
+<p>For each case, we have to compute the value of <span class="math notranslate nohighlight">\(\Theta_B'\)</span> that
+keeps the value of <span class="math notranslate nohighlight">\(Q\)</span> and <span class="math notranslate nohighlight">\(U\)</span> unchanged. Therefore, once we
+find a solution to the inversion problem in the form of the pair
+<span class="math notranslate nohighlight">\((\theta_B,\phi_B)\)</span>, we can find the remaining solutions in the
+saturation regime following the recipes that we present now. Remember
+that, unless one knows the polarity of the field, or in other words, the
+sign <span class="math notranslate nohighlight">\(\cos\Theta_B\)</span>, the number of potential ambiguous solutions
+is 8. If the polarity of the field is known, the number is typically
+reduced to 4 (or 2 if no 90<span class="math notranslate nohighlight">\(^\circ\)</span> ambiguity is present).</p>
+<section id="phi-b-phi-b">
+<h2><span class="section-number">5.4.1. </span><span class="math notranslate nohighlight">\(\Phi_B’=\Phi_B\)</span><a class="headerlink" href="#phi-b-phi-b" title="Link to this heading">¶</a></h2>
+<p>Under this change, we have that</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\cos 2\Phi_B' = \cos 2\Phi_B, \quad \sin 2\Phi_B' = \sin 2\Phi_B, \quad \cos \Phi_B' = \cos \Phi_B, \quad \sin \Phi_B' = \sin \Phi_B.\\Making use of the previous relations between the angles wrt to the\end{aligned}\end{align} \]</div>
+<p>vertical and the LOS, we have to solve the following equation:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\left( 3 \cos^2\theta_B'-1 \right) \sin^2 \Theta_B' = \left( 3 \cos^2\theta_B-1 \right) \sin^2 \Theta_B,\\which can be written as:\end{aligned}\end{align} \]</div>
+<div class="math notranslate nohighlight">
+\[\left[ 3 \left( \cos \Theta_B' \cos \theta - \sin\theta \sin\Theta_B' \cos\Phi_B\right)^2-1 \right] \sin^2 \Theta_B' =
+\left[ 3 \left( \cos \Theta_B \cos \theta - \sin\theta \sin\Theta_B \cos\Phi_B\right)^2-1 \right] \sin^2 \Theta_B.\]</div>
+<p>After some algebra and doing the substitution <span class="math notranslate nohighlight">\(t=\sin\Theta_B'\)</span>,
+we end up with the following equation to be solved:</p>
+<div class="math notranslate nohighlight">
+\[A t^4 + Bt^2 + C t^3 \sqrt{1-t^2} = K,\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+A &amp;=&amp; -3\cos^2 \theta + 3\sin^2 \theta \cos^2 \Phi_B \nonumber \\
+B &amp;=&amp; 3\cos^2 \theta - 1 \nonumber \\
+C &amp;=&amp; -6 \cos\theta \sin\theta \cos \Phi_B \nonumber \\
+K &amp;=&amp; \left[ 3 \left( \cos \Theta_B \cos \theta - \sin\theta \sin\Theta_B \cos\Phi_B\right)^2-1 \right] \sin^2 \Theta_B.\end{aligned}\end{split}\]</div>
+<p>The previous equation can be solved if we make the change of variables
+<span class="math notranslate nohighlight">\(t=\pm \sqrt{Z}\)</span>, resulting in:</p>
+<div class="math notranslate nohighlight">
+\[(C^2+A^2) Z^4 + (-C^2+2AB) Z^3 + (-2AK+B^2) Z^2 - 2BKZ + K^2 = 0.\]</div>
+<p>This polynomial of 4-th order can have four different solutions. From
+these solutions, we have to take only the real solutions which are
+larger than 0, given the range of variation of <span class="math notranslate nohighlight">\(\Theta_B\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[t \in \mathbb{R}, \qquad 0 \leq t \leq 1.\]</div>
+<p>Once the solutions for <span class="math notranslate nohighlight">\(t\)</span> are found, we make
+<span class="math notranslate nohighlight">\(\Theta_B' = \arcsin t\)</span>. Note that, for a fixed value of
+<span class="math notranslate nohighlight">\(t\)</span>, two values of <span class="math notranslate nohighlight">\(\Theta_B'\)</span> are possible. We choose the
+correct one by evaluating the expressions for <span class="math notranslate nohighlight">\(Q\)</span> and <span class="math notranslate nohighlight">\(U\)</span>
+and testing which of the two possible choices give the values equal (or
+very similar) to the original ones.</p>
+<p>The angles <span class="math notranslate nohighlight">\((\theta_B,\phi_B)\)</span> are obtained by doing the
+transformation from <span class="math notranslate nohighlight">\((\Theta_B',\Phi_B)\)</span> to the vertical reference
+system.</p>
+</section>
+<section id="phi-b-phi-b-pi">
+<h2><span class="section-number">5.4.2. </span><span class="math notranslate nohighlight">\(\Phi_B’=\Phi_B+\pi\)</span><a class="headerlink" href="#phi-b-phi-b-pi" title="Link to this heading">¶</a></h2>
+<p>Under this change, we have:</p>
+<div class="math notranslate nohighlight">
+\[\cos 2\Phi_B' = \cos 2\Phi_B, \quad \sin 2\Phi_B' = \sin 2\Phi_B, \quad \cos \Phi_B' = -\cos \Phi_B, \quad \sin \Phi_B' = -\sin \Phi_B.\]</div>
+<p>Following the same approach, we have to solve for <span class="math notranslate nohighlight">\(\Theta_B'\)</span> in</p>
+<div class="math notranslate nohighlight">
+\[\left[ 3 \left( \cos \Theta_B' \cos \theta + \sin\theta \sin\Theta_B' \cos\Phi_B\right)^2-1 \right] \sin^2 \Theta_B' =
+\left[ 3 \left( \cos \Theta_B \cos \theta - \sin\theta \sin\Theta_B \cos\Phi_B\right)^2-1 \right] \sin^2 \Theta_B.\]</div>
+<p>The solution are obtained as the roots of the same equations as before
+but now</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+A &amp;=&amp; -3\cos^2 \theta + 3\sin^2 \theta \cos^2 \Phi_B \nonumber \\
+B &amp;=&amp; 3\cos^2 \theta - 1 \nonumber \\
+C &amp;=&amp; 6 \cos\theta \sin\theta \cos \Phi_B \nonumber \\
+K &amp;=&amp; \left[ 3 \left( \cos \Theta_B \cos \theta - \sin\theta \sin\Theta_B \cos\Phi_B\right)^2-1 \right] \sin^2 \Theta_B.\end{aligned}\end{split}\]</div>
+<p>The angles <span class="math notranslate nohighlight">\((\theta_B,\phi_B)\)</span> are obtained by doing the
+transformation from <span class="math notranslate nohighlight">\((\Theta_B',\Phi_B+\pi)\)</span> to the vertical
+reference system.</p>
+</section>
+<section id="phi-b-phi-b-pi-2">
+<h2><span class="section-number">5.4.3. </span><span class="math notranslate nohighlight">\(\Phi_B’=\Phi_B+\pi/2\)</span><a class="headerlink" href="#phi-b-phi-b-pi-2" title="Link to this heading">¶</a></h2>
+<p>Under this change, we have:</p>
+<div class="math notranslate nohighlight">
+\[\cos 2\Phi_B' = -\cos 2\Phi_B, \quad \sin 2\Phi_B' = -\sin 2\Phi_B, \quad \cos \Phi_B' = -\sin \Phi_B, \quad \sin \Phi_B' = \cos \Phi_B.\]</div>
+<p>Following the same approach, we have to solve for <span class="math notranslate nohighlight">\(\Theta_B'\)</span> in</p>
+<div class="math notranslate nohighlight">
+\[\left[ 3 \left( \cos \Theta_B' \cos \theta + \sin\theta \sin\Theta_B' \sin\Phi_B\right)^2-1 \right] \sin^2 \Theta_B' =
+\left[ 3 \left( \cos \Theta_B \cos \theta - \sin\theta \sin\Theta_B \cos\Phi_B\right)^2-1 \right] \sin^2 \Theta_B.\]</div>
+<p>The solution are obtained as the roots of the same equations as before
+but now</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+A &amp;=&amp; -3\cos^2 \theta + 3\sin^2 \theta \sin^2 \Phi_B \nonumber \\
+B &amp;=&amp; 3\cos^2 \theta - 1 \nonumber \\
+C &amp;=&amp; 6 \cos\theta \sin\theta \sin \Phi_B \nonumber \\
+K &amp;=&amp; -\left[ 3 \left( \cos \Theta_B \cos \theta - \sin\theta \sin\Theta_B \cos\Phi_B\right)^2-1 \right] \sin^2 \Theta_B.\end{aligned}\end{split}\]</div>
+<p>The angles <span class="math notranslate nohighlight">\((\theta_B,\phi_B)\)</span> are obtained by doing the
+transformation from <span class="math notranslate nohighlight">\((\Theta_B',\Phi_B+\pi/2)\)</span> to the vertical
+reference system.</p>
+</section>
+<section id="id1">
+<h2><span class="section-number">5.4.4. </span><span class="math notranslate nohighlight">\(\Phi_B’=\Phi_B-\pi/2\)</span><a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<p>Under this change, we have:</p>
+<div class="math notranslate nohighlight">
+\[\cos 2\Phi_B' = -\cos 2\Phi_B, \quad \sin 2\Phi_B' = -\sin 2\Phi_B, \quad \cos \Phi_B' = \sin \Phi_B, \quad \sin \Phi_B' = -\cos \Phi_B.\]</div>
+<p>Following the same approach, we have to solve for <span class="math notranslate nohighlight">\(\Theta_B'\)</span> in</p>
+<div class="math notranslate nohighlight">
+\[\left[ 3 \left( \cos \Theta_B' \cos \theta + \sin\theta \sin\Theta_B' \sin\Phi_B\right)^2-1 \right] \sin^2 \Theta_B' =
+\left[ 3 \left( \cos \Theta_B \cos \theta - \sin\theta \sin\Theta_B \cos\Phi_B\right)^2-1 \right] \sin^2 \Theta_B.\]</div>
+<p>The solution are obtained as the roots of the same equations as before
+but now</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+A &amp;=&amp; -3\cos^2 \theta + 3\sin^2 \theta \sin^2 \Phi_B \nonumber \\
+B &amp;=&amp; 3\cos^2 \theta - 1 \nonumber \\
+C &amp;=&amp; -6 \cos\theta \sin\theta \sin \Phi_B \nonumber \\
+K &amp;=&amp; -\left[ 3 \left( \cos \Theta_B \cos \theta - \sin\theta \sin\Theta_B \cos\Phi_B\right)^2-1 \right] \sin^2 \Theta_B.\end{aligned}\end{split}\]</div>
+<p>The angles <span class="math notranslate nohighlight">\((\theta_B,\phi_B)\)</span> are obtained by doing the
+transformation from <span class="math notranslate nohighlight">\((\Theta_B',\Phi_B-\pi/2)\)</span> to the vertical
+reference system.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="equations.html" class="btn btn-neutral float-left" title="5.3. Basic Equations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="photospheric.html" class="btn btn-neutral float-right" title="5.5. List of photospheric lines" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

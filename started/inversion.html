@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2.4. Inversion &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="2.5. Programmatically" href="programmatically.html" />
+    <link rel="prev" title="2.3. Synthesis" href="synthesis.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../started.html">2. Basic usage</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="general.html">2.1. General description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic.html">2.2. Using the code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="synthesis.html">2.3. Synthesis</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">2.4. Inversion</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#configuration-file">2.4.1. Configuration file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#single-inversions">2.4.2. Single inversions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#without-randomization">2.4.2.1. Without randomization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#with-randomization">2.4.2.2. With randomization</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#multiple-inversions">2.4.3. Multiple inversions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#serial-inversions">2.4.3.1. Serial inversions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parallel-inversions">2.4.3.2. Parallel inversions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="programmatically.html">2.5. Programmatically</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">3. Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io_files.html">4. Input/output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparation.html">5. Data preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">6. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../started.html"><span class="section-number">2. </span>Basic usage</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">2.4. </span>Inversion</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/started/inversion.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="inversion">
+<h1><span class="section-number">2.4. </span>Inversion<a class="headerlink" href="#inversion" title="Link to this heading">¶</a></h1>
+<p>Because inversion is often an ill-defined operation, getting a good inversion
+contains sometimes a large fraction of inspiration. In order to get a
+satisfactory fit, one usually needs to tune the
+number of nodes (for photospheric atmospheres), the weights of the Stokes
+parameters, the initial configuration, etc. So don’t expect to get
+a good inversion on your first run of Hazel. But if you keep insisting,
+you will get something useful out of the code.</p>
+<section id="configuration-file">
+<h2><span class="section-number">2.4.1. </span>Configuration file<a class="headerlink" href="#configuration-file" title="Link to this heading">¶</a></h2>
+<p>A typical configuration file reads something like in the following. Remember that you have
+to adapt it to the specific details of your spectrum.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Hazel configuration File</span>
+
+<span class="p">[</span><span class="n">Working</span> <span class="n">mode</span><span class="p">]</span>
+<span class="n">Output</span> <span class="n">file</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">h5</span>
+<span class="n">Number</span> <span class="n">of</span> <span class="n">cycles</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">Save</span> <span class="nb">all</span> <span class="n">cycles</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="p">[</span><span class="n">Spectral</span> <span class="n">regions</span><span class="p">]</span>
+    <span class="p">[[</span><span class="n">Region</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">,</span> <span class="mi">150</span>
+    <span class="n">Topology</span> <span class="o">=</span> <span class="n">ph1</span> <span class="o">-&gt;</span> <span class="n">ch1</span>
+    <span class="n">LOS</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">90.0</span>
+    <span class="n">Boundary</span> <span class="n">condition</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>       <span class="c1"># I/Ic(mu=1), Q/Ic(mu=1), U/Ic(mu=1), V/Ic(mu=1)</span>
+    <span class="n">Wavelength</span> <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;observations/10830.wavelength&#39;</span>
+    <span class="n">Wavelength</span> <span class="n">weight</span> <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;observations/10830.weights&#39;</span>
+    <span class="n">Observations</span> <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;observations/10830_stokes.h5&#39;</span>
+    <span class="n">Straylight</span> <span class="n">file</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">Mask</span> <span class="n">file</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">Weights</span> <span class="n">Stokes</span> <span class="n">I</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+    <span class="n">Weights</span> <span class="n">Stokes</span> <span class="n">Q</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+    <span class="n">Weights</span> <span class="n">Stokes</span> <span class="n">U</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+    <span class="n">Weights</span> <span class="n">Stokes</span> <span class="n">V</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+
+<span class="p">[</span><span class="n">Atmospheres</span><span class="p">]</span>
+
+    <span class="p">[[</span><span class="n">Photosphere</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">ph1</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;photospheres/model_photosphere.1d&#39;</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>
+    <span class="n">Spectral</span> <span class="n">lines</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
+
+        <span class="p">[[[</span><span class="n">Ranges</span><span class="p">]]]</span>
+        <span class="n">T</span>      <span class="o">=</span> <span class="o">-</span><span class="mf">3000.0</span><span class="p">,</span> <span class="mf">3000.0</span>
+        <span class="n">vmic</span>   <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">3.0</span>
+        <span class="n">v</span>      <span class="o">=</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">10.0</span>
+        <span class="n">Bx</span>     <span class="o">=</span> <span class="o">-</span><span class="mf">1000.0</span><span class="p">,</span> <span class="mf">1000.0</span>
+        <span class="n">By</span>     <span class="o">=</span> <span class="o">-</span><span class="mf">1000.0</span><span class="p">,</span> <span class="mf">1000.0</span>
+        <span class="n">Bz</span>     <span class="o">=</span> <span class="o">-</span><span class="mf">1000.0</span><span class="p">,</span> <span class="mf">1000.0</span>
+        <span class="n">ff</span>     <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span>
+        <span class="n">vmac</span>   <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span>
+
+        <span class="p">[[[</span><span class="n">Nodes</span><span class="p">]]]</span>
+        <span class="n">T</span>      <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span>
+        <span class="n">vmic</span>   <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">v</span>      <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">Bx</span>     <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">By</span>     <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">Bz</span>     <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">ff</span>     <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">vmac</span>   <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+        <span class="p">[[</span><span class="n">Regularization</span><span class="p">]]</span>
+        <span class="n">T</span>      <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">vmic</span>   <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">v</span>      <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">Bx</span>     <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">By</span>     <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">Bz</span>     <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="p">[[</span><span class="n">Chromosphere</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">ch1</span>                                              <span class="c1"># Name of the atmosphere component</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>                                 <span class="c1"># Spectral region to be used for synthesis</span>
+    <span class="n">Height</span> <span class="o">=</span> <span class="mf">3.0</span>                                            <span class="c1"># Height of the slab</span>
+    <span class="n">Line</span> <span class="o">=</span> <span class="mi">10830</span>                                            <span class="c1"># 10830, 5876</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>                         <span class="c1"># Wavelength range used for synthesis</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;chromospheres/model_chromosphere.1d&#39;</span>    <span class="c1"># File with model parameters</span>
+
+        <span class="p">[[[</span><span class="n">Ranges</span><span class="p">]]]</span>
+        <span class="n">Bx</span>     <span class="o">=</span> <span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span>
+        <span class="n">By</span>     <span class="o">=</span> <span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span>
+        <span class="n">Bz</span>     <span class="o">=</span> <span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span>
+        <span class="n">tau</span>    <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">2.0</span>
+        <span class="n">v</span>      <span class="o">=</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">10.0</span>
+        <span class="n">deltav</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">12.0</span>
+        <span class="n">beta</span>   <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span>
+        <span class="n">a</span>      <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span>
+        <span class="n">ff</span>     <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span>
+
+
+        <span class="p">[[[</span><span class="n">Nodes</span><span class="p">]]]</span>
+        <span class="n">Bx</span>     <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">By</span>     <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">Bz</span>     <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">tau</span>    <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">v</span>      <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">deltav</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">beta</span>   <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">a</span>      <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">ff</span>     <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>This configuration file defines a spectral region in the near infrared that contains a photosphere and a chromosphere, one
+after the other. The physical conditions of the photosphere are read from the <code class="docutils literal notranslate"><span class="pre">photospheres/model_photosphere.1d</span></code>
+file. Note that all files in this example are 1D so that the input atmosphere is then shared among
+all observed pixels. You might as well use 3D files (as described in <span class="xref std std-ref">input</span>) with the same number of pixels
+as the input, and then a different initial atmosphere can be used for every pixel.</p>
+<p>In inversion mode you need to define the observations and the weighting scheme, which is done
+through the <code class="docutils literal notranslate"><span class="pre">Wavelength</span> <span class="pre">file</span></code>, <code class="docutils literal notranslate"><span class="pre">Wavelength</span> <span class="pre">weight</span> <span class="pre">file</span></code> and <code class="docutils literal notranslate"><span class="pre">Observations</span> <span class="pre">file</span></code>, all of them explained
+in <span class="xref std std-ref">input</span>.</p>
+</section>
+<section id="single-inversions">
+<h2><span class="section-number">2.4.2. </span>Single inversions<a class="headerlink" href="#single-inversions" title="Link to this heading">¶</a></h2>
+<section id="without-randomization">
+<h3><span class="section-number">2.4.2.1. </span>Without randomization<a class="headerlink" href="#without-randomization" title="Link to this heading">¶</a></h3>
+<p>If the files with the observations are 1D, you can simply carry out the inversion
+by invoking, assuming that the configuration file is saved on <code class="docutils literal notranslate"><span class="pre">conf.ini</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;configurations/conf_single.ini&#39;</span><span class="p">,</span> <span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;inversion&#39;</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">read_observation</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">open_output</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">invert</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">write_output</span><span class="p">(</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">close_output</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>We refer to <a class="reference internal" href="../io_files/output.html#output"><span class="std std-ref">Output files</span></a> for a description of the output.</p>
+</section>
+<section id="with-randomization">
+<h3><span class="section-number">2.4.2.2. </span>With randomization<a class="headerlink" href="#with-randomization" title="Link to this heading">¶</a></h3>
+<p>Carrying out robust inversions is a difficult task. Randomization is a technique
+appropriate to capture the sensitivity of the result to the initial conditions.
+In the ideal case, one should obtain the same solution irrespectively of the initial
+values of the parameters. However, this will never be the case. The best one can
+do is to get the sensitivity of the results to the initial conditions. To this end,
+Hazel v2.0 provides a method to randomize the initial conditions. Just pass the maximum
+number of randomizations when instantiating the <code class="docutils literal notranslate"><span class="pre">Model</span></code> and then you can
+carry out inversions by looping over randomizations and saving each result to the
+output file. We prefer the user to deal with randomization because of the added
+flexibility.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;configurations/conf_single.ini&#39;</span><span class="p">,</span> <span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;inversion&#39;</span><span class="p">,</span> <span class="n">randomization</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">read_observation</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">open_output</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">loop</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">randomize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">write_output</span><span class="p">(</span><span class="n">randomization</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">close_output</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="multiple-inversions">
+<h2><span class="section-number">2.4.3. </span>Multiple inversions<a class="headerlink" href="#multiple-inversions" title="Link to this heading">¶</a></h2>
+<p>For 3D cases, we recommend the user to
+use iterators. Otherwise, one needs to manually read the observations at every pixel.</p>
+<section id="serial-inversions">
+<h3><span class="section-number">2.4.3.1. </span>Serial inversions<a class="headerlink" href="#serial-inversions" title="Link to this heading">¶</a></h3>
+<p>In serial mode, one can do the inversion of many pixels using 3D atmospheres by using the
+following strategy.</p>
+<section id="id1">
+<h4><span class="section-number">2.4.3.1.1. </span>Without randomization<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">iterator</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Iterator</span><span class="p">(</span><span class="n">use_mpi</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;configurations/conf_nonmpi_inv1d.ini&#39;</span><span class="p">,</span> <span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;inversion&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">use_model</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">mod</span><span class="p">)</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">run_all_pixels</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The first thing to do is to instantiate an <code class="docutils literal notranslate"><span class="pre">Iterator</span></code> which will be used to
+iterate over all pixels in the file with the observations. The <code class="docutils literal notranslate"><span class="pre">Iterator</span></code> class
+admits a single keyword <code class="docutils literal notranslate"><span class="pre">use_mpi</span></code>, which is set to <code class="docutils literal notranslate"><span class="pre">False</span></code> by default.
+If <code class="docutils literal notranslate"><span class="pre">True</span></code>, it will use the <a class="reference external" href="https://en.wikipedia.org/wiki/Message_Passing_Interface/">Message Passing Interface</a> machinery, for which
+you need to have the <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> package installed. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, it will serially
+iterate over all pixels. Then we instantiate the <code class="docutils literal notranslate"><span class="pre">Model</span></code> as usual and tell the
+<code class="docutils literal notranslate"><span class="pre">Iterator</span></code> to use this model. Finally, we run the calculation by calling the
+<code class="docutils literal notranslate"><span class="pre">run_all_pixels</span></code> method of the <code class="docutils literal notranslate"><span class="pre">Iterator</span></code>. <code class="docutils literal notranslate"><span class="pre">run_all_pixels</span></code> admit two parameters:
+<code class="docutils literal notranslate"><span class="pre">start</span></code>, set by default to <code class="docutils literal notranslate"><span class="pre">0</span></code> that marks the starting point of the inversions and
+<code class="docutils literal notranslate"><span class="pre">end</span></code>, set by default to <code class="docutils literal notranslate"><span class="pre">None</span></code> (equivalent to using the number of pixels in the file
+with the observations), that mark the last pixel to invert.</p>
+</section>
+<section id="id2">
+<h4><span class="section-number">2.4.3.1.2. </span>With randomization<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h4>
+<p>The serial mode can also be used with randomization. Because of the complexity, the
+iterator takes fully care of randomizations and will simplify your life. It can be
+used simply by passing the <code class="docutils literal notranslate"><span class="pre">randomization</span></code> keyword during the <code class="docutils literal notranslate"><span class="pre">Model</span></code> instantiation.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">iterator</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Iterator</span><span class="p">(</span><span class="n">use_mpi</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;configurations/conf_nonmpi_inv1d.ini&#39;</span><span class="p">,</span> <span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;inversion&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">randomization</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">use_model</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">mod</span><span class="p">)</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">run_all_pixels</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="parallel-inversions">
+<h3><span class="section-number">2.4.3.2. </span>Parallel inversions<a class="headerlink" href="#parallel-inversions" title="Link to this heading">¶</a></h3>
+<p>Carrying out inversions of maps in serial mode is probably not the way to go. The
+desired strategy is to use computers with several nodes, which can work in parallel.
+The specific paralellization in Hazel v2.0 is such that practically a linear scaling
+with the number of nodes is sure. It uses a parent-worker architecture, in which a
+parent node reads the input and broadcasts it to the nodes, which are then
+in charge of carrying out the synthesis/inversions. When finished, the results are
+sent back to the parent, who saves the results and sends a new observation to the
+available worker.</p>
+<section id="id3">
+<h4><span class="section-number">2.4.3.2.1. </span>Without randomization<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h4>
+<p>Running an MPI work needs to be done by using <code class="docutils literal notranslate"><span class="pre">mpiexec</span></code>, so that you need
+to define the following lines in a script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">iterator</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Iterator</span><span class="p">(</span><span class="n">use_mpi</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;configurations/conf_mpi_invh5.ini&#39;</span><span class="p">,</span> <span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;inversion&#39;</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">iterator</span><span class="o">.</span><span class="n">get_rank</span><span class="p">())</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">use_model</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">mod</span><span class="p">)</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">run_all_pixels</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The only difference with respect to the serial mode is that you need to pass the
+rank of each worker during the instantiation of the <code class="docutils literal notranslate"><span class="pre">Model</span></code> because the parent and the
+worker will need to do different things with the model. Then just run it with <code class="docutils literal notranslate"><span class="pre">mpiexec</span></code>,
+defining the number of nodes used in this work:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mpiexec</span> <span class="o">-</span><span class="n">n</span> <span class="n">n_nodes</span> <span class="n">python</span> <span class="n">inversion</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Sometimes you need to let OpenMPI or MPICH use all available cores (this is important
+if your CPUs are using hyperthreading). To this end, write a file (for example <cite>mf</cite>) with the following
+content</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">localhost</span> <span class="n">max_slots</span><span class="o">=</span><span class="mi">16</span>
+</pre></div>
+</div>
+<p>changing the number to the appropriate number of available cores you have. Then run the
+code with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mpiexec</span> <span class="o">-</span><span class="n">machinefile</span> <span class="n">mf</span> <span class="o">-</span><span class="n">n</span> <span class="n">n_nodes</span> <span class="n">python</span> <span class="n">inversion</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</section>
+<section id="id4">
+<h4><span class="section-number">2.4.3.2.2. </span>With randomization<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
+<p>Randomization can also be used in parallel. For that, just follow the same approach as before and
+pass the <code class="docutils literal notranslate"><span class="pre">randomization</span></code> keyword to the <code class="docutils literal notranslate"><span class="pre">Model</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">iterator</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Iterator</span><span class="p">(</span><span class="n">use_mpi</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;configurations/conf_mpi_invh5.ini&#39;</span><span class="p">,</span> <span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;inversion&#39;</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">iterator</span><span class="o">.</span><span class="n">get_rank</span><span class="p">(),</span> <span class="n">randomization</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">use_model</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">mod</span><span class="p">)</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">run_all_pixels</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="synthesis.html" class="btn btn-neutral float-left" title="2.3. Synthesis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="programmatically.html" class="btn btn-neutral float-right" title="2.5. Programmatically" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

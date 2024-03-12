@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hazel v2.0 &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="1. Installation" href="started/installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="started/installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="started.html">2. Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">3. Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io_files.html">4. Input/output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preparation.html">5. Data preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">6. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Hazel v2.0</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="hazel2">
+<h1>Hazel v2.0<a class="headerlink" href="#hazel2" title="Link to this heading">¶</a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h2>
+<p>Hazel (an acronym for HAnle and ZEeman Light) is a computer program for the
+synthesis and inversion of Stokes profiles caused by the joint action of atomic
+level polarization and the Hanle and Zeeman effects. It is based on the quantum
+theory of spectral line polarization, which takes into account rigorously all the
+relevant physical mechanisms and ingredients: optical pumping, atomic level
+polarization, level crossings and repulsions, Zeeman, Paschen-Back and Hanle effects.</p>
+<p>The new Hazel v2.0 is a complete rewrite of the code, putting emphasis on its
+usability. The code is now able to synthesize photospheric lines under the
+assumption of local thermodynamic equilibrium, chromospheric lines under
+the multi-term approximation (like the He I multiplets) and a selection of
+arbitrary systematic effects like telluric lines or fringes.</p>
+<p>The code is written in Python 3 with the most computationally heavy parts coded in Fortran 90.
+It can be controlled from a user-friendly configuration file, but it can also
+be called programmatically. It can be used in synthesis mode for obtaining emerging
+Stokes parameters from a given atmosphere. It can also be used in inversion mode
+to infer the model parameters from a set of observed Stokes parameters.
+Graphical front-ends are also provided.</p>
+</section>
+<section id="features">
+<h2>Features<a class="headerlink" href="#features" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Hazel v2.0 can invert photospheric, chromospheric (mainly He I lines and Ca II 8542) and a variety of systematics (i.e., telluric lines).</p></li>
+<li><p>It can seamlessly handle 1D or 3D input/output files, making it very easy to invert large maps.</p></li>
+<li><p>Large supercomputers can be used to invert large maps. It scales practically linearly with the number of cores.</p></li>
+<li><p>It provides a programmatic access to the SIR synthesis module, which can be handy for many purposes.</p></li>
+<li><p>User-friendly API.</p></li>
+</ul>
+</section>
+<section id="quick-tour">
+<h2>Quick tour<a class="headerlink" href="#quick-tour" title="Link to this heading">¶</a></h2>
+<section id="programmatically">
+<h3>Programmatically<a class="headerlink" href="#programmatically" title="Link to this heading">¶</a></h3>
+<p>For simple calculations, like synthesizing spectral lines in simple models,
+Hazel v2.0 can be used in programmatic mode. For instance, let us generate a spectral
+window in the near-infrared and synthesize the He I 10830 A line with some
+parameters.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">hazel</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;synthesis&#39;</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_spectral</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">,</span> <span class="mi">150</span><span class="p">],</span> <span class="s1">&#39;topology&#39;</span><span class="p">:</span> <span class="s1">&#39;ch1&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;LOS&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">90.0</span><span class="p">],</span> <span class="s1">&#39;Boundary condition&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]})</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_chromosphere</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;ch1&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectral region&#39;</span><span class="p">:</span> <span class="s1">&#39;spec1&#39;</span><span class="p">,</span> <span class="s1">&#39;Height&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s1">&#39;Line&#39;</span><span class="p">:</span> <span class="s1">&#39;10830&#39;</span><span class="p">,</span> <span class="s1">&#39;Wavelength&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">]})</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+
+<span class="n">mod</span><span class="o">.</span><span class="n">atmospheres</span><span class="p">[</span><span class="s1">&#39;ch1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">100.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">8.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span> <span class="mf">1.0</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">synthesize</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>As you see, we first generate the Hazel model for synthesis. We then create a spectral window with parameters
+passed as a dictionary. Then we add a chromosphere and finally call <cite>setup</cite> to finalize the model setup.
+We then change the model parameters of the chromosphere and synthesize the spectrum.
+All the details of the dictionaries to pass and how to generate more complicated
+atmospheres can be found in <a class="reference internal" href="started/programmatically.html#programmatically"><span class="std std-ref">Programmatically</span></a>.</p>
+</section>
+<section id="with-configuration-file">
+<h3>With configuration file<a class="headerlink" href="#with-configuration-file" title="Link to this heading">¶</a></h3>
+<p>Perhaps the easiest way of running Hazel v2.0 is through the human-friendly configuration
+files described in <a class="reference internal" href="config/examples.html#configuration"><span class="std std-ref">Examples</span></a>.</p>
+<section id="single-pixel-mode">
+<h4>Single pixel mode<a class="headerlink" href="#single-pixel-mode" title="Link to this heading">¶</a></h4>
+<p>Calculations in single-pixel mode (only one pixel synthesis/inversion) are very easy
+to do. The following code uses a configuration file that can be found in <a class="reference external" href="https://github.com/aasensio/hazel2/test">https://github.com/aasensio/hazel2/test</a>
+which uses <cite>1d</cite> inputs files, whose format is described in <span class="xref std std-ref">input</span>. The following one
+carries out synthesis:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_single_syn.ini&#39;</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">open_output</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">synthesize</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">write_output</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">close_output</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>and this one carries out the inversion:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_single_inv.ini&#39;</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">read_observation</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">open_output</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">invert</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">write_output</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">close_output</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Summarizing, just create the model using the configuration file and then
+call synthesize/invert. Note that we open and close the output because
+we want to generate a file with the synthetic profiles or the model
+parameters of the inversion.</p>
+</section>
+<section id="serial-mode">
+<h4>Serial mode<a class="headerlink" href="#serial-mode" title="Link to this heading">¶</a></h4>
+<p>When many pixels need to be synthesized/inverted, one can pass appropriate input
+multidimensional files that can deal with many pixels. They can be synthesized
+in serial mode (using only one CPU) with the following code. It makes use of
+an <cite>iterator</cite>, an object that  carries out the work for all the pixels in the
+input files.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">iterator</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Iterator</span><span class="p">(</span><span class="n">use_mpi</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_nonmpi_syn1d.ini&#39;</span><span class="p">)</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">use_model</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">mod</span><span class="p">)</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">run_all_pixels</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This case is slightly more complicated. We need to instantiate an iterator, telling it
+not to use MPI. The, we instantiate the model and pass it to the iterator, which is
+then used to run through all pixels.</p>
+</section>
+<section id="mpi-mode">
+<h4>MPI mode<a class="headerlink" href="#mpi-mode" title="Link to this heading">¶</a></h4>
+<p>When working with many pixels, many-core computers can be used. This will use a
+parent-agent approach, in which the parent sends pixels to each one of the available
+agents to do the work. In this case, we tell the iterator to use MPI and act differently
+for the parent (rank=0) or the worker (rank&gt;0). Note that only the parent reads the
+configuration file, and it will be broadcasted to all agents internally.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">iterator</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Iterator</span><span class="p">(</span><span class="n">use_mpi</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rank</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+    <span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_mpi_invh5.ini&#39;</span><span class="p">)</span>
+    <span class="n">iterator</span><span class="o">.</span><span class="n">use_model</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">mod</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">iterator</span><span class="o">.</span><span class="n">use_model</span><span class="p">()</span>
+
+<span class="n">iterator</span><span class="o">.</span><span class="n">run_all_pixels</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="started/installation.html" class="btn btn-neutral float-right" title="1. Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

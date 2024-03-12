@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>4.2. Generators &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4.3. Output files" href="output.html" />
+    <link rel="prev" title="4.1. Input files" href="input.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../started/installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../started.html">2. Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">3. Configuration</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../io_files.html">4. Input/output files</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="input.html">4.1. Input files</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">4.2. Generators</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#observations">4.2.1. Observations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#photospheres">4.2.2. Photospheres</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#chromospheres">4.2.3. Chromospheres</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="output.html">4.3. Output files</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../preparation.html">5. Data preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">6. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../io_files.html"><span class="section-number">4. </span>Input/output files</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">4.2. </span>Generators</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/io_files/generators.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="generators">
+<h1><span class="section-number">4.2. </span>Generators<a class="headerlink" href="#generators" title="Link to this heading">¶</a></h1>
+<p>Although you can follow what you’ve learnt in the previous section to generate
+the input files, Hazel v2.0 can generate the input files for you in the appropriate
+format.</p>
+<section id="observations">
+<h2><span class="section-number">4.2.1. </span>Observations<a class="headerlink" href="#observations" title="Link to this heading">¶</a></h2>
+<p>You can generate the appropriate files with the observations in 1D or 3D formats.
+Once you have the data in <cite>numpy</cite> arrays, you can instantiate a <cite>File_observation</cite>
+as follows for a 1D observation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tmp</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">File_observation</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;single&#39;</span><span class="p">)</span>
+<span class="n">tmp</span><span class="o">.</span><span class="n">set_size</span><span class="p">(</span><span class="n">n_lambda</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">n_pixel</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or as follows for a 3D observation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tmp</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">File_observation</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;multi&#39;</span><span class="p">)</span>
+<span class="n">tmp</span><span class="o">.</span><span class="n">set_size</span><span class="p">(</span><span class="n">n_lambda</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">n_pixel</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this case, <cite>tmp</cite> contains a dictionary <cite>obs</cite> with the following keys with the correct dimensions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">tmp</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">dict_keys</span><span class="p">([</span><span class="s1">&#39;stokes&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;los&#39;</span><span class="p">,</span> <span class="s1">&#39;boundary&#39;</span><span class="p">,</span> <span class="s1">&#39;wavelength&#39;</span><span class="p">,</span> <span class="s1">&#39;weights&#39;</span><span class="p">,</span> <span class="s1">&#39;mask&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The sizes of the arrays are:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">tmp</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">tmp</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">stokes</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">sigma</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">los</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">boundary</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">wavelength</span> <span class="p">(</span><span class="mi">128</span><span class="p">,)</span>
+        <span class="n">weights</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span>
+</pre></div>
+</div>
+<p>where the first index is the pixel number. Even in 1D models, you will always have this first index. You can then
+fill up these arrays with the appropriate data and finally save the observations with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tmp</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will generate the files with the Stokes profiles, the wavelength and the wavelength weights, all
+of them with the same name and different extensions. These files can then be used with Hazel v2.0 for
+carrying out inversions.</p>
+</section>
+<section id="photospheres">
+<h2><span class="section-number">4.2.2. </span>Photospheres<a class="headerlink" href="#photospheres" title="Link to this heading">¶</a></h2>
+<p>Something similar can be achieved for photospheric models. First instantiate the following class:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tmp</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">File_photosphere</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;single&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The object <cite>tmp</cite> contains now a dictionary with the following keys:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">tmp</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">dict_keys</span><span class="p">([</span><span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="s1">&#39;ff&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>You can then fill them appropriately with the depth stratification of the model or you can
+use the <cite>set_default</cite> method of the object to fill it up with standard model atmospheres. For
+the moment, you can just use the HSRA model, but more models will come in the future:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tmp</span><span class="o">.</span><span class="n">set_default</span><span class="p">(</span><span class="n">n_pixel</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;hsra&#39;</span><span class="p">)</span>
+<span class="n">tmp</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;photosphere&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To get a list of possible models, just type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tmp</span><span class="o">.</span><span class="n">list_models</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In the multipixel case, just use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tmp</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">File_photosphere</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;multi&#39;</span><span class="p">)</span>
+<span class="n">tmp</span><span class="o">.</span><span class="n">set_default</span><span class="p">(</span><span class="n">n_pixel</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;hsra&#39;</span><span class="p">)</span>
+<span class="n">tmp</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;photosphere&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="chromospheres">
+<h2><span class="section-number">4.2.3. </span>Chromospheres<a class="headerlink" href="#chromospheres" title="Link to this heading">¶</a></h2>
+<p>The same applies to chromospheres. An example follows for a multipixel atmosphere:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tmp</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">File_chromosphere</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;multi&#39;</span><span class="p">)</span>
+<span class="n">tmp</span><span class="o">.</span><span class="n">set_default</span><span class="p">(</span><span class="n">n_pixel</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;disk&#39;</span><span class="p">)</span>
+<span class="n">tmp</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;chromosphere&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The options for the defaults are <cite>disk</cite> for on-disk observations and <cite>offlimb</cite> for off-limb observations.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="input.html" class="btn btn-neutral float-left" title="4.1. Input files" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="output.html" class="btn btn-neutral float-right" title="4.3. Output files" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

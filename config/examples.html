@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3.1. Examples &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="3.2. Step-by-step description" href="configuration.html" />
+    <link rel="prev" title="3. Configuration" href="../config.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../started/installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../started.html">2. Basic usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../config.html">3. Configuration</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">3.1. Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#synthesis">3.1.1. Synthesis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inversion">3.1.2. Inversion</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html">3.2. Step-by-step description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="topology.html">3.3. Topology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="regularization.html">3.4. Regularization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../io_files.html">4. Input/output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparation.html">5. Data preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">6. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../config.html"><span class="section-number">3. </span>Configuration</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">3.1. </span>Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/config/examples.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="examples">
+<span id="configuration"></span><h1><span class="section-number">3.1. </span>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h1>
+<p>There is a single human-readable configuration file that controls the behavior of the code. It can be
+used both for synthesis and inversion.</p>
+<section id="synthesis">
+<h2><span class="section-number">3.1.1. </span>Synthesis<a class="headerlink" href="#synthesis" title="Link to this heading">¶</a></h2>
+<p>In the following we paste a typical configuration file that can be used for synthesis. Later we describe all sections.
+As you can see, you first need to define the working mode, then the spectral regions of interest and finally the
+specific details for each atmosphere.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># |hazel2| configuration File</span>
+
+<span class="p">[</span><span class="n">Working</span> <span class="n">mode</span><span class="p">]</span>
+<span class="n">Output</span> <span class="n">file</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">h5</span>
+
+
+<span class="p">[</span><span class="n">Spectral</span> <span class="n">regions</span><span class="p">]</span>
+    <span class="p">[[</span><span class="n">Region</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">,</span> <span class="mi">150</span>
+    <span class="n">Topology</span> <span class="o">=</span> <span class="n">ph2</span> <span class="o">-&gt;</span> <span class="n">ch1</span> <span class="o">-&gt;</span> <span class="n">te1</span> <span class="o">-&gt;</span> <span class="n">st1</span>
+    <span class="n">LOS</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">90.0</span>
+    <span class="n">Boundary</span> <span class="n">condition</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>       <span class="c1"># I/Ic(mu=1), Q/Ic(mu=1), U/Ic(mu=1), V/Ic(mu=1)</span>
+    <span class="n">Wavelength</span> <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;observations/10830.wavelength&#39;</span>
+    <span class="n">Wavelength</span> <span class="n">weight</span> <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;observations/10830.weights&#39;</span>
+    <span class="n">Instrumental</span> <span class="n">profile</span> <span class="o">=</span> <span class="mf">3.0</span>
+
+<span class="p">[</span><span class="n">Atmospheres</span><span class="p">]</span>
+
+    <span class="p">[[</span><span class="n">Photosphere</span> <span class="mi">2</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">ph2</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;photospheres/model_photosphere.1d&#39;</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>
+    <span class="n">Spectral</span> <span class="n">lines</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
+    <span class="n">Reference</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">vertical</span>
+
+    <span class="p">[[</span><span class="n">Chromosphere</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">ch1</span>                                              <span class="c1"># Name of the atmosphere component</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>                                 <span class="c1"># Spectral region to be used for synthesis</span>
+    <span class="n">Height</span> <span class="o">=</span> <span class="mf">3.0</span>                                            <span class="c1"># Height of the slab</span>
+    <span class="n">Line</span> <span class="o">=</span> <span class="mi">10830</span>                                            <span class="c1"># 10830, 5876</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>                         <span class="c1"># Wavelength range used for synthesis</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;chromospheres/model_chromosphere.1d&#39;</span>    <span class="c1"># File with model parameters</span>
+    <span class="n">Reference</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">vertical</span>
+
+    <span class="p">[[</span><span class="n">Parametric</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">te1</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;telluric/model_telluric.1d&#39;</span>    <span class="c1"># File with model parameters</span>
+    <span class="n">Type</span> <span class="o">=</span> <span class="n">Gaussian</span>           <span class="c1"># Gaussian, Voigt, MoGaussian, MoVoigt</span>
+
+    <span class="p">[[</span><span class="n">Straylight</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">st1</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;straylight/model_stray.1d&#39;</span>    <span class="c1"># File with model parameters</span>
+</pre></div>
+</div>
+</section>
+<section id="inversion">
+<h2><span class="section-number">3.1.2. </span>Inversion<a class="headerlink" href="#inversion" title="Link to this heading">¶</a></h2>
+<p>In the following we paste a typical configuration file for the inversion mode.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># |hazel2| configuration File</span>
+
+<span class="p">[</span><span class="n">Working</span> <span class="n">mode</span><span class="p">]</span>
+<span class="n">Output</span> <span class="n">file</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">h5</span>
+<span class="n">Number</span> <span class="n">of</span> <span class="n">cycles</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">Maximum</span> <span class="n">iterations</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">Relative</span> <span class="n">error</span> <span class="o">=</span> <span class="mf">1e-4</span>
+
+<span class="p">[</span><span class="n">Spectral</span> <span class="n">regions</span><span class="p">]</span>
+    <span class="p">[[</span><span class="n">Region</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span><span class="p">,</span> <span class="mi">150</span>
+    <span class="n">Topology</span> <span class="o">=</span> <span class="n">ph2</span> <span class="o">-&gt;</span> <span class="n">ch1</span> <span class="o">-&gt;</span> <span class="n">te1</span> <span class="c1">#-&gt; st1</span>
+    <span class="n">LOS</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">90.0</span>
+    <span class="n">Boundary</span> <span class="n">condition</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>       <span class="c1"># I/Ic(mu=1), Q/Ic(mu=1), U/Ic(mu=1), V/Ic(mu=1)</span>
+    <span class="n">Wavelength</span> <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;observations/10830.wavelength&#39;</span>
+    <span class="n">Wavelength</span> <span class="n">weight</span> <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;observations/10830.weights&#39;</span>
+    <span class="n">Observations</span> <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;observations/10830_stokes.h5&#39;</span>
+    <span class="n">Straylight</span> <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;observations/10830_stray.1d&#39;</span>
+    <span class="n">Mask</span> <span class="n">file</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">Weights</span> <span class="n">Stokes</span> <span class="n">I</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+    <span class="n">Weights</span> <span class="n">Stokes</span> <span class="n">Q</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+    <span class="n">Weights</span> <span class="n">Stokes</span> <span class="n">U</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+    <span class="n">Weights</span> <span class="n">Stokes</span> <span class="n">V</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+    <span class="n">Instrumental</span> <span class="n">profile</span> <span class="o">=</span> <span class="mf">3.0</span>
+
+<span class="p">[</span><span class="n">Atmospheres</span><span class="p">]</span>
+
+    <span class="p">[[</span><span class="n">Photosphere</span> <span class="mi">2</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">ph2</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;photospheres/model_photosphere.1d&#39;</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>
+    <span class="n">Spectral</span> <span class="n">lines</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
+    <span class="n">Reference</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">vertical</span>
+
+        <span class="p">[[[</span><span class="n">Ranges</span><span class="p">]]]</span>
+        <span class="n">T</span>      <span class="o">=</span> <span class="o">-</span><span class="mf">3000.0</span><span class="p">,</span> <span class="mf">3000.0</span>
+        <span class="n">vmic</span>   <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">3.0</span>
+        <span class="n">v</span>      <span class="o">=</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">10.0</span>
+        <span class="n">Bx</span>     <span class="o">=</span> <span class="o">-</span><span class="mf">1000.0</span><span class="p">,</span> <span class="mf">1000.0</span>
+        <span class="n">By</span>     <span class="o">=</span> <span class="o">-</span><span class="mf">1000.0</span><span class="p">,</span> <span class="mf">1000.0</span>
+        <span class="n">Bz</span>     <span class="o">=</span> <span class="o">-</span><span class="mf">1000.0</span><span class="p">,</span> <span class="mf">1000.0</span>
+        <span class="n">ff</span>     <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span>
+
+        <span class="p">[[[</span><span class="n">Nodes</span><span class="p">]]]</span>
+        <span class="n">T</span>      <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span>
+        <span class="n">vmic</span>   <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">v</span>      <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">Bx</span>     <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">By</span>     <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">Bz</span>     <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">ff</span>     <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+        <span class="p">[[</span><span class="n">Regularization</span><span class="p">]]</span>
+        <span class="n">T</span>      <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">vmic</span>   <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">v</span>      <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">Bx</span>     <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">By</span>     <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">Bz</span>     <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="p">[[</span><span class="n">Chromosphere</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">ch1</span>                                              <span class="c1"># Name of the atmosphere component</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>                                 <span class="c1"># Spectral region to be used for synthesis</span>
+    <span class="n">Height</span> <span class="o">=</span> <span class="mf">3.0</span>                                            <span class="c1"># Height of the slab</span>
+    <span class="n">Line</span> <span class="o">=</span> <span class="mi">10830</span>                                            <span class="c1"># 10830, 5876</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>                         <span class="c1"># Wavelength range used for synthesis</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;chromospheres/model_chromosphere.1d&#39;</span>    <span class="c1">#File with model parameters</span>
+    <span class="n">Coordinates</span> <span class="k">for</span> <span class="n">magnetic</span> <span class="n">field</span> <span class="n">vector</span> <span class="o">=</span> <span class="s1">&#39;cartesian&#39;</span>
+
+
+        <span class="p">[[[</span><span class="n">Ranges</span><span class="p">]]]</span>
+        <span class="n">Bx</span>     <span class="o">=</span> <span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span>
+        <span class="n">By</span>     <span class="o">=</span> <span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span>
+        <span class="n">Bz</span>     <span class="o">=</span> <span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span>
+        <span class="n">tau</span>    <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">2.0</span>
+        <span class="n">v</span>      <span class="o">=</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">10.0</span>
+        <span class="n">deltav</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">12.0</span>
+        <span class="n">beta</span>   <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span>
+        <span class="n">a</span>      <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span>
+        <span class="n">ff</span>     <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span>
+
+
+        <span class="p">[[[</span><span class="n">Nodes</span><span class="p">]]]</span>
+        <span class="n">Bx</span>     <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">By</span>     <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">Bz</span>     <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="n">tau</span>    <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">v</span>      <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">deltav</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">beta</span>   <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">a</span>      <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">ff</span>     <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+    <span class="p">[[</span><span class="n">Parametric</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">te1</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;telluric/model_telluric.1d&#39;</span>    <span class="c1"># File with model parameters</span>
+    <span class="n">Type</span> <span class="o">=</span> <span class="n">Gaussian</span>           <span class="c1"># Gaussian, Voigt, MoGaussian, MoVoigt</span>
+
+        <span class="p">[[[</span><span class="n">Ranges</span><span class="p">]]]</span>
+        <span class="n">Lambda0</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+        <span class="n">Sigma</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.5</span>
+        <span class="n">Depth</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.8</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.2</span>
+        <span class="n">ff</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span>
+
+        <span class="p">[[[</span><span class="n">Nodes</span><span class="p">]]]</span>
+        <span class="n">Lambda0</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">Sigma</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">Depth</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">ff</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+    <span class="p">[[</span><span class="n">Straylight</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">st1</span>
+    <span class="n">Spectral</span> <span class="n">region</span> <span class="o">=</span> <span class="n">spec1</span>
+    <span class="n">Wavelength</span> <span class="o">=</span> <span class="mi">10826</span><span class="p">,</span> <span class="mi">10833</span>
+    <span class="n">Reference</span> <span class="n">atmospheric</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;straylight/model_stray.1d&#39;</span>    <span class="c1"># File with model parameters</span>
+
+        <span class="p">[[[</span><span class="n">Ranges</span><span class="p">]]]</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+        <span class="n">ff</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span>
+
+        <span class="p">[[[</span><span class="n">Nodes</span><span class="p">]]]</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">ff</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../config.html" class="btn btn-neutral float-left" title="3. Configuration" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="configuration.html" class="btn btn-neutral float-right" title="3.2. Step-by-step description" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
