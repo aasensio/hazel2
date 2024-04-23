@@ -1749,7 +1749,7 @@ class Model(object):
             if (v.interpolate_to_lr):
                 residual = (v.stokes_lr - v.obs)
             else:
-                residual = (v.stokes - v.obs)
+                residual = (v.stokes - v.obs)            
             
             # Do not use weights. This is used for the computation of errors            
             # if (weights is None):
@@ -1993,7 +1993,7 @@ class Model(object):
 
         """
         
-        first = True
+        first = True        
 
         # Reset reference model to the one loaded from the file
         for k, v in self.atmospheres.items():
@@ -2065,10 +2065,10 @@ class Model(object):
             keepon = True
             iteration = 0
 
-            # Main Levenberg-Marquardt algorithm
+            # Main Levenberg-Marquardt algorithm            
             self.synthesize_and_compute_rf(compute_rf=True)
-            chi2, dchi2, ddchi2 = self.compute_chi2()       
-            
+            chi2, dchi2, ddchi2 = self.compute_chi2()            
+                        
             while keepon:
                 
                 # Simple parabolic backtracking
@@ -2125,7 +2125,7 @@ class Model(object):
 
                 self.synthesize_and_compute_rf(compute_rf=True)
 
-                chi2, dchi2, ddchi2 = self.compute_chi2()                
+                chi2, dchi2, ddchi2 = self.compute_chi2()
 
                 rel = 2.0 * (chi2 - bestchi2) / (chi2 + bestchi2)
 
@@ -2148,7 +2148,7 @@ class Model(object):
                 if (self.verbose >= 2):
                     self.logger.info('==============================================================================')
                     self.logger.info('It: {0} - chi2: {1:10.6f} - lambda_opt: {2:10.6f} - rel: {3:10.6f}'.format(iteration, chi2, lambda_opt, np.abs(rel)))
-                    self.logger.info('==============================================================================')
+                    self.logger.info('==============================================================================')                    
 
                 # Increase the optimal by 100 to find again the optimal value
                 lambdaLM = 100.0 * lambda_opt
@@ -2161,6 +2161,7 @@ class Model(object):
                 iteration += 1
             
             self.set_new_model(self.nodes)
+
 
             # Calculate final chi2
             # self.synthesize_and_compute_rf()

@@ -243,11 +243,9 @@ class SIR_atmosphere(General_atmosphere):
             f = interp.interp1d(log_tau_pos, nodes, 'quadratic', bounds_error=False, fill_value='extrapolate')            
             return reference + f(log_tau), pos
 
-        if (n_nodes > 3):                      
-            if (np.all(np.diff(log_tau_pos) < 0)):
-                log_tau_pos_temp = log_tau_pos[::-1]
-                nodes_temp = nodes[::-1]
-                f = interp.PchipInterpolator(log_tau_pos_temp, nodes_temp, extrapolate=True)
+        if (n_nodes > 3):            
+            if (np.all(np.diff(log_tau_pos) < 0)):                
+                f = interp.PchipInterpolator(log_tau_pos[::-1], nodes[::-1], extrapolate=True)
             else:
                 f = interp.PchipInterpolator(log_tau_pos, nodes, extrapolate=True)
             return reference + f(log_tau), pos
@@ -478,7 +476,7 @@ class SIR_atmosphere(General_atmosphere):
         """        
         for k, v in self.nodes.items():
             if (self.n_nodes[k] > 0):                
-                self.parameters[k], self.nodes_index[k] = self.interpolate_nodes(self.log_tau, self.reference[k], self.nodes[k], self.nodes_logtau[k])
+                self.parameters[k], self.nodes_index[k] = self.interpolate_nodes(self.log_tau, self.reference[k], self.nodes[k], self.nodes_logtau[k])                
             else:
                 self.parameters[k] = self.reference[k]
 
@@ -666,11 +664,10 @@ class SIR_atmosphere(General_atmosphere):
                     self.parameters['Bz'])            
 
             # Check if the line is 8542 and we want NLTE. If that is the case, then evaluate the
-            # neural network to return the departure coefficients
-            
+            # neural network to return the departure coefficients                        
             if (nlte):
                 if (self.nlte):                    
-                    dif = (self.parameters['T'] - self.t_old)                                        
+                    dif = (self.parameters['T'] - self.t_old)                    
                     if (np.max(dif) > self.t_change_departure):
                         for i, l in enumerate(self.lines):
                             if (l == 301):
@@ -685,7 +682,7 @@ class SIR_atmosphere(General_atmosphere):
                                 vlos = [self.parameters['v'][::-1] * 1e3]             # in m/s
                                 prediction = self.graphnet_nlte.predict(tau, ne, vturb, tt, vlos)
                                 self.departure[0, i, :] = 10.0**prediction[0][::-1, 2]
-                                self.departure[1, i, :] = 10.0**prediction[0][::-1, 4]
+                                self.departure[1, i, :] = 10.0**prediction[0][::-1, 4]                                
             
                             self.t_old = self.parameters['T']
                         

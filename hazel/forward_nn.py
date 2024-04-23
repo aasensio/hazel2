@@ -141,6 +141,8 @@ class Forward(object):
         self.predict_model = graphnet.EncodeProcessDecode(**self.hyperparameters).to(self.device)
         self.predict_model.load_state_dict(checkpoint['state_dict'])
 
+        self.predict_model.eval()
+
         if (verbose >= 1):
             npars = sum(p.numel() for p in self.predict_model.parameters() if p.requires_grad)
             tmp = self.checkpoint.split('/')
@@ -151,9 +153,7 @@ class Forward(object):
         dset = Dataset(self.hyperparameters, tau_all, ne_all, vturb_all, T_all, vlos_all)
 
         self.loader = torch_geometric.loader.DataLoader(dset, batch_size=1, shuffle=False)
-
-        self.predict_model.eval()
-
+        
         self.pred_out = []
 
         with torch.no_grad():

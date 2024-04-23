@@ -22,15 +22,15 @@ For a Linux OS, type:
 
 ::
 
-    conda create -n hazel_env python=3.6
+    conda create -n hazel_env python=3.10
     conda activate hazel_env
     conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpich mpi4py configobj gfortran_linux-64 gcc_linux-64 asciitree
 
-For Mac OS, type:
+A different version of Python can be installed in the environment. For Mac OS, type:
 
 ::
 
-    conda create -n hazel_env python=3.6
+    conda create -n hazel_env python=3.10
     conda activate hazel_env
     conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpich mpi4py configobj gfortran_osx-64 gcc_osx-64 asciitree
 
@@ -43,7 +43,7 @@ If you also want to use the GUI, you need to add two new dependencies:
 
 ::
 
-    conda create -n hazel_env python=3.6 
+    conda create -n hazel_env python=3.10
     conda activate hazel_env
     conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpich mpi4py configobj gfortran_linux-64 gcc_linux-64 matplotlib pyqt asciitree
 
@@ -53,6 +53,14 @@ Remember to add `ipython` if you are using this shell to run |hazel2|. Otherwise
 If you want to use the NLTE neural option for synthesizing the Ca II 854.2 nm line, the packages ``pytorch``,
 ``pytorch_geometric`` and ``pytorch-scatter`` should be installed. Take a look at the documentation for `PyTorch <https://pytorch.org/>`_
 , `PyTorch Geometric <https://pytorch-geometric.readthedocs.io/en/latest/>`_ `PyTorch Scatter <https://github.com/rusty1s/pytorch_scatter>`_ for more information.
+A typical installation using `pip` can be done using:
+
+::
+    
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+    pip install torch_geometric
+    pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.2.0+cpu
+
 
 Installation from source
 ------------------------
@@ -128,6 +136,24 @@ All of them can be installed in Anaconda with:
 ::
 
     conda install numpy h5py scipy astropy mpi4py configobj tqdm pyqt maplotlib
+
+Container
+---------
+
+A simple way of installing |hazel2|, at least in Linux systems or supercomputers, is to use 
+this Apptainer `container <https://cloud.iac.es/index.php/s/BqG2jGRsqHtJMW9>`_.
+This container has all the dependencies installed and it is ready to be used. You can download it (we try to
+keep this version as updated as possible) and run it with Apptainer as:
+
+::    
+        apptainer run hazel.sif python invert.py
+
+In principle, you can build your own container by going to the `apptainer` directory in the
+distribution and running:
+
+::
+    apptainer build hazel.sif hazel.def
+
 
 For developers
 --------------

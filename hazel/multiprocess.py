@@ -362,42 +362,42 @@ class Iterator(object):
                         data_to_send[label] = {}
                         
                         # Try to do the inversion
-                        try:
-                            self.model.invert(randomize=randomize, randomization_ind=loop)
-                            data_to_send['error'] = 0
-                            for k, v in self.model.spectrum.items():
-                                if (v.interpolate_to_lr):
-                                    data_to_send[label][k] = copy.deepcopy([self.model.spectrum[k].stokes_cycle, self.model.spectrum[k].chi2_cycle, self.model.spectrum[k].bic_cycle, self.model.spectrum[k].aic_cycle, self.model.spectrum[k].stokes_lr_cycle])
-                                else:
-                                    data_to_send[label][k] = copy.deepcopy([self.model.spectrum[k].stokes_cycle, self.model.spectrum[k].chi2_cycle, self.model.spectrum[k].bic_cycle, self.model.spectrum[k].aic_cycle])
+                        # try:
+                        self.model.invert(randomize=randomize, randomization_ind=loop)
+                        data_to_send['error'] = 0
+                        for k, v in self.model.spectrum.items():
+                            if (v.interpolate_to_lr):
+                                data_to_send[label][k] = copy.deepcopy([self.model.spectrum[k].stokes_cycle, self.model.spectrum[k].chi2_cycle, self.model.spectrum[k].bic_cycle, self.model.spectrum[k].aic_cycle, self.model.spectrum[k].stokes_lr_cycle])
+                            else:
+                                data_to_send[label][k] = copy.deepcopy([self.model.spectrum[k].stokes_cycle, self.model.spectrum[k].chi2_cycle, self.model.spectrum[k].bic_cycle, self.model.spectrum[k].aic_cycle])
 
-                            for k, v in self.model.atmospheres.items():
-                                data_to_send[label][k] = copy.deepcopy([v.reference_cycle, v.error_cycle, v.nodes_location_cycle])
+                        for k, v in self.model.atmospheres.items():                            
+                            data_to_send[label][k] = copy.deepcopy([v.reference_cycle, v.error_cycle, v.nodes_logtau_cycle])
 
                         # If a numerical problem appeared, send the error code to the parent
-                        except NumericalErrorHazel:                            
-                            data_to_send['error'] = 1
-                            for k, v in self.model.spectrum.items():
-                                data_to_send[label][k] = None
+                        # except NumericalErrorHazel:                            
+                        #     data_to_send['error'] = 1
+                        #     for k, v in self.model.spectrum.items():
+                        #         data_to_send[label][k] = None
 
-                            for k, v in self.model.atmospheres.items():
-                                data_to_send[label][k] = None
+                        #     for k, v in self.model.atmospheres.items():
+                        #         data_to_send[label][k] = None
                         
-                        except NumericalErrorSIR:
-                            data_to_send['error'] = 2
-                            for k, v in self.model.spectrum.items():
-                                data_to_send[label][k] = None
+                        # except NumericalErrorSIR:
+                        #     data_to_send['error'] = 2
+                        #     for k, v in self.model.spectrum.items():
+                        #         data_to_send[label][k] = None
 
-                            for k, v in self.model.atmospheres.items():
-                                data_to_send[label][k] = None
+                        #     for k, v in self.model.atmospheres.items():
+                        #         data_to_send[label][k] = None
 
-                        except:
-                            data_to_send['error'] = 3
-                            for k, v in self.model.spectrum.items():
-                                data_to_send[label][k] = None
+                        # except:
+                        #     data_to_send['error'] = 3
+                        #     for k, v in self.model.spectrum.items():
+                        #         data_to_send[label][k] = None
 
-                            for k, v in self.model.atmospheres.items():
-                                data_to_send[label][k] = None
+                        #     for k, v in self.model.atmospheres.items():
+                        #         data_to_send[label][k] = None
                         
                 else:
                     for k, v in self.model.atmospheres.items():                    

@@ -217,12 +217,13 @@ class Generic_output_file(object):
                             else:
                                 self.out_model[k][k2][pixel,randomization,...] = v2
                             
-                        # Model node positions                                                                  
-                        for k2, v2 in v.nodes_logtau_cycle[cycle].items():                            
-                            if (model.save_all_cycles):
-                                self.out_nodes[k][k2][pixel,randomization,cycle] = np.atleast_1d(v2)
-                            else:
-                                self.out_nodes[k][k2][pixel,randomization] = np.atleast_1d(v2)
+                        # # Model node positions                        
+                        # CHECK!!!!!!!!!!!!!!!!!
+                        # for k2, v2 in v.nodes_logtau_cycle[cycle].items():                            
+                        #     if (model.save_all_cycles):
+                        #         self.out_nodes[k][k2][pixel,randomization,cycle] = np.atleast_1d(v2)
+                        #     else:
+                        #         self.out_nodes[k][k2][pixel,randomization] = np.atleast_1d(v2)
 
                         # Model parameter errors
                         for k2, v2 in v.error_cycle[cycle].items():
