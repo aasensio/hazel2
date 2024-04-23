@@ -5,7 +5,7 @@ from hazel.atmosphere import General_atmosphere
 from hazel.util import i0_allen
 from hazel.codes import hazel_code
 from hazel.hsra import hsra_continuum
-from hazel.io import Generic_hazel_file
+from hazel.io_hazel import Generic_hazel_file
 from hazel.exceptions import NumericalErrorHazel
 import copy
 

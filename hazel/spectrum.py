@@ -1,5 +1,5 @@
 import numpy as np
-from hazel.io import Generic_observed_file, Generic_stray_file, Generic_mask_file
+from hazel.io_hazel import Generic_observed_file, Generic_stray_file, Generic_mask_file
 import os.path
 from astropy.constants import c
 from scipy import interpolate

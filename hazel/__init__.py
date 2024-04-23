@@ -7,7 +7,7 @@ from .configuration import *
 from .spectrum import *
 from .multiprocess import *
 from .tools import *
-from .io import *
+from .io_hazel import *
 from .sir import *
 from .exceptions import *
 from .util import *

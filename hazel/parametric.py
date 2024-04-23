@@ -4,7 +4,7 @@ import os
 from hazel.atmosphere import General_atmosphere
 from hazel.util import fvoigt
 from hazel.hsra import hsra_continuum
-from hazel.io import Generic_parametric_file
+from hazel.io_hazel import Generic_parametric_file
 import copy
 
 __all__ = ['Parametric_atmosphere']

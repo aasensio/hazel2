@@ -4,7 +4,7 @@ import os
 from hazel.atmosphere import General_atmosphere
 from hazel.util import i0_allen, find_nearest
 from hazel.codes import sir_code
-from hazel.io import Generic_SIR_file
+from hazel.io_hazel import Generic_SIR_file
 import scipy.interpolate as interp
 from hazel.exceptions import NumericalErrorSIR
 from hazel.transforms import transformed_to_physical, jacobian_transformation

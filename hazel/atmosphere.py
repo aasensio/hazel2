@@ -4,7 +4,7 @@ import os
 from hazel.util import i0_allen, fvoigt
 from hazel.codes import hazel_code, sir_code
 from hazel.hsra import hsra_continuum
-from hazel.io import Generic_hazel_file, Generic_SIR_file, Generic_parametric_file
+from hazel.io_hazel import Generic_hazel_file, Generic_SIR_file, Generic_parametric_file
 from hazel.transforms import transformed_to_physical, physical_to_transformed, jacobian_transformed_to_physical, jacobian_transformation
 import copy
 from hazel.sir import Sir

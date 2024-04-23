@@ -3,7 +3,7 @@ from hazel.photosphere import SIR_atmosphere
 from hazel.parametric import Parametric_atmosphere
 from hazel.stray import Straylight_atmosphere
 from hazel.configuration import Configuration
-from hazel.io import Generic_output_file
+from hazel.io_hazel import Generic_output_file
 from collections import OrderedDict
 from hazel.codes import hazel_code, sir_code
 from hazel.spectrum import Spectrum

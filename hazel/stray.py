@@ -4,7 +4,7 @@ import os
 from hazel.atmosphere import General_atmosphere
 from hazel.util import fvoigt, i0_allen
 from hazel.hsra import hsra_continuum
-from hazel.io import Generic_stray_file
+from hazel.io_hazel import Generic_stray_file
 import copy
 import scipy.constants as constants
 
