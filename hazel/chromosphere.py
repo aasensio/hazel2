@@ -58,7 +58,7 @@ class Hazel_atmosphere(General_atmosphere):
         #only parameters initialized to something different than 0.0
         self.parameters['beta'],self.parameters['tau'] = 1.0, 1.0
         self.parameters['deltav'] = 8.0
-        self.parameters['ff'] = np.log(1.0)
+        self.parameters['ff'] = np.log(1.0) #-->EDGAR:this is zero! why is this log here??should be 1?
 
 
     def select_coordinate_system(self):
@@ -174,7 +174,11 @@ class Hazel_atmosphere(General_atmosphere):
                 # To spherical comps in vertical frame as required in Hazel
                 B,thB,phiB=self.cartesian_to_spherical(Bx,By,Bz)
 
+        #we could here call check_B_vals, that would check values for all cells
+
         return B,thB,phiB,Bx,By,Bz #Bx,By,Bz can be deleted if not needed in the code 
+
+
 
     def get_dna(self):
         #extract dna of previous experiment in a way that is readable by set_pars directly
@@ -270,11 +274,18 @@ class Hazel_atmosphere(General_atmosphere):
 
     #alias to set_parameters.:
     def set_pars(self, pars,ff=1.0,j10=None,j20f=None,nbar=None,m=None):
+        '''Alias to set_parameters'''
         return self.set_parameters(pars,ff,j10=j10,j20f=j20f,nbar=nbar,m=m)
+
+
 
     def load_reference_model(self, model_file, verbose):
         """
         Load a reference model or a model for every pixel for synthesis/inversion
+        EDGAR: we could also use this file reference model for default initialization of pars. 
+        For adding a full chromosphere in synthesis mode I am instead using the dictionary dmm. 
+        But of course this is hardcoded in the code, and it might be better to have it as a file.
+         
 
         Parameters
         ----------

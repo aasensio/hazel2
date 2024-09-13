@@ -234,7 +234,6 @@ if (synthesis_method == 5) then
             endif
     endif
 
-
         ds = in_params%dtau / maxval(in_fixed%etaI)
         in_fixed%dtau = in_fixed%etaI * ds
                 

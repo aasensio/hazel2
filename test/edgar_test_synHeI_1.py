@@ -1,7 +1,7 @@
 import hazel
 import matplotlib.pyplot as plt
 import sys, gc
-
+import numpy as np
 
 '''
 #--------intensity profile for boundary cond----
@@ -350,7 +350,17 @@ a 0.2 en vez de a 1.0. Verificar si esto se sobreescribe luego en el codigo y pr
 CAUTION:for some reason I cannot access othe backends from Hazel conda environment
 I use MacOs backend. Qt5,Qt4, Wx, and TkAgg are not working.
 --
-clean commments
+
+1)
+!dtau is an auxiliar incoming par that represents integrated opacity
+ds = in_params%dtau / maxval(in_fixed%etaI) (see synth.f90)
+in_fixed%dtau = in_fixed%etaI * ds
+By using this trick we obtain the dtau that depends on wavelength
+But this is differential and assumes that eta_I is constant in the cell.
+---->>>>we must change this by a quadrature rule
+
+
+
 
 '''
 

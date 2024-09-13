@@ -6,13 +6,24 @@ import sys
 
 nx=150
 s0,sx=np.ones(nx),np.zeros(nx) 
+'''
+edic={'Atompol':1,'MO effects':1,'Stim. emission':1, 'Kill coherences':0,'dcol':[0.,0.,0.]}
+dcol=[0.,0.,0.],extrapars=edic,'helium.atom' and verbose =0 are default
+
+ap-mo-se-nc --> atompol, magopt, stimem, nocoh = 1, 1, 1, 0  
+#nocoh =0 includes all coherences, set to level number to deactive cohs in it
+
+dcol=[0.0,0.0,0.0]  #D^(K=1 and 2)=delta_collision, D^(K=1),D^(K=2)
+
+synMode = 5 #Opt.thin (0), DELOPAR (3),  EvolOp (5)
+'''
 #----------------------------------------------------------------------------------
 m1 = hazel.Model(mode='synthesis',atomfile='sodium_hfs.atom',apmosekc='1110')
 
 cdic={'ref frame': 'LOS'}#common args to all chromospheres
 chs,txt=m1.add_Nchroms(['c0','c1'],cdic,hz=[0.,0.]) #return chs objects and tags
 
-s1=m1.add_spectrum('s1', atom='sodium',linehazel='5895',wavelength=[5892, 5899, nx], 
+s1=m1.add_spectrum('s1', atom='sodium',linehazel='5895',wavelength=[5894, 5897, nx], 
 	topology='c0->c1',los=[0.,0.,90.],boundary=[s0,sx,sx,sx])	;m1.setup() 
 
 #----------------------------------------------------------------------------------
@@ -28,6 +39,8 @@ m1.plot_coeffs('s1')#,coefs=['epsv','etai','etaq','etav']),scale=2
 #m1.mutates('specname', atmpar1=[layernumber,value],j10=[layernumber,value],apmosekc='value',parsdic=dd)
 m1.mutates('s1', B1=[1,34.],j10=[0,0.01])
 m1.mutates('s1', apmosekc='0110')
+m1.mutates('s1', apmosekc='0110',B1=[1,40.],j10=[0,0.02])
+
 
 #m1.fractional_polarization(s1)
 
@@ -40,4 +53,13 @@ self-explanatory help functions to every module and subroutine.
 3) units and amplitudes of coeffs for different LOS's, why q y u 4 orders of magnitude smaller than v? 
 4)memory usage...may be you should add some garbage collector routines.
 5)Add functional variations of many atmopshres and plot_coeffs_2D for many atmospheres
+
+
+
+
+
+
+
+
+
 '''

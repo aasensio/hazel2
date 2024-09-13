@@ -48,6 +48,22 @@ def mylab(lab):
 def latex1(str):
     return r'$\mathrm{z \,{0} [Mm]}$'.format(str) 
 '''
+def exact_parabols(xax,P_ini,P_end,aval=0.2):
+    #P_ini-->[p1x,p1y]
+    #P_end-->[p2x,p2y]
+    #define the function, the a parameter allows different parabols
+    fn= lambda x,a,pa,pb : (a*(x-pb[0])+(pb[1]-pa[1])/(pb[0]-pa[0]))*(x-pa[0])+pa[1]
+    return fn(xax,aval,P_ini,P_end)
+
+def exp_3points(xax,p0,p1,p2):#needs 3 points to be fit 
+    fn = lambda x,a,b,c : a + b*np.exp(c * x)
+    return fn(xax,p0,p1,p2)
+
+
+def exp_2points(xax, xl, yl):#fit with 2 points
+    c=np.log(yl[0]/yl[1])/(xl[0]-xl[1])
+    b=yl[1]*np.exp(-c*xl[1])
+    return b*np.exp(c * xax)
 
 
 __all__ = ['Model']
@@ -55,6 +71,17 @@ __all__ = ['Model']
 class Model(object):
     def __init__(self, config=None, mode='synthesis', atomfile='helium.atom',apmosekc='1110', dcol=None,
         extrapars=None, verbose=0, debug=False,rank=0, randomization=None, plotit=False, root=''):
+        '''
+        edic={'Atompol':1,'MO effects':1,'Stim. emission':1, 'Kill coherences':0,'dcol':[0.,0.,0.]}
+        dcol=[0.,0.,0.],extrapars=edic,'helium.atom' and verbose =0 are default
+
+        ap-mo-se-nc --> atompol, magopt, stimem, nocoh = 1, 1, 1, 0  
+        #nocoh =0 includes all coherences, set to level number to deactive cohs in it
+
+        dcol=[0.0,0.0,0.0]  #D^(K=1 and 2)=delta_collision, D^(K=1),D^(K=2)
+
+        synMode = 5 #Opt.thin (0), DELOPAR (3),  EvolOp (5)
+        '''
 
         #check/init mutable keywords at starting to avoid having memory of them among function/class calls
         if extrapars is None:extrapars={}
@@ -65,9 +92,9 @@ class Model(object):
             return
 
         #EDGAR: dictionary of dictionaries with possible atoms and lines with their indexes for HAZEL atmospheres and spectra        
-        #A variation of this dict to add more atoms and lines requires to do similar changes in 
+        #A variation of this dict to add more atoms and lines required to do similar changes in 
         #multiplets dict in general_atmosphere object (atmosphere.py). 
-        #It'd be more elegant to encapsulate all together in atomsdic.
+        #Now everything is encapsulated here in atomsdic.
         #From here we could also extract the number of transitions as len(self.multipletsdic[atom]).
         #However that would be a redundancy with respect to the data in the atom files,
         #and furthermore ntrans must be read at the very beginning before initializing j10, 
@@ -82,11 +109,29 @@ class Model(object):
         self.multipletsdic={'helium':{'10830': 10829.0911, '3888': 3888.6046, '7065': 7065.7085, '5876': 5875.9663},
                             'sodium':{'5895': 5895.924, '5889': 5889.95}}
 
+        self.atwsdic={'helium':4.,'sodium':22.9897,'calcium':40.08} 
+
+
         self.apmosekc=apmosekc #memory for mutations, must be before get_apmosekcl
         self.dcol=dcol #memory for mutations, must be before get_apmosekcl
 
         #apmosekcL is List whose last element is other list with dcol
         self.apmosekcl=self.get_apmosekcl(apmosekc,dcol,extrapars) 
+
+
+        #Dictio of minimum, default, and maximum values for all possible pars in Hazel atmosphere 
+        #this could be conflicting with the use of "ranges", but such ranges seem to be applied only
+        #in inversion and I dont see their actual set up to numeric meaningful values anywhere.
+        #although 3 last pars are lists of ntr elements themselves, the limit is common to all of elements
+        #use dmm in set_B_vals or make it global:  
+        self.limB=4000.
+        self.dmm={'Bx': [0.,100.,self.limB], 'By': [0.,100.,self.limB], 'Bz': [0.,100.,self.limB], \
+            'B': [0.,100.,self.limB], 'thB': [0.,0.,180.], 'phB': [-360.,0.,360.], \
+                'tau':[0.,1.,20.],'v':[-50.,0., 50.],'deltav':[0.5,2.,15.], \
+                'beta':[0.,1.,10.],'a':[0.,0.1,10.],'ff':[0.,1.,1.], \
+                'j10':[0.,0.,1.],'j20f':[0.,1.,1000.],'nbar':[0.,1.,1.]}
+        
+
 
         self.plotit=plotit
         self.plotscale=3
@@ -97,6 +142,8 @@ class Model(object):
         self.f3=None
         self.ax1= None
         self.ax3=None
+        self.ax5=None
+
         self.lock_fractional=None
 
         #synthesis methods to be implemented
@@ -157,7 +204,7 @@ class Model(object):
             self.n_randomization = randomization
 
         if (self.verbose >= 1):
-            self.logger.info('Hazel2 v1.0')
+            self.logger.info('Hazel2 Experimental')
         
         if ('torch' in sys.modules and 'torch_geometric' in sys.modules):
             if (self.verbose >= 1):
@@ -274,7 +321,7 @@ class Model(object):
         
         if (self.verbose >= 1):self.logger.info('After removing_fig():',plt.get_figlabels()) #plt.get_fignums()
         
-        plt.draw()
+        plt.draw() #EDGAR:should not be removed??
 
 
     def fractional_polarization(self,sp,scale=3,tf=4,ax=None,lab=['iic','qi','ui','vi']): 
@@ -461,6 +508,151 @@ class Model(object):
         plt.show()
 
         return f,ax
+
+
+    def plot_funcatmos(self,dlims,hz,atmat=None,axs=None,**pkws): 
+        '''
+        Compares fractional and not fractional polarization.
+        This routine is valid when fractional polarization is not implemented in synthesize_spectrum
+        **pkws: remaining keyword arguments for plot_PolyFx
+        kwargs={var':'mono','method':2}
+        'order' here does not play a role to change the atmosphere, only the reference polynomials
+        on screen.
+        '''
+        scale,tf = 4, 2
+        pscale=self.plotscale
+        if scale!=pscale:pscale=scale
+        plt.rcParams.update({'font.size': pscale*tf})
+
+        axs=self.ax5
+
+        rct=[3,3,9]
+        if pkws['plotit']!=9:rct=[4,3,10]
+
+        if axs is None:
+            f, self.axs = plt.subplots(nrows=rct[0], ncols=rct[1],figsize=(pscale*2,pscale*2.5))  
+            axs=self.axs.ravel()
+        else:
+            for ax in axs:ax.cla()#delete curves in axes in future calls
+
+        #labs=list(dlims.keys())#[r'$P/I_c$',r'$P/I$']
+        #selected labs in set_funcatmos :
+        #selected=['B1','B2','B3','tau','v','deltav','beta','a','j10','j20f']# ATMAT ORDER
+        #idem but with 'beta' at the end 
+        labs=['B1','B2','B3','tau','v','deltav','a','j10','j20f','beta'] #PLOT ORDER
+        #But after calling self.set_funcatmos from main, dlims is modified to bunch of labels:
+        allabs=labs+['ff', 'nbar']
+
+        for i,ax in enumerate(axs):
+            if allabs[i]=='deltav':
+                hzi,yi=self.fun_minT([hz[0],hz[-1]],dlims[allabs[i]])
+                ax.plot(hzi, yi, '-')
+            else:    
+                var=pkws['var']
+                if allabs[i]=='tau':var='exp'
+                self.plot_PolyFx(ax,[hz[0],hz[-1]],dlims[allabs[i]],nps=pkws['nps'],var=var,method=pkws['method'])
+                
+            ax.set_title(mylab(allabs[i]))
+            if i >8:ax.set_xlabel(mylab('hz'))
+
+        #just plot the selected parameters that do change and were generated from a polynomial
+        #As beta was stored in atmat after deltav, we must move it to plot it at the end as the labels
+        if atmat is not None:
+            j=[0,1,2,3,4,5,7,8,9,6]#beta at the end and only 10 values because atmat contains 10
+            for i in range(rct[2]):#9 or 10
+                axs[i].plot(hz, atmat[j[i],:], 'bo',ms=3)
+
+        #plt.gcf().legend(tuple([l1,l2]), tuple(labs))#loc=(0.1,0.1), bbox_to_anchor=(0.1, 0.3))
+        plt.tight_layout()
+        plt.show()
+        
+        return axs
+
+
+    def get_Tpars(self,lam0,vth=None,temp=None,dlamd=None,atw=4.,vmic=0): 
+        '''
+        Return all parameters related to Doppler broadening: deltav(i.e. vthermal),T, and dnuD or dlamD
+        lam0 in angstroms. Velocities in km/s but we tranform them to cm/s for using cgs constants below
+        Microturbulent velocity vmic is optional to transform to/from Temperature
+        The equations are:
+        vth=np.sqrt(2.0*kb*tt/(mp*atw)+vmic*vmic)  
+        T=(vth*vth-vmic*vmic)*mp*atw/(2.0*kb)
+        dlamd = (lam0/c)*vth 
+        nu0=cc/(lam0);        dnud = (nu0/c)*vth       
+
+        Typical call:
+        tem,dlamd,vth=get_Tpars(lam0,atw=self.atwsdic['atom'], vth=vth_array )
+        '''
+        kb=1.380662E-16   ;mp=1.67265E-24  ;cc=3E10   #CGS
+        #kb,cc,mp =1.3807E-23, 3E8, 1.6726E-27 #(J/K=kgm2s-2, m/s, kg)       
+        if vth is not None:
+            #vth,vmic =  vth*1E5,vmic*1E5  #in cm/s
+            temp=1E10*(vth*vth-vmic*vmic)*mp*atw/(2.0*kb) #in Kelvin
+            dlamd=1E5*vth*(lam0/cc)  #in Angstroms
+        else:
+            if temp is not None:
+                vth=np.sqrt(2.0*kb*temp/(mp*atw)+vmic*vmic*1E10)# in cm/s  
+                dlamd=vth*lam0/cc  #in Angstroms (if lam0 in Angstroms)
+                vth=vth*1e-5 #output in km/s
+            else: #dlamd must enter in same units as lam0(Angstroms)
+                vth=1E-5*dlamd*cc/lam0 #in km/s.  
+                temp=1E10*(vth*vth-vmic*vmic)*mp*atw/(2.0*kb) #in Kelvin
+
+        #nu0=cc/(lam0*1E-10)
+        #dnud=(nu0/cc)*np.sqrt(2*kb*temp/(matom*mp)+ vmic*vmic*1E10)  
+
+        return vth,temp,dlamd
+
+    def fun_minT(self,hzl,dlims,f2=None,d1=2.,z1=500.,hz=None):
+        '''Create non-monotonic function in vth mimicking a chromospehric minimum of T
+        at (z1,d1)=(500,2) with exact lower boundary value, minimum value, and an upper boundary value 
+        determined by d2=d1*f2. Typically f2 >1.0 for a chromospheric rise 
+        and the minimum value at minimum point is vth=2.0, i.e. d1=2.
+
+        Typical call:
+        hz=np.linspace(hzlims[0],hzlims[-1],Ncells)
+        yfun=fun_minT(hz,4.,f2=1.5)
+
+        '''
+        #set data. z1 is hardcoded to 500 km
+        if hz is None:hz = np.linspace(hzl[0], hzl[-1], num=30)
+        z2=hz[-1]
+
+        d0,d2=dlims[0],dlims[-1]
+        if f2 is None:f2=d2/d0
+        d2=d0*f2*f2 #f2 squared does the trick to fit d2 approx
+
+        #define function
+        BminT= lambda x,a,b,c,gam: (a+b*x+c*np.exp(-gam*x))
+
+        gam=0.02#first guess 0.00125-0.003-0.01  
+        #constraints at d1
+        bb=(d2-d0*np.exp(-gam*z2))/(z2-(1./gam+z1)*(1.-np.exp(-gam*z2)))
+        #consraints at d2
+        aa=-bb*(1./gam+z1)
+        #constraint at d0
+        cc= d0-aa
+        #correct gamma assuring constraint at d2
+        ff=20.#15-100
+        gam1=-(1./z2)*(np.log(d2)-np.log(ff*(d0-aa)))
+
+        argum=-(aa+bb*z1)/(d0-aa)
+        if argum>0:gam2=-(1./z1)*np.log(argum)
+        gam=np.min([gam2,gam1])
+
+        #recalculate
+        bb=(d2-d0*np.exp(-gam*z2))/(z2-(1./gam+z1)*(1.-np.exp(-gam*z2)))
+        aa=-bb*(1./gam+z1)
+        cc= d0-aa
+
+        #calculate seed function with right shape and relative proportions
+        yy=BminT(hz,aa,bb,cc,gam)
+        #fit it exactly
+        yy=(yy-np.min(yy))
+        yyprime=yy*(d0-d1)/yy[0] + d1
+        
+
+        return hz,yyprime
 
     def check_method(self,method):
         if (self.verbose >= 1):self.logger.info('Synthesis method : {0}'.format(method))
@@ -1626,7 +1818,7 @@ class Model(object):
 
         Returns
         -------
-        None
+        self.atmospheres[atm['name']]         #None
         """
 
         # Make sure that all keys of the input dictionary are in lower case
@@ -1749,11 +1941,293 @@ class Model(object):
         a list of specific heigths as optional keyword.
         '''
         if (hz is None):hz=[0.0]*len(tags)
-        chout=[]
+        #chout=[]
         for kk,ch in enumerate(tags):
-            chout.append(self.add_chromosphere({'name': ch,'height': hz[kk],**ckey}))
+            #chout.append(self.add_chromosphere({'name': ch,'height': hz[kk],**ckey}))
+            self.chromospheres.append(self.add_chromosphere({'name': ch,'height': hz[kk],**ckey}))
 
-        return chout, tags
+        #return chout, tags
+        return self.chromospheres, tags
+
+    def add_funcatmos(self,Ncells,ckey,hzlims=None,hz=None,topo=''):
+        '''
+        Creates and add a full chromosphere made of N elemental pieces/slabs/cells
+        and making certain parameters to vary according to given P-order polinomials.
+        There is a dictionary of common parameters (ckeys), and 
+        a list of specific heigths as optional keyword. For the moment, this function
+        shall just be a small improvement to add_Nchroms.
+
+        Explanation: Hazel2 allows for a versatile serial or parallel combination 
+        of slabs that can be associated to different spectral lines, heights, filling 
+        factors and topologies for perform radiative trasnfer on them. On the other side,
+        other RT codes work directly to stratified fully discretized atmospheres with many 
+        points. The function add_funcatmos here is in between these two approaches, 
+        pretending to mimick a full atmosphere with several points from serially concatenating
+        Hazel atmospheres but yet mantaining a control on the functional variations
+        of its physical parameters. The goal is to simplify its creation process because
+        when many chromospheres are added as in add_Nchroms, the qualitative properties
+        of each of them (like its labels, or reference frame) become irrelevant or equal
+        for the whole piece. The next step would be to directly add a realistic atmosphere
+        or convert one to a toy full chromosphere as those here built for Hazel. But for that
+        it we shall need to work  directly with temperature, density, etc.
+
+        '''
+        #create list of tags/names for each cell (['c1','c2',...])
+        #actual value of hz only matters in relation with tau. If tau is left defined
+        #for each cell as incoming parameter we are also setting the height scale
+        #indirectly with dtau=eta_I*dz. Hence we will need to wait for eta_I before returning 
+        #a meaningful value of hz scales
+        if (hz is None):hz=[0.0]*Ncells 
+        self.hzlims=hzlims
+
+        #we must return topology string used later for add spectrum in the main program
+        tags=[]
+        if topo == '':
+            for kk in range(Ncells):
+                tags.append('c'+str(kk)) #['c0','c1',...,'c_{N-1}']
+                topo=topo+tags[kk]+'->'
+            topo=topo[:-2]
+        else:#from topo extract tags
+            tags=topo.rsplit(sep='->') #['c0','c1',...,'c_{N-1}']
+        
+        #chout=[]
+        for kk in range(Ncells):             
+            #chout.append(self.add_chromosphere({'name': tags[kk],'height': hz[kk],**ckey}))
+            self.chromospheres.append(self.add_chromosphere({'name': tags[kk],'height': hz[kk],**ckey}))
+
+        #return chout, topo
+        return self.chromospheres, topo
+
+
+    def check_B_vals(self,B1,B2,B3):
+        '''
+        Check whether magnetic field parameters set in keywords dictionary
+        correspond to coordinates (cartesian or spherical) set in the model coordB keyword
+        and whether the values are in their corresponding physical ranges
+        '''
+        anyk=list(self.atmospheres.keys())[0]
+        #if (self.coordinates_B == 'spherical'): --> when routine is placed in chromosphere.py 
+        if (self.atmospheres[anyk].coordinates_B == 'cartesian'):
+            #in cartesian all magnetic field comps goes between -inf(say -3kG) and inf(3kG)
+            if not (0.<= np.abs(B1) <= self.limB) or not (0.<= np.abs(B2)<= self.limB) or not (0.<= np.abs(B3)<= self.limB):
+                raise Exception('Possible ERROR: values of magnetic field cartesian components not in range?')
+        
+        if (self.atmospheres[anyk].coordinates_B == 'spherical'):
+            #in spherical B\in[0,limB], thetaB\in[0,180], chiB\in[-360,360]
+            #chiB is 0,180 but the user has the freedom to choose negative angles and even 
+            #angles larger than 360 but that would be unusual
+            if not (0.<= np.abs(B1) <=self.limB) or not (0.<= B2 <=180.0) or not (0.0<=np.abs(B3)<=360.0):
+                raise Exception('Possible ERROR: values of magnetic field cartesian components not in range?')
+
+        return True
+
+
+    def fix_point_polyfit_fx(self,n, x, y, xf, yf) :
+        '''Solves a system of equations that allow o determine the parameters of a polynomial 
+        that fit points (x,y) approximatelly passing exactly through points (xf,yf).
+        At the end return the resulting  polynomial'''
+        mat = np.empty((n + 1 + len(xf),) * 2)
+        vec = np.empty((n + 1 + len(xf),))
+        x_n = x**np.arange(2 * n + 1)[:, None]
+        yx_n = np.sum(x_n[:n + 1] * y, axis=1)
+        x_n = np.sum(x_n, axis=1)
+        idx = np.arange(n + 1) + np.arange(n + 1)[:, None]
+        mat[:n + 1, :n + 1] = np.take(x_n, idx)
+        xf_n = xf**np.arange(n + 1)[:, None]
+        mat[:n + 1, n + 1:] = xf_n / 2
+        mat[n + 1:, :n + 1] = xf_n.T
+        mat[n + 1:, n + 1:] = 0
+        vec[:n + 1] = yx_n
+        vec[n + 1:] = yf
+        params = np.linalg.solve(mat, vec)
+        
+        sel_pars=params[:n + 1] 
+
+        return np.polynomial.Polynomial(sel_pars)
+
+
+    def get_yps(self,xps,ypl,sortit=1,method=2,nps=2):
+        '''creates few random nps points in y contained between limits ypl 
+        creates random polynomial and few points mapping it''' 
+        if (np.abs(sortit) != 1): sortit=1#sortit can only be 1 or -1
+        if method==1:
+            order=4 #for nps=2, large over bumps if order is not 3 or 4
+            #polyfx = np.polynomial.Polynomial(np.random.rand(order + 1)) #simpler option
+            polyfx = np.polynomial.Polynomial(np.random.uniform(-2, 8, size=(order + 1,)  ))
+            y=polyfx(xps)
+            yps=ypl[0]+(ypl[1]-ypl[0])*y/np.max(y)
+            if ypl[0]>ypl[-1]:yps=np.sort(yps)[::-1]
+        
+        if method==2:
+            #take some random nps-2 points inside the interval
+            ypsr = np.random.uniform(low=ypl[0], high=ypl[1], size=nps-2)
+            if ypl[0]>ypl[-1]:ypsr=np.sort(ypsr)[::-1]#sort from smaller to larger and reverse
+            yps=[ypl[0]]+list(ypsr)+[ypl[1]] #monotonic series always
+
+        return yps
+
+    def get_exp3points(self,xx,xpl,ypl,nps=3):
+        from scipy.optimize import curve_fit
+        xps = np.linspace(xpl[0],xpl[1],nps)#few nps points contained between limits xpl 
+        yps=self.get_yps(xps,ypl,nps=nps)#,sortit=1,method=2)
+        par,cov = curve_fit(exp_3points, xps, yps, p0=np.array([0, -1, 1]), absolute_sigma=True)
+        return xps,yps,exp_3points(xx,par[0],par[1],par[2])
+
+    def plot_PolyFx(self,ax,xpl,ypl,nps=2,var='mono',method=2): 
+        '''This function just plots some reference polynomials and functions to 
+        illustrate possible variations to be assigned to the physical variables
+        or to visualize them with respect to the actual variations set.
+        We can directly work with this function from main program
+        nps=2 is below hardcoded for monotonic method
+        '''
+        #fig = plt.figure()
+        #ax = fig.gca()
+        npoints=30
+        xx = np.linspace(xpl[0], xpl[-1], num=npoints)
+
+        #array of fixed limiting points, AT LEAST including limiting interval points
+        xf, yf = np.array(xpl), np.array(ypl)
+
+        if var == 'non-mono':
+            #play with the location of the control points to get different variations
+            #creates few nps points contained between limits xpl 
+            xps = np.linspace(xpl[0],xpl[1],nps)
+            yps=self.get_yps(xps,ypl,method=method,nps=nps)#method 2 is preferred by default
+
+            #creates a polynomial function fitting previous points and passing
+            # through given fixed points
+            for order in [1,2,3,4]:
+                myfx=self.fix_point_polyfit_fx(order, xps , yps, xf, yf)
+                ax.plot(xx, myfx(xx), '-')
+        if var == 'mono':
+            #this method works best with nps=2 to deliver monotonic order-N polyn. functions 
+            xps = np.linspace(xpl[0],xpl[1],2)  #here only 2 points to achieve monotonicity
+            yps=self.get_yps(xps,ypl,method=2)#method 2 preferred by default
+            with warnings.catch_warnings():#avoid printing polyfit  warnings
+                warnings.simplefilter("ignore")
+                for order in [1,2,3,4]:
+                    myfx = np.poly1d(np.polyfit(xps, yps, order))
+                    ax.plot(xx, myfx(xx), '-')
+        if var == 'mint':#bump mimicking minimum of T
+            xps = np.linspace(xpl[0],xpl[1],nps)
+            yps=self.get_yps(xps,ypl,method=method,nps=nps)#method 2 is preferred by default
+            for order in [1,2,3,4]:
+                myfx=self.fix_point_polyfit_fx(order, xps , yps, xf, yf)         
+                ax.plot(xx, myfx(xx), '-')
+
+        if var == 'exp':   
+            xps,yps=[],[]
+            myfx=exp_2points(xx,xpl,ypl)#exponential for tau       
+            ax.plot(xx, myfx, '-')
+            #xps,yps,myfx=self.get_exp3points(xx,xpl,ypl,nps=3)#ypl is dlims['tau']
+            #ax.plot(xx, myfx, '-')
+
+        ax.plot(xps, yps, 'bo')
+        ax.plot(xf, yf, 'ro')
+        plt.show()
+
+        return #ax
+
+
+    def PolyFx(self,xx,xpl,ypl,nps=2,order=4,npoints=10,var='mono',method=2):
+        '''Get order-N polynomial function connecting points with coords xpl ypl.
+        Method=monotonic uses a hardcoded nps=2. Test variations
+        with plot_PolyFx function.
+        Coeffs given by polyfit are in descending order (x**o to x**0).
+        xpl,ypl = [p1[0],p2[0]],[p1[1],p2[1]] --> for two points
+        ''' 
+        #xx = np.linspace(xpl[0], xpl[-1], num=npoints)
+
+        #array of fixed limiting points, AT LEAST including limiting interval points
+        xf, yf = np.array(xpl), np.array(ypl)
+        
+        if var == 'mono':
+            xps = np.linspace(xpl[0],xpl[1],2)#few nps points between limits xpl 
+            yps=self.get_yps(xps,ypl,method=2)#method 2 is preferred here
+
+            #needs this to avoid printing polyfit  warnings
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                myfx_eval = np.poly1d(np.polyfit(xps, yps, order))
+                myfx=myfx_eval(xx)
+        else:
+            if var=='tau':myfx=exp_2points(xx,xpl,ypl)#exponential for tau  
+            #exp3 not working properly:
+            if var=='exp3':xps,yps,myfx=self.get_exp3points(xx,xpl,ypl)#ypl is dlims['tau']
+            if var=='deltav':aux,myfx=self.fun_minT(0,ypl,hz=xx)#get minimum of temp function
+            if var=='non-mono':#crazy non-monotonic
+                xps = np.linspace(xpl[0],xpl[1],nps)#few nps points contained between limits xpl 
+                yps=self.get_yps(xps,ypl,method=method,nps=nps)#method 2 is preferred by default
+                #creates a polynom func fitting previous points and passing
+                # through the given fixed points
+                myfx_eval=self.fix_point_polyfit_fx(order, xps , yps, xf, yf)
+                myfx=myfx_eval(xx)
+
+        return myfx
+
+    def set_funcatm(self,dlims,hztype='lin',hzlims=None,orders=3,**pkws):
+        '''EDGAR:Set the parameters of every atmospheric cell assuming a functional polynomial
+        variation between ini and end values given as input parameters in dlims. 
+        zhlims was stored in model self.hzlims but here we can overwrite with args '''
+
+        #atm=self.chromospheres 
+
+        if dlims.keys():#dict not empty
+            for key in ['ff','nbar','v','beta']:#if pars omited in call,here we set them to default constant values
+                if dlims.get(key)==None:dlims[key]=[self.dmm[key][1]]*2  #dlims is now complete always
+        else: # dict are empty
+            raise Exception("Atmosphere cannot be set. I need a dict of parameters in set_funcatm.")
+        
+        #check the max and min values in input dict parameters:
+        for kk in [0,1]:self.check_B_vals(dlims['B1'][kk],dlims['B2'][kk],dlims['B3'][kk])
+        
+        for key in ['tau','v','deltav','beta','a','ff','j10','j20f','nbar']:#enumerate only non-magn keys
+            if (self.dmm[key][0] <= dlims[key][0] <= self.dmm[key][2]) and (self.dmm[key][0] <= dlims[key][1] <= self.dmm[key][2]):ok=1
+            else:raise Exception("Atmosphere cannot be set. Revise ini parameters in set_funcatm.")    
+        
+        #build functions and values for the parameters 
+        #tags in the order expected for building the matrix pars2D in the order expected for set_paramaters
+        selected=['B1','B2','B3','tau','v','deltav','beta','a','j10','j20f']
+        Ncells=len(self.chromospheres)
+
+        if hzlims is not None:self.hzlims=hzlims #overwrite self.hzlims
+        else:hzlims=self.hzlims
+
+        hz = np.linspace(hzlims[0], hzlims[-1], Ncells)
+
+        if hztype=='parab':
+            xaux=np.linspace(0,Ncells,Ncells)#yaux is hz : yaux=np.linspace(hzlims[0],hzlims[1],Ncells)
+            funX=xaux*xaux
+            xnew=np.max(xaux)*funX/np.max(funX)#np.exp(-x)
+            hz = np.interp(xnew, xaux, hz)
+
+
+        if type(orders) is int:orders=[orders]*len(selected) 
+
+        pars2D=np.zeros((len(selected),Ncells))
+        
+        if (Ncells > 2):    
+            for kk,key in enumerate(selected):#create polynomial variations
+                if (dlims[key][0]==dlims[key][1]):#constant case
+                    pars2D[kk,:]=dlims[key][0]
+                    if (orders[kk]>0)&(self.verbose >= 1):warnings.warn("The quantity {0} is being forced to keep constant values.".format(key))
+                else:
+                    if key=='tau' or key=='deltav':#create exponential or minT functions
+                        pars2D[kk,:]=self.PolyFx(hz,hzlims,[dlims[key][0],dlims[key][1]],order=orders[kk],npoints=Ncells,var=key)
+                    else:
+                        pars2D[kk,:]=self.PolyFx(hz,hzlims,[dlims[key][0],dlims[key][1]],order=orders[kk],npoints=Ncells)
+        else:  
+            for kk,key in enumerate(selected):
+                pars2D[kk,:]=np.array( [dlims[key][0],dlims[key][1] ] )
+
+        for ii in range(Ncells):#set chromospheric cells
+            self.chromospheres[ii].set_pars(pars2D[0:8,ii],dlims['ff'][1],j10=pars2D[8,ii],j20f=pars2D[9,ii],nbar=dlims['nbar'][1])
+        
+        if pkws['plotit']!=0:self.plot_funcatmos(dlims,hz,atmat=pars2D,**pkws)
+        #if pkws['plotit']:self.plot_funcatmos(dlims,hz,atmat=pars2D,var=pkws['var'],method=pkws['method'])
+
+        return hz,self.chromospheres,pars2D
+
 
     def add_parametric(self, atmosphere):
         """

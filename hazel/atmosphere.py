@@ -40,7 +40,7 @@ class General_atmosphere(object):
         self.n_pixel = 1
         self.stray_profile = None
         
-        #EDGAR:in future versions this should be gathered there where atom file model is read/set up
+        #EDGAR:in previous versions this was redundant with model.py, now all is gathered there, where atom model is read/set up
         #if (atom == 'helium'):
         #    self.multiplets = {'10830': 10829.0911, '3888': 3888.6046, '7065': 7065.7085, '5876': 5875.9663}
         
