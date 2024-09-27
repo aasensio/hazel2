@@ -130,20 +130,17 @@ class Model(object):
                 'tau':[0.,1.,20.],'v':[-50.,0., 50.],'deltav':[0.5,2.,15.], \
                 'beta':[0.,1.,10.],'a':[0.,0.1,10.],'ff':[0.,1.,1.], \
                 'j10':[0.,0.,1.],'j20f':[0.,1.,1000.],'nbar':[0.,1.,1.]}
-        
+        self.dlims=None
+        self.pars2D=None        
 
 
         self.plotit=plotit
         self.plotscale=3
-        self.labelf1='1'
-        self.labelf2='2'
-        self.labelf3='3'
-        self.f1=None
-        self.f3=None
-        self.ax1= None
-        self.ax3=None
-        self.ax5=None
-
+        #Set up figures and axes: stokes,optical coeffs,mutations,atmosphere 
+        self.labelf1,self.labelf2,self.labelf3,self.labelf4='1','2','3','4'
+        self.f1,self.f2,self.f3,self.f4=None,None,None,None
+        self.ax1,self.ax2,self.ax3,self.ax4= None,None,None,None
+        
         self.lock_fractional=None
 
         #synthesis methods to be implemented
@@ -268,7 +265,7 @@ class Model(object):
 
     '''
     #EDGAR: this routine will not work if the backend is not compatible. 
-    #By default I use MacOs backend, whose canvas does not have the window attribute.
+    #I use MacOs backend, whose canvas does not have the window attribute.
 
     def move_figure(self,f, x, y):
         """Move figure's upper left corner to pixel (x, y)"""
@@ -284,44 +281,84 @@ class Model(object):
             f.canvas.manager.window.move(x, y)
     '''
 
-    def setup_set_figure(self,scale=3):
+    def setup_set_figure(self,fignum,scale=3,tf=4,xy=[]):
+        '''Centralize control of text and figure scaling, number of plots, labelsm ad positioning.
+        This subroutine is not used when a plotting routine manages its own plotting parameters.
+        Returns pscale for those plotting routines that need it'''
+        
+        #Centralize control of text and figure scaling
+        #font = {'family' : 'normal','weight' : 'bold', 'size'   : 22}
+        #matplotlib.rc('font', **font)
         pscale=self.plotscale
         if scale!=pscale:pscale=scale
+        plt.rcParams.update({'font.size': pscale*tf})
 
-        plt.close('all')  
-        plt.rcParams.update({'font.size': pscale*2.4})
-        
-        #fig, axs = plt.subplots(2, 2,figsize=(pscale*2,pscale*2))  
-        self.f1, ax = plt.subplots(2, 2,figsize=(pscale*2,pscale*2),label=self.labelf1)  
-        self.ax1 = ax.flatten()
+        if fignum==self.labelf1:
+            #plt.close(self.labelf1)  
+            self.f1, self.ax1 = plt.subplots(2, 2,figsize=(pscale*tf,pscale*tf),label=self.labelf1)  
+            self.ax1 = self.ax1.flatten()
+        if fignum==self.labelf2:tbd=1
+        if fignum==self.labelf3:tbd=1
+        if fignum==self.labelf4:#ready to be usd but not yet in use
+            self.f4, self.ax4 = plt.subplots(nrows=xy[0], ncols=xy[1],figsize=(pscale*2,pscale*2.5),label=self.labelf4)  
+            self.ax4 = self.ax4.flatten()
 
+        #positioning of the figures pending:
         #start_x, start_y, dx, dy = self.f1.figbbox.extents
         #self.move_figure(self.f1,505,500)
+
+        return pscale
+
+    def reshow_this(self,fig):
+        fig.canvas.manager.destroy()#first close the canvas just in case is still open
+        newfig = plt.figure(label=fig.get_label())
+        new_manager = newfig.canvas.manager
+        new_manager.canvas.figure = fig #associate self.fX (i.e., fig) to the new canvas
+        fig.set_canvas(new_manager.canvas)
+        fig.set_figwidth(fig.get_figwidth())
+        fig.set_figheight(fig.get_figheight())
+        fig.set_visible(True)
+
+
+    def reshow(self,fig):
+        '''reshow a closed figure creating a newfig and using its manager to display "fig"
+        Example: m1.reshow(m1.f1) or m1.reshow('1'), m1.reshow('all'). '''
+        #we dont use manager.close() but manager.destroy() because destroy allows reshowing
+        #but close dont. To definitely close the figure use remove_fig() below.
         
+        ptrs=[self.f1,self.f2,self.f3,self.f4]
+        
+        if fig=='all':
+            for fig in ptrs:
+                if fig is not None:self.reshow_this(fig)   
+        else:
+            for elem in ['1','2','3','4']: 
+                if fig==elem:fig=ptrs[int(elem)-1]
+
+            self.reshow_this(fig)
 
     def toggle_visible(self, fig,visible=True):
-        fig.set_visible(not fig.get_visible()) #if invisible, make it visible, or viceversa
+        #if invisible, make it visible, or viceversa
+        fig.set_visible(not fig.get_visible()) 
         plt.draw()
-
-    def remove_fig(self,fig_id):
+        
+                       
+    def remove_fig(self,obj,fig):
         '''
+        Any necessary operations to remove figures.
+        Close and set to None all (ghost) figures of the new model object used to create mutations
+        We use getattr and setattr to update the original object, not a dummy copy
+        
         plt.close(X) X can be:
         *None*: the current figure
         .Figure: the given .Figure instance
         int: a figure number
         str: a figure name
-        'all': all figures
+        'all': all figures.
         '''
-        if (self.verbose >= 1):self.logger.info('Before removing_fig():',plt.get_figlabels()) #plt.get_fignums()
-        
-        plt.close(fig_id)
-        if self.f1 is not None:
-            self.f1.canvas.manager.close()
-            self.f1= None
-        
-        if (self.verbose >= 1):self.logger.info('After removing_fig():',plt.get_figlabels()) #plt.get_fignums()
-        
-        plt.draw() #EDGAR:should not be removed??
+        if getattr(obj,fig) is not None:
+            plt.close(getattr(obj,fig))#plt.close(fig)
+            setattr(obj,fig, None) #equivalent to obj.fig = None 
 
 
     def fractional_polarization(self,sp,scale=3,tf=4,ax=None,lab=['iic','qi','ui','vi']): 
@@ -329,14 +366,12 @@ class Model(object):
         Compares fractional and not fractional polarization.
         This routine is valid when fractional polarization is not implemented in synthesize_spectrum
         '''
-        pscale=self.plotscale
-        if scale!=pscale:pscale=scale
-
-        plt.rcParams.update({'font.size': pscale*tf})
         if type(sp) is not hazel.spectrum.Spectrum:sp=self.spectrum[sp]
 
+        self.setup_set_figure('Free Fig 1',scale=scale,tf=tf)
+        
         if ax is None:
-            f, ax = plt.subplots(nrows=2, ncols=2,figsize=(pscale*2,pscale*2))  
+            f, ax = plt.subplots(nrows=2, ncols=2,figsize=(pscale*2,pscale*2),label='Fractional Polarization')  
             ax = ax.flatten()
 
         labs=[r'$P/I_c$',r'$P/I$']
@@ -360,21 +395,27 @@ class Model(object):
         return 
 
 
-    def plot_stokes(self,sp,scale=3,tf=4,fractional=False,lab=None): 
+    def plot_stokes(self,sp,scale=3,tf=2,fractional=False,lab=None): 
         '''
         Routine called by synthesize to plot stokes profiles either fractional 
         or normalized to continuum 
         '''
         if fractional:lab=['iic','qi','ui','vi']
         else:lab=['iic','qic','uic','vic']
-
-        pscale=self.plotscale
-        if scale!=pscale:pscale=scale
-
-        plt.rcParams.update({'font.size': pscale*tf})
+        
         if type(sp) is not hazel.spectrum.Spectrum:sp=self.spectrum[sp]
-
-        if self.ax1 is None:setup_set_figure()
+        
+        if self.ax1 is None:
+            self.setup_set_figure(self.labelf1,scale=scale,tf=tf)
+            '''
+            pscale=self.plotscale
+            if scale!=pscale:pscale=scale
+            plt.rcParams.update({'font.size': pscale*tf}) 
+            self.f1, self.ax1 = plt.subplots(2, 2,figsize=(pscale*tf,pscale*tf),label=self.labelf1)  
+            self.ax1 = self.ax1.flatten()
+            '''
+        else:#if the window was created but was closed reshow it 
+            if self.f1.canvas.manager.get_window_title() is None:self.reshow(self.f1)
 
         for i in range(4): 
             if i ==0:
@@ -399,14 +440,17 @@ class Model(object):
         '''
         if lab is None:lab=['iic','qic','uic','vic']
 
-        pscale=self.plotscale
-        if scale!=pscale:pscale=scale
-
-        plt.rcParams.update({'font.size': pscale*tf})
         if type(sp) is not hazel.spectrum.Spectrum:sp=self.spectrum[sp]
 
-        if self.ax1 is None:setup_set_figure()
-
+        if self.ax1 is None:
+            self.setup_set_figure(self.labelf1,scale=scale,tf=tf)
+            '''
+            pscale=self.plotscale
+            if scale!=pscale:pscale=scale
+            plt.rcParams.update({'font.size': pscale*tf})
+            self.f1, self.ax1 = plt.subplots(2, 2,figsize=(pscale*tf,pscale*tf),label=self.labelf1)  
+            self.ax1 = self.ax1.flatten()
+            '''
         for i in range(4): 
             self.ax1[i].plot(sp.wavelength_axis, sp.stokes[i,:])
             self.ax1[i].set_title(mylab(lab[i]))#,size=8 + 0.7*pscale)
@@ -447,11 +491,8 @@ class Model(object):
     def plot_coeffs(self,sp,coefs=None,par=None,ats=None,scale=2,figsize=None,tf=4):
         if type(sp) is not hazel.spectrum.Spectrum:sp=self.spectrum[sp]
         
-        pscale=self.plotscale
-        if scale!=pscale:pscale=scale
-
         #----------------------------------
-        #EDGAR:consider only the atmospheres in sp.
+        #Consider only the atmospheres in sp.
         #self.atms_in_spectrum[sp.name] --->. [['c0'], ['c1','c2']]
         if ats is None:ats=self.atms_in_spectrum[sp.name]#ats=self.atmospheres
 
@@ -466,10 +507,8 @@ class Model(object):
         
         cd,cd2=self.build_coeffs(sp) #set sp.etas and sp.rhos
         #cds={**cd, **cd2} #merge the two dictionaries
-        
-        #font = {'family' : 'normal','weight' : 'bold', 'size'   : 22}
-        #matplotlib.rc('font', **font)
-        plt.rcParams.update({'font.size': pscale*tf})
+
+        pscale=self.setup_set_figure('dummy',scale=scale,tf=tf)
 
         if coefs is None:#default    
             if figsize is not None:fs=figsize
@@ -510,42 +549,39 @@ class Model(object):
         return f,ax
 
 
-    def plot_funcatmos(self,dlims,hz,atmat=None,axs=None,**pkws): 
+    def plot_funcatmos(self,dlims,hz,atmat=None,axs=None,scale=4,tf=2,**pkws): 
         '''
-        Compares fractional and not fractional polarization.
-        This routine is valid when fractional polarization is not implemented in synthesize_spectrum
+        Plot the variations of the atmospheric parameters after inserting a parametric multicell atmopshere
         **pkws: remaining keyword arguments for plot_PolyFx
-        kwargs={var':'mono','method':2}
-        'order' here does not play a role to change the atmosphere, only the reference polynomials
-        on screen.
+        pkws={var':'mono','method':2}
+    
         '''
-        scale,tf = 4, 2
-        pscale=self.plotscale
-        if scale!=pscale:pscale=scale
-        plt.rcParams.update({'font.size': pscale*tf})
-
-        axs=self.ax5
-
         rct=[3,3,9]
         if pkws['plotit']!=9:rct=[4,3,10]
 
-        if axs is None:
-            f, self.axs = plt.subplots(nrows=rct[0], ncols=rct[1],figsize=(pscale*2,pscale*2.5))  
-            axs=self.axs.ravel()
-        else:
+        pscale=self.setup_set_figure('dummy',scale=scale,tf=tf)
+
+        if self.ax4 is None:#create the figure
+            #following line of code is ready to be used (remove adjacent lines)
+            #but we leave it until the end of development 
+            #self.setup_set_figure(self.labelf4,scale=scale,tf=tf,xy=rct[0:2])
+            self.f4, self.ax4 = plt.subplots(nrows=rct[0], ncols=rct[1],figsize=(pscale*2,pscale*2.5),label=self.labelf4)  
+            self.ax4 = self.ax4.flatten()
+            axs=self.ax4
+        else:#reuse the axis of the figure already created
+            axs=self.ax4
             for ax in axs:ax.cla()#delete curves in axes in future calls
 
-        #labs=list(dlims.keys())#[r'$P/I_c$',r'$P/I$']
         #selected labs in set_funcatmos :
         #selected=['B1','B2','B3','tau','v','deltav','beta','a','j10','j20f']# ATMAT ORDER
         #idem but with 'beta' at the end 
         labs=['B1','B2','B3','tau','v','deltav','a','j10','j20f','beta'] #PLOT ORDER
         #But after calling self.set_funcatmos from main, dlims is modified to bunch of labels:
-        allabs=labs+['ff', 'nbar']
+        allabs=labs+['ff', 'nbar']#list(dlims.keys())
 
         for i,ax in enumerate(axs):
             if allabs[i]=='deltav':
-                hzi,yi=self.fun_minT([hz[0],hz[-1]],dlims[allabs[i]])
+                hzi,yi=self.fun_minT([hz[0],hz[-1]],dlims['deltav'])
                 ax.plot(hzi, yi, '-')
             else:    
                 var=pkws['var']
@@ -660,17 +696,17 @@ class Model(object):
 
 
     def mutates(self,spec,parsdic=None,\
-        B1=None,B2=None,B3=None, tau=None,v=None,deltav=None, beta=None,a=None,ff=None,\
+        B1=None,B2=None,B3=None,tau=None,v=None,deltav=None, beta=None,a=None,ff=None,\
         j10=None,j20f=None,nbar=None, \
-        apmosekc=None,dcol=None,compare=True,frac=None,fractional=False,ax=None):
+        apmosekc=None,dcol=None, \
+        compare=True,frac=False,ax=None,pkws=None,bylayer=False):
         '''
-        EDGAR: New routine to create mutations in the synthesis Model, such that one can repeat an experiment just changing
+        Create mutations in the synthesis Model, allowing repetition of an experiment changing
         a few parameters from a previous synthesis. 
         The versatility of reading pars both from parsdic and from keywords, and the checking of 
         the pars as done originally when setting up the model, make this routine cumbersome.
-
-        apmosekc,dcol,ref_frame, hz  topology,los,boundary,, 
         
+        Future aspects to mutate : ref_frame, hz topology,los,boundary...  
         Due to the Python behavior, newmo=self is just a reference assignment where both variable names 
         point to the same object, it would only create newmo as a pointer to the object self, 
         without truly performing an indepedent copy. For doing a copy of arrays one has np.copy(). 
@@ -679,97 +715,94 @@ class Model(object):
         Parsdic (and any other mutable type,lists or dictionaries) defined as keyword parameters
         will no reset their values between function calls, so having memory of previous  mutates()
         calls from main. If we do not want to use a DTO class or avoid parsdic, then we need to define its
-        default to None and make the following check at the beggining of this function. 
+        default to None and checking and reserting to {} at the beggining of this function. 
+        
+        We use dlims (a new property of the models) and pwks para rellamar a funcatmos desde mutates.
+        Here, pkws are the same keywords that were introduced for set_funcatmos. 
+
+        The subroutine accepts mutations of the atmospheric parameters in two ways: 
+        1)When "bylayer=True", a given keyword is set as Keyword=[L,val] with L the specific layer, identified
+        by an integer between 1 and Nlayers, where the keyword is going to mutate.eg B1=[3,100.0]
+        2) If bylayer is False(default) , the values for each keyword contain a two-element list with
+         specifying a range of variation to be applied to set_funcatmos for that physical quantity.
+         e.g., B1=[50.,200.]
         '''
-        if parsdic is None:parsdic={}
 
-        if frac is True:fractional=True #abreviated keyword for fractional
+        dloc=dict(locals())#all keywords of the subroutine
+        extrapars={}
+        mutating_keys=[]
 
-        #EDGAR: Substitute next block by next line and check result
-        #keywords = dict(locals())#retrieve keywords as dictionary
-        #print(keywords)
-        #inefficient way of passing pars through keywords: by copying them to parsdic
-        #NOTE: apmosekc is introduced always as keyword, but the specific paraemters to which ap-mo-se-kc
-        #makes reference can also be specifically introduced via parsdic dictionary.
-        #that is why the four long keywords contained in extrapars_list are not considered in the next
-        #block to include them in parsdic, because they are already there and never as individual keywords
-        if apmosekc is not None:parsdic['apmosekc']=apmosekc
-        if dcol is not None:parsdic['dcol']=dcol
-        if B1 is not None:parsdic['B1']=B1
-        if B2 is not None:parsdic['B2']=B2
-        if B3 is not None:parsdic['B3']=B3
-        if tau is not None:parsdic['tau']=tau
-        if v is not None:parsdic['v']=v
-        if deltav is not None:parsdic['deltav']=deltav
-        if beta is not None:parsdic['beta']=beta
-        if a is not None:parsdic['a']=a
-        if ff is not None:parsdic['ff']=ff
-        if j10 is not None:parsdic['j10']=j10
-        if j20f is not None:parsdic['j20f']=j20f
-        if nbar is not None:parsdic['nbar']=nbar
-
-
-        #----these vars could be extracted out as global to avoid repetition--------
+        #----next vars could be extracted out as global to avoid repetition--------
         message="Unknown mutable parameter. The options are:  \n Atompol, MO effects,Stim. emission, Kill coherences, B1, B2, B3 ...{0}"
 
         '''Identify Model object parameters to be changed. 
         First, general parameters of the Model: apmosekc, dcol and their product apmosekcl'''
         extrapars_list=['Atompol','MO effects','Stim. emission','Kill coherences']
+
         #parameters of chromosphere objects
         atmpars=['B1','B2','B3','tau','v','deltav','beta','a','ff','j10','j20f','nbar']
-        #parameters that can be mutated for now 
+
+        #checkdictio lists parameters that can be mutated until now using parsdic.
         checkdictio={'apmosekc':None,'dcol':None,'Atompol':None,'MO effects':None,'Stim. emission':None,'Kill coherences':None,
             'B1': None, 'B2': None, 'B3': None,'tau':None,'v':None,'deltav':None,'beta':None,
             'a':None,'ff':None,'j10':None,'j20f':None,'nbar':None}
+        kwskeys=['apmosekc','dcol']+atmpars    
+        #Atompol, MOeffects, S.emiss, and Kill-coherences can be introduced via
+        #apmosekc or via parsdic but not as specific long keywords. However those 
+        #long keys are set there in the object because we have "decompress" them from apmosekc before
+        #As they can also be specifically introduced via parsdic dictionary, their four long keywords 
+        #contained in extrapars_list are not considered in the next block to include them 
+        #in parsdic, because they are already there and never as individual subr keywords.
         #------------------------------------------------------------------------------------------------
-        extrapars={}
-        mutating_keys=[]
+        if parsdic is None:parsdic={}
+        #copying keywords to parsdic
+        for k in kwskeys:
+            if dloc[k] is not None:parsdic[k]=dloc[k]    
+
+        if (bylayer is False) and (pkws is None):
+            warnings.warn("A plotting dictionary 'pkws' is needed to mutate all layers at once with set_funcatm().")
+            warnings.warn("The following default dictionary is assumed:")
+            warnings.warn("{'plotit':9,'nps':3,'var':'mono','method':1}")
+            pkws={'plotit':9,'nps':3,'var':'mono','method':1}
+
+
+        #now that parsdic is complete, its fields are those that will be mutated 
+        #and we collect them those that are in atmpars below in mutating_keys list
 
         newmo= copy.deepcopy(self) #here we are already copying the spectrum objects inside spectrum
         
-        '''kill ghost figure f1 appearing when replicating the model object.
-        Closes eventual open figures/axes to avoid the deep copy of the object plot axes.
-        otherwise, an ugly copy of the figure in self.ax0 will pop up when calling again a plt.show''' 
-        if newmo.f1 is not None:
-            newmo.f1.set_label('deletef1')
-            newmo.remove_fig('deletef1')#newmo.f1)
-        if newmo.f3 is not None:
-            newmo.f3.set_label('deletef3')
-            newmo.remove_fig('deletef3')#newmo.f1)
-
-
+        '''kill ghost figures f1,... appearing when replicating with deep copy the model object.
+        otherwise, ugly replicants of the figures in self.fx pops up when calling again a plt.show''' 
+        for fig in ['f1','f2','f3','f4']:self.remove_fig(newmo,fig)        
+        
+        # add the use of reshow for recovering closed windows,delete
+        #things in syntesize, remember the use of compare mutation, add f2 to the list,
         if (len(parsdic)!=0): #if parsdic is not empty (default is {}) we shall ignore mutation keywords!
             #write a list of all possible parameters and check whether the inputs are compatible/valid
             for elem in parsdic:
                 if (elem not in checkdictio):raise Exception(message.format(elem))
 
-            apmosekc=self.apmosekc
-            dcol=self.dcol
-            #build the extrapars dictionary (if its keywords are in parsdic) to call get_apmosekcl()
+            #build extrapars dictionary (if its keywords are in parsdic) to call get_apmosekcl()
             for elem in extrapars_list:
                 if (elem in parsdic):extrapars[elem]=parsdic[elem]
-            #if (len(extrapars)!=0) or ('apmosekc' in parsdic)
+
+            apmosekc,dcol=self.apmosekc,self.dcol
             if ('apmosekc' in parsdic):apmosekc=parsdic['apmosekc']
             if ('dcol' in parsdic):dcol=parsdic['dcol']
             if (len(extrapars)!=0) or ('apmosekc' in parsdic) or ('dcol' in parsdic):#update self.apmosekcl
                 newmo.apmosekcl=newmo.get_apmosekcl(apmosekc,dcol,extrapars)
-                #newmo.apmosekcl=self.get_apmosekcl(apmosekc,dcol,extrapars)
 
             for key in atmpars:#key=[atm_number,value]#key value. list mutating keys for atmospheres
                 if (key in parsdic):mutating_keys.append(key) #ONLY FOR ATM PARS!
 
-        else:#then we shall read mutation pars only from keywords
+        else:#read mutation pars only from keywords because only extrapars are being mutated
             if (apmosekc is not None) or (dcol is not None): #if one of them must be updated
                 if (apmosekc is None):apmosekc=self.apmosekc #let the other as in original model
                 if (dcol is None):dcol=self.dcol              #let the other as in original model
                 newmo.apmosekcl=newmo.get_apmosekcl(apmosekc,dcol,{}) #and update + check
-                #newmo.apmosekcl=self.get_apmosekcl(apmosekc,dcol,{}) #and update + check
-
-            #if (B1 is not None):mutating_keys.append(B1)
 
         #--------------------------------------------------------------------------------
-        #Close and reopen Hazel seems to be necessary in order to properly detect the
-        #updated values of j10,j20f,and nbar 
+        #Close and reopen Hazel seems necessary to detect updated values of j10,j20f,and nbar 
         newmo.exit_hazel()   
         newmo.ntrans=hazel_code._init(self.atomfile,0) #We initialize pyhazel (and setup self.ntrans) with verbose=0 
 
@@ -786,9 +819,9 @@ class Model(object):
         '''
         newspecname=spec.name #same name
         #substitute the key spec.name by newspecname in all dictionaries:
-        newmo.spectrum[newspecname]= newmo.spectrum.pop(spec.name) 
-        newmo.atms_in_spectrum[newspecname]= newmo.atms_in_spectrum.pop(spec.name)
-        newmo.topologies[newspecname]= newmo.topologies.pop(spec.name) #{'sp1':'ch1->ch2'}
+        #newmo.spectrum[newspecname]= newmo.spectrum.pop(spec.name) 
+        #newmo.atms_in_spectrum[newspecname]= newmo.atms_in_spectrum.pop(spec.name)
+        #newmo.topologies[newspecname]= newmo.topologies.pop(spec.name) #{'sp1':'ch1->ch2'}
        
         '''Now we reset spectrum without calling model.add_spectrum again (inefficient).
         We only need to reset the optical coeffs and stokes, and change few pars in 
@@ -805,35 +838,41 @@ class Model(object):
         without updating apmosekcl in model, but we take advantage of update in Model to make input checks
         '''
         if (self.verbose >= 1):self.logger.info('Mutating atmospheric pars...')
-        #run over the existing atmospheres of this spectrum topology and set pars
-        for n, order in enumerate(newmo.atms_in_spectrum[newspecname] ): #n run layers along the ray
-            for k, atm in enumerate(order):  #k runs subpixels of topologies c1+c2                                                  
-                at=newmo.atmospheres[atm]
+        
+         
+        if bylayer is True:#change the atmosphere only at the specified layers
+            #run over the existing atmospheres of this spectrum topology and set pars
+            for n, order in enumerate(newmo.atms_in_spectrum[newspecname] ): #n run layers along the ray
+                for k, atm in enumerate(order):  #k runs subpixels of topologies c1+c2                                                  
+                    at=newmo.atmospheres[atm]
+                    """
+                    Activate this spectrum with add_active_line for all existing atmospheres.
+                    In normal setup, activate_lines is called after adding all atmospheres in topology.
+                    """         
+                    at.add_active_line(spectrum=newspec, wvl_range=np.array(wvl_range))
 
-                """
-                Activate this spectrum with add_active_line for all existing atmospheres.
-                In normal setup, activate_lines is called after adding all atmospheres in topology.
-                """         
-                at.add_active_line(spectrum=newspec, wvl_range=np.array(wvl_range))
+                    #SET HAZELPARS: self.atompol,self.magopt,self.stimem,self.nocoh,self.dcol = hazelpars                
+                    at.atompol,at.magopt,at.stimem,at.nocoh,at.dcol = newmo.apmosekcl 
+                    
+                    #key=[atm_number,value]#key value. Produce mutation updating atm.dna[key]            
+                    for key in mutating_keys:#print(key,parsdic[key][0],parsdic[key][1])
+                        #if in selected layer mutate one layer at a time for every parameter,
+                        #but layer can be different among parameters
+                        if (parsdic[key][0]==n+k):at.dna[key]=parsdic[key][1] #mutates dna.  #print(key,n+k)
+                    pars,kwds=at.get_dna() #get updated dna pars of this single atmosphere                     
+                    at.set_pars(pars,**kwds)#ff=at.atm_dna[8],j10=at.atm_dna[9],j20f=at.atm_dna[10],nbar=at.atm_dna[11]) 
+        else:#change the whole atmosphere 
+            for k in mutating_keys:newmo.dlims[k]=parsdic[k]
+            pkws['plotit']=0
+            hz=newmo.set_funcatm(newmo.dlims,selected=mutating_keys,hztype='parab',\
+                orders=4,**pkws)
 
-                #SET HAZELPARS: self.atompol,self.magopt,self.stimem,self.nocoh,self.dcol = hazelpars                
-                at.atompol,at.magopt,at.stimem,at.nocoh,at.dcol = newmo.apmosekcl 
-                #print(at.atompol,at.magopt,at.stimem,at.nocoh,at.dcol)
-
-                #key=[atm_number,value]#key value. Produce mutation updating atm.dna[key]            
-                for key in mutating_keys:#print(key,parsdic[key][0],parsdic[key][1])
-                    #if in selected layer mutate one layer at a time for every parameter,
-                    #but layer can be different among parameters
-                    if (parsdic[key][0]==n+k):at.dna[key]=parsdic[key][1] #mutates dna.  #print(key,n+k)
-                pars,kwds=at.get_dna() #get updated dna pars of this single atmosphere                     
-                at.set_pars(pars,**kwds)#ff=at.atm_dna[8],j10=at.atm_dna[9],j20f=at.atm_dna[10],nbar=at.atm_dna[11]) 
-                        
         #--------------------------------------------------------------------------------
-        #Synthesize the new spectrum FROM the new model object:
+        #Synthesize the new spectrum in original model FROM the new model object:
         newmo.synthesize(method=self.methods_dicT[newmo.synmethod],muAllen=newmo.muAllen,obj=self)
         if (self.verbose >= 1):self.logger.info('Spectrum {0} has mutated.'.format(spec.name))
         
-        if (compare is True):self.compare_mutation(spec,newspec,fractional=fractional) 
+        if (compare is True):self.compare_mutation(spec,newspec,fractional=frac) 
         
         return newmo,newspec
 
@@ -849,11 +888,7 @@ class Model(object):
         if fractional:lab=['iic','qi','ui','vi']
         else:lab=['iic','qic','uic','vic']            
 
-        #font = {'family' : 'normal','weight' : 'bold', 'size'   : 22}
-        #matplotlib.rc('font', **font)
-        pscale=self.plotscale
-        if scale!=pscale:pscale=scale
-        plt.rcParams.update({'font.size': pscale*tf})
+        pscale=self.setup_set_figure('dummy',scale=scale,tf=tf)
         
         if self.ax3 is None:#create and arrange axes, plot old spectra
             self.f3, ax = plt.subplots(2,2,figsize=(pscale*2,pscale*2),label=self.labelf3)#'Mutations (Model.ax2)')  
@@ -869,6 +904,8 @@ class Model(object):
             for i in range(4):
                 self.ax3[i].set_title(mylab(lab[i]))#,size=8 + 0.7*pscale)
                 if i>1:self.ax3[i].set_xlabel(mylab('xx'))#,size=8 +0.7*pscale)#,labelpad=lp)
+        else:#if the window was created but was closed reshow it 
+            if self.f3.canvas.manager.get_window_title() is None:self.reshow(self.f3)
 
         #plot mutated spectra
         self.ax3[0].plot(newsp.wavelength_axis,newsp.stokes[0,:])
@@ -878,6 +915,57 @@ class Model(object):
 
         plt.tight_layout()
         plt.show()
+
+    def compare_experiments(self,objB,specname,bylayers=True,pre='8.3f'):
+        '''Variables to compare are: 
+        1) general atmospheric keywords:ref_frame,coordB,...
+        2) 5 global atmopsheric physical switches:
+        objB.apmosekcl (at.atompol,at.magopt,at.stimem,at.nocoh,at.dcol )
+        at.atompol,at.magopt,at.stimem,at.nocoh,at.dcol = newmo.apmosekcl 
+        self.atompol,self.magopt,self.stimem,self.nocoh,self.dcol = hazelpars
+        3)The 12 DNA pars ('B1','B2','B3','tau','v','deltav','beta','a','ff','j10','j20f','nbar')
+        -->pars,kwds=at.get_dna() #are divided in 8 pars and 4 keywords that were passed to ancient subroutines        
+        '''
+
+        self.logger.info('Comparing atmospheric models for spectrum {0}...'.format(specname))
+        
+
+        #check that spec is both in self object and objB
+        if (specname not in objB.spectrum) or (specname not in self.spectrum):
+            raise Exception("No spectrum {0} found. Are you comparing the right model objects?".format(specname))            
+
+        keylabs=['Atompol','MO effects','Stim. emission','Kill coherences','Depol. colls.']
+        for kk,elem in enumerate(objB.apmosekcl):
+            if elem!=self.apmosekcl[kk]:print("{0} values DIFFER".format(keylabs[kk]))
+        
+        #objects to compare are assumed to have same cell atm names because mutations do not affect that
+        anyatmname=list(self.atmospheres.keys())[0]
+        if self.atmospheres[anyatmname].coordinates_B!=objB.atmospheres[anyatmname].coordinates_B:
+            print("Magnetic coordinates DIFFER")
+        if self.atmospheres[anyatmname].reference_frame!=objB.atmospheres[anyatmname].reference_frame:
+            print("LOS ref frames DIFFER")
+
+        #check the 12 dna parameters 
+        #run over the existing atmospheres of this spectrum topology in both objects
+        for n, order in enumerate(objB.atms_in_spectrum[specname]): #n run layers along the ray
+            differ=0
+            for k, atm in enumerate(order):  #k runs subpixels of topologies c1+c2                                                  
+                if bylayers or (n in [0,self.n_chromospheres-1]):
+                    for key in self.atmospheres[atm].dna.keys():
+                        aa=self.atmospheres[atm].dna[key]
+                        bb=objB.atmospheres[atm].dna[key]
+                        if np.all(np.isclose(aa,bb)) != True:
+                            print("LAYER {0}".format(n),end=': ')
+                            if type(aa) is np.ndarray:
+                                print("{0} : {1} vs. {2}".format(key,[float('%7.3f'%x) for x in aa],[float('%7.3f'%x) for x in bb]))
+                            else:
+                                print("{0} : {1:{pp}} vs. {2:{pp}}".format(key,aa,bb,pp=pre))
+                            differ=1
+            if bylayers and (differ==0):print("LAYER {0} MATCH".format(n))
+        #check only limiting values of pars in the atmosphere
+                
+        return     
+
 
     def use_configuration(self, config_dict):
         """
@@ -1163,14 +1251,13 @@ class Model(object):
             if (self.verbose >= 1):
                 self.logger.info('Total number of free parameters in all cycles : {0}'.format(self.n_free_parameters))
 
-        #if (self.verbose >= 1):#EDGAR: print number of Hazel chromospheres/slabs
+        #if (self.verbose >= 1):#print number of Hazel chromospheres/slabs
         #    self.logger.info('N_chromospheres',self.n_chromospheres)
 
         #if self.plotit:
-        self.setup_set_figure() #self.fig and self.ax are created here
+            #self.setup_set_figure(self.labelf1) #self.fig and self.ax are created here    
+            #return f,ax
         
-        #return f,ax
-        #return self.n_chromospheres
 
     def open_output(self):
         self.output_handler = Generic_output_file(self.output_file)        
@@ -1827,7 +1914,7 @@ class Model(object):
 
         self.atmospheres[atm['name']] = Hazel_atmosphere(working_mode=self.working_mode, \
         name=atm['name'],ntrans=self.ntrans,hazelpars=self.apmosekcl)#EDGAR:,atom=atm['atom'])
-
+        
         #------------------------------------------------------------------------
         """EDGAR now you can DELETE THIS BLOCK
         #the only thing of this block that cannot be known from add_spectrum is atm['wavelength']
@@ -1982,45 +2069,30 @@ class Model(object):
 
         #we must return topology string used later for add spectrum in the main program
         tags=[]
-        if topo == '':
+        
+        if topo == '':#we generate ordered tags with names from c_0 to c_{N-1}
             for kk in range(Ncells):
                 tags.append('c'+str(kk)) #['c0','c1',...,'c_{N-1}']
                 topo=topo+tags[kk]+'->'
             topo=topo[:-2]
         else:#from topo extract tags
             tags=topo.rsplit(sep='->') #['c0','c1',...,'c_{N-1}']
-        
+        '''
+        if topo == '':#we generate ordered tags with names from c_1 to c_N
+            for kk in range(Ncells):#rango de 0 a n-1
+                tags.append('c'+str(kk+1)) #['c1','c2',...,'c_{N}']#rango de 1 a N
+                topo=topo+tags[kk]+'->' #posiciones de 0 a n-1
+            topo=topo[:-2]
+        else:#from topo extract tags
+            tags=topo.rsplit(sep='->') #['c1','c2',...,'c_{N-1}']
+        '''
         #chout=[]
-        for kk in range(Ncells):             
+        for kk in range(Ncells):        
             #chout.append(self.add_chromosphere({'name': tags[kk],'height': hz[kk],**ckey}))
             self.chromospheres.append(self.add_chromosphere({'name': tags[kk],'height': hz[kk],**ckey}))
 
         #return chout, topo
         return self.chromospheres, topo
-
-
-    def check_B_vals(self,B1,B2,B3):
-        '''
-        Check whether magnetic field parameters set in keywords dictionary
-        correspond to coordinates (cartesian or spherical) set in the model coordB keyword
-        and whether the values are in their corresponding physical ranges
-        '''
-        anyk=list(self.atmospheres.keys())[0]
-        #if (self.coordinates_B == 'spherical'): --> when routine is placed in chromosphere.py 
-        if (self.atmospheres[anyk].coordinates_B == 'cartesian'):
-            #in cartesian all magnetic field comps goes between -inf(say -3kG) and inf(3kG)
-            if not (0.<= np.abs(B1) <= self.limB) or not (0.<= np.abs(B2)<= self.limB) or not (0.<= np.abs(B3)<= self.limB):
-                raise Exception('Possible ERROR: values of magnetic field cartesian components not in range?')
-        
-        if (self.atmospheres[anyk].coordinates_B == 'spherical'):
-            #in spherical B\in[0,limB], thetaB\in[0,180], chiB\in[-360,360]
-            #chiB is 0,180 but the user has the freedom to choose negative angles and even 
-            #angles larger than 360 but that would be unusual
-            if not (0.<= np.abs(B1) <=self.limB) or not (0.<= B2 <=180.0) or not (0.0<=np.abs(B3)<=360.0):
-                raise Exception('Possible ERROR: values of magnetic field cartesian components not in range?')
-
-        return True
-
 
     def fix_point_polyfit_fx(self,n, x, y, xf, yf) :
         '''Solves a system of equations that allow o determine the parameters of a polynomial 
@@ -2165,68 +2237,95 @@ class Model(object):
 
         return myfx
 
-    def set_funcatm(self,dlims,hztype='lin',hzlims=None,orders=3,**pkws):
+    def check_limits(self,dlims,checkthis):
+        #check the max and min values in input dict parameters.
+        #this routine is more general than check_Bvals (now deleted)
+        corresp={'B1':['Bx','B'],'B2':['By','thB'],'B3':['Bz','phB']}
+        system=self.atmospheres[list(self.atmospheres.keys())[0]].coordinates_B
+        for key in checkthis:
+            kk=key#kk is to be inserted in dlims, key goes in dmm
+            if key in ['B1','B2','B3']:
+                if ( system == 'cartesian'):key=corresp[key][0] 
+                else:key=corresp[key][1]    
+            if (self.dmm[key][0] <= dlims[kk][0] <= self.dmm[key][2]) and (self.dmm[key][0] <= dlims[kk][1] <= self.dmm[key][2]):
+                ok=1
+            else:
+                raise Exception("Atmosphere values out of range. Revise limits of parameter {0} in set_funcatm.".format(key))    
+
+    def set_funcatm(self,dlims,hztype='lin',hzlims=None,orders=3,selected=[],**pkws):
         '''EDGAR:Set the parameters of every atmospheric cell assuming a functional polynomial
         variation between ini and end values given as input parameters in dlims. 
         zhlims was stored in model self.hzlims but here we can overwrite with args '''
 
-        #atm=self.chromospheres 
-
-        if dlims.keys():#dict not empty
-            for key in ['ff','nbar','v','beta']:#if pars omited in call,here we set them to default constant values
-                if dlims.get(key)==None:dlims[key]=[self.dmm[key][1]]*2  #dlims is now complete always
-        else: # dict are empty
-            raise Exception("Atmosphere cannot be set. I need a dict of parameters in set_funcatm.")
-        
-        #check the max and min values in input dict parameters:
-        for kk in [0,1]:self.check_B_vals(dlims['B1'][kk],dlims['B2'][kk],dlims['B3'][kk])
-        
-        for key in ['tau','v','deltav','beta','a','ff','j10','j20f','nbar']:#enumerate only non-magn keys
-            if (self.dmm[key][0] <= dlims[key][0] <= self.dmm[key][2]) and (self.dmm[key][0] <= dlims[key][1] <= self.dmm[key][2]):ok=1
-            else:raise Exception("Atmosphere cannot be set. Revise ini parameters in set_funcatm.")    
-        
-        #build functions and values for the parameters 
         #tags in the order expected for building the matrix pars2D in the order expected for set_paramaters
-        selected=['B1','B2','B3','tau','v','deltav','beta','a','j10','j20f']
-        Ncells=len(self.chromospheres)
+        alls=['B1','B2','B3','tau','v','deltav','beta','a','j10','j20f']
+        Ncells=self.n_chromospheres        
 
-        if hzlims is not None:self.hzlims=hzlims #overwrite self.hzlims
-        else:hzlims=self.hzlims
+        if not selected:#empty list marks first call to set_funcatm
+            if dlims.keys():#dict not empty
+                for key in ['ff','nbar','v','beta']:#if pars omited in call,here we set them to default constant values
+                    if dlims.get(key)==None:dlims[key]=[self.dmm[key][1]]*2  #dlims is now complete always
+            else: # dict are empty
+                raise Exception("Atmosphere cannot be set. I need a dict of parameters in set_funcatm.")
+            
+            self.check_limits(dlims,alls+['nbar']) #nbar should be allowed to be in alls
+            selected=alls
+            self.pars2D=np.zeros((len(selected),Ncells))     #initialize pars2D        
+            ksel=np.arange(len(selected))#build ksel, array of indices associated to the selected pars in pars2D
+        else:#calling set_funcatmos from mutates()
+            self.check_limits(dlims,selected)#check only mutated keys
+            ksel=np.zeros(len(selected),dtype=int)
+            for kk,elem in enumerate(selected):ksel[kk]=alls.index(elem)
+            if hzlims is not None:self.hzlims=hzlims #mutates can reset self.hzlims
 
+        hzlims=self.hzlims#pointer for brevity
+        p2D=self.pars2D#pointer for brevity
+        self.dlims=dlims#remember dlims in case mutates() is called later
+        
         hz = np.linspace(hzlims[0], hzlims[-1], Ncells)
-
         if hztype=='parab':
             xaux=np.linspace(0,Ncells,Ncells)#yaux is hz : yaux=np.linspace(hzlims[0],hzlims[1],Ncells)
             funX=xaux*xaux
             xnew=np.max(xaux)*funX/np.max(funX)#np.exp(-x)
             hz = np.interp(xnew, xaux, hz)
+                    
+        if type(orders) is int:orders=[orders]*len(alls) 
 
-
-        if type(orders) is int:orders=[orders]*len(selected) 
-
-        pars2D=np.zeros((len(selected),Ncells))
-        
-        if (Ncells > 2):    
+        if (Ncells > 2):    #build functions and values for the parameters in pars2D 
             for kk,key in enumerate(selected):#create polynomial variations
                 if (dlims[key][0]==dlims[key][1]):#constant case
-                    pars2D[kk,:]=dlims[key][0]
-                    if (orders[kk]>0)&(self.verbose >= 1):warnings.warn("The quantity {0} is being forced to keep constant values.".format(key))
+                    p2D[ksel[kk],:]=dlims[key][0]
+                    if (orders[ksel[kk]]>0)&(self.verbose >= 1):warnings.warn("The quantity {0} is being forced to keep constant values.".format(key))
                 else:
                     if key=='tau' or key=='deltav':#create exponential or minT functions
-                        pars2D[kk,:]=self.PolyFx(hz,hzlims,[dlims[key][0],dlims[key][1]],order=orders[kk],npoints=Ncells,var=key)
+                        p2D[ksel[kk],:]=self.PolyFx(hz,hzlims,[dlims[key][0],dlims[key][1]],order=orders[ksel[kk]],npoints=Ncells,var=key)
                     else:
-                        pars2D[kk,:]=self.PolyFx(hz,hzlims,[dlims[key][0],dlims[key][1]],order=orders[kk],npoints=Ncells)
-        else:  
+                        p2D[ksel[kk],:]=self.PolyFx(hz,hzlims,[dlims[key][0],dlims[key][1]],order=orders[ksel[kk]],npoints=Ncells)
+        else:  #only 2-cell case (limiting cells)
             for kk,key in enumerate(selected):
-                pars2D[kk,:]=np.array( [dlims[key][0],dlims[key][1] ] )
+                p2D[ksel[kk],:]=np.array( [dlims[key][0],dlims[key][1] ] )
 
-        for ii in range(Ncells):#set chromospheric cells
-            self.chromospheres[ii].set_pars(pars2D[0:8,ii],dlims['ff'][1],j10=pars2D[8,ii],j20f=pars2D[9,ii],nbar=dlims['nbar'][1])
-        
-        if pkws['plotit']!=0:self.plot_funcatmos(dlims,hz,atmat=pars2D,**pkws)
-        #if pkws['plotit']:self.plot_funcatmos(dlims,hz,atmat=pars2D,var=pkws['var'],method=pkws['method'])
+        if len(selected)==len(alls):#set chromospheric cells from pars2D for all parameters
+            for ii in range(Ncells):
+                self.chromospheres[ii].set_pars(p2D[0:8,ii],dlims['ff'][1],j10=p2D[8,ii],j20f=p2D[9,ii],nbar=dlims['nbar'][1])
+        else:#set chromospheric cells from pars2D all at once for given parameters            
+            #reconstruct ALL B pars for ALL atm cells from mutated B pars
+            Bm=[None]*Ncells
+            Bt,Bc=Bm,Bm
+            if ('B1' in selected) or ('B2' in selected) or ('B3' in selected):
+                Bm,Bt,Bc=self.chromospheres[0].just_B_Hazel(*p2D[0:3,:])#return a convenient tuple (Bmod,thB,phiB)
+                for elem in ['B1','B2','B3']:
+                    if elem in selected:selected.remove(elem)#remove magnetic keys from selected
+            for i in range(Ncells):
+                # nbar & ff do not change with height but nbar can mutate ...dlims['ff'][1]
+                nonmag=list(p2D[3:10,i])+[dlims['nbar'][1]]#ff not included 
+                self.chromospheres[i].reset_pars(selected,ksel,nonmag,p2D[0:3,i],mag=(Bm[i],Bt[i],Bc[i]) )           
 
-        return hz,self.chromospheres,pars2D
+
+        if pkws['plotit']!=0:self.plot_funcatmos(dlims,hz,atmat=p2D,**pkws)
+        #...,var=pkws['var'],method=pkws['method'])
+
+        return hz
 
 
     def add_parametric(self, atmosphere):
@@ -2251,21 +2350,6 @@ class Model(object):
         atm = hazel.util.lower_dict_keys(atmosphere)
 
         self.atmospheres[atm['name']] = Parametric_atmosphere(working_mode=self.working_mode)
-        
-        """EDGAR you can now delete this block
-        if ('wavelength' not in atm):
-            atm['wavelength'] = None
-        elif (atm['wavelength'] == 'None'):
-            atm['wavelength'] = None
-
-        if (atm['wavelength'] is not None):
-            wvl_range = [float(k) for k in atm['wavelength']]
-        else:
-            wvl_range = [np.min(self.spectrum[atm['spectral region']].wavelength_axis), np.max(self.spectrum[atm['spectral region']].wavelength_axis)]
-
-        self.atmospheres[atm['name']].add_active_line(spectrum=self.spectrum[atm['spectral region']], 
-            wvl_range=np.array(wvl_range))
-        """
 
         if ('ranges' in atm):
             for k, v in atm['ranges'].items():
@@ -2869,13 +2953,10 @@ class Model(object):
                     else:                        
                         v.stokes_lr[i,:] = np.interp(v.wavelength_axis_lr, v.wavelength_axis, v.stokes[i,:])                    
 
-            
             if (plot is not None):#plot called inside loops
                 if (k == plot):self.plot_stokes(plot,fractional=fractional)
             else:#plot is None because synthesize routine was called without intention of plotting or from mutation
-                if obj is None:self.remove_fig(self.labelf1)#self.f1)
-                
-            
+                if obj is None:TBD=1                
             
         #return ax
 

@@ -10,7 +10,21 @@ from hazel.exceptions import NumericalErrorHazel
 import copy
 
 
-__all__ = ['Hazel_atmosphere']
+__all__ = ['ntr_list','Hazel_atmosphere']
+
+class ntr_array:    # A simple class
+    def __init__(self, ntrs,val):
+        self.ntrs = ntrs
+        self.vals=np.zeros(ntrs)+val
+    
+    #self.value is expected to update variables like self.nbar,self.j10,self.j20f
+    def float_to_ntr_array(self,val,label):#A method to pass from floats to list of ntr transitions
+        if (val is not None):#then overwrite its default value 
+            if (type(val) is not list):
+                self.vals = np.zeros(self.ntrs)+ val #if not a list, assumed a number that sets array to j10 keyword
+            else:#is a list
+                if len(val)!=self.ntrs:raise Exception('ERROR: {0} should have {1} elements'.format(label,self.ntrs) )
+                self.vals = np.array(val) #from list to array of doubles                 
 
 class Hazel_atmosphere(General_atmosphere):
     def __init__(self, working_mode, name='', ntrans=0, hazelpars=None):
@@ -27,9 +41,9 @@ class Hazel_atmosphere(General_atmosphere):
         #EDGAR. j10 and j20f(omega) dynamically dimensioned to the number of transitions
         #For now, they are not in dict of parameters because probably will not work in inversions 
         #because the inversion requires these pars to be scalars , not vectors. 
-        self.j10 = np.zeros(self.ntr)  #this is j10
-        self.j20f = np.ones(self.ntr)  #these are reduction factors, not j20
-        self.nbar = np.ones(self.ntr)  #these are reduction factors, not j20
+        self.j10 = ntr_array(ntrans,0) #np.zeros(self.ntr)  #this is j10
+        self.j20f = ntr_array(ntrans,1) #np.ones(self.ntr)  #these are reduction factors, not j20
+        self.nbar = ntr_array(ntrans,1) #np.ones(self.ntr)  #these are reduction factors, not j20
         #EDGAR: this is commented because we need to evaluate whether is possible
         #to do inversions with radiation field anisotropies for every transition
         #self.parameters['j10'],self.parameters['j20f'] = np.zeros(self.ntr) ,np.ones(self.ntr)  
@@ -118,12 +132,24 @@ class Hazel_atmosphere(General_atmosphere):
 
 
     def cartesian_to_spherical(self,Bx,By,Bz):
-        # Transform to spherical components in the vertical reference frame which are those used in Hazel
+        '''Transform to spherical components in the vertical reference frame which are those used in Hazel.
+        Now this routine allows to work with both scalars and arrays.
+        When inputs are scalars, the output thetaB and B are 0-dimensional
+        arrays, but this should not be problematic because any expression where these values
+        will be used consider them as scalars.'''
         B = np.sqrt(Bx**2 + By**2 + Bz**2)
-        if (B == 0):
-            thetaB = 0.0
-        else:
-            thetaB = 180.0 / np.pi * np.arccos(Bz / B)
+
+        #this was only valid for scalars:
+        #if (B == 0):thetaB = 0.0
+        #else:thetaB = 180.0 / np.pi * np.arccos(Bz / B)
+        
+        B, thetaB = np.asarray(B), np.zeros_like(B)
+
+        # this code below is more general. "Out" is necessary for the indices
+        # where (B == 0) to be initialized to 1, such that arccos(1) is 0 in thetaB.
+        rat=np.divide(Bz, B, out=np.ones_like(B), where=B!=0)
+        thetaB = 180.0 / np.pi * np.arccos(Bz / B)
+
         phiB = 180.0 / np.pi * np.arctan2(By, Bx)
     
         return B, thetaB,phiB
@@ -176,7 +202,32 @@ class Hazel_atmosphere(General_atmosphere):
 
         #we could here call check_B_vals, that would check values for all cells
 
-        return B,thB,phiB,Bx,By,Bz #Bx,By,Bz can be deleted if not needed in the code 
+        return B,thB,phiB,Bx,By,Bz
+
+    def just_B_Hazel(self,B1,B2,B3):
+        '''
+        Transform magnetic field parameters to vertical reference frame 
+        in spherical coordinates, which is the Hazel working system.
+        Output provides only spherical coordinates in vertical frame
+        '''
+        if (self.coordinates_B == 'cartesian'):
+            if (self.reference_frame == 'vertical'):# Cartesian - vertical : 
+                # Transform from cartesian to spherical in vertical reference frame
+                B,thB,phiB=self.cartesian_to_spherical(B1,B2,B3) 
+
+            else:# Cartesian - LOS : rotate in cartesian geometry and transform to spherical
+                Bx,By,Bz=self.los_to_vertical(B1,B2,B3) #B1,2,3 are cartesian Bx,By,Bz in LOS
+                # Transform to spherical in vertical reference frame
+                B,thB,phiB=self.cartesian_to_spherical(Bx,By,Bz) 
+        else:#input is in spherical
+            if (self.reference_frame == 'vertical'):# Spherical - vertical do nothing 
+                B,thB,phiB= B1,B2,B3
+            else:# Spherical - LOS : transform to cartesian, rotate to vertical, come back to spherical
+                Bx_los,By_los,Bz_los=self.spherical_to_cartesian(B1,B2,B3)
+                Bx,By,Bz=self.los_to_vertical(Bx_los,By_los,Bz_los)
+                B,thB,phiB=self.cartesian_to_spherical(Bx,By,Bz)
+
+        return B,thB,phiB
 
 
 
@@ -190,10 +241,34 @@ class Hazel_atmosphere(General_atmosphere):
 
         return pars,kwds
 
+    def reset_pars(self,selec,ksel,nonmag,ormag,mag=[None,None,None]):
+        #selected only can contain non mag pars here:
+        #['tau','v','deltav','beta','a','j10','j20f']+'nbar'
+        if mag[1] is not None:#mag should all be in vertical reference frame always
+            self.parameters['B'],self.parameters['thB'],self.parameters['phiB']=mag
+            self.dna['B1'],self.dna['B2'],self.dna['B3']= ormag
+        
+        sel=selec.copy()#needed to avoid the remove operation to modify selec between calls
+        ptrs=[self.j10,self.j20f,self.nbar]
+        for kk,key in enumerate(['j10','j20f','nbar']):
+            if key in sel:
+                ptrs[kk].float_to_ntr_array(nonmag[5+kk],key)#update vals
+                self.dna[key]=ptrs[kk].vals 
+                sel.remove(key)
+        
+        for kk,key in enumerate(sel):#for rest of non-magnetic pars
+            self.parameters[key] = nonmag[ksel[kk]-3]
+            self.dna[key]=nonmag[ksel[kk]-3]
 
+        return
     def set_parameters(self, pars, ff=1.0,j10=None,j20f=None,nbar=None,m=None):
         """
         Set the parameters of this model chromosphere
+        Now it CREATES DNA combining pars with ff,j10j20f,nbar.
+        We are now storing j10,j20f, and nbar as proper arrays both in the model and in dna.
+        We store dna pars as a dictionary with keys 'B1','B2','B3','tau','v','deltav','beta','a','ff', 'j10','j20f','nbar' 
+        Other choice could have been as a LIST adding extra pars to the pars list with:
+        dna=pars.append(ff,list(self.j10.vals),list(self.j20f.vals),list(self.nbar.vals)) 
 
         Parameters 
         ----------
@@ -203,10 +278,9 @@ class Hazel_atmosphere(General_atmosphere):
         ff : float optional keyword
             Filling factor
 
-        #EDGAR: 
-        j10: array of doubles optional keyword, in percentage units. It is a vector with Ntransitions length
-            but in this header we init it to have 10 transitions because it cannot be predefined with 
-            self.ntr in the definition of a subroutine.
+        j10, j20f,nbar: can be introduced as floats (that will here be broadcasted to arrays with the number of 
+        transitions), or directly as a list with Ntransitions (self.ntr) length.
+
         Returns
         -------
         None
@@ -215,56 +289,24 @@ class Hazel_atmosphere(General_atmosphere):
         self.parameters['Bx'],self.parameters['By'],self.parameters['Bz']= \
         self.get_B_Hazel(pars[0],pars[1],pars[2]) 
 
-        self.parameters['tau'] = pars[3]
-        self.parameters['v'] = pars[4]
-        self.parameters['deltav'] = pars[5]
-        self.parameters['beta'] = pars[6]
-        self.parameters['a'] = pars[7]
+        for kk,key in enumerate(['tau','v','deltav','beta','a']):
+            self.parameters[key] = pars[3+kk]
         self.parameters['ff'] = ff
         
-        #EDGAR: j10 and j20f can be introduced as a float that will here be broadcasted to the number of 
-        #transitions, or directly as a list with Ntransitions (self.ntr) length.
-        if (j10 is not None):#then overwrite its default zero value set above with self.j10=np.zeros(self.ntr)
-            if (type(j10) is not list):
-                self.j10 = np.zeros(self.ntr)+ j10 #if not a list, assumed a number that sets array to j10 keyword
-            else:#is a list
-                if len(j10)!=self.ntr:raise Exception('ERROR: j10 should have {0} elements'.format(self.ntr) )
-                self.j10 = np.array(j10) #from list to array of doubles              
-
-        if (j20f is not None):#then overwrite its default 1.0 value set above
-            if (type(j20f) is not list):
-                self.j20f = np.zeros(self.ntr)+ j20f #if not a list, assumed a number that sets array to j20f keyword
-            else:#is a list
-                if len(j20f)!=self.ntr:raise Exception('ERROR: j20f should have {0} elements'.format(self.ntr) )
-                self.j20f = np.array(j20f) #from list to array of doubles              
-
-        if (nbar is not None):#then overwrite its default 1.0 value set above
-            if (type(nbar) is not list):
-                self.nbar = np.zeros(self.ntr)+ nbar #if not a list, assumed a number that sets array to j10 keyword
-            else:#is a list
-                if len(nbar)!=self.ntr:raise Exception('ERROR: nbar should have {0} elements'.format(self.ntr) )
-                self.nbar = np.array(nbar) #from list to array of doubles              
-
-
-        #CREATES DNA combining pars with ff,j10j20f,nbar
-        #AS LIST: add extra pars as lists to the pars list--> dna=pars.append(ff,list(self.j10),list(self.j20f),list(self.nbar)) 
-        #AS DICTIONARY with keys 'B1','B2','B3','tau','v','deltav','beta','a','ff', 'j10','j20f','nbar' 
-        #we are storing the last extrapars as introduced by user,  without the above modifications
-        self.dna['B1']=pars[0]
-        self.dna['B2']=pars[1]
-        self.dna['B3']=pars[2]
-        self.dna['tau']=pars[3]
-        self.dna['v']=pars[4]         #dna memory exposed to / required for future mutations
-        self.dna['deltav']=pars[5]
-        self.dna['beta']=pars[6]
-        self.dna['a']=pars[7]
+        self.j10.float_to_ntr_array(j10,'j10')
+        self.j20f.float_to_ntr_array(j20f,'j20f')
+        self.nbar.float_to_ntr_array(nbar,'nbar')
+        
+        #dna memory exposed to / required for future mutations
+        for kk,key in enumerate(['B1','B2','B3','tau','v','deltav','beta','a']):
+            self.dna[key] = pars[kk]
         self.dna['ff']=ff
-        self.dna['j10']=j10
-        self.dna['j20f']=j20f
-        self.dna['nbar']=nbar
+        self.dna['j10']=self.j10.vals
+        self.dna['j20f']=self.j20f.vals
+        self.dna['nbar']=self.nbar.vals
 
 
-        #EDGAR: I think this is not being used because ranges are defined to none above.
+        #I think this is not being used because ranges are defined to none above.
         # Check that parameters are inside borders by clipping inside the interval with a border of 1e-8
         if (self.working_mode == 'inversion'):
             for k, v in self.parameters.items():
@@ -272,7 +314,6 @@ class Hazel_atmosphere(General_atmosphere):
                     self.parameters[k] = np.clip(v, self.ranges[k][0] + 1e-8, self.ranges[k][1] - 1e-8)
         
 
-    #alias to set_parameters.:
     def set_pars(self, pars,ff=1.0,j10=None,j20f=None,nbar=None,m=None):
         '''Alias to set_parameters'''
         return self.set_parameters(pars,ff,j10=j10,j20f=j20f,nbar=nbar,m=m)
@@ -498,9 +539,9 @@ class Hazel_atmosphere(General_atmosphere):
         #In addition omegaIn was wrong because it was put to zero, meaning no anisotropy,
         #while ones would mean that we use Allen for these pars.
         #when different than 0.0 and 1.0 they are used as modulatory factors in  hazel
-        nbarIn = self.nbar * ratio #np.ones(self.ntr) * ratio
-        omegaIn = self.j20f #np.ones(self.ntr)    #Not anymore np.zeros(4) 
-        j10In = self.j10   #remind j10 and j20f are vectors (one val per transition).
+        nbarIn = self.nbar.vals * ratio #np.ones(self.ntr) * ratio
+        omegaIn = self.j20f.vals #np.ones(self.ntr)    #Not anymore np.zeros(4) 
+        j10In = self.j10.vals   #remind j10 and j20f are vectors (one val per transition).
 
         betaIn = self.parameters['beta']      
 
