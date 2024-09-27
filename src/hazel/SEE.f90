@@ -8,10 +8,10 @@ contains
 !------------------------------------------------------------
 ! Fill and solve the SEE equations
 !------------------------------------------------------------
-    subroutine fill_SEE(in_params, in_fixed, component)
+    subroutine fill_SEE(in_params, in_fixed)
     type(variable_parameters) :: in_params
     type(fixed_parameters) :: in_fixed
-    integer :: nt, component, error
+    integer :: nt,  error
     real(kind=8) :: nbar, w, gei(0:2)
     integer :: n, lu2, ll2, i
     integer :: ju2, jup2, ku, ku2, qu, qu2, iru, j, jl2, jlp2, ql, ql2, irl, kl, kl2, kr, kr2
@@ -44,10 +44,11 @@ contains
             nbar = nbar_allen(atom%wavelength(nt), in_fixed, in_params, atom%reduction_factor(nt) * in_fixed%nbarExternal(nt))
             w = omega_allen(atom%wavelength(nt), in_fixed, in_params, atom%reduction_factor_omega(nt) * in_fixed%omegaExternal(nt))
 
-! Neglect the influence of anisotropy
-            if (in_fixed%use_atomic_pol == -1) then
-                w = 0.d0                
-            endif
+!EDGAR: from now on to neglect anisotropy we have to set omega(i.e.j20f)=0.0 from outside
+! Neglect the influence of anisotropy. 
+            !if (in_fixed%use_atomic_pol == -1) then
+            !    w = 0.d0                
+            !endif
                 
             aesto(nt) = atom%ae(nt)
             ntlsto(nt) = atom%nterml(nt)
@@ -58,7 +59,6 @@ contains
             gei(1) = nbar * atom%j10(nt)
             gei(2) = nbar * w / sqrt(2.d0)
 
-            
 !----------------------------------------------------------------------
 !----- Relaxation rates due to spontaneous emission
 !----------------------------------------------------------------------
@@ -738,28 +738,65 @@ contains
 !----- We add the imaginary term produced by the energy difference between 
 !----- the two levels of the coherence
 !----------------------------------------------------------------------
+!      do i = 1, nrhos   !ORIGINAL BLOCK
+!        if (j2tab(i) /= jp2tab(i)) then
+!            if (irtab(i) == 1) then
+!                    SEE_A(i,i+1) = SEE_A(i,i+1) + 2.d0*PI*rnutab(i)
+!                endif
+!            if (irtab(i) == 2) then
+!                    SEE_A(i,i-1) = SEE_A(i,i-1) - 2.d0*PI*rnutab(i)
+!                endif
+!            endif
+!        enddo
+
       do i = 1, nrhos
         if (j2tab(i) /= jp2tab(i)) then
-            if (irtab(i) == 1) then
-                    SEE_A(i,i+1) = SEE_A(i,i+1) + 2.d0*PI*rnutab(i)
-                endif
-            if (irtab(i) == 2) then
-                    SEE_A(i,i-1) = SEE_A(i,i-1) - 2.d0*PI*rnutab(i)
-                endif
-            endif
-        enddo
+            if (ntab(i) == in_params%nocoh) then  !EDGAR: removing level coherences
+                !do nothing
+            else   !add coherences
+                if (irtab(i) == 1) then
+                        SEE_A(i,i+1) = SEE_A(i,i+1) + 2.d0*PI*rnutab(i)
+                    endif
+                if (irtab(i) == 2) then
+                        SEE_A(i,i-1) = SEE_A(i,i-1) - 2.d0*PI*rnutab(i)
+                    endif
+            endif !end coherence control
+            
+        endif !EDGAR: "if" to control the addition of level coherences
+       enddo
 
 !-----------------------------------------------------------------------
 !----- If idep=1, we add the term due to depolarizing collisions (only for the fundamental level)
 !-----------------------------------------------------------------------
+!        if (idep == 1) then
+!            do i = 1, nrhos
+!                if (ntab(i) == 1 .and. ktab(i) /= 0) then
+!                    SEE_A(i,i) = SEE_A(i,i) - in_params%delta_collision
+!                endif
+!            enddo           
+!        endif
+        
+
+        !EDGAR: we add the posibility of depolarizing separately multipoles with K=1 and K=2
+        !but we maintain delta_collisions to avoid problems .
         if (idep == 1) then
             do i = 1, nrhos
-                if (ntab(i) == 1 .and. ktab(i) /= 0) then
-                    SEE_A(i,i) = SEE_A(i,i) - in_params%delta_collision
+                !EDGAR careful: you are adding twice the colisions, once with delta_collisions
+                !and other one with delta_coll
+                if (ntab(i) == 1) then   
+                    if  (ktab(i) /= 0) then
+                        SEE_A(i,i) = SEE_A(i,i) - in_params%delta_collision
+                    endif    
+                    if  (ktab(i) == 1) then
+                        SEE_A(i,i) = SEE_A(i,i) - in_params%delta_collk1
+                    endif
+                    if  (ktab(i) == 2) then
+                        SEE_A(i,i) = SEE_A(i,i) - in_params%delta_collk2
+                    endif
                 endif
-            enddo           
+            enddo
         endif
-        
+
 !-----------------------------------------------------------------------
 !----- If imag=1, we add the term produced by the magnetic field. We first build
 !----- the magnetic matrix SEE_mag_A and then add this contribution to the total matrix
@@ -769,15 +806,9 @@ contains
 !-----------------------------------------------------------------------
 !----- We get the magnetic parameters
 !-----------------------------------------------------------------------
+    thb = in_params%thetabd * PI / 180.d0       
+    chb = in_params%chibd * PI / 180.d0
 
-! Which component we are computing
-            if (component == 1) then
-            thb = in_params%thetabd * PI / 180.d0       
-            chb = in_params%chibd * PI / 180.d0
-        else
-            thb = in_params%thetabd2 * PI / 180.d0          
-            chb = in_params%chibd2 * PI / 180.d0
-        endif
         
 ! Random azimuth solution. Since the density matrix in the magnetic field
 ! reference frame is independent on azimuth, in the random azimuth solution
@@ -789,12 +820,12 @@ contains
         
         call rotmatk (1,0.d0,-thb,-chb,dr,di)
 
-! Which component we are computing
-        if (component == 1) then
-            flarmor = in_params%bgauss * (PE / (4.d0*PI*PME*PC))
-        else
-            flarmor = in_params%bgauss2 * (PE / (4.d0*PI*PME*PC))
-        endif
+
+
+        flarmor = in_params%bgauss * (PE / (4.d0*PI*PME*PC))
+
+
+
         bcoeff = 2.d0 * PI * flarmor
 
 !-----------------------------------------------------------------------

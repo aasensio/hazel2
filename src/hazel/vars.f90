@@ -9,9 +9,9 @@ implicit none
    real(kind=8), parameter :: LARMOR = PE/(4.d0*PI*PME*PC), PMP = 1.67262158d-24, RSUN = 976.6d0
 	
 	
-	integer :: isti, idep, imag, linear_solver, use_paschen_back, verbose_mode, working_mode, synthesis_mode
-	integer :: use_mag_opt_RT, use_stim_emission_RT
-	real(kind=8) :: delta_collision
+	integer :: isti, idep, imag, linear_solver, use_paschen_back, verbose_mode, working_mode, synthesis_method
+	integer :: use_mag_opt_RT, use_stim_emission_RT, nocoh !EDGAR:adding nocoh
+	!real(kind=8) :: delta_collision,delta_collk1,delta_collk2 !EDGAR adding coll rates for k1 and k2
 	
 	real(kind=8) :: fact(0:301)
 	character(len=120) :: input_model_file, input_experiment, output_rho_vertical_upper, output_rho_magnetic_upper
@@ -37,10 +37,10 @@ implicit none
 	
 	complex(kind=8), allocatable :: rhol(:,:,:,:), rhou(:,:,:,:), rhoml(:,:,:,:), rhomu(:,:,:,:)
 	
-	type variable_parameters
-		real(kind=8) :: bgauss, thetabd, chibd, vdopp, dtau, delta_collision, vmacro, damping, beta, height, vdopp2, beta2
-		real(kind=8) :: dtau2, vmacro2, bgauss2, thetabd2, chibd2, ff
-		integer :: n_inverted, n_total, nslabs
+	type variable_parameters 
+		real(kind=8) :: bgauss, thetabd, chibd, vdopp, dtau, vmacro, damping, beta, height
+		real(kind=8) :: ff,delta_collision,delta_collk1,delta_collk2 !EDGAR adding coll rates for k1 and k2
+		integer :: n_inverted, n_total, nslabs,nocoh
 		integer, pointer :: inverted(:)
 		real(kind=8), dimension(3) :: B1Input_old
     	real(kind=8) :: tau1Input_old, dopplerWidthInput_old
@@ -51,7 +51,7 @@ implicit none
 	type fixed_parameters
 		real(kind=8) :: thetad, chid, gammad, omin, omax, wl
 		real(kind=8) :: thetad_old, chid_old, gammad_old
-		real(kind=8) :: Stokes_incident(0:3), Aul, Bul, Blu, nu
+		real(kind=8) ::  Aul, Bul, Blu, nu
 		integer :: no, nemiss, use_atomic_pol, total_forward_modeling
 		integer :: pix_syn_id, col_syn_id, nlambda_syn_id, lambda_syn_id, map_syn_id, syn_id
 		integer :: pix_par_id, col_par_id, map_par_id, par_id
@@ -60,16 +60,12 @@ implicit none
 		real(kind=8), pointer :: upper_direct(:), lower_direct(:), stokes_boundary(:,:)
 		real(kind=8) :: volper
 		integer :: DIRmaxf, stokes_boundary_len
-		character(len=10) :: Stokes_incident_mode
-		character(len=100) :: Stokes_incident_file
 		real(kind=8), dimension(4) :: nbarExternal, omegaExternal
 		real(kind=8), pointer :: epsilon(:,:), eta(:,:), epsilon_zeeman(:,:), eta_zeeman(:,:)
 		real(kind=8), pointer :: eta_stim(:,:), eta_stim_zeeman(:,:), mag_opt(:,:), mag_opt_zeeman(:,:)
 		real(kind=8), pointer :: mag_opt_stim(:,:), mag_opt_stim_zeeman(:,:)
 		real(kind=8), pointer, dimension(:) :: epsI, epsQ, epsU, epsV, etaI, etaQ, etaU, etaV, dtau
-    	real(kind=8), pointer, dimension(:) :: epsI2, epsQ2, epsU2, epsV2, etaI2, etaQ2, etaU2, etaV2
     	real(kind=8), pointer, dimension(:) :: rhoQ, rhoU, rhoV, delta
-    	real(kind=8), pointer, dimension(:) :: rhoQ2, rhoU2, rhoV2
 	end type fixed_parameters
 	
 	type type_observation
@@ -100,9 +96,6 @@ implicit none
 	type(type_inversion) :: inversion(100)
 	type(atom_model) :: atom
 	
-	character(len=6) :: parameters_name(18) = (/ 'B     ','thetaB','chiB  ', 'vdopp ', &
-		'dtau  ','D^(2) ','v_mac ','damp  ','beta  ','h     ','dtau2 ', 'v_mac2',&
-		'B2    ', 'thetB2', 'chiB2 ', 'vdopp2','ff1   ','beta2 '/)
 	real(kind=8), parameter :: minim_pikaia(10) = (/0.d0, 0.d0, 0.d0, 0.d0, 0.d0, 0.d0, -15.d0, 0.d0, 0.d0, 0.d0/)
 	real(kind=8), parameter :: maxim_pikaia(10) = (/4000.d0, 180.d0, 180.d0, 20.d0, 3.d0, 18.d0, 40.d0, 10.d0, 10.d0, 100.d0/)
 

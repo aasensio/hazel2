@@ -102,7 +102,8 @@ contains
 	
 !------------------------------------------------------------
 ! Return the anisotropy parameter from Allen's data
-! Reduction factor affects only the calculation of J00
+! EDGAR: Reduction factor affects only the calculation of J00 above
+! but acts as modulatory factors for the anisotropy in omega_allen below
 !------------------------------------------------------------
 	function omega_allen(lmb, in_fixed, in_params, reduction_factor)
 	type(fixed_parameters) :: in_fixed
@@ -153,7 +154,7 @@ contains
 		J = 0.5d0 * I0 * (a0 + a1*u1 + a2*u2)
 		K = 0.5d0 * I0 * (b0 + b1*u1 + b2*u2)
 
-		omega_allen = (3.d0*K-J) / (2.d0*J) * reduction_factor
+		omega_allen = (3.d0*K-J) / (2.d0*J) * reduction_factor 
 		
 	end function omega_allen	
 	

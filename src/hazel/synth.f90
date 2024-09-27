@@ -112,7 +112,54 @@ contains
 ! ! Calculate the absorption/emission coefficients for a given transition
 !         call calc_rt_coef(in_params, in_fixed, in_observation, 1)
                         
-                
+
+!EDGAR: place here your new methods of solution with different synthesis_method value
+
+!----------------------------------------------------------------------------------
+if (synthesis_method == 0) then 
+!****************       
+! ONLY EMISSIVITY
+!****************
+
+!init already done in rt_coef
+!if (.not.associated(in_fixed%epsilon)) allocate(in_fixed%epsilon(0:3,in_fixed%no))
+!if (.not.associated(in_fixed%epsilon_zeeman)) allocate(in_fixed%epsilon_zeeman(0:3,in_fixed%no))
+
+        if (in_fixed%use_atomic_pol == 1) then
+            Imax = maxval(in_fixed%epsilon(0,:))
+            do i = 0, 3
+                output(i,:) = in_fixed%epsilon(i,:) / Imax
+            enddo
+        else  
+            Imax = maxval(in_fixed%epsilon_zeeman(0,:))  !EDGAR:aqui habia solo epsilon pero deberia ser epsilon_zeeman
+            do i = 0, 3
+                output(i,:) = in_fixed%epsilon_zeeman(i,:) / Imax
+            enddo
+        endif
+    
+endif
+!----------------------------------------------------------------------------------
+if (synthesis_method == 1) then 
+    synthesis_method = 5
+endif
+!----------------------------------------------------------------------------------
+if (synthesis_method == 2) then 
+    synthesis_method = 5
+endif
+!----------------------------------------------------------------------------------
+if (synthesis_method == 3) then 
+    synthesis_method = 5
+endif
+!----------------------------------------------------------------------------------
+if (synthesis_method == 4) then 
+    synthesis_method = 5
+endif
+!----------------------------------------------------------------------------------
+if (synthesis_method == 6) then 
+    synthesis_method = 5
+endif
+!----------------------------------------------------------------------------------
+if (synthesis_method == 5) then 
 !****************       
 ! Slab case with EXACT SOLUTION
 !****************
@@ -135,11 +182,8 @@ contains
             identity(i,i) = 1.d0
         enddo
         
-        ! StokesM(1) = in_fixed%Stokes_incident(0)
-        ! StokesM(2) = in_fixed%Stokes_incident(1)
-        ! StokesM(3) = in_fixed%Stokes_incident(2)
-        ! StokesM(4) = in_fixed%Stokes_incident(3)
-
+    !EDGAR: we add the possibility of using only the zeeman coeffs without atompol
+    if (in_fixed%use_atomic_pol == 1 ) then
                     
 ! Emission              
         in_fixed%epsI = in_fixed%epsilon(0,:)
@@ -163,8 +207,33 @@ contains
             in_fixed%rhoU = 0.d0
             in_fixed%rhoV = 0.d0
         endif
+    
+    else
 
-! Second component
+! Emission
+            in_fixed%epsI = in_fixed%epsilon_zeeman(0,:)
+            in_fixed%epsQ = in_fixed%epsilon_zeeman(1,:)
+            in_fixed%epsU = in_fixed%epsilon_zeeman(2,:)
+            in_fixed%epsV = in_fixed%epsilon_zeeman(3,:)
+
+! Absorption including stimulated emission
+            in_fixed%etaI = in_fixed%eta_zeeman(0,:) - use_stim_emission_RT * in_fixed%eta_stim_zeeman(0,:) + 1.d-20
+            in_fixed%etaQ = in_fixed%eta_zeeman(1,:) - use_stim_emission_RT * in_fixed%eta_stim_zeeman(1,:) + 1.d-20
+            in_fixed%etaU = in_fixed%eta_zeeman(2,:) - use_stim_emission_RT * in_fixed%eta_stim_zeeman(2,:) + 1.d-20
+            in_fixed%etaV = in_fixed%eta_zeeman(3,:) - use_stim_emission_RT * in_fixed%eta_stim_zeeman(3,:) + 1.d-20
+
+! Magneto-optical terms
+            if (use_mag_opt_RT == 1) then
+                in_fixed%rhoQ = in_fixed%mag_opt_zeeman(1,:) - use_stim_emission_RT * in_fixed%mag_opt_stim_zeeman(1,:)
+                in_fixed%rhoU = in_fixed%mag_opt_zeeman(2,:) - use_stim_emission_RT * in_fixed%mag_opt_stim_zeeman(2,:)
+                in_fixed%rhoV = in_fixed%mag_opt_zeeman(3,:) - use_stim_emission_RT * in_fixed%mag_opt_stim_zeeman(3,:)
+            else
+                in_fixed%rhoQ = 0.d0
+                in_fixed%rhoU = 0.d0
+                in_fixed%rhoV = 0.d0
+            endif
+    endif
+
         ds = in_params%dtau / maxval(in_fixed%etaI)
         in_fixed%dtau = in_fixed%etaI * ds
                 
@@ -201,7 +270,6 @@ contains
             output(3,i) = Stokes0(4)
             
         enddo
-
                                                 
         ! if (in_observation%normalization == 'peak') then
         !     Imax = maxval(output(0,:))
@@ -211,12 +279,14 @@ contains
         ! do i = 0, 3
         !     output(i,:) = output(i,:) !/ Imax                
         ! enddo
-            
+endif
+!----------------------------------------------------------------------------------
+
+
         in_fixed%total_forward_modeling = in_fixed%total_forward_modeling + 1
 
-        !
+        
         ! JDLCR: convolve all Stokes Parameters with the spectral PSF.
-        !
         call convolve(in_fixed%no, output)
 
     
