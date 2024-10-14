@@ -2,7 +2,6 @@ import numpy as np
 import glob
 import torch
 import torch.nn as nn
-from sklearn import neighbors
 import logging
 
 
