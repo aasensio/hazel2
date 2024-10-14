@@ -637,7 +637,7 @@ class Model(object):
         self.atmospheres[atm['name']].add_active_line(lines=lines, spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range), verbose=self.verbose)
 
-        if (self.atmospheres[atm['name']].graphnet_nlte is not None):
+        if (self.atmospheres[atm['name']].transformer_nlte is not None):
             self.set_nlte(True)
 
         if ('ranges' in atm):
@@ -1334,6 +1334,13 @@ class Model(object):
         self.use_nlte = option
         if (self.verbose >= 1):
             self.logger.info('Setting NLTE for Ca II 8542 A to {0}'.format(self.use_nlte))
+        if (self.use_nlte):
+            for atmospheres in self.order_atmospheres:
+                for n, order in enumerate(atmospheres):
+                    for k, atm in enumerate(order):
+                        if (self.atmospheres[atm].type == 'photosphere'):
+                            self.atmospheres[atm].load_nlte_model(verbose=self.verbose)
+            
 
     def synthesize(self, perturbation=False):
         """

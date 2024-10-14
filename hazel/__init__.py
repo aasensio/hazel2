@@ -13,10 +13,12 @@ from .exceptions import *
 from .util import *
 from . import codes
 
-try:
-    # import torch
-    # import torch_geometric
-    from .graphnet import *
-    from .forward_nn import *    
-except:
-    pass
+# try:
+#     # import torch
+#     # import torch_geometric
+#     from .graphnet import *
+#     from .forward_nn import *    
+# except:
+#     pass
+
+from .forward_nn_transformer import *

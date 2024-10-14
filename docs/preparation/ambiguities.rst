@@ -113,12 +113,12 @@ Under this change, we have that
 
 .. math:: \cos 2\Phi_B' = \cos 2\Phi_B, \quad \sin 2\Phi_B' = \sin 2\Phi_B, \quad \cos \Phi_B' = \cos \Phi_B, \quad \sin \Phi_B' = \sin \Phi_B.
 
- Making use of the previous relations between the angles wrt to the
+Making use of the previous relations between the angles wrt to the
 vertical and the LOS, we have to solve the following equation:
 
 .. math:: \left( 3 \cos^2\theta_B'-1 \right) \sin^2 \Theta_B' = \left( 3 \cos^2\theta_B-1 \right) \sin^2 \Theta_B,
 
- which can be written as:
+which can be written as:
 
 .. math::
 

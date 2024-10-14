@@ -9,10 +9,15 @@ import scipy.interpolate as interp
 from hazel.exceptions import NumericalErrorSIR
 from hazel.transforms import transformed_to_physical, jacobian_transformation
 
-try:
-    from hazel.forward_nn import Forward
-except:
-    pass
+# try:
+    # from hazel.forward_nn import Forward
+# except:
+    # pass
+
+# try:
+from hazel.forward_nn_transformer import Forward
+# except:
+    # pass
 
 
 __all__ = ['SIR_atmosphere']
@@ -27,7 +32,7 @@ class SIR_atmosphere(General_atmosphere):
         self.ff = 1.0        
         self.macroturbulence = np.zeros(1)
         self.working_mode = working_mode
-        self.graphnet_nlte = None
+        self.transformer_nlte = None
         self.root = root
         
         self.parameters['T'] = None
@@ -175,15 +180,27 @@ class SIR_atmosphere(General_atmosphere):
         self.wvl_axis = spectrum.wavelength_axis[ind_low:ind_top+1]
         self.wvl_range = np.array([ind_low, ind_top+1])
 
-        # Check if Ca II 8542 is in the list of lines and instantiate the neural networks
+        # Check if Ca II 8542 is in the list of lines and instantiate the neural networks        
         if (self.nlte):            
             if 301 in self.lines:
-                if self.graphnet_nlte is None:                    
-                    path = str(__file__).split('/')
-                    checkpoint = '/'.join(path[0:-1])+'/data/20211114-131045_best.prd.pth'
-                    if (verbose >= 1):
-                        self.logger.info('    * Reading NLTE Neural Network')                    
-                    self.graphnet_nlte = Forward(checkpoint=checkpoint, verbose=verbose)
+                self.load_nlte_model(verbose=verbose)
+
+    def load_nlte_model(self, verbose):
+        if self.transformer_nlte is None:                    
+            # path = str(__file__).split('/')
+            # checkpoint = '/'.join(path[0:-1])+'/data/20211114-131045_best.prd.pth'
+            # if (verbose >= 1):
+            #     self.logger.info('    * Reading NLTE Neural Network')                    
+            # self.graphnet_nlte = Forward(checkpoint=checkpoint, verbose=verbose)
+            
+            path = str(__file__).split('/')
+            checkpoint = '/'.join(path[0:-1])+'/data/2024-09-13-11_17_34.best.pth'
+            if (verbose >= 1):
+                self.logger.info('    * Reading NLTE Transformer Neural Network')
+            self.transformer_nlte = Forward(checkpoint=checkpoint, verbose=verbose)
+
+            self.nlte = True
+        
                                         
     def interpolate_nodes(self, log_tau, reference, nodes, nodes_location):
         """
@@ -662,10 +679,10 @@ class SIR_atmosphere(General_atmosphere):
                 self.Pe = sir_code.hydroeq(self.log_tau, self.parameters['T'], 
                     self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
                     self.parameters['Bz'])            
-
+            
             # Check if the line is 8542 and we want NLTE. If that is the case, then evaluate the
             # neural network to return the departure coefficients                        
-            if (nlte):
+            if (nlte):                
                 if (self.nlte):                    
                     dif = (self.parameters['T'] - self.t_old)                    
                     if (np.max(dif) > self.t_change_departure):
@@ -674,15 +691,15 @@ class SIR_atmosphere(General_atmosphere):
                                 if (self.verbose >= 4):
                                     self.logger.info('  - NLTE neural oracle')
                                 n = len(self.log_tau)                            
-                                tau = [10.0**self.log_tau[::-1]]
+                                tau = 10.0**self.log_tau[::-1]
                                 ne = self.Pe / (1.381e-16 * self.parameters['T'])
-                                ne = [ne[::-1] * 1e6]                                 # in m^-3
-                                tt = [self.parameters['T'][::-1]]
-                                vturb = [self.parameters['vmic'][::-1] * 1e3]         # in m/s                            
-                                vlos = [self.parameters['v'][::-1] * 1e3]             # in m/s
-                                prediction = self.graphnet_nlte.predict(tau, ne, vturb, tt, vlos)
-                                self.departure[0, i, :] = 10.0**prediction[0][::-1, 2]
-                                self.departure[1, i, :] = 10.0**prediction[0][::-1, 4]                                
+                                ne = ne[::-1] * 1e6                                 # in m^-3
+                                tt = self.parameters['T'][::-1]
+                                vturb = self.parameters['vmic'][::-1] * 1e3         # in m/s                            
+                                vlos = self.parameters['v'][::-1] * 1e3             # in m/s
+                                prediction = self.transformer_nlte.predict(tau, ne, vturb, tt, vlos)                                
+                                self.departure[0, i, :] = 10.0**prediction[::-1, 2]
+                                self.departure[1, i, :] = 10.0**prediction[::-1, 4]                                
             
                             self.t_old = self.parameters['T']
                         

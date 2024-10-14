@@ -8,7 +8,7 @@ tmp.save('../../photospheres/falc')
 
 
 # Test a single inversion in non-iterator mode
-mod = hazel.Model('../../configurations/conf_caii.ini', working_mode='synthesis', verbose=3, root='../../')
+mod = hazel.Model('../../configurations/conf_caii.ini', working_mode='synthesis', verbose=4, root='../../')
 mod.set_nlte(False)
 mod.synthesize()
 
