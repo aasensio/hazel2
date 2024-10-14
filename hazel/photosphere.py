@@ -14,10 +14,10 @@ from hazel.transforms import transformed_to_physical, jacobian_transformation
 # except:
     # pass
 
-# try:
-from hazel.forward_nn_transformer import Forward
-# except:
-    # pass
+try:
+    from hazel.forward_nn_transformer import Forward
+except:
+    pass
 
 
 __all__ = ['SIR_atmosphere']
