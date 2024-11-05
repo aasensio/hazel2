@@ -219,7 +219,7 @@ class Generic_output_file(object):
                             
                         # # Model node positions                        
                         # CHECK!!!!!!!!!!!!!!!!!
-                        # for k2, v2 in v.nodes_logtau_cycle[cycle].items():                            
+                        # for k2, v2 in v.nodes_logtau_cycle[cycle].items():
                         #     if (model.save_all_cycles):
                         #         self.out_nodes[k][k2][pixel,randomization,cycle] = np.atleast_1d(v2)
                         #     else:
@@ -286,6 +286,7 @@ class Generic_observed_file(object):
             return
 
     def read(self, pixel=None):
+        
         if (self.extension == '1d'):            
             f = open(self.root+self.filename, 'r')
             f.readline()

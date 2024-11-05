@@ -281,3 +281,17 @@ pass the ``randomization`` keyword to the ``Model``:
     iterator.use_model(model=mod)
     iterator.run_all_pixels()
 
+
+Analysis of the results
+-----------------------
+
+We provide a simple way to analyze the results of the inversions. The following code
+reads the output file and plots the results of the inversion for a given pixel.
+
+::
+
+    f = h5py.File('output.h5', 'r')
+    wl_syn, stokes_syn = hazel.analysis.synth_model('conf_single.ini', f, active=['ph1', 'ch1', 'ch2', 'te1'], verbose=3)
+
+where we pass the configuration file, the output file struct and the active components to be computed. The
+output of this function is the synthetic spectrum and the synthetic Stokes profiles.

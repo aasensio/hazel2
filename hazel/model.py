@@ -53,7 +53,7 @@ class Model(object):
         self.nlte_available = False
         self.use_nlte = False
         self.root = root
-
+        
         self.epsilon = 1e-2
         self.svd_tolerance = 1e-8
         self.step_limiter_inversion = 1.0
@@ -244,8 +244,24 @@ class Model(object):
                     self.logger.info('  - New available straylight : {0}'.format(value['name']))
 
                 self.add_straylight(value)
-
+                
         self.setup()
+
+    def set_topologies(self, topologies):
+        """
+        Set the topologies to be used in the inversion
+
+        Parameters
+        ----------
+        topologies : list
+            List of strings with the names of the topologies
+
+        Returns
+        -------
+        None
+        """
+
+        self.topologies = topologies
 
     def setup(self):
         """
@@ -264,6 +280,7 @@ class Model(object):
         # Adding topologies
         if (self.verbose >= 1):
             self.logger.info("Adding topologies") 
+
         for value in self.topologies:
             self.add_topology(value)
 
@@ -492,8 +509,8 @@ class Model(object):
             else:
                 if (self.verbose >= 1):
                     self.logger.info('  - Reading wavelength axis from {0}'.format(value['wavelength file']))
-                wvl = np.loadtxt(self.root + value['wavelength file'])
-                wvl_lr = None                                
+                wvl = np.loadtxt(self.root + value['wavelength file'], skiprows=1)
+                wvl_lr = None       
         
         if (value['wavelength weight file'] is None):
             if (self.verbose >= 1 and self.working_mode == 'inversion'):
@@ -572,10 +589,9 @@ class Model(object):
         
         self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, 
             name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, mask_file=mask_file, instrumental_profile=value['instrumental profile'], root=self.root, wvl_lr=wvl_lr)
-
-        self.topologies.append(value['topology'])
         
-    
+        self.topologies.append(value['topology'])
+            
     def add_photosphere(self, atmosphere):
         """
         Programmatically add a photosphere
@@ -965,6 +981,21 @@ class Model(object):
                 
         for k in to_remove:
             self.atmospheres.pop(k)
+
+    def remove_atmosphere(self, atm):
+        """
+        Remove unused atmospheres
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+    
+        """        
+        self.atmospheres.pop(atm)
                     
     def init_sir_external(self):
         """
@@ -1126,6 +1157,8 @@ class Model(object):
 
         """
 
+        self.order_atmospheres = []
+        
         # Transform the order to a list of lists
         if (self.verbose >= 1):
             self.logger.info('  - {0}'.format(atmosphere_order))
@@ -1753,6 +1786,7 @@ class Model(object):
         ddchi2 = np.zeros((n,n))
 
         for k, v in self.spectrum.items():
+            
             if (v.interpolate_to_lr):
                 residual = (v.stokes_lr - v.obs)
             else:

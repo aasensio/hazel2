@@ -11,6 +11,7 @@ from .io_hazel import *
 from .sir import *
 from .exceptions import *
 from .util import *
+from .analysis import *
 from . import codes
 
 # try:

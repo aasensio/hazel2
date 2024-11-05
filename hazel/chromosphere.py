@@ -465,7 +465,7 @@ class Hazel_atmosphere(General_atmosphere):
             betaInput, nbarInput, omegaInput)
             
         l, stokes, error = hazel_code._synth(*args)
-
+        
         if (error == 1):
             raise NumericalErrorHazel()
 
