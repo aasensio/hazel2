@@ -437,7 +437,7 @@ contains
 		call StokesFRsub(stok,rt,rp,rh,rv,rg,rf,rm,rmac,dLPgdPe,dLPgdT)
 		
 		if (error_code == 1) then
-			error = 1
+			error = 1			
 			return
 		endif
 				 	
@@ -521,8 +521,6 @@ contains
 		error = 0
 		error_code = 0
 
-		error_code = 0
-
 		ntl = conf(index)%ntl
 		nlin = conf(index)%nlin
 		npas = conf(index)%npas
@@ -561,12 +559,13 @@ contains
 			enddo
 			tau(i) = atmosmodel(i)
 			t(i) = atmosmodel(i+ntau)
-			pe(i) = atmosmodel(i+2*ntau)
+			pe(i) = atmosmodel(i+2*ntau)			
 		enddo
 
 ! pasamos los angulos a radianes
 		call taulinea(0,1.,1,0.,atmosmodel,ntau)
-	
+
+
 ! definimos los nodos en todos los puntos (excepto para ls presion elctronica)
 		do i=1,8                 
         	mnodos(i)=ntau

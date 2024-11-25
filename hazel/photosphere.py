@@ -705,11 +705,11 @@ class SIR_atmosphere(General_atmosphere):
                         
             else:
                 self.departure = np.ones((2, len(self.lines), len(self.log_tau)))
-            
+                        
             stokes, cmass, rf, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
                 self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
                 self.parameters['Bz'], self.parameters['vmac'], np.asfortranarray(self.departure))
-
+            
             # Transform SIR RFs into response functions to Bx, By and Bz.
             # To this end, we have:
             # [RF_B ]   [dBxdB     dBydB    dBzdB ][RF_Bx]

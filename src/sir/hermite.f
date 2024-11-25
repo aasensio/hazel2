@@ -83,7 +83,7 @@ c	end do
 	enddo
 
  	do i=icontorno+1,n
-           delta=deltai(i)
+           delta=deltai(i)		   
            delt2=delt2i(i)
 	   do jj=1,4
               e0=etal(jj,1,i-1)
@@ -116,7 +116,6 @@ c	   enddo
              
         
 	   call matinx(num)
-
 	   if (error_code == 1) return
 
 	   do jj=1,4

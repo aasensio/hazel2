@@ -182,7 +182,7 @@ c nble es el numero de componentes de cada linea
            end do
 
            paso=tau(1)-tau(2)
-           iprimera=1
+c   iprimera=1
         end if
 
         x(1)=g*(tau(1)-tau(2))*2.3025851         
@@ -973,7 +973,7 @@ c          call lin(bp,dbp,dab,ntau,svec,kt,bt,tk,pk,hk,
 c     &              vk,gk,fk,mk,rt4,rp4,rh4,rv4,rg4,rf4,rm4,mnodos)
            call hermite(bp,dbp,dab,ntau,svec,kt,bt,tk,pk,hk,
      &              vk,gk,fk,mk,rt4,rp4,rh4,rv4,rg4,rf4,rm4,mnodos)
-
+         
         if (error_code == 1) return
 
 c introducimos el paso en tau para pasar la integral sobre las f. resp.
