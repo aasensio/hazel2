@@ -146,12 +146,14 @@ This container has all the dependencies installed and it is ready to be used. Yo
 keep this version as updated as possible) and run it with Apptainer as:
 
 ::    
-        apptainer run hazel.sif python invert.py
+
+    apptainer run hazel.sif python invert.py
 
 In principle, you can build your own container by going to the `apptainer` directory in the
 distribution and running:
 
 ::
+
     apptainer build hazel.sif hazel.def
 
 

@@ -29,17 +29,36 @@ from Cython.Build import cythonize
 
 import os
 import platform
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, check_output
 import sys
 import numpy
 import glob
 import re
 
+# Adding an alternative way compatible with PEP440:
+def get_pep440version_info():
+    # This version of the function uses the format {tag_name}.dev{num_commits}+{commit_hash} to
+    # indicate that the version number is a development version, with {tag_name} indicating the
+    # name of the latest tag, {num_commits} representing the number of commits since the tag, and
+    # {commit_hash} representing the abbreviated commit hash.
+    git_describe_output = check_output(['git', 'describe', '--tags']).decode('utf-8').strip()
+    
+    # Split the output string
+    parts = git_describe_output.split('-')
+    if len(parts) == 1:
+        # No additional commits since the last tag, so this is a release version
+        return parts[0]
+    else:
+        # There are additional commits since the last tag, creating a development version
+        tag_name, num_commits, commit_hash = parts
+        commit_hash = commit_hash[1:]  # Remove the 'g' prefix from the commit hash
+        return f"{tag_name}.dev{num_commits}+{commit_hash}"
+
 DOCSTRING = __doc__.strip().split("\n")
 
 tmp = open('hazel/__init__.py', 'r').read()
 author = re.search('__author__ = "([^"]+)"', tmp).group(1)
-version = re.search('__version__ = "([^"]+)"', tmp).group(1)
+version = get_pep440version_info()
 
 def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
     compiler_so = self.compiler_so    

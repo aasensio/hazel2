@@ -168,6 +168,8 @@ c nble es el numero de componentes de cada linea
         
         macro=atmosmodel(8*ntau+1)
         
+        ! In Hazel, we always recalculate the optical depth axis. 
+        ! Anyway, it takes "zero" time as compared with the rest of calculations
         if(iprimera.eq.0)then
            do i=1,ntau
               tau(i)=atmosmodel(i)

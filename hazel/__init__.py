@@ -22,4 +22,7 @@ from . import codes
 # except:
 #     pass
 
-from .forward_nn_transformer import *
+try:
+    from .forward_nn_transformer import *
+except:
+    pass
