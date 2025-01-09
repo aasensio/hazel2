@@ -18,9 +18,10 @@ and its purpose. But for the moment, and despite Hazel Exp has been built trying
 backward compatibility with Hazel v2.0, please take into account that the information
 written below corresponds to Hazel v2.0 and may not be accurate. Presently, Hazel Exp has many new features
 (+8000 lines of code have been added and +2000 modified) and is still in phase of heavy development, hence
-it requires a minimal explanation to be used. Yet, if the code is downloaded and installed as specified for Hazel v2.0, it should 
-be possible to use it in programatic mode with some of the test python files included in the test directory.
-The present entry will be fix as soon as possible.
+it requires a minimal explanation to be used. Yet, if the code is downloaded and installed as specified for Hazel v2.0, 
+it should be possible to use it within the MagnusRT branch in programatic mode 
+and with the guidance of the test python files included in the test directory.
+A proper introduction will be developed as soon as possible.
 
 ## Introduction for Hazel v2.0
 Hazel (an acronym for HAnle and ZEeman Light) is a computer program for the 
