@@ -4,16 +4,26 @@ import os.path
 from astropy.constants import c
 from scipy import interpolate
 
+#EDGAR: remember here the routine add_boundary
 
 __all__ = ['Spectrum']
 
 class Spectrum(object):
-    def __init__(self, wvl=None, weights=None, observed_file=None, name=None, stokes_weights=None, los=None, boundary=None, mask_file=None, 
-        instrumental_profile=None, save_all_cycles=False, root='', wvl_lr=None):
+    def __init__(self, wvl=None, weights=None, observed_file=None, name=None, stokes_weights=None, 
+        los=None, boundary=None, mask_file=None, instrumental_profile=None, save_all_cycles=False, 
+        root='', wvl_lr=None,lti=None,lineHazel='',lineSIR='', n_chromo=None,synmethod=None):
         
         self.wavelength_axis = None
         self.stokes = None
         self.stokes_perturbed = None
+        
+        self.eps = None  #EDGAR
+        self.eta = None
+        self.stim = None
+        self.etas = None#total coeffs
+        self.rhos = None#total coeffs
+        self.ntrans=0
+
         self.pixel = 0
         self.boundary_single = boundary
         self.psf_spectral = None
@@ -22,9 +32,26 @@ class Spectrum(object):
         self.normalization = 'on-disk'
         self.save_all_cycles = save_all_cycles
         self.root = root
+        #-------------------------------------
+        #EDGAR: new general spectrum-related variables in Spectrum objects
+        if (lti is not None):
+            self.line_to_index=lti  #line_to_index dictionary for Hazel
+
+        if (lineHazel != ''):
+            self.lineHazel=lineHazel #line/s for activating in Hazel chromo or in SIR photo
+
+        if (lineSIR != ''):
+            self.lineSIR=lineSIR #line/s for activating in Hazel chromo or in SIR photo
+
+        self.multiplets=None #the set up of this is done in add_spectrum and add_spectral
         
+        #init the list of synthesis methods used for this spectrum 
+        #In case one uses several methods along the LOS, the synthazel() routine in chromosphere.py 
+        #has the capability of extending this list
+        self.synmethods=[synmethod] #list of label numbers 
+        #-------------------------------------
         if (wvl is not None):
-            self.add_spectrum(wvl, wvl_lr)
+            self.add_spectrum(n_chromo,wvl, wvl_lr)
 
         if (weights is not None):
             self.add_weights(weights)
@@ -84,7 +111,7 @@ class Spectrum(object):
         self.bic_cycle = [-1.0] * n_cycles
         self.aic_cycle = [-1.0] * n_cycles
 
-    def add_spectrum(self, wvl, wvl_lr):
+    def add_spectrum(self, nch, wvl, wvl_lr):
         """
         Add a new spectrum, initializing the Stokes parameters containers
         
@@ -102,19 +129,26 @@ class Spectrum(object):
         self.wavelength_axis_lr = wvl_lr
         self.stokes = np.zeros((4,len(wvl)))
         self.stokes_perturbed = np.zeros((4,len(wvl)))
+        
+        #EDGAR: general optical coeffs python containers
+        #nch considers all atmospheres, also those inside same pixel with filling factor
+        #so N slabs with 2 subpixels are 2N atmospheres.
+        self.eps = np.zeros((nch,4,len(wvl))) 
+        self.eta = np.zeros((nch,7,len(wvl))) 
+        self.stim = np.zeros((nch,7,len(wvl))) 
+
+        #only used at the end of the calculation when building the total opt coeffs for output
+        self.etas=np.zeros((nch,4,len(wvl))) 
+        self.rhos = np.zeros((nch,3,len(wvl)))
+
         self.stray = np.zeros((4,len(wvl)))
         self.obs = np.zeros((4,len(wvl)))
         self.noise = np.zeros((4,len(wvl)))
         self.dof = 4.0 * len(wvl)
-        if (self.boundary_single is not None):
+
+        #self.boundary_single is array([1.0,0.0,0.0,0.0]) or float array of (4,Nwavelength) 
+        if (self.boundary_single is not None):self.set_boundary(self.boundary_single)
             
-            self.boundary = self.boundary_single[:,None] * np.ones((1,len(wvl)))
-
-            if (self.boundary_single[0] == 0.0):                
-                self.normalization = 'off-limb'
-            else:
-                self.normalization = 'on-disk'
-
         if (self.wavelength_axis_lr is not None):
             self.interpolate_to_lr = True
             self.stokes_lr = np.zeros((4,len(wvl_lr)))
@@ -247,36 +281,24 @@ class Spectrum(object):
     def set_boundary(self, boundary):
         """
         Set a new value for the boundary condition
-        
-        Parameters
-        ----------        
-        los : list or array of size 4
-            I0, Q0, U0, V0
-        
-        Returns
-        -------
-        None
-    
-        """          
-        self.boundary = boundary[:,None] * np.ones((1,len(self.wavelength_axis)))
-        if (np.all(self.boundary[0,:]) == 0.0):
-            self.normalization = 'off-limb'
-        else:
-            self.normalization = 'on-disk'
+        """         
+        #when 1D in boundary array([1,0,0,0] or similar), its shape goes from (4,) to (4,N_wavelength)
+        #otherwise, shape is already (4,N_wavelength)
+        if (np.ndim(boundary)==1):self.boundary = boundary[:,None] * np.ones((1,len(self.wavelength_axis)))
+        else:self.boundary = boundary
+
+        if (self.boundary[0,0] == 0.0):self.normalization = 'off-limb'
+        else:self.normalization = 'on-disk'
+
 
     def set_normalization(self, normalization):
         """
-        Set a new value for the LOS
+        Set the normalization
         
-        Parameters
+        Parameters: Normalization
         ----------        
-        los : str
-            'off-limb' or 'on-disk'
-        
-        Returns
+        Returns : None
         -------
-        None
-    
         """          
         self.normalization = normalization
 

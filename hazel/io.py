@@ -11,7 +11,7 @@ try:
 except:
     pass
     # warnings.warn("zarr module not found. You will not be able to use zarr as input/output.")
-
+    #EDGAR: add your ncdf routines here
 
 __all__ = ['Generic_output_file', 'Generic_observed_file', 'Generic_hazel_file', 'Generic_SIR_file', 'Generic_parametric_file', 'Generic_stray_file', 'Generic_mask_file']
 
@@ -114,7 +114,7 @@ class Generic_output_file(object):
                     self.out_nodes[k] = {}
 
                     # Save metadata for type of reference for magnetic field components
-                    if (hasattr(v, 'reference_frame')):
+                    if (hasattr(v, 'reference_frame') or hasattr(v, 'ref frame')):
                         db.attrs['reference frame'] = v.reference_frame
 
                     db.attrs['ranges'] = str(dict(v.ranges))

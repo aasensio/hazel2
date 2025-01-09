@@ -7,11 +7,11 @@ contains
 !------------------------------------------------------------
 ! Calculate the radiative transfer coefficients
 !------------------------------------------------------------
-	subroutine calc_rt_coef(in_params,in_fixed,in_observation,component)
+	subroutine calc_rt_coef(in_params,in_fixed,in_observation)
 	type(variable_parameters) :: in_params
 	type(fixed_parameters) :: in_fixed
 	type(type_observation) :: in_observation
-	integer :: k, q, p, j, component
+	integer :: k, q, p, j
 	real(kind=8) :: theta, chi, gamma, sign
 	complex(kind=8) :: tr(0:2,-2:2,0:3), trp(0:2,-2:2,0:3), ii, suma
 	real(kind=8) :: onum0, dnum, adamp, reduc(0:2,-2:2,-2:2)
@@ -43,16 +43,16 @@ contains
 ! and the other one to carry this vertical reference frame to the magnetic reference frame, given by the 
 ! rotation (chb,thb,0)
 
-! Which component we are computing
-		if (component == 1) then
+
+
 			thb = in_params%thetabd * PI / 180.d0
 			chb = in_params%chibd * PI / 180.d0
 			bfield = in_params%bgauss
-		else
-			thb = in_params%thetabd2 * PI / 180.d0
-			chb = in_params%chibd2 * PI / 180.d0
-			bfield = in_params%bgauss2
-		endif
+
+
+
+
+
 		
 ! Random azimuth solution. Since the density matrix in the magnetic field
 ! reference frame is independent on azimuth, in the random azimuth solution
@@ -103,7 +103,7 @@ contains
 		in_fixed%mag_opt_stim_zeeman = 0.d0
 		if (.not.allocated(onum)) allocate(onum(in_fixed%no))
 		
-		
+!EDGAR: wl should be here wavelength, but these expressions reminds me those in wavenumber: REMEMBER CHECK
 ! In the synthesis mode, generate a new wavelength axis (wavenumber in this case)
 ! #if ! defined(python)
 ! 		if (working_mode == 0) then		
@@ -122,13 +122,9 @@ contains
 		endif
 				
 ! Transform the Doppler velocity in wavenumber and we calculate the reduced damping constant
+		
+		dnum = in_params%vdopp*1.d5 / (in_fixed%wl*1.d-8*PC)		! Delta w = v_th / (lambda*c) (from eqs. 5.43 of the book)
 
-! Which component we are computing
-		if (component == 1) then
-			dnum = in_params%vdopp*1.d5 / (in_fixed%wl*1.d-8*PC)		! Delta w = v_th / (lambda*c) (from eqs. 5.43 of the book)
-		else
-			dnum = in_params%vdopp2*1.d5 / (in_fixed%wl*1.d-8*PC)		! Delta w = v_th / (lambda*c) (from eqs. 5.43 of the book)
-		endif
 		
 		adamp = in_params%damping
 
@@ -139,11 +135,11 @@ contains
 			adamp = in_fixed%wl * 1.d-8 / (in_params%vdopp*1.d5) * aesto(in_fixed%nemiss) * abs(in_params%damping)
 		endif
 
-		if (component == 1) then
-			va = in_params%vmacro * 1.d5 / (in_fixed%wl*1.d-8*PC)
-		else
-			va = in_params%vmacro2 * 1.d5 / (in_fixed%wl*1.d-8*PC)
-		endif
+		
+		va = in_params%vmacro * 1.d5 / (in_fixed%wl*1.d-8*PC)
+		
+		
+		
 				
 !-------------------------------------------------------------------------
 !----- We calculate eigenvalues and eigenvectors
@@ -487,7 +483,7 @@ contains
 ! And we perform the summation given by eq. 7.47 of Landi & Landolfi (2004)
 ! Here we calculate only 7.47a because we are interested in the absorption coefficient
 !-------------------------------------------------------------------------
-		if (synthesis_mode /= 0) then
+		if (synthesis_method /= 0) then
 		
 			nloop = 0
       	x0 = dfloat(lu2+1)   ! It is (2Lu+1) because we need B_lu, which is equal to (2Lu+1)/(2Ll+1)*B_ul
@@ -618,7 +614,9 @@ contains
 ! Emissivity
 !		epsilon = PH * freq / (4.d0*PI) * Bul * (2.d0*PH*freq**3) / PC**2 * epsilon
 !		epsilon_zeeman = PH * freq / (4.d0*PI) * Bul * (2.d0*PH*freq**3) / PC**2 * epsilon_zeeman
-				
+		
+		!print*,(2.d0*PH*freq**3) / PC**2  
+
 		in_fixed%epsilon = (2.d0*PH*freq**3) / PC**2 * in_fixed%epsilon
 		in_fixed%epsilon_zeeman = (2.d0*PH*freq**3) / PC**2 * in_fixed%epsilon_zeeman
 
