@@ -1,7 +1,7 @@
 # Hazel Exp 
 
 
-[![github](https://img.shields.io/badge/GitHub-aasensio%2Fhazel2-blue.svg?style=flat)](https://github.com/edgecarlin/hazel2_experimental)
+[![github](https://img.shields.io/badge/GitHub-edgecarlin%2Fhazel2_experimental-blue.svg?style=flat)](https://github.com/edgecarlin/hazel2_experimental)
 [![Build Status](https://travis-ci.org/aasensio/hazel2.svg?branch=master)](https://travis-ci.org/aasensio/hazel2)
 [![Coverage Status](https://coveralls.io/repos/github/aasensio/hazel2/badge.svg?branch=master)](https://coveralls.io/github/aasensio/hazel2?branch=master)
 [![license](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/aasensio/hazel2/blob/master/LICENSE)
