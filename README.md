@@ -6,7 +6,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/aasensio/hazel2/badge.svg?branch=master)](https://coveralls.io/github/aasensio/hazel2?branch=master)
 [![license](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/aasensio/hazel2/blob/master/LICENSE)
 [![ADS](https://img.shields.io/badge/ADS-2008ApJ...683..542A-red.svg)](http://adsabs.harvard.edu/abs/2008ApJ...683..542A)
-[![arxiv](http://img.shields.io/badge/arXiv-0804.2695-orange.svg?style=flat)](https://arxiv.org/abs/0804.2695)
+[![arxiv](http://img.shields.io/badge/arXiv-2402.00252-orange.svg?style=flat)](https://arxiv.org/abs/2402.00252)
 
 ## Introduction for Hazel Exp
 
