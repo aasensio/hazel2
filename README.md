@@ -1,4 +1,4 @@
-# Hazel v2.0
+# Hazel Exp 
 
 
 [![github](https://img.shields.io/badge/GitHub-aasensio%2Fhazel2-blue.svg?style=flat)](https://github.com/aasensio/hazel2)
@@ -8,9 +8,21 @@
 [![ADS](https://img.shields.io/badge/ADS-2008ApJ...683..542A-red.svg)](http://adsabs.harvard.edu/abs/2008ApJ...683..542A)
 [![arxiv](http://img.shields.io/badge/arXiv-0804.2695-orange.svg?style=flat)](https://arxiv.org/abs/0804.2695)
 
-## Introduction
+## Introduction for Hazel Exp
 
+Hazel Exp stands for HAnle and ZEeman Light EXPerimental (or EXPonential) 
+and is an extense modification of Hazel v2.0 for experimenting and benchmarking 
+with novel radiative transfer methods based on geometrical integrators and on the Magnus 
+Expansion. Soon, this introduction will contain a more suitable description of the code 
+and its purpose. But for the moment, and despite Hazel Exp has been built trying to respect
+backward compatibility with Hazel v2.0, please take into account that the information
+written below corresponds to Hazel v2.0 and may not be accurate. Presently, Hazel Exp has many new features
+(+8000 lines of code have been added and +2000 modified) and is still in phase of heavy development, hence
+it requires a minimal explanation to be used. Yet, if the code is downloaded and installed as specified for Hazel v2.0, it should 
+be possible to use it in programatic mode with some of the test python files included in the test directory.
+The present entry will be fix as soon as possible.
 
+## Introduction for Hazel v2.0
 Hazel (an acronym for HAnle and ZEeman Light) is a computer program for the 
 synthesis and inversion of Stokes profiles caused by the joint action of atomic 
 level polarization and the Hanle and Zeeman effects. It is based on the quantum 
