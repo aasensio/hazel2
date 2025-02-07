@@ -149,6 +149,7 @@ class General_atmosphere(object):
         -------
         None
         """            
+        
         self.nodes_to_model()        
         self.reference = copy.deepcopy(self.parameters)
         self.nodes_logtau =  copy.deepcopy(self.nodes_logtau)

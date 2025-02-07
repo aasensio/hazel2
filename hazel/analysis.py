@@ -71,8 +71,8 @@ def synth_model(config_file, f, active=True, verbose=0):
                 deltav1 = f[atm]['deltav'][0, 0, 0, 0]
 
                 if verbose >= 3:
-                    labels = ['Bx', 'By', 'Bz', 'tau', 'v', 'deltav', 'beta', 'a']
-                    print(f'{atm}')
+                    labels = ['Bx', 'By', 'Bz', 'tau', 'v', 'deltav', 'beta', 'a']                    
+                    print(f'{atm} - (values for all cycles)')
                     for l in labels:
                         print(f"  * {l} : {f[atm][l][:].flatten()}")
 
@@ -87,7 +87,7 @@ def synth_model(config_file, f, active=True, verbose=0):
 
                 if verbose >= 3:
                     labels = ['lambda0', 'sigma', 'depth', 'a']
-                    print(f'{atm}')
+                    print(f'{atm} - (values for all cycles)')
                     for l in labels:
                         print(f"  * {l} : {f[atm][l][:].flatten()}")
 

@@ -8,9 +8,21 @@ from scipy import interpolate
 __all__ = ['Spectrum']
 
 class Spectrum(object):
-    def __init__(self, wvl=None, weights=None, observed_file=None, name=None, stokes_weights=None, los=None, boundary=None, mask_file=None, 
-        instrumental_profile=None, save_all_cycles=False, root='', wvl_lr=None):
-        
+    def __init__(self, 
+                 wvl=None, 
+                 weights=None, 
+                 observed_file=None, 
+                 name=None, 
+                 stokes_weights=None, 
+                 los=None, 
+                 boundary=None, 
+                 mask_file=None, 
+                 instrumental_profile=None, 
+                 save_all_cycles=False, 
+                 root='', 
+                 wvl_lr=None, 
+                 topology=None):
+                
         self.wavelength_axis = None
         self.stokes = None
         self.stokes_perturbed = None
@@ -22,6 +34,7 @@ class Spectrum(object):
         self.normalization = 'on-disk'
         self.save_all_cycles = save_all_cycles
         self.root = root
+        self.topology = topology
         
         if (wvl is not None):
             self.add_spectrum(wvl, wvl_lr)

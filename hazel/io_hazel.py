@@ -209,7 +209,7 @@ class Generic_output_file(object):
                     if (hasattr(v, 'log_tau')):
                         self.out_model[k]['log_tau'][:] = v.log_tau
                     for cycle in range(model.n_cycles):
-
+                        
                         # Model parameters
                         for k2, v2 in v.reference_cycle[cycle].items():
                             if (model.save_all_cycles):

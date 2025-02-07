@@ -37,7 +37,8 @@ class Model(object):
         self.chromospheres = []
         self.chromospheres_order = []
         self.atmospheres = {}
-        self.order_atmospheres = []        
+        self.order_atmospheres = []
+        self.index_spectral_regions = {}
         self.straylight = []
         self.parametric = []
         self.spectrum = []
@@ -80,13 +81,13 @@ class Model(object):
         if (self.verbose >= 1):
             self.logger.info('Hazel2 v1.0')
         
-        if ('torch' in sys.modules and 'torch_geometric' in sys.modules):
+        if ('torch' in sys.modules):
             if (self.verbose >= 1):
-                self.logger.info('PyTorch and PyTorch Geometric found. NLTE for Ca II is available')
+                self.logger.info('PyTorch found. NLTE for Ca II is available')
             self.nlte_available = True
         else:
             if (self.verbose >= 1):
-                self.logger.info('PyTorch and PyTorch Geometric not found. NLTE for Ca II cannot be used')
+                self.logger.info('PyTorch not found. NLTE for Ca II cannot be used')
         
         if (config is not None):
             if (self.verbose >= 1):
@@ -151,8 +152,10 @@ class Model(object):
         # self.working_mode = config_dict['working mode']['action']
 
         # Add spectral regions
+        loop = 0
         for key, value in config_dict['spectral regions'].items():
-            self.add_spectral(value)
+            self.add_spectral(value, loop)
+            loop += 1
 
         # Set number of cycles if present
         if (self.working_mode == 'inversion'):
@@ -280,10 +283,11 @@ class Model(object):
         # Adding topologies
         if (self.verbose >= 1):
             self.logger.info("Adding topologies") 
-
+        
         for value in self.topologies:
-            self.add_topology(value)
-
+            topo = self.add_topology(value)            
+            self.order_atmospheres.append(topo)
+        
         # Remove unused atmospheres defined in the configuration file and not in the topology
         if (self.verbose >= 1):
             self.logger.info("Removing unused atmospheres")
@@ -395,7 +399,9 @@ class Model(object):
             for k, v in self.atmospheres.items():
                 for k2, v2 in v.cycles.items():
                     if (v2 is not None):                   
-                        self.n_free_parameters += max(hazel.util.onlyint(v2[0:self.n_cycles+1]))
+                        tmp = hazel.util.onlyint(v2[0:self.n_cycles+1])
+                        if len(tmp) > 0:
+                            self.n_free_parameters += max(tmp)                        
 
             if (self.verbose >= 1):
                 self.logger.info('Total number of free parameters in all cycles : {0}'.format(self.n_free_parameters))
@@ -412,7 +418,7 @@ class Model(object):
             self.flatten_parameters_to_reference(cycle=0)
         self.output_handler.write(self, pixel=0, randomization=randomization)
 
-    def add_spectral(self, spectral):
+    def add_spectral(self, spectral, index):
         """
         Programmatically add a spectral region
 
@@ -588,9 +594,10 @@ class Model(object):
         stokes_weights = np.array(stokes_weights)
         
         self.spectrum[value['name']] = Spectrum(wvl=wvl, weights=weights, observed_file=obs_file, 
-            name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, mask_file=mask_file, instrumental_profile=value['instrumental profile'], root=self.root, wvl_lr=wvl_lr)
+            name=value['name'], stokes_weights=stokes_weights, los=los, boundary=boundary, mask_file=mask_file, instrumental_profile=value['instrumental profile'], root=self.root, wvl_lr=wvl_lr, topology=value['topology'])
         
         self.topologies.append(value['topology'])
+        self.index_spectral_regions[value['name']] = index
             
     def add_photosphere(self, atmosphere):
         """
@@ -649,7 +656,7 @@ class Model(object):
         if (self.verbose >= 1):
             self.logger.info("    * Adding line : {0}".format(lines))
             self.logger.info("    * Magnetic field reference frame : {0}".format(self.atmospheres[atm['name']].reference_frame))
-                    
+        
         self.atmospheres[atm['name']].add_active_line(lines=lines, spectrum=self.spectrum[atm['spectral region']], 
             wvl_range=np.array(wvl_range), verbose=self.verbose)
 
@@ -1156,15 +1163,15 @@ class Model(object):
         None
 
         """
-
-        self.order_atmospheres = []
         
         # Transform the order to a list of lists
         if (self.verbose >= 1):
             self.logger.info('  - {0}'.format(atmosphere_order))
-
+        
         vertical_order = atmosphere_order.split('->')        
         order = []
+
+        order_list = []
         for k in vertical_order:
             name = k.strip().replace('(','').replace(')','').split('+')
             name = [k.strip() for k in name]
@@ -1183,13 +1190,14 @@ class Model(object):
             if (self.atmospheres[atm].type == 'straylight'):
                 raise Exception("Straylight components can only be at the last position of a topology.")
         
-        self.order_atmospheres.append(order)        
+        order_list.append(order)
+    
 
         # Check that there are no two photospheres linked with ->
         # because they do not make any sense
 
         n_photospheres_linked = []
-        for atmospheres in self.order_atmospheres:
+        for atmospheres in order_list:
             for order in atmospheres:
                 for k, atm in enumerate(order):
                     if (self.atmospheres[atm].type == 'photosphere'):
@@ -1197,6 +1205,8 @@ class Model(object):
         
         if (len(n_photospheres_linked) != len(set(n_photospheres_linked))):
             raise Exception("There are several photospheres linked with ->. This is not allowed.")
+        
+        return order_list
                         
     # def normalize_ff_old(self):
     #     """
@@ -1252,36 +1262,40 @@ class Model(object):
         -------
         None
         """
-                
-        for atmospheres in self.order_atmospheres:
-            for order in atmospheres:
 
-                total_ff = 0.0
-                indices = {}
-                for atm in order:
-                    if (self.atmospheres[atm].type != 'straylight'):
-                        for i, node in enumerate(self.active_meta):
-                            if ((node['atm'] == atm) and (node['parameter'] == 'ff')):
-                                indices[atm] = i
-                                break                               
+        for k,spectral in self.spectrum.items():
+            index_spectral = self.index_spectral_regions[k]
+            for atmospheres in self.order_atmospheres[index_spectral]:
                 
-                # If filling factors are active
-                if (len(indices) != 0):
+        
+                for order in atmospheres:
+
                     total_ff = 0.0
-                    for k, v in indices.items():                    
-                        if (self.working_mode == 'inversion'): 
-                            total_ff += transformed_to_physical(nodes[v], self.atmospheres[k].ranges['ff'][0], self.atmospheres[k].ranges['ff'][1])
-                        else:
-                            total_ff = sum([transformed_to_physical(ff, -0.00001, 1.00001) for ff in nodes[indices]])
-                                    
+                    indices = {}
                     for atm in order:
                         if (self.atmospheres[atm].type != 'straylight'):
-                            if (self.working_mode == 'inversion'):                            
-                                ff = transformed_to_physical(nodes[indices[atm]], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
-                                nodes[indices[atm]] = physical_to_transformed(ff / total_ff, self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
+                            for i, node in enumerate(self.active_meta):
+                                if ((node['atm'] == atm) and (node['parameter'] == 'ff')):
+                                    indices[atm] = i
+                                    break                               
+                    
+                    # If filling factors are active
+                    if (len(indices) != 0):
+                        total_ff = 0.0
+                        for k, v in indices.items():                    
+                            if (self.working_mode == 'inversion'): 
+                                total_ff += transformed_to_physical(nodes[v], self.atmospheres[k].ranges['ff'][0], self.atmospheres[k].ranges['ff'][1])
                             else:
-                                ff = transformed_to_physical(nodes[indices[atm]], -0.00001, 1.00001)                            
-                                nodes[indices[atm]] = physical_to_transformed(ff / total_ff, -0.00001, 1.00001)
+                                total_ff = sum([transformed_to_physical(ff, -0.00001, 1.00001) for ff in nodes[indices]])
+                                        
+                        for atm in order:
+                            if (self.atmospheres[atm].type != 'straylight'):
+                                if (self.working_mode == 'inversion'):                            
+                                    ff = transformed_to_physical(nodes[indices[atm]], self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
+                                    nodes[indices[atm]] = physical_to_transformed(ff / total_ff, self.atmospheres[atm].ranges['ff'][0], self.atmospheres[atm].ranges['ff'][1])
+                                else:
+                                    ff = transformed_to_physical(nodes[indices[atm]], -0.00001, 1.00001)                            
+                                    nodes[indices[atm]] = physical_to_transformed(ff / total_ff, -0.00001, 1.00001)
 
         return nodes
 
@@ -1306,14 +1320,17 @@ class Model(object):
         stokes = None
         stokes_out = None
 
-        # Loop over all atmospheres        
-        for i, atmospheres in enumerate(self.order_atmospheres):
+        
+        index_spectral_region = self.index_spectral_regions[spectral_region]
+        
+        # Loop over all atmospheres
+        for i, atmospheres in enumerate(self.order_atmospheres[index_spectral_region]):
             
             for n, order in enumerate(atmospheres):
                                                                 
                 for k, atm in enumerate(order):
-                    
-                    if (self.atmospheres[atm].spectrum.name == spectral_region):                        
+                                        
+                    if (self.atmospheres[atm].spectrum.name == spectral_region):
                         
                         # Update the boundary condition only for the first atmosphere if several are sharing ff      
                         if (n > 0 and k == 0):
@@ -1333,7 +1350,7 @@ class Model(object):
                             if (k == 0):                                
                                 if (self.use_analytical_RF):
                                     stokes, self.rf_analytical, error = self.atmospheres[atm].synthesize(stokes_out, returnRF=True, nlte=self.use_nlte)
-                                else:                                    
+                                else:                                                            
                                     stokes, error = self.atmospheres[atm].synthesize(stokes_out, nlte=self.use_nlte)
                             else:             
                                 tmp, error = self.atmospheres[atm].synthesize(stokes_out, nlte=self.use_nlte)
@@ -1394,7 +1411,9 @@ class Model(object):
             # self.normalize_ff()
 
         for k, v in self.spectrum.items():
+                                    
             self.synthesize_spectral_region(k, perturbation=perturbation)            
+            
             if (v.normalization == 'off-limb'):
                 if (perturbation):
                     v.stokes_perturbed /= np.max(v.stokes_perturbed[0,:])
@@ -1435,50 +1454,52 @@ class Model(object):
         self.nodes = []
         left = 0
         right = 0
-        for atmospheres in self.order_atmospheres:
-            for n, order in enumerate(atmospheres):
-                for k, atm in enumerate(order):                    
-                    for l, par in self.atmospheres[atm].cycles.items():
-                        if (par is not None):
-                            if (hazel.util.isint(par[cycle])):
-                                if (par[cycle] > 0):
-                                    
-                                    # [Atmosphere name, n_nodes, nodes, value, range]
-                                    self.atmospheres[atm].nodes[l] = np.zeros(par[cycle])
-
-                                    self.atmospheres[atm].n_nodes[l] = par[cycle]
-
-                                    # Set the position of the nodes if available in the configuration file
-                                    if (self.atmospheres[atm].type == 'photosphere'):                                        
-                                        if (self.atmospheres[atm].nodes_location[l] is not None):
-                                            self.atmospheres[atm].nodes_logtau[l] = self.atmospheres[atm].nodes_location[l][cycle]
-
-                                    right += par[cycle]
-                                    
-                                    n_lambda = len(self.atmospheres[atm].spectrum.wavelength_axis)
-                                    tmp = {'atm': atm, 'n_nodes': par[cycle], 'parameter': l, 
-                                        'ranges': self.atmospheres[atm].ranges[l], 'delta': self.atmospheres[atm].epsilon[l],
-                                        'left': left, 'right': right, 'regularization': self.atmospheres[atm].regularization[l],
-                                        'coupled': False}
-
-                                    self.nodes.append(self.atmospheres[atm].nodes[l])
+        for k,spectral in self.spectrum.items():
+            index_spectral = self.index_spectral_regions[k]
+            for atmospheres in self.order_atmospheres[index_spectral]:
+                for n, order in enumerate(atmospheres):
+                    for k, atm in enumerate(order):                    
+                        for l, par in self.atmospheres[atm].cycles.items():
+                            if (par is not None):
+                                if (hazel.util.isint(par[cycle])):
+                                    if (par[cycle] > 0):
                                         
-                                    left = copy.copy(right)
-                                                                                                            
-                                    pars.append(tmp)
+                                        # [Atmosphere name, n_nodes, nodes, value, range]
+                                        self.atmospheres[atm].nodes[l] = np.zeros(par[cycle])
 
-                                else:
-                                    self.atmospheres[atm].nodes[l] = 0.0
-                                    self.atmospheres[atm].n_nodes[l] = 0
-                            else:
-                                
-                                n_lambda = len(self.atmospheres[atm].spectrum.wavelength_axis)
-                                tmp = {'atm': atm, 'n_nodes': par[cycle], 'parameter': l, 'coupled': True}
+                                        self.atmospheres[atm].n_nodes[l] = par[cycle]
 
-                                coupled.append(tmp)
+                                        # Set the position of the nodes if available in the configuration file
+                                        if (self.atmospheres[atm].type == 'photosphere'):                                        
+                                            if (self.atmospheres[atm].nodes_location[l] is not None):
+                                                self.atmospheres[atm].nodes_logtau[l] = self.atmospheres[atm].nodes_location[l][cycle]
+
+                                        right += par[cycle]
+                                        
+                                        n_lambda = len(self.atmospheres[atm].spectrum.wavelength_axis)
+                                        tmp = {'atm': atm, 'n_nodes': par[cycle], 'parameter': l, 
+                                            'ranges': self.atmospheres[atm].ranges[l], 'delta': self.atmospheres[atm].epsilon[l],
+                                            'left': left, 'right': right, 'regularization': self.atmospheres[atm].regularization[l],
+                                            'coupled': False}
+
+                                        self.nodes.append(self.atmospheres[atm].nodes[l])
+                                            
+                                        left = copy.copy(right)
+                                                                                                                
+                                        pars.append(tmp)
+
+                                    else:
+                                        self.atmospheres[atm].nodes[l] = 0.0
+                                        self.atmospheres[atm].n_nodes[l] = 0
+                                else:                                    
+                                    n_lambda = len(self.atmospheres[atm].spectrum.wavelength_axis)
+                                    tmp = {'atm': atm, 'n_nodes': par[cycle], 'parameter': l, 'coupled': True}
+                                    
+                                    coupled.append(tmp)
 
         self.active_meta = pars
         self.coupled_meta = coupled
+        
 
         if (not self.nodes):
             raise Exception("No parameters to invert in cycle {0}. Please add them or reduce the number of cycles. ".format(cycle))            
@@ -1500,8 +1521,9 @@ class Model(object):
         None
 
         """
+                
         self.synthesize()
-
+        
         if (not compute_rf):            
             return
 
@@ -1570,7 +1592,8 @@ class Model(object):
                                 if (self.verbose >= 4):
                                     self.logger.info("   * Coupling RF to {0} - {1}".format(par2['parameter'], par2['atm']))
                                 self.atmospheres[par2['atm']].nodes[par2['parameter']] = nodes + perturbation
-                                    
+                                self.atmospheres[par2['atm']].n_nodes[par2['parameter']] = par['n_nodes']
+                                        
                     # Synthesize                    
                     self.synthesize(perturbation=True)
                                                     
@@ -1581,6 +1604,7 @@ class Model(object):
                         if (par2['coupled'] is True):
                             if (par['atm'] == par2['n_nodes'] and par['parameter'] == par2['parameter']):
                                 self.atmospheres[par2['atm']].nodes[par2['parameter']] = nodes
+                                self.atmospheres[par2['atm']].n_nodes[par2['parameter']] = par['n_nodes']
                     
                     if (include_jacobian):
                         # jacobian =
@@ -1663,7 +1687,8 @@ class Model(object):
         -------
         None
 
-        """                
+        """        
+        
         if (self.working_mode == 'inversion'):
             for k, v in self.atmospheres.items():
                 v.set_reference(cycle=cycle)
@@ -1703,7 +1728,7 @@ class Model(object):
             right = par['right']
 
             self.atmospheres[par['atm']].nodes[par['parameter']] = nodes[left:right]
-
+        
         # Modify all coupled parameters accordingly
         for par in self.coupled_meta:
             for par2 in self.active_meta:
@@ -1713,9 +1738,8 @@ class Model(object):
                     right = par2['right']
                     
                     self.atmospheres[par['atm']].nodes[par['parameter']] = nodes[left:right]
-                    self.atmospheres[par['atm']].parameters[par['parameter']] = copy.copy(self.atmospheres[par2['atm']].parameters[par2['parameter']])
+                    self.atmospheres[par['atm']].parameters[par['parameter']] = copy.copy(self.atmospheres[par2['atm']].parameters[par2['parameter']])                    
         
-                    
 
     def modified_svd_inverse(self, H, tol=1e-8):
         """
@@ -2106,6 +2130,12 @@ class Model(object):
             keepon = True
             iteration = 0
 
+            
+            self.set_new_model(self.nodes)            
+
+            # First synthesis to put models correctly, adding the references
+            self.synthesize()
+            
             # Main Levenberg-Marquardt algorithm            
             self.synthesize_and_compute_rf(compute_rf=True)
             chi2, dchi2, ddchi2 = self.compute_chi2()            
@@ -2159,13 +2189,14 @@ class Model(object):
                 new_solution = self.nodes + delta_solution
                 
                 self.set_new_model(new_solution)
+                
 
                 # Update the nodes of the model clipping the new solution so that the step is reasonable
                 # self.nodes += delta_solution
                 self.nodes = copy.copy(new_solution)
 
                 self.synthesize_and_compute_rf(compute_rf=True)
-
+                
                 chi2, dchi2, ddchi2 = self.compute_chi2()
 
                 rel = 2.0 * (chi2 - bestchi2) / (chi2 + bestchi2)
@@ -2200,7 +2231,8 @@ class Model(object):
                     keepon = False
 
                 iteration += 1
-            
+
+                            
             self.set_new_model(self.nodes)
 
 

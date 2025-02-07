@@ -224,7 +224,7 @@ class SIR_atmosphere(General_atmosphere):
         """
         n_nodes = len(nodes)
         n_depth = len(log_tau)
-
+        
         nodes_given = False
         if (nodes_location is not None):
             nodes_given = True
@@ -490,8 +490,9 @@ class SIR_atmosphere(General_atmosphere):
         Returns
         -------
         None
-        """        
-        for k, v in self.nodes.items():
+        """
+        
+        for k, v in self.nodes.items():            
             if (self.n_nodes[k] > 0):                
                 self.parameters[k], self.nodes_index[k] = self.interpolate_nodes(self.log_tau, self.reference[k], self.nodes[k], self.nodes_logtau[k])                
             else:
@@ -706,9 +707,9 @@ class SIR_atmosphere(General_atmosphere):
             else:
                 self.departure = np.ones((2, len(self.lines), len(self.log_tau)))
                         
-            stokes, cmass, rf, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
-                self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
-                self.parameters['Bz'], self.parameters['vmac'], np.asfortranarray(self.departure))
+            stokes, cmass, rf, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau.astype('float64'), self.parameters['T'].astype('float64'), 
+                self.Pe.astype('float64'), 1e5*self.parameters['vmic'].astype('float64'), 1e5*self.parameters['v'].astype('float64'), self.parameters['Bx'].astype('float64'), self.parameters['By'].astype('float64'), 
+                self.parameters['Bz'].astype('float64'), np.float64(self.parameters['vmac']), np.asfortranarray(self.departure.astype('float64')))
             
             # Transform SIR RFs into response functions to Bx, By and Bz.
             # To this end, we have:
