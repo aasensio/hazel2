@@ -110,13 +110,14 @@ In the following we paste a typical configuration file for the inversion mode.
         Reference frame = vertical
 
             [[[Ranges]]]
-            T      = -3000.0, 3000.0
+            T      = 3000.0, 10000.0
             vmic   = 0.0, 3.0
             v      = -10.0, 10.0
             Bx     = -1000.0, 1000.0
             By     = -1000.0, 1000.0
             Bz     = -1000.0, 1000.0
             ff     = 0.0, 1.0
+            vmac   = 0.0, 5.0
 
             [[[Nodes]]]
             T      = 3, 3, 5, 5
@@ -126,6 +127,7 @@ In the following we paste a typical configuration file for the inversion mode.
             By     = 1, 1, 1, 1
             Bz     = 1, 1, 1, 1
             ff     = 0, 0, 0, 0
+            vmac   = 0, 0, 0, 0
 
             [[Regularization]]
             T      = None

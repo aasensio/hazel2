@@ -18,12 +18,18 @@ import sys
 import warnings
 import copy
 
+def handle_timeout(signum, frame):
+    """Handles the timeout signal."""
+    raise TimeoutError("Worker process timed out!")
+
 class tags(IntEnum):
     READY = 0
     DONE = 1
     EXIT = 2
     START = 3
     DONOTHING = 4
+    TIMEOUT = 5
+
 
 class Iterator(object):
     def __init__(self, use_mpi=False):
@@ -139,7 +145,7 @@ class Iterator(object):
                 if (self.model.n_randomization > 1):
                     randomize = True
                 else:
-                    randomize = False
+                    randomize = False                
 
                 for loop in range(self.model.n_randomization):
 
@@ -147,6 +153,7 @@ class Iterator(object):
                         # Read current spectrum and stray light
                         for k, v in self.model.spectrum.items():
                             v.read_observation(pixel=i)
+                        
                         self.model.invert(randomize=randomize, randomization_ind=loop)                        
                     else:
                         self.model.synthesize()
@@ -237,12 +244,13 @@ class Iterator(object):
                                         v.set_parameters(args, ff)
                                     v.init_reference()
                                     data_to_send[k] = [v.reference, v.parameters, v.stray_profile]
-
+                                
                                 # Read current spectrum and stray light
                                 for k, v in self.model.spectrum.items():
                                     v.read_observation(pixel=task_index)
                                     
                                     data_to_send[k] = [v.obs, v.noise, v.los, v.boundary, v.mu]
+                                    
                             else:
                                 for k, v in self.model.atmospheres.items():
                                     if (v.type == 'photosphere'):
@@ -251,7 +259,7 @@ class Iterator(object):
                                     else:
                                         args, ff = v.model_handler.read(pixel=task_index)
                                         data_to_send[k] = [args, ff]
-
+                            
                             self.comm.send(data_to_send, dest=source, tag=tags.START)
 
                         else:
@@ -260,7 +268,7 @@ class Iterator(object):
                         task_index += 1
                         pbar.update(1)
                         self.last_sent = '{0} to {1}'.format(task_index, source)
-
+                        
                         if (self.elapsed == 'Numerical error'):
                             pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers=self.workers, elapsed='Numerical error')
                         else:
@@ -284,8 +292,7 @@ class Iterator(object):
                                 v.aic_cycle = data_received[label][k][3]
                                 if (v.interpolate_to_lr):
                                     v.stokes_lr_cycle = data_received[label][k][4]
-                                
-                            
+                                                                                        
                             for k, v in self.model.atmospheres.items():
                                 v.reference_cycle, v.error_cycle, v.nodes_location_cycle = data_received[label][k]
 
@@ -307,12 +314,17 @@ class Iterator(object):
                 elif tag == tags.DONOTHING:
                     pass
 
+                elif tag == tags.TIMEOUT:
+                    index = data_received['index']
+                    print(f'{index} TIMEOUT', flush=True)
+                    pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers=f'{self.workers}', info='{0} TIMEOUT'.format(source))
+
                 elif tag == tags.EXIT:                    
                     closed_workers += 1
                     if (self.elapsed == 'Numerical error'):
-                        pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers='{0} finished with numerical error'.format(source))
+                        pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers=f'{self.workers}', info='{0} finished with numerical error'.format(source))
                     else:
-                        pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers='{0} finished'.format(source), elapsed='{0:6.3f} s <{1:6.3f} s>'.format(self.elapsed, self.avg_elapsed))
+                        pbar.set_postfix(sent=self.last_sent, received=self.last_received, workers=f'{self.workers}', info='worker {0} finished'.format(source), elapsed='{0:6.3f} s <{1:6.3f} s>'.format(self.elapsed, self.avg_elapsed))
 
     def mpi_workers_work(self):
         """
@@ -328,114 +340,130 @@ class Iterator(object):
         """
         
         while True:
-            self.comm.send(None, dest=0, tag=tags.READY)
-            data_received = self.comm.recv(source=0, tag=MPI.ANY_TAG, status=self.status)
+            try:
+                self.comm.send(None, dest=0, tag=tags.READY)
+                data_received = self.comm.recv(source=0, tag=MPI.ANY_TAG, status=self.status)
 
-            tag = self.status.Get_tag()
-            
-            if tag == tags.START:
-                task_index = data_received['index']
-
-                data_to_send = {'index': task_index}
-
-                t0 = time.time()
+                tag = self.status.Get_tag()
                 
-                if (self.model.working_mode == 'inversion'):
+                if tag == tags.START:
+                    task_index = data_received['index']
+
+                    data_to_send = {'index': task_index}
+
+                    t0 = time.time()
                     
-                    for k, v in self.model.spectrum.items():
-                        v.obs, v.noise, v.los, v.boundary, v.mu = data_received[k]
-
-                    for k, v in self.model.atmospheres.items():
-                        v.reference, v.parameters, v.stray_profile = data_received[k]
-
-                    
-                    # Check for randomization
-                    if (self.model.n_randomization > 1):
-                        randomize = True
-                    else:
-                        randomize = False                                            
-
-                    # Loop over randomizations
-                    for loop in range(self.model.n_randomization):
-
-                        label = 'randomization_{0}'.format(loop)
-                        data_to_send[label] = {}
+                    if (self.model.working_mode == 'inversion'):
                         
-                        # Try to do the inversion
-                        # try:
-                        self.model.invert(randomize=randomize, randomization_ind=loop)
-                        data_to_send['error'] = 0
+                        for k, v in self.model.spectrum.items():
+                            v.obs, v.noise, v.los, v.boundary, v.mu = data_received[k]
+
+                        for k, v in self.model.atmospheres.items():
+                            v.reference, v.parameters, v.stray_profile = data_received[k]
+
+                        
+                        # Check for randomization
+                        if (self.model.n_randomization > 1):
+                            randomize = True
+                        else:
+                            randomize = False                                            
+
+                        # Loop over randomizations
+                        for loop in range(self.model.n_randomization):
+
+                            label = 'randomization_{0}'.format(loop)
+                            data_to_send[label] = {}
+                            
+                            # Try to do the inversion
+                            # First set a timeout for the inversion
+                            signal.signal(signal.SIGALRM, handle_timeout)
+                            signal.alarm(self.model.timeout_seconds)
+
+                            self.model.invert(randomize=randomize, randomization_ind=loop)
+
+                            # Cancel the timeout
+                            signal.alarm(0)
+
+                            data_to_send['error'] = 0
+                            for k, v in self.model.spectrum.items():
+                                if (v.interpolate_to_lr):
+                                    data_to_send[label][k] = copy.deepcopy([self.model.spectrum[k].stokes_cycle, self.model.spectrum[k].chi2_cycle, self.model.spectrum[k].bic_cycle, self.model.spectrum[k].aic_cycle, self.model.spectrum[k].stokes_lr_cycle])
+                                else:
+                                    data_to_send[label][k] = copy.deepcopy([self.model.spectrum[k].stokes_cycle, self.model.spectrum[k].chi2_cycle, self.model.spectrum[k].bic_cycle, self.model.spectrum[k].aic_cycle])
+
+                            for k, v in self.model.atmospheres.items():                            
+                                data_to_send[label][k] = copy.deepcopy([v.reference_cycle, v.error_cycle, v.nodes_logtau_cycle])
+
+                            # If a numerical problem appeared, send the error code to the parent
+                            # except NumericalErrorHazel:                            
+                            #     data_to_send['error'] = 1
+                            #     for k, v in self.model.spectrum.items():
+                            #         data_to_send[label][k] = None
+
+                            #     for k, v in self.model.atmospheres.items():
+                            #         data_to_send[label][k] = None
+                            
+                            # except NumericalErrorSIR:
+                            #     data_to_send['error'] = 2
+                            #     for k, v in self.model.spectrum.items():
+                            #         data_to_send[label][k] = None
+
+                            #     for k, v in self.model.atmospheres.items():
+                            #         data_to_send[label][k] = None
+
+                            # except:
+                            #     data_to_send['error'] = 3
+                            #     for k, v in self.model.spectrum.items():
+                            #         data_to_send[label][k] = None
+
+                            #     for k, v in self.model.atmospheres.items():
+                            #         data_to_send[label][k] = None
+                            
+                    else:
+                        for k, v in self.model.atmospheres.items():                    
+                            if (v.type == 'photosphere'):
+                                v.set_parameters(data_received[k][0], data_received[k][1], data_received[k][2])
+                            else:
+                                v.set_parameters(data_received[k][0], data_received[k][1])
+                            
+                        label = 'randomization_0'
+                        data_to_send[label] = {}
+
+                        try:
+                            self.model.synthesize()
+                            self.model.flatten_parameters_to_reference(cycle=0)
+                            data_to_send['error'] = 0
+                        except NumericalErrorHazel:                            
+                            data_to_send['error'] = 1
+                        except NumericalErrorSIR:                            
+                            data_to_send['error'] = 2
+                        except:
+                            data_to_send['error'] = 3
+                        
+                        
                         for k, v in self.model.spectrum.items():
                             if (v.interpolate_to_lr):
-                                data_to_send[label][k] = copy.deepcopy([self.model.spectrum[k].stokes_cycle, self.model.spectrum[k].chi2_cycle, self.model.spectrum[k].bic_cycle, self.model.spectrum[k].aic_cycle, self.model.spectrum[k].stokes_lr_cycle])
+                                data_to_send[label][k] = [self.model.spectrum[k].stokes_cycle, None, None, None, self.model.spectrum[k].stokes_lr_cycle]
                             else:
-                                data_to_send[label][k] = copy.deepcopy([self.model.spectrum[k].stokes_cycle, self.model.spectrum[k].chi2_cycle, self.model.spectrum[k].bic_cycle, self.model.spectrum[k].aic_cycle])
+                                data_to_send[label][k] = [self.model.spectrum[k].stokes_cycle, None, None, None]
 
-                        for k, v in self.model.atmospheres.items():                            
-                            data_to_send[label][k] = copy.deepcopy([v.reference_cycle, v.error_cycle, v.nodes_logtau_cycle])
+                        for k, v in self.model.atmospheres.items():
+                            data_to_send[label][k] = [v.reference_cycle, v.error_cycle, None]
+                                            
+                    t1 = time.time()
+                    data_to_send['elapsed'] = t1 - t0
+                    self.comm.send(data_to_send, dest=0, tag=tags.DONE)
+                elif tag == tags.DONOTHING:
+                    self.comm.send({}, dest=0, tag=tags.DONOTHING)
+                elif tag == tags.EXIT:
+                    break
+            
+            # If the worked takes too long, send a timeout error
+            except TimeoutError:                
+                self.comm.send({'index': task_index}, dest=0, tag=tags.TIMEOUT)
 
-                        # If a numerical problem appeared, send the error code to the parent
-                        # except NumericalErrorHazel:                            
-                        #     data_to_send['error'] = 1
-                        #     for k, v in self.model.spectrum.items():
-                        #         data_to_send[label][k] = None
-
-                        #     for k, v in self.model.atmospheres.items():
-                        #         data_to_send[label][k] = None
-                        
-                        # except NumericalErrorSIR:
-                        #     data_to_send['error'] = 2
-                        #     for k, v in self.model.spectrum.items():
-                        #         data_to_send[label][k] = None
-
-                        #     for k, v in self.model.atmospheres.items():
-                        #         data_to_send[label][k] = None
-
-                        # except:
-                        #     data_to_send['error'] = 3
-                        #     for k, v in self.model.spectrum.items():
-                        #         data_to_send[label][k] = None
-
-                        #     for k, v in self.model.atmospheres.items():
-                        #         data_to_send[label][k] = None
-                        
-                else:
-                    for k, v in self.model.atmospheres.items():                    
-                        if (v.type == 'photosphere'):
-                            v.set_parameters(data_received[k][0], data_received[k][1], data_received[k][2])
-                        else:
-                            v.set_parameters(data_received[k][0], data_received[k][1])
-                        
-                    label = 'randomization_0'
-                    data_to_send[label] = {}
-
-                    try:
-                        self.model.synthesize()
-                        self.model.flatten_parameters_to_reference(cycle=0)
-                        data_to_send['error'] = 0
-                    except NumericalErrorHazel:                            
-                        data_to_send['error'] = 1
-                    except NumericalErrorSIR:                            
-                        data_to_send['error'] = 2
-                    except:
-                        data_to_send['error'] = 3
-                    
-                    
-                    for k, v in self.model.spectrum.items():
-                        if (v.interpolate_to_lr):
-                            data_to_send[label][k] = [self.model.spectrum[k].stokes_cycle, None, None, None, self.model.spectrum[k].stokes_lr_cycle]
-                        else:
-                            data_to_send[label][k] = [self.model.spectrum[k].stokes_cycle, None, None, None]
-
-                    for k, v in self.model.atmospheres.items():
-                        data_to_send[label][k] = [v.reference_cycle, v.error_cycle, None]
-                                        
-                t1 = time.time()
-                data_to_send['elapsed'] = t1 - t0
-                self.comm.send(data_to_send, dest=0, tag=tags.DONE)
-            elif tag == tags.DONOTHING:
-                self.comm.send({}, dest=0, tag=tags.DONOTHING)
-            elif tag == tags.EXIT:
+            # In case of a communication error, exit the loop
+            except MPI.CommError:
                 break
 
         self.comm.send(None, dest=0, tag=tags.EXIT)           

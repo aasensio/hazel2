@@ -187,6 +187,18 @@ class Model(object):
         if (self.verbose >= 1):
             self.logger.info('Using {0} max. iterations'.format(self.max_iterations))
 
+
+        # Set number of maximum timeout
+        if ('timeout' in config_dict['working mode']):
+            if (config_dict['working mode']['timeout'] != 'None'):
+                self.timeout_seconds = int(config_dict['working mode']['timeout'])
+            else:
+                self.timeout_seconds = 10000
+        else:
+            self.timeout_seconds = 10000
+        if (self.verbose >= 1):
+            self.logger.info('Timeout : {0} s'.format(self.timeout_seconds))
+
         # Randomization
         if (self.verbose >= 1):
             if (self.n_randomization == 1):

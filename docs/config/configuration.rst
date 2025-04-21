@@ -23,6 +23,7 @@ The first part of the configuration file represents very general properties.
     Relative error = 1e-4
     Backtracking = 'brent'
     Save all cycles = False
+    Timeout = 1000
 
 * ``Ouput file``: defines the output file, which is usually an HDF5 or FITS file. It should always be present, otherwise you won't get any output.
 * ``Number of cycles`` (optional) : is a global variable to select the number of cycles to carry out during inversion. It can be used to neglect the number of cycles that will be described later in the configuration file.
@@ -30,6 +31,7 @@ The first part of the configuration file represents very general properties.
 * ``Relative error`` (optional, default is 1e-4) : relative error when to stop iterating
 * ``Backtracking`` (optional, default is ``brent``) : method to be used for the computation of the optimal Levenberg-Marquardt parameter. Two options are available: ``parabolic`` (which uses parabolic interpolation) and ``brent`` (which uses the Brent algorithm, which should be more efficient)
 * ``Save all cycles`` (optional, default is ``False``) : True if you want to save the result of all cycles in the inversion.
+* ``Timeout`` (optional, default is 10000) : maximum time in seconds to carry out the inversion in MPI mode. If the inversion takes longer, it will be stopped and no result will be saved.
 
 Spectral regions
 ----------------

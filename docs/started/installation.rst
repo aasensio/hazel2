@@ -24,7 +24,7 @@ For a Linux OS, type:
 
     conda create -n hazel_env python=3.10
     conda activate hazel_env
-    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpich mpi4py configobj gfortran_linux-64 gcc_linux-64 asciitree
+    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpich mpi4py configobj gfortran setuptools asciitree
 
 A different version of Python can be installed in the environment. For Mac OS, type:
 
