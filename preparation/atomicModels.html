@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>5.7. Atomic models &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="6. Examples" href="../examples.html" />
+    <link rel="prev" title="5.6. The reference system" href="refsys.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../started/installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../started.html">2. Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">3. Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io_files.html">4. Input/output files</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../preparation.html">5. Data preparation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="prepareData.html">5.1. Data preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/boundary_conditions.html">5.2. How to deal with boundary conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="equations.html">5.3. Basic Equations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ambiguities.html">5.4. Ambiguities in the Hanle effect in the saturation regime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="photospheric.html">5.5. List of photospheric lines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="refsys.html">5.6. The reference system</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">5.7. Atomic models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">6. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../preparation.html"><span class="section-number">5. </span>Data preparation</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">5.7. </span>Atomic models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/preparation/atomicModels.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="atomic-models">
+<h1><span class="section-number">5.7. </span>Atomic models<a class="headerlink" href="#atomic-models" title="Link to this heading">¶</a></h1>
+<p>Atomic models have to be defined in  in order to carry out a
+calculation. This section describes the model atom file in detail by
+using the example <code class="docutils literal notranslate"><span class="pre">helium.mod</span></code> that is included in the present version
+of Hazel. The atom model for He I is given by:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2</span>
+<span class="mi">5</span>
+<span class="mi">1</span>        <span class="mi">0</span>
+                   <span class="mf">0.00</span>
+<span class="mi">2</span>        <span class="mi">2</span>
+                   <span class="mf">0.00</span>
+                  <span class="o">-</span><span class="mf">0.987913</span>
+                  <span class="o">-</span><span class="mf">1.064340</span>
+<span class="mi">3</span>        <span class="mi">0</span>
+                   <span class="mf">0.00</span>
+<span class="mi">4</span>        <span class="mi">2</span>
+                   <span class="mf">0.00</span>
+                  <span class="o">-</span><span class="mf">0.270647</span>
+                  <span class="o">-</span><span class="mf">0.292616</span>
+<span class="mi">5</span>        <span class="mi">4</span>
+                   <span class="mf">0.00</span>
+                  <span class="o">-</span><span class="mf">0.044187</span>
+                  <span class="o">-</span><span class="mf">0.046722</span>
+<span class="mi">4</span>
+<span class="mi">1</span>    <span class="mi">1</span>    <span class="mi">2</span>    <span class="mf">1.022</span><span class="n">d7</span>    <span class="mf">10829.0911</span>    <span class="mf">1.0000000</span>    <span class="mf">1.0000000</span>    <span class="mf">0.0000000</span>
+<span class="mi">2</span>    <span class="mi">1</span>    <span class="mi">4</span>    <span class="mf">9.478</span><span class="n">d6</span>    <span class="mf">3888.6046</span>    <span class="mf">0.2000000</span>    <span class="mf">1.0000000</span>    <span class="mf">0.0000000</span>
+<span class="mi">3</span>    <span class="mi">2</span>    <span class="mi">3</span>    <span class="mf">2.780</span><span class="n">d7</span>    <span class="mf">7065.7085</span>    <span class="mf">1.0000000</span>    <span class="mf">1.0000000</span>    <span class="mf">0.0000000</span>
+<span class="mi">4</span>    <span class="mi">2</span>    <span class="mi">5</span>    <span class="mf">7.060</span><span class="n">d7</span>    <span class="mf">5875.9663</span>    <span class="mf">1.0000000</span>    <span class="mf">1.0000000</span>    <span class="mf">0.0000000</span>
+</pre></div>
+</div>
+<p>The first two numbers define the general properties of the atom. The
+first line of the file is equal to <span class="math notranslate nohighlight">\(2S\)</span>, where <span class="math notranslate nohighlight">\(S\)</span> is the
+value of the spin of the terms. In the example, <span class="math notranslate nohighlight">\(S=1\)</span>. At present,
+the code does not treat transitions between terms of different
+multiplicity which are, otherwise, of reduced importance due to their
+small transition probability. The second line contains the number of
+terms included in the model atom. This example represents the triplet
+system of He i with the lowest five terms, 2s<span class="math notranslate nohighlight">\(^3\)</span>S,
+3s<span class="math notranslate nohighlight">\(^3\)</span>S, 2p<span class="math notranslate nohighlight">\(^3\)</span>P, 3p<span class="math notranslate nohighlight">\(^3\)</span>P and
+3d<span class="math notranslate nohighlight">\(^3\)</span>D</p>
+<p>Then, the following lines define the term levels included in the model. The
+information for each term consist of a line with an index (0,1,2,…) that
+is used just to label each term and the value of <span class="math notranslate nohighlight">\(2L\)</span>, where
+<span class="math notranslate nohighlight">\(L\)</span> is the value of the electronic orbital angular momentum. Then,
+for each term, we must supply a list containing the energy separation in
+cm<span class="math notranslate nohighlight">\(^{-1}\)</span> between each <span class="math notranslate nohighlight">\(J\)</span>-level and the level with the
+smallest absolute value of <span class="math notranslate nohighlight">\(J\)</span>. In case only one value of
+<span class="math notranslate nohighlight">\(J\)</span> is possible in the term, just put 0 in the energy difference.</p>
+<p>Finally, the list of transitions has to be supplied. The first number
+indicates the number of radiative transitions included in the model.
+Then, the list contains the following numbers for each transition: index
+number, index of lower level, index of upper level, Einstein coefficient
+for spontaneous emission <span class="math notranslate nohighlight">\(A_{ul}\)</span> of the transition, modification
+factor <span class="math notranslate nohighlight">\(f(\bar{n})\)</span>, modification factor <span class="math notranslate nohighlight">\(f(w)\)</span> and value of
+<span class="math notranslate nohighlight">\(J^1_0/J^0_0\)</span>. The modification factors <span class="math notranslate nohighlight">\(f(\bar{n})\)</span> and
+<span class="math notranslate nohighlight">\(f(w)\)</span> are multiplied by the mean number of photons per mode
+<span class="math notranslate nohighlight">\(\bar{n}\)</span> and the anisotropy factor <span class="math notranslate nohighlight">\(w\)</span>, respectively. Since
+ uses the value of <span class="math notranslate nohighlight">\(\bar{n}\)</span> and <span class="math notranslate nohighlight">\(w\)</span> calculated from the
+tabulated solar CLV and taking into account geometrical effects, these
+factors can be used to analyze the behavior of the emergent Stokes
+profiles when, for some reason, the anisotropy or the intensity of the
+radiation field is increased or decreased by an arbitrary factor.
+Finally, if the radiation illuminating the atoms has non-zero net
+circular polarization, it is possible to include its effect in the
+statistical equilibrium equations by giving the value of
+<span class="math notranslate nohighlight">\(J^1_0/J^0_0\)</span>.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="refsys.html" class="btn btn-neutral float-left" title="5.6. The reference system" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../examples.html" class="btn btn-neutral float-right" title="6. Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

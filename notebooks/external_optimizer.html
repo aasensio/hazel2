@@ -1,0 +1,2120 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>6.6. Using an external optimizer &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="7. Graphical front-end" href="../graphical.html" />
+    <link rel="prev" title="6.5. Synthesis of a 3D cube" href="parallel_synth.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../started/installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../started.html">2. Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">3. Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io_files.html">4. Input/output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparation.html">5. Data preparation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">6. Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="prog_synthesis.html">6.1. Synthesis in programmatic mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conf_synthesis.html">6.2. Synthesis with a configuration file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conf_inversion.html">6.3. Inversion with a configuration file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parallel.html">6.4. Inversion of a 3D cube</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parallel_synth.html">6.5. Synthesis of a 3D cube</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">6.6. Using an external optimizer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Using-SciPy">6.6.1. Using SciPy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Using-other-external-optimizers-(pro-mode)">6.6.2. Using other external optimizers (pro-mode)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html"><span class="section-number">6. </span>Examples</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">6.6. </span>Using an external optimizer</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notebooks/external_optimizer.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Using-an-external-optimizer">
+<h1><span class="section-number">6.6. </span>Using an external optimizer<a class="headerlink" href="#Using-an-external-optimizer" title="Link to this heading">¶</a></h1>
+<p>Hazel comes with a preconfigured efficient Levenberg-Marquard algorithm, but it can also use any external optimizer. It can seamlessly integrate all SciPy optimizers but it also provides the tools to use other optimizers.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">pl</span>
+<span class="kn">import</span> <span class="nn">hazel</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize</span><span class="p">,</span> <span class="n">differential_evolution</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">hazel</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+<span class="n">label</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="s1">&#39;Q&#39;</span><span class="p">,</span> <span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="s1">&#39;V&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+2018.9.22
+</pre></div></div>
+</div>
+<p>Let’s start by generating a model by reading the following configuration file:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">cat</span> conf_single.ini
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+# Hazel configuration File
+
+[Working mode]
+Output file = output.h5
+Number of cycles = 1
+
+# Topology
+# Always photosphere and then chromosphere
+# Photospheres are only allowed to be added with a filling factor
+# Atmospheres share a filling factor if they are in parenthesis
+# Atmospheres are one after the other with the -&gt; operator
+# Atmosphere 1 = ph2 -&gt; ch1 -&gt; ch2
+
+[Spectral regions]
+    [[Region 1]]
+    Name = spec1
+    Wavelength = 10826, 10833, 150
+    Topology = ph1 -&gt; ch1 -&gt; te1
+    Stokes weights = 1.0, 1.0, 1.0, 1.0
+    LOS = 0.0, 0.0, 90.0
+    Boundary condition = 1.0, 0.0, 0.0, 0.0       # I/Ic(mu=1), Q/Ic(mu=1), U/Ic(mu=1), V/Ic(mu=1)
+    Wavelength file = &#39;observations/10830.wavelength&#39;
+    Wavelength weight file = &#39;observations/10830.weights&#39;
+    Observations file = &#39;observations/10830_stokes.1d&#39;
+    Weights Stokes I = 1.0, 0.0, 0.0, 0.0
+    Weights Stokes Q = 0.0, 0.0, 0.0, 0.0
+    Weights Stokes U = 0.0, 0.0, 0.0, 0.0
+    Weights Stokes V = 0.0, 0.0, 0.0, 0.0
+    Mask file = None
+
+[Atmospheres]
+
+    [[Photosphere 1]]
+    Name = ph1
+    Reference atmospheric model = &#39;photospheres/model_photosphere_200.1d&#39;
+    Spectral region = spec1
+    Wavelength = 10826, 10833
+    Spectral lines = 300,
+
+        [[[Ranges]]]
+        T      = 2500.0, 9000.0
+        vmic   = 0.0, 3.0
+        v      = -10.0, 10.0
+        Bx     = -1000.0, 1000.0
+        By     = -1000.0, 1000.0
+        Bz     = -1000.0, 1000.0
+        ff     = 0.0, 1.001
+
+        [[[Nodes]]]
+        T      = 1, 1, 5, 5
+        vmic   = 1, 0, 1, 1
+        v      = 0, 0, 1, 1
+        Bx     = 0, 0, 1, 1
+        By     = 0, 0, 1, 1
+        Bz     = 0, 0, 1, 1
+        ff     = 0, 0, 0, 0
+
+
+    [[Chromosphere 1]]
+    Name = ch1                                              # Name of the atmosphere component
+    Spectral region = spec1                                 # Spectral region to be used for synthesis
+    Height = 3.0                                            # Height of the slab
+    Line = 10830                                            # 10830, 5876
+    Wavelength = 10828, 10833                         # Wavelength range used for synthesis
+    Reference atmospheric model = &#39;chromospheres/model_chromosphere.1d&#39;    # File with model parameters
+
+        [[[Ranges]]]
+        Bx     = -500, 500
+        By     = -500, 500
+        Bz     = -500, 500
+        tau    = 0.1, 2.0
+        v      = -10.0, 10.0
+        deltav = 3.0, 12.0
+        beta   = 0.9, 2.0
+        a      = 0.0, 1.0
+        ff     = 0.0, 1.001
+
+
+        [[[Nodes]]]
+        Bx     = 0, 0, 1, 1
+        By     = 0, 0, 1, 1
+        Bz     = 0, 0, 1, 1
+        tau    = 0, 0, 0, 0
+        v      = 0, 0, 0, 0
+        deltav = 0, 0, 0, 0
+        beta   = 0, 0, 0, 0
+        a      = 0, 0, 0, 0
+        ff     = 0, 0, 0, 0
+
+    [[Parametric 1]]
+    Name = te1
+    Spectral region = spec1
+    Wavelength = 10828, 10833
+    Reference atmospheric model = &#39;telluric/model_telluric.1d&#39;    # File with model parameters
+    Type = Voigt           # Voigt, MoGaussian, MoVoigt
+
+        [[[Ranges]]]
+        Lambda0 = 10832.0, 10834.0
+        Sigma = 0.1, 0.5
+        Depth = 0.2, 0.8
+        a = 0.0, 1.2
+        ff = 0.0, 1.001
+
+        [[[Nodes]]]
+        Lambda0 = 0, 0, 0, 0
+        Sigma = 0, 0, 0, 0
+        Depth = 0, 0, 0, 0
+        a = 0, 0, 0, 0
+        ff = 0, 0, 0, 0
+</pre></div></div>
+</div>
+<p>This is a very simple inversion in which only two variables are inverted. This is surely not realistic but serves for the purpose of showing how more complicated things can be done. Let’s then read the configuration file and read the observation file defined in the configuration file.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Test a single inversion in non-iterator mode</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_spot.ini&#39;</span><span class="p">,</span> <span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;inversion&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">read_observation</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>Next, let us invert it with the Levenberg-Marquartd algorithm provided by Hazel:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span><span class="o">.</span><span class="n">open_output</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">invert</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">write_output</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">close_output</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2018-10-05 13:15:04,949 - -------------
+2018-10-05 13:15:04,950 -   Cycle 0
+2018-10-05 13:15:04,952 -   Weights for region spec1 : SI=1.0 - SQ=0.0 - SU=0.0 - SV=0.0
+2018-10-05 13:15:04,953 - -------------
+2018-10-05 13:15:04,955 - Free parameters for ph1
+2018-10-05 13:15:04,957 -   - T with 1 node
+2018-10-05 13:15:04,959 -   - vmic with 1 node
+2018-10-05 13:15:05,270 - It: 0 - chi2: 111.73491265894616 - lambda: 0.01827468471342611 - rel: -1.9999999553060352
+2018-10-05 13:15:05,437 - It: 1 - chi2: 94.9879533212469 - lambda: 0.004287504963923828 - rel: -0.1620232890860157
+2018-10-05 13:15:05,540 - It: 2 - chi2: 94.9844932019989 - lambda: 0.09602514964800882 - rel: -3.642759054093184e-05
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">final</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;photospheres/model_photosphere.1d&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;photospheres/model_photosphere_200.1d&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;output.h5&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;ph1&#39;</span><span class="p">][</span><span class="s1">&#39;T&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:])</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">final</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">start</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_external_optimizer_8_0.png" src="../_images/notebooks_external_optimizer_8_0.png" />
+</div>
+</div>
+<section id="Using-SciPy">
+<h2><span class="section-number">6.6.1. </span>Using SciPy<a class="headerlink" href="#Using-SciPy" title="Link to this heading">¶</a></h2>
+<p>Then we open the output file, call <code class="docutils literal notranslate"><span class="pre">invert_external</span></code>, write the output and close it. <code class="docutils literal notranslate"><span class="pre">invert_external</span></code> allows the user to pass an SciPy optimizer and the arguments for the optimizer. The advantage of the SciPy optimizers is that they share the arguments. In this example, we’ll use the Nelder-Mead algorithm, that does not use derivatives.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_spot.ini&#39;</span><span class="p">,</span> <span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;inversion&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">read_observation</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">open_output</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">invert_external</span><span class="p">(</span><span class="n">minimize</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;Nelder-Mead&#39;</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">write_output</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">close_output</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2019-02-04 08:19:45,202 - Using configuration from file : conf_spot.ini
+2019-02-04 08:19:45,219 - Backtracking mode : brent
+2019-02-04 08:19:45,220 - Adding spectral region spec1
+2019-02-04 08:19:45,221 -   - Reading wavelength axis from 10830_spot.wavelength
+2019-02-04 08:19:45,237 -   - Reading wavelength weights from 10830_spot.weights
+2019-02-04 08:19:45,242 -   - Using observations from 10830_spot.1d
+2019-02-04 08:19:45,244 -   - No mask for pixels
+2019-02-04 08:19:45,245 -   - No instrumental profile
+2019-02-04 08:19:45,246 -   - Using LOS [&#39;0.0&#39;, &#39;0.0&#39;, &#39;90.0&#39;]
+2019-02-04 08:19:45,247 -   - Using boundary condition [&#39;1.0&#39;, &#39;0.0&#39;, &#39;0.0&#39;, &#39;0.0&#39;]
+2019-02-04 08:19:45,249 - Using 2 cycles
+2019-02-04 08:19:45,250 - Not using randomizations
+2019-02-04 08:19:45,251 - Adding atmospheres
+2019-02-04 08:19:45,251 -   - New available chromosphere : ch1
+2019-02-04 08:19:45,253 -     * Adding line : 10830
+2019-02-04 08:19:45,254 -     * Magnetic field reference frame : vertical
+2019-02-04 08:19:45,255 -     * Reading 1D model chromospheres/init_spot.1d as reference
+2019-02-04 08:19:45,265 -   - New available photosphere : ph1
+2019-02-04 08:19:45,267 -     * Adding line : [300]
+2019-02-04 08:19:45,268 -     * Magnetic field reference frame : vertical
+2019-02-04 08:19:45,269 -     * Reading 1D model photospheres/init_spot.1d as reference
+2019-02-04 08:19:45,274 - Adding topologies
+2019-02-04 08:19:45,275 -   - ph1 -&gt; ch1
+2019-02-04 08:19:45,276 - Removing unused atmospheres
+2019-02-04 08:19:45,276 - Number of pixels to invert : 1
+2019-02-04 08:19:45,279 - Total number of free parameters in all cycles : 13
+2019-02-04 08:19:45,327 - -------------
+2019-02-04 08:19:45,328 -   Cycle 0
+2019-02-04 08:19:45,329 -   Weights for region spec1 : SI=1.0 - SQ=0.0 - SU=0.0 - SV=0.0
+2019-02-04 08:19:45,330 - -------------
+/scratch/Dropbox/GIT/hazel2/hazel/transforms.py:21: RuntimeWarning: divide by zero encountered in double_scalars
+  return np.log(x / (1.0 - x))
+2019-02-04 08:19:46,292 - chi2: 3795.7470631716324
+2019-02-04 08:19:46,422 - chi2: 3796.1194380671154
+2019-02-04 08:19:46,549 - chi2: 3796.2258347793313
+2019-02-04 08:19:46,680 - chi2: 3796.047389383589
+2019-02-04 08:19:46,814 - chi2: 3795.7989963009313
+2019-02-04 08:19:47,080 - chi2: 3794.437467178893
+2019-02-04 08:19:47,218 - chi2: 3794.7686379109255
+2019-02-04 08:19:47,490 - chi2: 3792.2741215269457
+2019-02-04 08:19:47,625 - chi2: 3793.637377973455
+2019-02-04 08:19:47,758 - chi2: 3793.9444598726545
+2019-02-04 08:19:47,889 - chi2: 3793.2676842463034
+2019-02-04 08:19:48,016 - chi2: 3792.754195633086
+2019-02-04 08:19:48,278 - chi2: 3790.1629463683885
+2019-02-04 08:19:48,416 - chi2: 3791.099772509932
+2019-02-04 08:19:48,541 - chi2: 3790.1736856313914
+2019-02-04 08:19:48,799 - chi2: 3787.8098061559413
+2019-02-04 08:19:48,925 - chi2: 3788.9482285283016
+2019-02-04 08:19:49,054 - chi2: 3788.481903112946
+2019-02-04 08:19:49,311 - chi2: 3784.532841733785
+2019-02-04 08:19:49,439 - chi2: 3786.0017537637823
+2019-02-04 08:19:49,567 - chi2: 3785.0149022143673
+2019-02-04 08:19:49,822 - chi2: 3779.7396744184375
+2019-02-04 08:19:49,953 - chi2: 3782.5713100132284
+2019-02-04 08:19:50,085 - chi2: 3781.740528116949
+2019-02-04 08:19:50,220 - chi2: 3780.0608165916196
+2019-02-04 08:19:50,499 - chi2: 3774.834428389877
+2019-02-04 08:19:50,635 - chi2: 3776.487648250191
+2019-02-04 08:19:50,763 - chi2: 3774.968724662549
+2019-02-04 08:19:51,018 - chi2: 3768.6477274335466
+2019-02-04 08:19:51,149 - chi2: 3771.495193122646
+2019-02-04 08:19:51,281 - chi2: 3769.3854055743946
+2019-02-04 08:19:51,536 - chi2: 3761.672732852133
+2019-02-04 08:19:51,662 - chi2: 3764.7609407835707
+2019-02-04 08:19:51,791 - chi2: 3762.8604648080877
+2019-02-04 08:19:52,048 - chi2: 3752.9246379213
+2019-02-04 08:19:52,177 - chi2: 3758.0050607902194
+2019-02-04 08:19:52,305 - chi2: 3755.376981941634
+2019-02-04 08:19:52,561 - chi2: 3741.9262799360645
+2019-02-04 08:19:52,690 - chi2: 3748.5903017188916
+2019-02-04 08:19:52,818 - chi2: 3745.92717241418
+2019-02-04 08:19:52,947 - chi2: 3742.9055654011504
+2019-02-04 08:19:53,205 - chi2: 3733.8475233082418
+2019-02-04 08:19:53,334 - chi2: 3738.049604872633
+2019-02-04 08:19:53,462 - chi2: 3735.3126750186534
+2019-02-04 08:19:53,718 - chi2: 3725.0236142234457
+2019-02-04 08:19:53,848 - chi2: 3729.586379429031
+2019-02-04 08:19:53,976 - chi2: 3725.4905400248977
+2019-02-04 08:19:54,106 - chi2: 3725.9483068754043
+2019-02-04 08:19:54,239 - chi2: 3725.9384478156358
+2019-02-04 08:19:54,512 - chi2: 3726.256981982228
+2019-02-04 08:19:54,646 - chi2: 3728.833590002748
+2019-02-04 08:19:54,916 - chi2: 3728.343851834904
+2019-02-04 08:19:55,177 - chi2: 3726.9398530782937
+2019-02-04 08:19:55,305 - chi2: 3726.343330643527
+2019-02-04 08:19:55,434 - chi2: 3724.9263704044192
+2019-02-04 08:19:55,687 - chi2: 3717.3016862108925
+2019-02-04 08:19:55,948 - chi2: 3723.2245413624796
+2019-02-04 08:19:56,075 - chi2: 3720.5979319575185
+2019-02-04 08:19:56,206 - chi2: 3717.9143986723816
+2019-02-04 08:19:56,336 - chi2: 3724.1015604382437
+2019-02-04 08:19:56,465 - chi2: 3724.4258123595355
+2019-02-04 08:19:56,592 - chi2: 3718.374195032217
+2019-02-04 08:19:56,848 - chi2: 3721.234309864587
+2019-02-04 08:19:57,101 - chi2: 3715.7095658819558
+2019-02-04 08:19:57,227 - chi2: 3718.5870168672714
+2019-02-04 08:19:57,485 - chi2: 3707.3036330781556
+2019-02-04 08:19:57,614 - chi2: 3709.824782246664
+2019-02-04 08:19:57,743 - chi2: 3708.034816665729
+2019-02-04 08:19:57,871 - chi2: 3710.289183182335
+2019-02-04 08:19:58,126 - chi2: 3702.8427242651474
+2019-02-04 08:19:58,378 - chi2: 3695.287347645473
+2019-02-04 08:19:58,506 - chi2: 3696.770067982812
+2019-02-04 08:19:58,774 - chi2: 3685.368545843614
+2019-02-04 08:19:58,910 - chi2: 3689.419737180983
+2019-02-04 08:19:59,045 - chi2: 3700.2284966565408
+2019-02-04 08:19:59,307 - chi2: 3673.898917582945
+2019-02-04 08:19:59,435 - chi2: 3677.901944920598
+2019-02-04 08:19:59,707 - chi2: 3654.885230027137
+2019-02-04 08:19:59,852 - chi2: 3663.038439669272
+2019-02-04 08:19:59,988 - chi2: 3660.225634917521
+2019-02-04 08:20:00,122 - chi2: 3668.745454773832
+2019-02-04 08:20:00,385 - chi2: 3622.901158944818
+2019-02-04 08:20:00,521 - chi2: 3635.8266276944714
+2019-02-04 08:20:00,656 - chi2: 3632.689286599287
+2019-02-04 08:20:00,795 - chi2: 3624.021680794471
+2019-02-04 08:20:01,092 - chi2: 3589.8464841308655
+2019-02-04 08:20:01,229 - chi2: 3600.6840500843805
+2019-02-04 08:20:01,354 - chi2: 3609.769061071951
+2019-02-04 08:20:01,622 - chi2: 3551.973339879864
+2019-02-04 08:20:01,758 - chi2: 3564.1515021757778
+2019-02-04 08:20:02,021 - chi2: 3498.670061762152
+2019-02-04 08:20:02,152 - chi2: 3536.7170735698196
+2019-02-04 08:20:02,284 - chi2: 3526.267380165079
+2019-02-04 08:20:02,425 - chi2: 3505.3479670189117
+2019-02-04 08:20:02,688 - chi2: 3409.8867319832566
+2019-02-04 08:20:02,824 - chi2: 3483.4387055336038
+2019-02-04 08:20:02,957 - chi2: 3439.8869670917798
+2019-02-04 08:20:03,215 - chi2: 3323.349628689581
+2019-02-04 08:20:03,347 - chi2: 3402.1425181887716
+2019-02-04 08:20:03,473 - chi2: 3359.7693023438947
+2019-02-04 08:20:03,604 - chi2: 3339.960627270747
+2019-02-04 08:20:03,867 - chi2: 3202.1650754763837
+2019-02-04 08:20:04,000 - chi2: 3281.828792129558
+2019-02-04 08:20:04,136 - chi2: 3226.603709856249
+2019-02-04 08:20:04,393 - chi2: 3054.203948052697
+2019-02-04 08:20:04,527 - chi2: 3134.493612119521
+2019-02-04 08:20:04,655 - chi2: 3113.6517904448588
+2019-02-04 08:20:04,809 - chi2: 3057.281428930169
+2019-02-04 08:20:05,080 - chi2: 2880.1100474994178
+2019-02-04 08:20:05,215 - chi2: 2944.471433590623
+2019-02-04 08:20:05,349 - chi2: 2900.4127085172217
+2019-02-04 08:20:05,620 - chi2: 2698.8060149956973
+2019-02-04 08:20:05,755 - chi2: 2786.153961733687
+2019-02-04 08:20:05,915 - chi2: 2712.5931566574372
+2019-02-04 08:20:06,187 - chi2: 2514.4988060587057
+2019-02-04 08:20:06,321 - chi2: 2607.5528205760634
+2019-02-04 08:20:06,451 - chi2: 2541.2797976481415
+2019-02-04 08:20:06,707 - chi2: 2320.6113922855125
+2019-02-04 08:20:06,838 - chi2: 2409.901444588529
+2019-02-04 08:20:06,967 - chi2: 2396.928482455016
+2019-02-04 08:20:07,099 - chi2: 2340.343709300031
+2019-02-04 08:20:07,359 - chi2: 2251.9842366637818
+2019-02-04 08:20:07,492 - chi2: 2278.686794671709
+2019-02-04 08:20:07,623 - chi2: 2256.5604224838835
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2019-02-04 08:20:07,754 - chi2: 2256.421231041984
+2019-02-04 08:20:07,882 - chi2: 2288.2370961353063
+2019-02-04 08:20:08,008 - chi2: 2348.744823424255
+2019-02-04 08:20:08,138 - chi2: 2356.4340491217004
+2019-02-04 08:20:08,393 - chi2: 2287.3121126777787
+2019-02-04 08:20:08,649 - chi2: 2279.394620449786
+2019-02-04 08:20:08,908 - chi2: 2277.218772609839
+2019-02-04 08:20:09,164 - chi2: 2273.527730202047
+2019-02-04 08:20:09,419 - chi2: 2262.919241044638
+2019-02-04 08:20:09,547 - chi2: 2262.7418555533213
+2019-02-04 08:20:09,806 - chi2: 2261.218896719727
+2019-02-04 08:20:09,936 - chi2: 2273.75504163616
+2019-02-04 08:20:10,064 - chi2: 2267.749157878059
+2019-02-04 08:20:10,319 - chi2: 2258.589346607892
+2019-02-04 08:20:10,572 - chi2: 2257.3466223028363
+2019-02-04 08:20:10,831 - chi2: 2256.952372793815
+2019-02-04 08:20:11,088 - chi2: 2254.2155138923135
+2019-02-04 08:20:11,216 - chi2: 2256.194468166094
+2019-02-04 08:20:11,469 - chi2: 2253.9256852259273
+2019-02-04 08:20:11,721 - chi2: 2254.606139744805
+2019-02-04 08:20:11,848 - chi2: 2253.4346247550025
+2019-02-04 08:20:11,975 - chi2: 2253.4398674893746
+2019-02-04 08:20:12,233 - chi2: 2252.371687056321
+2019-02-04 08:20:12,486 - chi2: 2239.44338665025
+2019-02-04 08:20:12,622 - chi2: 2251.0993234609155
+2019-02-04 08:20:12,760 - chi2: 2253.996979120541
+2019-02-04 08:20:12,896 - chi2: 2244.3365802325675
+2019-02-04 08:20:13,033 - chi2: 2250.637924023315
+2019-02-04 08:20:13,169 - chi2: 2251.4602225602016
+2019-02-04 08:20:13,301 - chi2: 2244.7599633741606
+2019-02-04 08:20:13,431 - chi2: 2247.242068256648
+2019-02-04 08:20:13,559 - chi2: 2248.865059755322
+2019-02-04 08:20:13,685 - chi2: 2241.664174475986
+2019-02-04 08:20:13,813 - chi2: 2239.4821495842143
+2019-02-04 08:20:13,940 - chi2: 2241.395885161215
+2019-02-04 08:20:14,202 - chi2: 2230.845324249745
+2019-02-04 08:20:14,331 - chi2: 2235.9759999761513
+2019-02-04 08:20:14,461 - chi2: 2235.2857309088067
+2019-02-04 08:20:14,598 - chi2: 2237.6124710197328
+2019-02-04 08:20:14,870 - chi2: 2223.0186018395175
+2019-02-04 08:20:15,000 - chi2: 2224.2625719999874
+2019-02-04 08:20:15,131 - chi2: 2225.4856335622535
+2019-02-04 08:20:15,260 - chi2: 2231.1908877673695
+2019-02-04 08:20:15,387 - chi2: 2228.3422743337496
+2019-02-04 08:20:15,643 - chi2: 2204.2631501142037
+2019-02-04 08:20:15,770 - chi2: 2214.0913622743305
+2019-02-04 08:20:15,899 - chi2: 2207.7154689844183
+2019-02-04 08:20:16,028 - chi2: 2206.8012974764556
+2019-02-04 08:20:16,157 - chi2: 2207.5518133942205
+2019-02-04 08:20:16,408 - chi2: 2202.4525999272037
+2019-02-04 08:20:16,535 - chi2: 2210.846103632488
+2019-02-04 08:20:16,792 - chi2: 2173.679986965395
+2019-02-04 08:20:16,919 - chi2: 2193.0424692654824
+2019-02-04 08:20:17,047 - chi2: 2176.020063230032
+2019-02-04 08:20:17,303 - chi2: 2153.9191227524375
+2019-02-04 08:20:17,429 - chi2: 2192.6043514867506
+2019-02-04 08:20:17,557 - chi2: 2166.8556758792565
+2019-02-04 08:20:17,684 - chi2: 2170.948089169805
+2019-02-04 08:20:17,812 - chi2: 2156.0133327862363
+2019-02-04 08:20:18,065 - chi2: 2119.0084819390877
+2019-02-04 08:20:18,193 - chi2: 2134.984179818933
+2019-02-04 08:20:18,321 - chi2: 2143.9152354175335
+2019-02-04 08:20:18,448 - chi2: 2120.645668721253
+2019-02-04 08:20:18,702 - chi2: 2081.303490540617
+2019-02-04 08:20:18,830 - chi2: 2102.4739455658646
+2019-02-04 08:20:18,959 - chi2: 2095.103723467974
+2019-02-04 08:20:19,218 - chi2: 2030.0673988692663
+2019-02-04 08:20:19,346 - chi2: 2064.402093388032
+2019-02-04 08:20:19,474 - chi2: 2034.5862368581772
+2019-02-04 08:20:19,602 - chi2: 2050.2494471853197
+2019-02-04 08:20:19,731 - chi2: 2034.2234848039204
+2019-02-04 08:20:19,986 - chi2: 1955.4833649947848
+2019-02-04 08:20:20,118 - chi2: 1980.40737554571
+2019-02-04 08:20:20,246 - chi2: 1987.438146189222
+2019-02-04 08:20:20,498 - chi2: 1881.8666952909437
+2019-02-04 08:20:20,628 - chi2: 1925.424793719902
+2019-02-04 08:20:20,757 - chi2: 1922.879029777008
+2019-02-04 08:20:20,884 - chi2: 1898.5222352331587
+2019-02-04 08:20:21,011 - chi2: 1882.3132867437141
+2019-02-04 08:20:21,266 - chi2: 1791.8733241990176
+2019-02-04 08:20:21,395 - chi2: 1796.8349449712434
+2019-02-04 08:20:21,522 - chi2: 1813.990707404285
+2019-02-04 08:20:21,775 - chi2: 1694.2766327039215
+2019-02-04 08:20:21,903 - chi2: 1732.3482401572667
+2019-02-04 08:20:22,028 - chi2: 1724.017367052054
+2019-02-04 08:20:22,159 - chi2: 1712.6067508782498
+2019-02-04 08:20:22,413 - chi2: 1587.924311477166
+2019-02-04 08:20:22,540 - chi2: 1647.5950822652544
+2019-02-04 08:20:22,794 - chi2: 1498.6824340621156
+2019-02-04 08:20:22,923 - chi2: 1564.0625976200886
+2019-02-04 08:20:23,051 - chi2: 1534.395408351179
+2019-02-04 08:20:23,180 - chi2: 1507.8913134200714
+2019-02-04 08:20:23,307 - chi2: 1507.8425712332205
+2019-02-04 08:20:23,559 - chi2: 1435.347339273847
+2019-02-04 08:20:23,687 - chi2: 1473.3726674663867
+2019-02-04 08:20:23,816 - chi2: 1447.8527750281173
+2019-02-04 08:20:23,944 - chi2: 1454.6451539855611
+2019-02-04 08:20:24,200 - chi2: 1462.5442293771193
+2019-02-04 08:20:24,329 - chi2: 1461.3473847419025
+2019-02-04 08:20:24,457 - chi2: 1458.5415669389001
+2019-02-04 08:20:24,585 - chi2: 1463.2841723256947
+2019-02-04 08:20:24,714 - chi2: 1497.6593100182456
+2019-02-04 08:20:24,975 - chi2: 1450.1390747703836
+2019-02-04 08:20:25,231 - chi2: 1451.5605289210484
+2019-02-04 08:20:25,359 - chi2: 1441.8733123514335
+2019-02-04 08:20:25,487 - chi2: 1455.7754364698676
+2019-02-04 08:20:25,617 - chi2: 1449.6094157813704
+2019-02-04 08:20:25,871 - chi2: 1440.10762818132
+2019-02-04 08:20:26,006 - chi2: 1443.2001681582894
+2019-02-04 08:20:26,143 - chi2: 1448.8670582131285
+2019-02-04 08:20:26,279 - chi2: 1437.1127148042128
+2019-02-04 08:20:26,415 - chi2: 1441.4752669622833
+2019-02-04 08:20:26,681 - chi2: 1434.300004959262
+2019-02-04 08:20:26,935 - chi2: 1436.4944254620823
+2019-02-04 08:20:27,205 - chi2: 1436.475324506837
+2019-02-04 08:20:27,479 - chi2: 1440.498164323001
+2019-02-04 08:20:27,615 - chi2: 1440.0675078702957
+2019-02-04 08:20:27,884 - chi2: 1433.0985360386435
+2019-02-04 08:20:28,012 - chi2: 1438.8869938400774
+2019-02-04 08:20:28,142 - chi2: 1438.2337404424927
+2019-02-04 08:20:28,394 - chi2: 1433.0756700494853
+2019-02-04 08:20:28,662 - chi2: 1433.271856713937
+2019-02-04 08:20:28,944 - chi2: 1432.7167423927626
+2019-02-04 08:20:29,085 - chi2: 1432.265044097321
+2019-02-04 08:20:29,226 - chi2: 1432.5582195306329
+2019-02-04 08:20:29,506 - chi2: 1431.240112399135
+2019-02-04 08:20:29,647 - chi2: 1432.197875212501
+2019-02-04 08:20:29,929 - chi2: 1431.1563645673823
+2019-02-04 08:20:30,212 - chi2: 1431.1475557223278
+2019-02-04 08:20:30,481 - chi2: 1430.8832715651847
+2019-02-04 08:20:30,743 - chi2: 1430.6414286218082
+2019-02-04 08:20:30,878 - chi2: 1430.7804145735927
+2019-02-04 08:20:31,010 - chi2: 1430.5172271008603
+2019-02-04 08:20:31,153 - chi2: 1429.9900179504334
+2019-02-04 08:20:31,439 - chi2: 1429.9824461735695
+2019-02-04 08:20:31,582 - chi2: 1430.5220870699495
+2019-02-04 08:20:31,862 - chi2: 1429.904932279885
+2019-02-04 08:20:32,132 - chi2: 1430.9377108333538
+2019-02-04 08:20:32,397 - chi2: 1427.7112657087403
+2019-02-04 08:20:32,650 - chi2: 1425.6393814894714
+2019-02-04 08:20:32,911 - chi2: 1428.793694574227
+2019-02-04 08:20:33,053 - chi2: 1428.8416684715373
+2019-02-04 08:20:33,193 - chi2: 1427.5977060421146
+2019-02-04 08:20:33,337 - chi2: 1428.0536397864894
+2019-02-04 08:20:33,482 - chi2: 1426.9970628869655
+2019-02-04 08:20:33,620 - chi2: 1425.7435325917963
+2019-02-04 08:20:33,873 - chi2: 1425.0276907325967
+2019-02-04 08:20:34,127 - chi2: 1426.7810786943771
+2019-02-04 08:20:34,255 - chi2: 1426.5663915299301
+2019-02-04 08:20:34,508 - chi2: 1420.002601093174
+2019-02-04 08:20:34,638 - chi2: 1422.624186101126
+2019-02-04 08:20:34,774 - chi2: 1422.0283294642372
+2019-02-04 08:20:34,911 - chi2: 1422.0666432486028
+2019-02-04 08:20:35,046 - chi2: 1420.2522080344404
+2019-02-04 08:20:35,339 - chi2: 1415.8496213157787
+2019-02-04 08:20:35,485 - chi2: 1417.9707443089192
+2019-02-04 08:20:35,621 - chi2: 1418.863141298112
+2019-02-04 08:20:35,750 - chi2: 1416.622230521551
+2019-02-04 08:20:36,020 - chi2: 1411.0295846847448
+2019-02-04 08:20:36,158 - chi2: 1413.5976395755533
+2019-02-04 08:20:36,295 - chi2: 1411.9973895151525
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2019-02-04 08:20:36,568 - chi2: 1403.6187699124127
+2019-02-04 08:20:36,706 - chi2: 1406.1259819422392
+2019-02-04 08:20:36,843 - chi2: 1404.6611233726503
+2019-02-04 08:20:36,979 - chi2: 1404.3477130776653
+2019-02-04 08:20:37,240 - chi2: 1397.7588642804753
+2019-02-04 08:20:37,368 - chi2: 1404.1152466328858
+2019-02-04 08:20:37,622 - chi2: 1383.986977832511
+2019-02-04 08:20:37,751 - chi2: 1390.4046178082333
+2019-02-04 08:20:37,885 - chi2: 1385.7007303215435
+2019-02-04 08:20:38,022 - chi2: 1385.2019238054063
+2019-02-04 08:20:38,158 - chi2: 1384.5068792860463
+2019-02-04 08:20:38,418 - chi2: 1370.9511052742714
+2019-02-04 08:20:38,546 - chi2: 1376.4927906750481
+2019-02-04 08:20:38,802 - chi2: 1357.82718743041
+2019-02-04 08:20:38,936 - chi2: 1361.168355828214
+2019-02-04 08:20:39,213 - chi2: 1337.8966833177008
+2019-02-04 08:20:39,351 - chi2: 1348.3975012332578
+2019-02-04 08:20:39,488 - chi2: 1342.3904131114277
+2019-02-04 08:20:39,617 - chi2: 1340.940192841906
+2019-02-04 08:20:39,869 - chi2: 1306.105943939609
+2019-02-04 08:20:40,001 - chi2: 1306.192976075382
+2019-02-04 08:20:40,130 - chi2: 1308.6457171245488
+2019-02-04 08:20:40,387 - chi2: 1277.0405185483203
+2019-02-04 08:20:40,515 - chi2: 1295.0456894861215
+2019-02-04 08:20:40,773 - chi2: 1244.2320438969
+2019-02-04 08:20:40,902 - chi2: 1259.800024326434
+2019-02-04 08:20:41,030 - chi2: 1249.1308648166128
+2019-02-04 08:20:41,285 - chi2: 1204.9004055100033
+2019-02-04 08:20:41,412 - chi2: 1229.1277509833326
+2019-02-04 08:20:41,540 - chi2: 1208.0055989164835
+2019-02-04 08:20:41,668 - chi2: 1211.3715844135768
+2019-02-04 08:20:41,925 - chi2: 1111.3460374414067
+2019-02-04 08:20:42,052 - chi2: 1136.414721238282
+2019-02-04 08:20:42,182 - chi2: 1132.278268541823
+2019-02-04 08:20:42,310 - chi2: 1120.6823895791465
+2019-02-04 08:20:42,564 - chi2: 1039.7147061006663
+2019-02-04 08:20:42,691 - chi2: 1188.7650599228284
+2019-02-04 08:20:42,818 - chi2: 1074.4679686272482
+2019-02-04 08:20:43,072 - chi2: 960.1985101536299
+2019-02-04 08:20:43,215 - chi2: 1019.310487365212
+2019-02-04 08:20:43,343 - chi2: 971.5806119124156
+2019-02-04 08:20:43,470 - chi2: 1012.0431395148671
+2019-02-04 08:20:43,600 - chi2: 961.8376627334417
+2019-02-04 08:20:43,861 - chi2: 961.7525829052577
+2019-02-04 08:20:44,121 - chi2: 822.4246311495918
+2019-02-04 08:20:44,251 - chi2: 842.2447046901599
+2019-02-04 08:20:44,380 - chi2: 822.8574518019848
+2019-02-04 08:20:44,632 - chi2: 746.2793997903159
+2019-02-04 08:20:44,758 - chi2: 759.7687853755699
+2019-02-04 08:20:44,887 - chi2: 895.5263570736306
+2019-02-04 08:20:45,019 - chi2: 769.4979017717384
+2019-02-04 08:20:45,276 - chi2: 607.2688089572928
+2019-02-04 08:20:45,406 - chi2: 676.7601048772038
+2019-02-04 08:20:45,663 - chi2: 525.3712048577738
+2019-02-04 08:20:45,793 - chi2: 628.6486553163288
+2019-02-04 08:20:45,925 - chi2: 561.6009849394455
+2019-02-04 08:20:46,054 - chi2: 617.4215730311398
+2019-02-04 08:20:46,310 - chi2: 426.50606585312744
+2019-02-04 08:20:46,440 - chi2: 453.8582998598074
+2019-02-04 08:20:46,571 - chi2: 572.5919628246093
+2019-02-04 08:20:46,699 - chi2: 430.15818187458956
+2019-02-04 08:20:46,829 - chi2: 437.08691181075835
+2019-02-04 08:20:47,086 - chi2: 520.0936950319946
+2019-02-04 08:20:47,338 - chi2: 317.09904187433324
+2019-02-04 08:20:47,475 - chi2: 495.95967531000923
+2019-02-04 08:20:47,615 - chi2: 352.50773332547084
+2019-02-04 08:20:47,752 - chi2: 417.7670640793759
+2019-02-04 08:20:47,888 - chi2: 373.10482772382693
+2019-02-04 08:20:48,023 - chi2: 332.58363319080036
+2019-02-04 08:20:48,154 - chi2: 348.6849151656462
+2019-02-04 08:20:48,288 - chi2: 348.9573603031726
+2019-02-04 08:20:48,558 - chi2: 262.2284196236101
+2019-02-04 08:20:48,695 - chi2: 289.50921309577774
+2019-02-04 08:20:48,832 - chi2: 291.1405373269294
+2019-02-04 08:20:48,969 - chi2: 275.3001079268848
+2019-02-04 08:20:49,106 - chi2: 280.53709209783676
+2019-02-04 08:20:49,242 - chi2: 265.5709913109199
+2019-02-04 08:20:49,377 - chi2: 296.02816465495505
+2019-02-04 08:20:49,510 - chi2: 310.71480440812195
+2019-02-04 08:20:49,779 - chi2: 327.16368711216506
+2019-02-04 08:20:49,915 - chi2: 284.8172673553096
+2019-02-04 08:20:50,050 - chi2: 291.998378784114
+2019-02-04 08:20:50,186 - chi2: 280.0268736926099
+2019-02-04 08:20:50,459 - chi2: 255.41856379756732
+2019-02-04 08:20:50,595 - chi2: 261.65242676761176
+2019-02-04 08:20:50,732 - chi2: 271.5649285873614
+2019-02-04 08:20:51,001 - chi2: 253.34532916766653
+2019-02-04 08:20:51,137 - chi2: 256.7023371921004
+2019-02-04 08:20:51,406 - chi2: 251.0892295041872
+2019-02-04 08:20:51,543 - chi2: 258.8897623026458
+2019-02-04 08:20:51,802 - chi2: 246.8552507420955
+2019-02-04 08:20:52,060 - chi2: 247.131111648918
+2019-02-04 08:20:52,316 - chi2: 245.51024050859507
+2019-02-04 08:20:52,570 - chi2: 245.52601783280744
+2019-02-04 08:20:52,824 - chi2: 244.27615330389173
+2019-02-04 08:20:53,077 - chi2: 244.623863600006
+2019-02-04 08:20:53,205 - chi2: 252.25654631242244
+2019-02-04 08:20:53,459 - chi2: 244.03144173721154
+2019-02-04 08:20:53,713 - chi2: 244.03832063234486
+2019-02-04 08:20:53,968 - chi2: 243.49366783224175
+2019-02-04 08:20:54,230 - chi2: 242.9207758158833
+2019-02-04 08:20:54,500 - chi2: 242.5499686861288
+2019-02-04 08:20:54,765 - chi2: 242.2300901323645
+2019-02-04 08:20:55,043 - chi2: 241.8081091388075
+2019-02-04 08:20:55,312 - chi2: 242.12036249712588
+2019-02-04 08:20:55,443 - chi2: 243.5531637839431
+2019-02-04 08:20:55,702 - chi2: 241.98442073090607
+2019-02-04 08:20:55,968 - chi2: 241.8367762557934
+2019-02-04 08:20:56,235 - chi2: 241.71543084900665
+2019-02-04 08:20:56,510 - chi2: 241.7540397399732
+2019-02-04 08:20:56,771 - chi2: 241.61802340806008
+2019-02-04 08:20:57,033 - chi2: 241.60048618563206
+2019-02-04 08:20:57,292 - chi2: 241.43720923081997
+2019-02-04 08:20:57,546 - chi2: 241.39897266248818
+2019-02-04 08:20:57,799 - chi2: 241.36762630917093
+2019-02-04 08:20:58,055 - chi2: 241.33902684770004
+2019-02-04 08:20:58,310 - chi2: 241.3147754322185
+2019-02-04 08:20:58,564 - chi2: 241.28589750783422
+2019-02-04 08:20:58,699 - chi2: 241.6467321965468
+2019-02-04 08:20:58,968 - chi2: 241.2887613902178
+2019-02-04 08:20:59,239 - chi2: 241.26818494041382
+2019-02-04 08:20:59,517 - chi2: 241.251295231867
+2019-02-04 08:20:59,780 - chi2: 241.2787724271033
+2019-02-04 08:21:00,039 - chi2: 241.2123035235452
+2019-02-04 08:21:00,313 - chi2: 241.17880570553373
+2019-02-04 08:21:00,583 - chi2: 241.17765815827835
+2019-02-04 08:21:00,857 - chi2: 241.1889604765583
+2019-02-04 08:21:01,122 - chi2: 241.21271049058367
+2019-02-04 08:21:01,381 - chi2: 241.17523464019118
+2019-02-04 08:21:01,693 - chi2: 241.17854096253745
+2019-02-04 08:21:01,957 - chi2: 241.1568925190021
+2019-02-04 08:21:02,219 - chi2: 241.17691172662006
+2019-02-04 08:21:02,513 - chi2: 241.16891780927085
+2019-02-04 08:21:02,645 - chi2: 241.20875196384375
+2019-02-04 08:21:02,899 - chi2: 241.15906060819316
+2019-02-04 08:21:03,154 - chi2: 241.1685607242125
+2019-02-04 08:21:03,439 - chi2: 241.15142803796252
+2019-02-04 08:21:03,690 - chi2: 241.15181366658743
+2019-02-04 08:21:03,816 - chi2: 241.15690777789885
+2019-02-04 08:21:04,069 - chi2: 241.1481486317208
+2019-02-04 08:21:04,203 - chi2: 241.15787374404377
+2019-02-04 08:21:04,332 - chi2: 241.16547769509586
+2019-02-04 08:21:04,594 - chi2: 241.1486000412377
+2019-02-04 08:21:04,856 - chi2: 241.15064988191787
+2019-02-04 08:21:05,120 - chi2: 241.14632811314826
+2019-02-04 08:21:05,380 - chi2: 241.1453398669388
+2019-02-04 08:21:05,635 - chi2: 241.14494257539678
+2019-02-04 08:21:05,887 - chi2: 241.14145212974614
+2019-02-04 08:21:06,143 - chi2: 241.1441304003
+2019-02-04 08:21:06,270 - chi2: 241.1508954803392
+2019-02-04 08:21:06,523 - chi2: 241.14276560593584
+2019-02-04 08:21:06,649 - chi2: 241.15048847774023
+2019-02-04 08:21:06,899 - chi2: 241.19184936767675
+2019-02-04 08:21:07,025 - chi2: 241.14782517052979
+2019-02-04 08:21:07,154 - chi2: 241.14387901038543
+2019-02-04 08:21:07,280 - chi2: 241.13859460130587
+2019-02-04 08:21:07,533 - chi2: 241.14022170304466
+2019-02-04 08:21:07,783 - chi2: 241.14058580972463
+2019-02-04 08:21:07,909 - chi2: 241.14135561128424
+2019-02-04 08:21:08,162 - chi2: 241.13956934018404
+2019-02-04 08:21:08,411 - chi2: 241.13956383512806
+2019-02-04 08:21:08,662 - chi2: 241.13874321700874
+2019-02-04 08:21:08,788 - chi2: 241.13780991409357
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2019-02-04 08:21:09,040 - chi2: 241.13998252540316
+2019-02-04 08:21:09,294 - chi2: 241.1378230288725
+2019-02-04 08:21:09,420 - chi2: 241.1395124359746
+2019-02-04 08:21:09,671 - chi2: 241.13902770826076
+2019-02-04 08:21:09,929 - chi2: 241.13737469775205
+2019-02-04 08:21:10,058 - chi2: 241.13756760595672
+2019-02-04 08:21:10,310 - chi2: 241.13669043852815
+2019-02-04 08:21:10,436 - chi2: 241.13604180614516
+2019-02-04 08:21:10,688 - chi2: 241.13583555825912
+2019-02-04 08:21:10,817 - chi2: 241.13600074746307
+2019-02-04 08:21:10,943 - chi2: 241.13702797398804
+2019-02-04 08:21:11,196 - chi2: 241.13188720098358
+2019-02-04 08:21:11,322 - chi2: 241.1349312089291
+2019-02-04 08:21:11,448 - chi2: 241.1361888771096
+2019-02-04 08:21:11,574 - chi2: 241.13203760562865
+2019-02-04 08:21:11,700 - chi2: 241.1337444870099
+2019-02-04 08:21:11,826 - chi2: 241.1351079328758
+2019-02-04 08:21:11,952 - chi2: 241.13340530320886
+2019-02-04 08:21:12,078 - chi2: 241.13371557278012
+2019-02-04 08:21:12,203 - chi2: 241.13234031375467
+2019-02-04 08:21:12,455 - chi2: 241.12702497358117
+2019-02-04 08:21:12,581 - chi2: 241.12814683997405
+2019-02-04 08:21:12,707 - chi2: 241.13163081052775
+2019-02-04 08:21:12,832 - chi2: 241.13016867623136
+2019-02-04 08:21:12,958 - chi2: 241.1295987782568
+2019-02-04 08:21:13,084 - chi2: 241.12958340718123
+2019-02-04 08:21:13,211 - chi2: 241.12816165414466
+2019-02-04 08:21:13,336 - chi2: 241.13048391888134
+2019-02-04 08:21:13,587 - chi2: 241.1227846742637
+2019-02-04 08:21:13,837 - chi2: 241.12002889662256
+2019-02-04 08:21:13,963 - chi2: 241.1245911116495
+2019-02-04 08:21:14,090 - chi2: 241.12551508304014
+2019-02-04 08:21:14,216 - chi2: 241.12243276983762
+2019-02-04 08:21:14,372 - chi2: 241.1270390182877
+2019-02-04 08:21:14,626 - chi2: 241.11297748506564
+2019-02-04 08:21:14,756 - chi2: 241.11581600523758
+2019-02-04 08:21:14,890 - chi2: 241.11726974161087
+2019-02-04 08:21:15,025 - chi2: 241.11805345603366
+2019-02-04 08:21:15,281 - chi2: 241.104220567184
+2019-02-04 08:21:15,407 - chi2: 241.11049053121877
+2019-02-04 08:21:15,534 - chi2: 241.10967308080572
+2019-02-04 08:21:15,660 - chi2: 241.10669345713876
+2019-02-04 08:21:15,915 - chi2: 241.0897303604239
+2019-02-04 08:21:16,043 - chi2: 241.09835085714292
+2019-02-04 08:21:16,177 - chi2: 241.09910917328313
+2019-02-04 08:21:16,311 - chi2: 241.0941615895363
+2019-02-04 08:21:16,438 - chi2: 241.09193632534954
+2019-02-04 08:21:16,690 - chi2: 241.08447947511632
+2019-02-04 08:21:16,943 - chi2: 241.07080732074377
+2019-02-04 08:21:17,078 - chi2: 241.07360146686784
+2019-02-04 08:21:17,218 - chi2: 241.07373465842028
+2019-02-04 08:21:17,476 - chi2: 241.0421928747035
+2019-02-04 08:21:17,604 - chi2: 241.05944361644947
+2019-02-04 08:21:17,736 - chi2: 241.0558951100605
+2019-02-04 08:21:17,865 - chi2: 241.0504203820767
+2019-02-04 08:21:18,126 - chi2: 241.02549704055676
+2019-02-04 08:21:18,256 - chi2: 241.03083699246426
+2019-02-04 08:21:18,516 - chi2: 240.99699998538492
+2019-02-04 08:21:18,647 - chi2: 241.01799876012433
+2019-02-04 08:21:18,776 - chi2: 241.00216962596943
+2019-02-04 08:21:19,029 - chi2: 240.97101271506799
+2019-02-04 08:21:19,159 - chi2: 240.9826230154171
+2019-02-04 08:21:19,418 - chi2: 240.9367391121226
+2019-02-04 08:21:19,550 - chi2: 240.93724767483354
+2019-02-04 08:21:19,806 - chi2: 240.87954001910572
+2019-02-04 08:21:19,939 - chi2: 240.92050687961486
+2019-02-04 08:21:20,072 - chi2: 240.88380132915287
+2019-02-04 08:21:20,327 - chi2: 240.80590217981032
+2019-02-04 08:21:20,457 - chi2: 240.85068658602927
+2019-02-04 08:21:20,587 - chi2: 240.8575410109883
+2019-02-04 08:21:20,846 - chi2: 240.70150331893646
+2019-02-04 08:21:20,979 - chi2: 240.8171715540607
+2019-02-04 08:21:21,110 - chi2: 240.7727370780021
+2019-02-04 08:21:21,244 - chi2: 240.7209113987501
+2019-02-04 08:21:21,375 - chi2: 240.70507412977247
+2019-02-04 08:21:21,505 - chi2: 240.72772733031874
+2019-02-04 08:21:21,760 - chi2: 240.5977656460167
+2019-02-04 08:21:21,887 - chi2: 240.6559805831342
+2019-02-04 08:21:22,018 - chi2: 240.6016732919795
+2019-02-04 08:21:22,145 - chi2: 240.59974653758223
+2019-02-04 08:21:22,398 - chi2: 240.53822685878882
+2019-02-04 08:21:22,662 - chi2: 240.39103641635518
+2019-02-04 08:21:22,790 - chi2: 240.44683083560707
+2019-02-04 08:21:22,918 - chi2: 240.4565864092641
+2019-02-04 08:21:23,046 - chi2: 240.43748190887982
+2019-02-04 08:21:23,178 - chi2: 240.46471014620087
+2019-02-04 08:21:23,307 - chi2: 240.40972587234248
+2019-02-04 08:21:23,566 - chi2: 240.39343194239967
+2019-02-04 08:21:23,696 - chi2: 240.42666194226948
+2019-02-04 08:21:23,994 - chi2: 240.26708408215404
+2019-02-04 08:21:24,259 - chi2: 240.12550919046714
+2019-02-04 08:21:24,389 - chi2: 240.22098151473065
+2019-02-04 08:21:24,523 - chi2: 240.25537849417492
+2019-02-04 08:21:24,661 - chi2: 240.40933560499295
+2019-02-04 08:21:24,799 - chi2: 240.17999671601478
+2019-02-04 08:21:24,937 - chi2: 240.17857547933937
+2019-02-04 08:21:25,208 - chi2: 240.03152449048233
+2019-02-04 08:21:25,344 - chi2: 240.11931448961462
+2019-02-04 08:21:25,481 - chi2: 240.06544743179452
+2019-02-04 08:21:25,748 - chi2: 239.70324949253688
+2019-02-04 08:21:25,874 - chi2: 239.9444854544
+2019-02-04 08:21:26,001 - chi2: 239.83017081023485
+2019-02-04 08:21:26,130 - chi2: 239.87588859881396
+2019-02-04 08:21:26,264 - chi2: 239.7654238396625
+2019-02-04 08:21:26,407 - chi2: 239.73822012017493
+2019-02-04 08:21:26,667 - chi2: 239.41563920355813
+2019-02-04 08:21:26,797 - chi2: 239.85170853765698
+2019-02-04 08:21:26,931 - chi2: 239.47240594505843
+2019-02-04 08:21:27,195 - chi2: 239.04521316051452
+2019-02-04 08:21:27,333 - chi2: 239.46035676837067
+2019-02-04 08:21:27,463 - chi2: 239.2167408149759
+2019-02-04 08:21:27,593 - chi2: 239.3744102645591
+2019-02-04 08:21:27,726 - chi2: 239.10053635483018
+2019-02-04 08:21:27,862 - chi2: 239.0496258934349
+2019-02-04 08:21:28,131 - chi2: 238.72210842427333
+2019-02-04 08:21:28,266 - chi2: 238.72517076515746
+2019-02-04 08:21:28,538 - chi2: 238.5126004551829
+2019-02-04 08:21:28,674 - chi2: 238.5948539017946
+2019-02-04 08:21:28,943 - chi2: 237.76566056805785
+2019-02-04 08:21:29,079 - chi2: 238.64728788625393
+2019-02-04 08:21:29,214 - chi2: 238.1868180333408
+2019-02-04 08:21:29,351 - chi2: 238.04821377087404
+2019-02-04 08:21:29,489 - chi2: 238.04325761116073
+2019-02-04 08:21:29,625 - chi2: 237.9474314917241
+2019-02-04 08:21:29,759 - chi2: 238.01875452741996
+2019-02-04 08:21:30,025 - chi2: 236.97296864312713
+2019-02-04 08:21:30,182 - chi2: 237.52575098661092
+2019-02-04 08:21:30,324 - chi2: 237.47959095229905
+2019-02-04 08:21:30,463 - chi2: 237.23754468007468
+2019-02-04 08:21:30,598 - chi2: 237.07234990523585
+2019-02-04 08:21:30,729 - chi2: 236.98460187441518
+2019-02-04 08:21:30,992 - chi2: 236.0707981663617
+2019-02-04 08:21:31,123 - chi2: 236.4433018143298
+2019-02-04 08:21:31,254 - chi2: 236.1744721861955
+2019-02-04 08:21:31,389 - chi2: 236.60209480946526
+2019-02-04 08:21:31,520 - chi2: 236.38275279696924
+2019-02-04 08:21:31,782 - chi2: 235.86200131090095
+2019-02-04 08:21:32,044 - chi2: 234.6850001142631
+2019-02-04 08:21:32,178 - chi2: 235.11905970384532
+2019-02-04 08:21:32,310 - chi2: 234.74857919878713
+2019-02-04 08:21:32,571 - chi2: 233.96719417355868
+2019-02-04 08:21:32,704 - chi2: 234.42111106000883
+2019-02-04 08:21:32,966 - chi2: 233.06941297702582
+2019-02-04 08:21:33,099 - chi2: 233.67355887328654
+2019-02-04 08:21:33,231 - chi2: 233.21303841770865
+2019-02-04 08:21:33,363 - chi2: 233.2590635308006
+2019-02-04 08:21:33,625 - chi2: 231.1186842493944
+2019-02-04 08:21:33,764 - chi2: 231.75360701610663
+2019-02-04 08:21:33,904 - chi2: 231.63426427231929
+2019-02-04 08:21:34,035 - chi2: 231.3470508505686
+2019-02-04 08:21:34,169 - chi2: 232.07623766065336
+2019-02-04 08:21:34,429 - chi2: 228.87934142612605
+2019-02-04 08:21:34,560 - chi2: 231.1254061762308
+2019-02-04 08:21:34,690 - chi2: 230.69228832320823
+2019-02-04 08:21:34,826 - chi2: 229.08228353803463
+2019-02-04 08:21:35,097 - chi2: 227.4220654842149
+2019-02-04 08:21:35,234 - chi2: 228.2582366471841
+2019-02-04 08:21:35,367 - chi2: 228.20871064594925
+2019-02-04 08:21:35,501 - chi2: 227.60582840053516
+2019-02-04 08:21:35,635 - chi2: 228.39808052799447
+2019-02-04 08:21:35,902 - chi2: 224.8335441910284
+2019-02-04 08:21:36,035 - chi2: 226.37419857225677
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2019-02-04 08:21:36,333 - chi2: 222.1147950635844
+2019-02-04 08:21:36,480 - chi2: 224.99458985641334
+2019-02-04 08:21:36,627 - chi2: 224.7944209350066
+2019-02-04 08:21:36,765 - chi2: 223.5960103023119
+2019-02-04 08:21:36,898 - chi2: 224.5337840238621
+2019-02-04 08:21:37,034 - chi2: 222.11522725171776
+2019-02-04 08:21:37,167 - chi2: 222.26610995603988
+2019-02-04 08:21:37,433 - chi2: 219.85161203639
+2019-02-04 08:21:37,699 - chi2: 217.79576946336047
+2019-02-04 08:21:37,832 - chi2: 218.10213888385746
+2019-02-04 08:21:37,965 - chi2: 221.3183265679123
+2019-02-04 08:21:38,099 - chi2: 218.57419475865717
+2019-02-04 08:21:38,363 - chi2: 216.25337321189025
+2019-02-04 08:21:38,497 - chi2: 218.6529748587505
+2019-02-04 08:21:38,776 - chi2: 212.72190056682174
+2019-02-04 08:21:38,913 - chi2: 214.2992787677393
+2019-02-04 08:21:39,050 - chi2: 216.87147580234483
+2019-02-04 08:21:39,188 - chi2: 216.44511913520313
+2019-02-04 08:21:39,446 - chi2: 210.16110545764562
+2019-02-04 08:21:39,576 - chi2: 211.6008208481381
+2019-02-04 08:21:39,713 - chi2: 212.03454929561408
+2019-02-04 08:21:39,850 - chi2: 216.98131929357373
+2019-02-04 08:21:39,987 - chi2: 212.85020510759975
+2019-02-04 08:21:40,123 - chi2: 214.20222126931552
+2019-02-04 08:21:40,259 - chi2: 211.48395750556423
+2019-02-04 08:21:40,520 - chi2: 210.8830754178673
+2019-02-04 08:21:40,791 - chi2: 202.29167112371448
+2019-02-04 08:21:40,927 - chi2: 204.9626015394084
+2019-02-04 08:21:41,064 - chi2: 209.34352620204066
+2019-02-04 08:21:41,200 - chi2: 208.0388541779894
+2019-02-04 08:21:41,334 - chi2: 204.49177656125573
+2019-02-04 08:21:41,467 - chi2: 205.08974801201705
+2019-02-04 08:21:41,731 - chi2: 200.11212829415805
+2019-02-04 08:21:41,867 - chi2: 201.58841517228788
+2019-02-04 08:21:42,140 - chi2: 191.06372354233778
+2019-02-04 08:21:42,277 - chi2: 196.18300921194952
+2019-02-04 08:21:42,413 - chi2: 193.69048462783542
+2019-02-04 08:21:42,544 - chi2: 199.73833515713014
+2019-02-04 08:21:42,680 - chi2: 195.60271020908678
+2019-02-04 08:21:42,820 - chi2: 192.13221026203945
+2019-02-04 08:21:42,958 - chi2: 191.7692507173189
+2019-02-04 08:21:43,092 - chi2: 192.46178519877193
+2019-02-04 08:21:43,380 - chi2: 179.88936328032102
+2019-02-04 08:21:43,520 - chi2: 181.08481951664018
+2019-02-04 08:21:43,651 - chi2: 183.85335880834515
+2019-02-04 08:21:43,914 - chi2: 176.45742338702112
+2019-02-04 08:21:44,052 - chi2: 177.1509829531487
+2019-02-04 08:21:44,186 - chi2: 188.31359042967935
+2019-02-04 08:21:44,323 - chi2: 176.98225575025404
+2019-02-04 08:21:44,596 - chi2: 165.70895487971924
+2019-02-04 08:21:44,730 - chi2: 169.00281711499335
+2019-02-04 08:21:44,866 - chi2: 166.3090120323079
+2019-02-04 08:21:45,004 - chi2: 174.12728263909696
+2019-02-04 08:21:45,280 - chi2: 159.1922507600247
+2019-02-04 08:21:45,414 - chi2: 162.05977646293576
+2019-02-04 08:21:45,548 - chi2: 164.0668777594221
+2019-02-04 08:21:45,811 - chi2: 153.95949586746622
+2019-02-04 08:21:45,949 - chi2: 154.4546626196053
+2019-02-04 08:21:46,087 - chi2: 155.22198510833957
+2019-02-04 08:21:46,227 - chi2: 166.4474134567678
+2019-02-04 08:21:46,503 - chi2: 155.93457326961422
+2019-02-04 08:21:46,639 - chi2: 165.85036720264148
+2019-02-04 08:21:46,770 - chi2: 157.8922434218991
+2019-02-04 08:21:46,902 - chi2: 161.11376022379739
+2019-02-04 08:21:47,165 - chi2: 162.01100510199535
+2019-02-04 08:21:47,297 - chi2: 157.78145620052348
+2019-02-04 08:21:47,559 - chi2: 161.73174658311635
+2019-02-04 08:21:47,833 - chi2: 145.7474807819641
+2019-02-04 08:21:48,098 - chi2: 149.8381461060056
+2019-02-04 08:21:48,363 - chi2: 149.82422244809368
+2019-02-04 08:21:48,495 - chi2: 155.10102131469526
+2019-02-04 08:21:48,628 - chi2: 148.57939844636695
+2019-02-04 08:21:48,904 - chi2: 148.7395445553806
+2019-02-04 08:21:49,167 - chi2: 139.8819852686228
+2019-02-04 08:21:49,298 - chi2: 148.13662961674805
+2019-02-04 08:21:49,563 - chi2: 136.98270953264313
+2019-02-04 08:21:49,695 - chi2: 137.73964417518278
+2019-02-04 08:21:49,828 - chi2: 139.6035700987256
+2019-02-04 08:21:50,098 - chi2: 131.06197743524973
+2019-02-04 08:21:50,232 - chi2: 140.93861191738327
+2019-02-04 08:21:50,498 - chi2: 124.37081299304268
+2019-02-04 08:21:50,656 - chi2: 127.343397437948
+2019-02-04 08:21:50,797 - chi2: 134.79738948780587
+2019-02-04 08:21:51,057 - chi2: 126.03407171586404
+2019-02-04 08:21:51,190 - chi2: 139.8163042852514
+2019-02-04 08:21:51,453 - chi2: 123.67608264941475
+2019-02-04 08:21:51,584 - chi2: 137.89831743454258
+2019-02-04 08:21:51,847 - chi2: 108.28448454829831
+2019-02-04 08:21:51,978 - chi2: 134.2137752173461
+2019-02-04 08:21:52,110 - chi2: 119.65799602046653
+2019-02-04 08:21:52,242 - chi2: 121.49519608334194
+2019-02-04 08:21:52,504 - chi2: 122.16482846556184
+2019-02-04 08:21:52,634 - chi2: 119.83218624600978
+2019-02-04 08:21:52,766 - chi2: 118.61268428402056
+2019-02-04 08:21:52,897 - chi2: 113.24046117488334
+2019-02-04 08:21:53,028 - chi2: 113.2258721420202
+2019-02-04 08:21:53,292 - chi2: 106.07930822233745
+2019-02-04 08:21:53,424 - chi2: 108.62771076968417
+2019-02-04 08:21:53,558 - chi2: 119.56279100466021
+2019-02-04 08:21:53,689 - chi2: 108.05622333096392
+2019-02-04 08:21:53,821 - chi2: 115.03902803166895
+2019-02-04 08:21:53,952 - chi2: 107.72911647307899
+2019-02-04 08:21:54,214 - chi2: 109.22169845203582
+2019-02-04 08:21:54,345 - chi2: 107.4127493763571
+2019-02-04 08:21:54,607 - chi2: 107.24235299388859
+2019-02-04 08:21:54,738 - chi2: 109.36260864970322
+2019-02-04 08:21:54,869 - chi2: 106.86496828073209
+2019-02-04 08:21:55,133 - chi2: 104.60663548641602
+2019-02-04 08:21:55,397 - chi2: 104.9345814096555
+2019-02-04 08:21:55,532 - chi2: 105.66432432946405
+2019-02-04 08:21:55,803 - chi2: 104.25088140226305
+2019-02-04 08:21:55,939 - chi2: 105.86942478503244
+2019-02-04 08:21:56,202 - chi2: 103.95386856598914
+2019-02-04 08:21:56,464 - chi2: 104.01919548161416
+2019-02-04 08:21:56,596 - chi2: 106.77898686997197
+2019-02-04 08:21:56,861 - chi2: 103.83380937372807
+2019-02-04 08:21:57,122 - chi2: 104.21598039335271
+2019-02-04 08:21:57,384 - chi2: 103.90268903851855
+2019-02-04 08:21:57,516 - chi2: 105.34479711240405
+2019-02-04 08:21:57,778 - chi2: 103.64291241478988
+2019-02-04 08:21:58,037 - chi2: 103.58137508932519
+2019-02-04 08:21:58,299 - chi2: 103.4542510978623
+2019-02-04 08:21:58,562 - chi2: 103.36503534001064
+2019-02-04 08:21:58,693 - chi2: 104.1450037308014
+2019-02-04 08:21:58,955 - chi2: 103.3054780280512
+2019-02-04 08:21:59,216 - chi2: 103.30351756538995
+2019-02-04 08:21:59,480 - chi2: 103.22606077319698
+2019-02-04 08:21:59,740 - chi2: 103.24253079426437
+2019-02-04 08:21:59,999 - chi2: 103.26534160826344
+2019-02-04 08:22:00,256 - chi2: 103.2364052901723
+2019-02-04 08:22:00,512 - chi2: 103.18654775596606
+2019-02-04 08:22:00,769 - chi2: 103.15160158467732
+2019-02-04 08:22:01,025 - chi2: 103.12238580251814
+2019-02-04 08:22:01,293 - chi2: 103.11770899492471
+2019-02-04 08:22:01,425 - chi2: 103.29658636063917
+2019-02-04 08:22:01,556 - chi2: 103.27973424610353
+2019-02-04 08:22:01,819 - chi2: 103.10259266057157
+2019-02-04 08:22:02,077 - chi2: 103.10037845574864
+2019-02-04 08:22:02,337 - chi2: 103.08417854474524
+2019-02-04 08:22:02,595 - chi2: 103.07918991511318
+2019-02-04 08:22:02,854 - chi2: 103.06326174126951
+2019-02-04 08:22:03,007 - chi2: 103.18477001473579
+2019-02-04 08:22:03,137 - chi2: 103.18466803269253
+2019-02-04 08:22:03,394 - chi2: 103.07606093252396
+2019-02-04 08:22:03,650 - chi2: 103.07822059861371
+2019-02-04 08:22:03,915 - chi2: 103.06451783436025
+2019-02-04 08:22:04,173 - chi2: 103.06261327888348
+2019-02-04 08:22:04,431 - chi2: 103.05279840844963
+2019-02-04 08:22:04,689 - chi2: 103.05772229859497
+2019-02-04 08:22:04,819 - chi2: 103.08266867512172
+2019-02-04 08:22:05,079 - chi2: 103.05107582318641
+2019-02-04 08:22:05,341 - chi2: 103.05028649072213
+2019-02-04 08:22:05,477 - chi2: 103.06966819392585
+2019-02-04 08:22:05,613 - chi2: 103.06309718395752
+2019-02-04 08:22:05,746 - chi2: 103.06440258756585
+2019-02-04 08:22:06,008 - chi2: 103.04626607068663
+2019-02-04 08:22:06,272 - chi2: 103.04403398078381
+2019-02-04 08:22:06,541 - chi2: 103.04295124014186
+2019-02-04 08:22:06,802 - chi2: 103.03949204398
+2019-02-04 08:22:06,932 - chi2: 103.05587742088187
+2019-02-04 08:22:07,063 - chi2: 103.04446176565753
+2019-02-04 08:22:07,194 - chi2: 103.04022671649085
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2019-02-04 08:22:07,454 - chi2: 103.040085702817
+2019-02-04 08:22:07,713 - chi2: 103.03902688688413
+2019-02-04 08:22:07,844 - chi2: 103.04184272637872
+2019-02-04 08:22:07,974 - chi2: 103.04432418600743
+2019-02-04 08:22:08,105 - chi2: 103.03916644875129
+2019-02-04 08:22:08,363 - chi2: 103.032890620087
+2019-02-04 08:22:08,491 - chi2: 103.0417626728884
+2019-02-04 08:22:08,751 - chi2: 103.0256661799862
+2019-02-04 08:22:09,008 - chi2: 103.03462321617444
+2019-02-04 08:22:09,269 - chi2: 103.03430066307754
+2019-02-04 08:22:09,398 - chi2: 103.03563741498331
+2019-02-04 08:22:09,657 - chi2: 103.03305840694483
+2019-02-04 08:22:09,945 - chi2: 103.01902045285374
+2019-02-04 08:22:10,079 - chi2: 103.02841203368611
+2019-02-04 08:22:10,382 - chi2: 103.03040863677447
+2019-02-04 08:22:10,514 - chi2: 103.02130365712449
+2019-02-04 08:22:10,643 - chi2: 103.02862970639801
+2019-02-04 08:22:10,902 - chi2: 103.01325268256703
+2019-02-04 08:22:11,160 - chi2: 103.00521702179881
+2019-02-04 08:22:11,440 - chi2: 102.99312097437254
+2019-02-04 08:22:11,583 - chi2: 103.00278861026337
+2019-02-04 08:22:11,730 - chi2: 103.00305420673227
+2019-02-04 08:22:11,871 - chi2: 102.99507724737802
+2019-02-04 08:22:12,003 - chi2: 103.00057827547963
+2019-02-04 08:22:12,265 - chi2: 102.97443620597761
+2019-02-04 08:22:12,398 - chi2: 102.98526106738669
+2019-02-04 08:22:12,666 - chi2: 102.95669543622157
+2019-02-04 08:22:12,801 - chi2: 102.96788430688645
+2019-02-04 08:22:12,937 - chi2: 102.9615802689315
+2019-02-04 08:22:13,201 - chi2: 102.92507395701467
+2019-02-04 08:22:13,331 - chi2: 102.93895249926662
+2019-02-04 08:22:13,461 - chi2: 102.94195884583509
+2019-02-04 08:22:13,591 - chi2: 102.93150370630202
+2019-02-04 08:22:13,850 - chi2: 102.89159642829708
+2019-02-04 08:22:14,112 - chi2: 102.83776901667859
+2019-02-04 08:22:14,241 - chi2: 102.8941864321551
+2019-02-04 08:22:14,370 - chi2: 102.8603284987217
+2019-02-04 08:22:14,501 - chi2: 102.85961141953035
+2019-02-04 08:22:14,630 - chi2: 102.84141025484195
+2019-02-04 08:22:14,761 - chi2: 102.8406652068327
+2019-02-04 08:22:15,019 - chi2: 102.76317889276214
+2019-02-04 08:22:15,149 - chi2: 102.779527410073
+2019-02-04 08:22:15,279 - chi2: 102.77221552364512
+2019-02-04 08:22:15,410 - chi2: 102.78312118017932
+2019-02-04 08:22:15,671 - chi2: 102.68776974365757
+2019-02-04 08:22:15,804 - chi2: 102.72472831507159
+2019-02-04 08:22:15,936 - chi2: 102.69490280469162
+2019-02-04 08:22:16,069 - chi2: 102.7093511531191
+2019-02-04 08:22:16,333 - chi2: 102.65952602202381
+2019-02-04 08:22:16,595 - chi2: 102.59233386924753
+2019-02-04 08:22:16,724 - chi2: 102.60551428691574
+2019-02-04 08:22:16,982 - chi2: 102.55467132137106
+2019-02-04 08:22:17,112 - chi2: 102.58888598602987
+2019-02-04 08:22:17,382 - chi2: 102.44062038962737
+2019-02-04 08:22:17,516 - chi2: 102.48092103594368
+2019-02-04 08:22:17,649 - chi2: 102.48557766088503
+2019-02-04 08:22:17,780 - chi2: 102.52251054728892
+2019-02-04 08:22:17,911 - chi2: 102.62388383333926
+2019-02-04 08:22:18,041 - chi2: 102.44897963861017
+2019-02-04 08:22:18,302 - chi2: 102.52115376293268
+2019-02-04 08:22:18,434 - chi2: 102.5378232442031
+2019-02-04 08:22:18,565 - chi2: 102.46502349028098
+2019-02-04 08:22:18,827 - chi2: 102.41889426096998
+2019-02-04 08:22:18,958 - chi2: 102.44408069649694
+2019-02-04 08:22:19,091 - chi2: 102.44444017940003
+2019-02-04 08:22:19,347 - chi2: 102.33596624601056
+2019-02-04 08:22:19,476 - chi2: 102.38658667124807
+2019-02-04 08:22:19,603 - chi2: 102.40470990043482
+2019-02-04 08:22:19,731 - chi2: 102.36281675087707
+2019-02-04 08:22:19,859 - chi2: 102.34134332501904
+2019-02-04 08:22:20,158 - chi2: 102.35517667184848
+2019-02-04 08:22:20,288 - chi2: 102.36556880091626
+2019-02-04 08:22:20,548 - chi2: 102.25252662755247
+2019-02-04 08:22:20,820 - chi2: 102.1722625817037
+2019-02-04 08:22:20,949 - chi2: 102.2637602962173
+2019-02-04 08:22:21,209 - chi2: 102.01593580347274
+2019-02-04 08:22:21,337 - chi2: 102.17585171922407
+2019-02-04 08:22:21,466 - chi2: 102.22418233933534
+2019-02-04 08:22:21,598 - chi2: 102.15771919339576
+2019-02-04 08:22:21,732 - chi2: 102.03431488939657
+2019-02-04 08:22:21,864 - chi2: 102.01813861113743
+2019-02-04 08:22:22,125 - chi2: 102.04624427419587
+2019-02-04 08:22:22,385 - chi2: 101.92122237719506
+2019-02-04 08:22:22,649 - chi2: 101.71475821912254
+2019-02-04 08:22:22,782 - chi2: 101.7830145043484
+2019-02-04 08:22:23,041 - chi2: 101.42033759401944
+2019-02-04 08:22:23,178 - chi2: 101.68702309765308
+2019-02-04 08:22:23,314 - chi2: 101.48467885707059
+2019-02-04 08:22:23,444 - chi2: 101.52012612539674
+2019-02-04 08:22:23,700 - chi2: 101.15415933824558
+2019-02-04 08:22:23,828 - chi2: 101.32221857514287
+2019-02-04 08:22:24,087 - chi2: 100.54706035182595
+2019-02-04 08:22:24,220 - chi2: 100.94477341266898
+2019-02-04 08:22:24,350 - chi2: 100.78551762148243
+2019-02-04 08:22:24,480 - chi2: 100.85224028629533
+2019-02-04 08:22:24,609 - chi2: 100.62913234469825
+2019-02-04 08:22:24,869 - chi2: 99.8675342662754
+2019-02-04 08:22:25,002 - chi2: 100.13854319383141
+2019-02-04 08:22:25,133 - chi2: 99.89458008427718
+2019-02-04 08:22:25,262 - chi2: 99.93642874084655
+2019-02-04 08:22:25,523 - chi2: 99.03459262355504
+2019-02-04 08:22:25,657 - chi2: 99.64418602354125
+2019-02-04 08:22:25,791 - chi2: 99.23897920412394
+2019-02-04 08:22:26,050 - chi2: 98.21708636470855
+2019-02-04 08:22:26,181 - chi2: 98.6956320185385
+2019-02-04 08:22:26,446 - chi2: 96.84268123404888
+2019-02-04 08:22:26,577 - chi2: 97.91890540753454
+2019-02-04 08:22:26,708 - chi2: 97.51868875437559
+2019-02-04 08:22:26,839 - chi2: 97.23353864537867
+2019-02-04 08:22:27,112 - chi2: 94.98971131603764
+2019-02-04 08:22:27,245 - chi2: 96.19418746605841
+2019-02-04 08:22:27,375 - chi2: 95.42648147323678
+2019-02-04 08:22:27,508 - chi2: 95.26329885418724
+2019-02-04 08:22:27,776 - chi2: 93.08046297573124
+2019-02-04 08:22:27,907 - chi2: 93.71703886079203
+2019-02-04 08:22:28,166 - chi2: 90.43996731056906
+2019-02-04 08:22:28,296 - chi2: 92.64456917721711
+2019-02-04 08:22:28,425 - chi2: 91.06350644413011
+2019-02-04 08:22:28,555 - chi2: 91.3329982113332
+2019-02-04 08:22:28,684 - chi2: 90.52949304040847
+2019-02-04 08:22:28,944 - chi2: 87.87826049846817
+2019-02-04 08:22:29,075 - chi2: 89.6095553439006
+2019-02-04 08:22:29,331 - chi2: 84.68230782016862
+2019-02-04 08:22:29,460 - chi2: 88.66292314019147
+2019-02-04 08:22:29,591 - chi2: 86.14202082901626
+2019-02-04 08:22:29,723 - chi2: 85.76568400906645
+2019-02-04 08:22:29,855 - chi2: 85.01217858549332
+2019-02-04 08:22:29,991 - chi2: 85.88011713985439
+2019-02-04 08:22:30,121 - chi2: 84.68249362871957
+2019-02-04 08:22:30,252 - chi2: 87.5674825393787
+2019-02-04 08:22:30,515 - chi2: 82.18469744503402
+2019-02-04 08:22:30,778 - chi2: 79.13136230837087
+2019-02-04 08:22:30,912 - chi2: 81.88675700079266
+2019-02-04 08:22:31,045 - chi2: 81.64177094597046
+2019-02-04 08:22:31,178 - chi2: 80.83389380101032
+2019-02-04 08:22:31,445 - chi2: 75.58557532571301
+2019-02-04 08:22:31,576 - chi2: 77.33080393565359
+2019-02-04 08:22:31,706 - chi2: 77.21196740129368
+2019-02-04 08:22:31,962 - chi2: 73.11557762777093
+2019-02-04 08:22:32,090 - chi2: 75.49510437019175
+2019-02-04 08:22:32,346 - chi2: 70.50774504637127
+2019-02-04 08:22:32,481 - chi2: 71.3429316868041
+2019-02-04 08:22:32,611 - chi2: 74.72357214950277
+2019-02-04 08:22:32,871 - chi2: 69.28876599008167
+2019-02-04 08:22:33,132 - chi2: 65.20126455430942
+2019-02-04 08:22:33,264 - chi2: 66.92625057666908
+2019-02-04 08:22:33,395 - chi2: 66.93480466383679
+2019-02-04 08:22:33,531 - chi2: 69.98002184648166
+2019-02-04 08:22:33,789 - chi2: 64.32106285591647
+2019-02-04 08:22:33,918 - chi2: 66.83072818222116
+2019-02-04 08:22:34,047 - chi2: 64.42598101016611
+2019-02-04 08:22:34,178 - chi2: 67.11557772745155
+2019-02-04 08:22:34,440 - chi2: 65.49936756186135
+2019-02-04 08:22:34,572 - chi2: 65.11551503279162
+2019-02-04 08:22:34,830 - chi2: 59.42214686736723
+2019-02-04 08:22:35,092 - chi2: 64.13325713469312
+2019-02-04 08:22:35,223 - chi2: 60.12681950535076
+2019-02-04 08:22:35,357 - chi2: 61.67605498254709
+2019-02-04 08:22:35,490 - chi2: 60.40443084978335
+2019-02-04 08:22:35,624 - chi2: 60.88498246753953
+2019-02-04 08:22:35,895 - chi2: 61.88368556911311
+2019-02-04 08:22:36,027 - chi2: 61.59574608328373
+2019-02-04 08:22:36,290 - chi2: 59.85390268523256
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2019-02-04 08:22:36,559 - chi2: 56.55509593667306
+2019-02-04 08:22:36,694 - chi2: 57.29010307470704
+2019-02-04 08:22:36,826 - chi2: 57.556032493614936
+2019-02-04 08:22:36,955 - chi2: 59.80724996467882
+2019-02-04 08:22:37,086 - chi2: 57.70751133993255
+2019-02-04 08:22:37,218 - chi2: 59.009078234655924
+2019-02-04 08:22:37,349 - chi2: 58.671591424881036
+2019-02-04 08:22:37,609 - chi2: 57.65359716723274
+2019-02-04 08:22:37,868 - chi2: 57.56579157198641
+2019-02-04 08:22:38,132 - chi2: 57.655977722869444
+2019-02-04 08:22:38,267 - chi2: 58.68431364055948
+2019-02-04 08:22:38,401 - chi2: 58.07908118318841
+2019-02-04 08:22:38,676 - chi2: 57.04281964801222
+2019-02-04 08:22:38,819 - chi2: 57.464422334237355
+2019-02-04 08:22:39,100 - chi2: 56.761599649676626
+2019-02-04 08:22:39,234 - chi2: 57.42570900487733
+2019-02-04 08:22:39,393 - chi2: 57.29212263759513
+2019-02-04 08:22:39,525 - chi2: 57.06002019611352
+2019-02-04 08:22:39,788 - chi2: 57.22061809149107
+2019-02-04 08:22:40,057 - chi2: 56.45901213364697
+2019-02-04 08:22:40,323 - chi2: 56.51733714111871
+2019-02-04 08:22:40,461 - chi2: 56.84267774098632
+2019-02-04 08:22:40,598 - chi2: 56.44612875165831
+2019-02-04 08:22:40,736 - chi2: 56.913830620106005
+2019-02-04 08:22:41,011 - chi2: 56.30028270597349
+2019-02-04 08:22:41,279 - chi2: 56.268826052699474
+2019-02-04 08:22:41,410 - chi2: 56.753556955817146
+2019-02-04 08:22:41,539 - chi2: 56.19503915692383
+2019-02-04 08:22:41,802 - chi2: 56.19096946863339
+2019-02-04 08:22:41,934 - chi2: 56.26146435841039
+2019-02-04 08:22:42,064 - chi2: 56.35958982632399
+2019-02-04 08:22:42,198 - chi2: 56.38143771392813
+2019-02-04 08:22:42,457 - chi2: 56.00511820676244
+2019-02-04 08:22:42,743 - chi2: 56.05322527506077
+2019-02-04 08:22:43,022 - chi2: 56.053373535847165
+2019-02-04 08:22:43,284 - chi2: 55.9787921888671
+2019-02-04 08:22:43,415 - chi2: 56.22597204674492
+2019-02-04 08:22:43,672 - chi2: 56.003653340864226
+2019-02-04 08:22:43,800 - chi2: 55.98313651058387
+2019-02-04 08:22:44,056 - chi2: 56.014736636496785
+2019-02-04 08:22:44,316 - chi2: 56.006977734880245
+2019-02-04 08:22:44,582 - chi2: 56.22731429513827
+2019-02-04 08:22:44,843 - chi2: 56.03329440004949
+2019-02-04 08:22:44,971 - chi2: 55.890858481302004
+2019-02-04 08:22:45,229 - chi2: 55.91468896246333
+2019-02-04 08:22:45,358 - chi2: 55.90522319451452
+2019-02-04 08:22:45,486 - chi2: 55.87960187921158
+2019-02-04 08:22:45,615 - chi2: 55.98377631988649
+2019-02-04 08:22:45,745 - chi2: 55.91250669499235
+2019-02-04 08:22:46,009 - chi2: 55.86248422534472
+2019-02-04 08:22:46,139 - chi2: 55.912748343071165
+2019-02-04 08:22:46,271 - chi2: 55.90670532456843
+2019-02-04 08:22:46,404 - chi2: 55.86802882326608
+2019-02-04 08:22:46,669 - chi2: 55.83126057151635
+2019-02-04 08:22:46,929 - chi2: 55.835685609400116
+2019-02-04 08:22:47,059 - chi2: 55.83442690601871
+2019-02-04 08:22:47,321 - chi2: 55.821055416716334
+2019-02-04 08:22:47,581 - chi2: 55.94477122678481
+2019-02-04 08:22:47,711 - chi2: 55.85212939988244
+2019-02-04 08:22:47,842 - chi2: 55.86180089470966
+2019-02-04 08:22:48,100 - chi2: 55.80790977924344
+2019-02-04 08:22:48,359 - chi2: 55.80802893086971
+2019-02-04 08:22:48,620 - chi2: 55.81053365646605
+2019-02-04 08:22:48,750 - chi2: 55.81281816621188
+2019-02-04 08:22:49,020 - chi2: 55.80020072952849
+2019-02-04 08:22:49,289 - chi2: 55.80052550131337
+2019-02-04 08:22:49,426 - chi2: 55.82579723450307
+2019-02-04 08:22:49,697 - chi2: 55.792041237304815
+2019-02-04 08:22:49,967 - chi2: 55.79375902815853
+2019-02-04 08:22:50,097 - chi2: 55.80541187693072
+2019-02-04 08:22:50,359 - chi2: 55.788859947236155
+2019-02-04 08:22:50,625 - chi2: 55.78963311092249
+2019-02-04 08:22:50,762 - chi2: 55.80577942936663
+2019-02-04 08:22:51,029 - chi2: 55.757953888777074
+2019-02-04 08:22:51,159 - chi2: 55.79213351500247
+2019-02-04 08:22:51,291 - chi2: 55.7922153175536
+2019-02-04 08:22:51,549 - chi2: 55.78137062646276
+2019-02-04 08:22:51,680 - chi2: 55.77519288030723
+2019-02-04 08:22:51,944 - chi2: 55.77747664286072
+2019-02-04 08:22:52,074 - chi2: 55.75983974292071
+2019-02-04 08:22:52,331 - chi2: 55.77335931763106
+2019-02-04 08:22:52,463 - chi2: 55.78504183392633
+2019-02-04 08:22:52,598 - chi2: 55.763456055113686
+2019-02-04 08:22:52,731 - chi2: 55.760584424925675
+2019-02-04 08:22:52,867 - chi2: 55.76457535145997
+2019-02-04 08:22:53,000 - chi2: 55.76236017696355
+2019-02-04 08:22:53,273 - chi2: 55.77187061500585
+2019-02-04 08:22:53,547 - chi2: 55.75825479531669
+2019-02-04 08:22:53,679 - chi2: 55.76091534166039
+2019-02-04 08:22:53,937 - chi2: 55.76105025003261
+2019-02-04 08:22:54,193 - chi2: 55.752864356959364
+2019-02-04 08:22:54,328 - chi2: 55.74902711689071
+2019-02-04 08:22:54,463 - chi2: 55.757006801019884
+2019-02-04 08:22:54,720 - chi2: 55.751869223631466
+2019-02-04 08:22:54,992 - chi2: 55.75233706075491
+2019-02-04 08:22:55,257 - chi2: 55.75231493631143
+2019-02-04 08:22:55,392 - chi2: 55.753905810881704
+2019-02-04 08:22:55,530 - chi2: 55.74861869810654
+2019-02-04 08:22:55,799 - chi2: 55.749182434333136
+2019-02-04 08:22:55,926 - chi2: 55.748714311219246
+2019-02-04 08:22:56,179 - chi2: 55.747688867628824
+2019-02-04 08:22:56,306 - chi2: 55.74882541386677
+2019-02-04 08:22:56,434 - chi2: 55.74724213520002
+2019-02-04 08:22:56,684 - chi2: 55.75716524022151
+2019-02-04 08:22:56,937 - chi2: 55.74582796022687
+2019-02-04 08:22:57,224 - chi2: 55.74553895384988
+2019-02-04 08:22:57,352 - chi2: 55.74867674308068
+2019-02-04 08:22:57,645 - chi2: 55.74499996159145
+2019-02-04 08:22:57,898 - chi2: 55.74546015451655
+2019-02-04 08:22:58,151 - chi2: 55.749457599724735
+2019-02-04 08:22:58,405 - chi2: 55.74924399961875
+2019-02-04 08:22:58,533 - chi2: 55.74417869539469
+2019-02-04 08:22:58,660 - chi2: 55.74503108435908
+2019-02-04 08:22:58,918 - chi2: 55.7431867358941
+2019-02-04 08:22:59,046 - chi2: 55.745718581327985
+2019-02-04 08:22:59,177 - chi2: 55.74437195441847
+2019-02-04 08:22:59,306 - chi2: 55.744521542360324
+2019-02-04 08:22:59,564 - chi2: 55.74161797452241
+2019-02-04 08:22:59,695 - chi2: 55.74226207518305
+2019-02-04 08:22:59,826 - chi2: 55.743322214264836
+2019-02-04 08:22:59,960 - chi2: 55.741740293746844
+2019-02-04 08:23:00,099 - chi2: 55.74205381378109
+2019-02-04 08:23:00,240 - chi2: 55.743873976973795
+2019-02-04 08:23:00,495 - chi2: 55.74193635834775
+2019-02-04 08:23:00,748 - chi2: 55.74185197464849
+2019-02-04 08:23:00,885 - chi2: 55.742927841844704
+2019-02-04 08:23:01,150 - chi2: 55.741691977328834
+2019-02-04 08:23:01,402 - chi2: 55.74177505883203
+2019-02-04 08:23:01,653 - chi2: 55.74203483430648
+2019-02-04 08:23:01,903 - chi2: 55.74127767299581
+2019-02-04 08:23:02,156 - chi2: 55.740721269810216
+2019-02-04 08:23:02,410 - chi2: 55.741456133126825
+2019-02-04 08:23:02,536 - chi2: 55.74121442074094
+2019-02-04 08:23:02,662 - chi2: 55.74129496843182
+2019-02-04 08:23:02,789 - chi2: 55.74148146691529
+2019-02-04 08:23:02,916 - chi2: 55.740945059170514
+2019-02-04 08:23:03,042 - chi2: 55.74076068720547
+2019-02-04 08:23:03,171 - chi2: 55.74124738766834
+2019-02-04 08:23:03,297 - chi2: 55.7407316159288
+2019-02-04 08:23:03,548 - chi2: 55.74081904853466
+2019-02-04 08:23:03,799 - chi2: 55.74187898672585
+2019-02-04 08:23:03,926 - chi2: 55.740930385260526
+2019-02-04 08:23:04,186 - chi2: 55.74050502172949
+2019-02-04 08:23:04,442 - chi2: 55.74083263118705
+2019-02-04 08:23:04,694 - chi2: 55.74058400683458
+2019-02-04 08:23:04,946 - chi2: 55.740526518182236
+2019-02-04 08:23:05,208 - chi2: 55.74125901856228
+2019-02-04 08:23:05,336 - chi2: 55.740646254731175
+2019-02-04 08:23:05,593 - chi2: 55.74035171694863
+2019-02-04 08:23:05,854 - chi2: 55.74037792514343
+2019-02-04 08:23:05,980 - chi2: 55.74040275282782
+2019-02-04 08:23:06,106 - chi2: 55.74048698375909
+2019-02-04 08:23:06,367 - chi2: 55.74041001712259
+2019-02-04 08:23:06,624 - chi2: 55.740182555038295
+2019-02-04 08:23:06,751 - chi2: 55.74000062299192
+2019-02-04 08:23:06,876 - chi2: 55.7402938011891
+2019-02-04 08:23:07,005 - chi2: 55.74014963776399
+2019-02-04 08:23:07,269 - chi2: 55.74016713731902
+2019-02-04 08:23:07,539 - chi2: 55.740129203921384
+2019-02-04 08:23:07,676 - chi2: 55.740234113418246
+2019-02-04 08:23:07,806 - chi2: 55.74021359064936
+2019-02-04 08:23:08,061 - chi2: 55.739812246434276
+2019-02-04 08:23:08,191 - chi2: 55.74020642658517
+2019-02-04 08:23:08,452 - chi2: 55.73990599261433
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2019-02-04 08:23:09,835 - chi2: 55.74004143165118
+2019-02-04 08:23:09,964 - chi2: 55.740093170932944
+2019-02-04 08:23:10,091 - chi2: 55.73999327158574
+2019-02-04 08:23:10,217 - chi2: 55.74003298015385
+2019-02-04 08:23:10,344 - chi2: 55.73995798479237
+2019-02-04 08:23:10,596 - chi2: 55.73996298336074
+2019-02-04 08:23:11,976 - chi2: 55.739805308938195
+2019-02-04 08:23:12,102 - chi2: 55.74000182387719
+2019-02-04 08:23:12,358 - chi2: 55.74003537351903
+2019-02-04 08:23:12,484 - chi2: 55.739816908592836
+2019-02-04 08:23:12,610 - chi2: 55.740014744449624
+2019-02-04 08:23:12,861 - chi2: 55.739858181176416
+2019-02-04 08:23:13,113 - chi2: 55.739858399027426
+2019-02-04 08:23:13,241 - chi2: 55.739856209687126
+2019-02-04 08:23:14,622 - chi2: 55.73990057310571
+2019-02-04 08:23:14,749 - chi2: 55.739969377692354
+2019-02-04 08:23:14,876 - chi2: 55.73992103127619
+2019-02-04 08:23:15,129 - chi2: 55.73996473636267
+2019-02-04 08:23:15,383 - chi2: 55.73989125090201
+2019-02-04 08:23:15,510 - chi2: 55.73972581817566
+2019-02-04 08:23:15,767 - chi2: 55.73984333413325
+2019-02-04 08:23:17,168 - chi2: 55.739965171392946
+2019-02-04 08:23:17,297 - chi2: 55.739899654447086
+2019-02-04 08:23:17,423 - chi2: 55.73984194221029
+2019-02-04 08:23:17,674 - chi2: 55.73987793116282
+2019-02-04 08:23:17,805 - chi2: 55.73984688173444
+2019-02-04 08:23:17,932 - chi2: 55.739765304518095
+2019-02-04 08:23:18,186 - chi2: 55.739784708663194
+2019-02-04 08:23:18,440 - chi2: 55.739736604231645
+2019-02-04 08:23:18,692 - chi2: 55.73967400762685
+2019-02-04 08:23:18,820 - chi2: 55.73971671544216
+2019-02-04 08:23:18,953 - chi2: 55.73973416072686
+2019-02-04 08:23:19,211 - chi2: 55.73972709684265
+2019-02-04 08:23:19,464 - chi2: 55.73973585467345
+2019-02-04 08:23:20,851 - chi2: 55.7396515873017
+2019-02-04 08:23:20,977 - chi2: 55.73974317730569
+2019-02-04 08:23:21,104 - chi2: 55.73971014665481
+2019-02-04 08:23:21,361 - chi2: 55.73976612133344
+2019-02-04 08:23:22,754 - chi2: 55.73975206910569
+2019-02-04 08:23:22,880 - chi2: 55.73973176564177
+2019-02-04 08:23:23,132 - chi2: 55.73972718627426
+2019-02-04 08:23:23,260 - chi2: 55.73963950416585
+2019-02-04 08:23:23,516 - chi2: 55.73979429942284
+2019-02-04 08:23:23,789 - chi2: 55.73958012096499
+2019-02-04 08:23:24,047 - chi2: 55.73966916626964
+2019-02-04 08:23:24,177 - chi2: 55.739667084662265
+2019-02-04 08:23:24,432 - chi2: 55.739580463258335
+2019-02-04 08:23:25,828 - chi2: 55.73967742153505
+2019-02-04 08:23:26,082 - chi2: 55.73977636215099
+2019-02-04 08:23:26,212 - chi2: 55.73966988204012
+2019-02-04 08:23:26,352 - chi2: 55.73960659835409
+2019-02-04 08:23:26,612 - chi2: 55.73959497740292
+2019-02-04 08:23:28,013 - chi2: 55.73967048882171
+2019-02-04 08:23:28,267 - chi2: 55.73962518923347
+2019-02-04 08:23:28,867 - chi2: 55.73952778023619
+2019-02-04 08:23:28,869 - -------------
+2019-02-04 08:23:28,870 -   Cycle 1
+2019-02-04 08:23:28,871 -   Weights for region spec1 : SI=0.0 - SQ=10.0 - SU=10.0 - SV=10.0
+2019-02-04 08:23:28,872 - -------------
+2019-02-04 08:23:29,722 - chi2: 30.15786115286162
+2019-02-04 08:23:30,027 - chi2: 29.82684235462965
+2019-02-04 08:23:30,181 - chi2: 30.046654397040943
+2019-02-04 08:23:30,483 - chi2: 29.42486845544968
+2019-02-04 08:23:30,637 - chi2: 29.86955143153041
+2019-02-04 08:23:30,942 - chi2: 29.24415921179823
+2019-02-04 08:23:31,093 - chi2: 29.417780284469607
+2019-02-04 08:23:31,249 - chi2: 29.73259502577965
+2019-02-04 08:23:31,558 - chi2: 29.027193350098727
+2019-02-04 08:23:31,711 - chi2: 29.30529263379414
+2019-02-04 08:23:32,012 - chi2: 28.831429729964366
+2019-02-04 08:23:32,166 - chi2: 28.899444670035233
+2019-02-04 08:23:32,470 - chi2: 28.707293158473902
+2019-02-04 08:23:32,773 - chi2: 28.387338034312876
+2019-02-04 08:23:33,079 - chi2: 28.114861446059095
+2019-02-04 08:23:33,233 - chi2: 28.153796632525097
+2019-02-04 08:23:33,543 - chi2: 27.561915378379492
+2019-02-04 08:23:33,846 - chi2: 26.946213810765947
+2019-02-04 08:23:34,001 - chi2: 27.005904560917365
+2019-02-04 08:23:34,324 - chi2: 25.996915583649177
+2019-02-04 08:23:34,630 - chi2: 24.551946550221533
+2019-02-04 08:23:34,790 - chi2: 24.728385634162702
+2019-02-04 08:23:35,095 - chi2: 22.83900400239949
+2019-02-04 08:23:35,402 - chi2: 20.321717015751428
+2019-02-04 08:23:35,561 - chi2: 20.435142999680785
+2019-02-04 08:23:35,872 - chi2: 17.520673110441027
+2019-02-04 08:23:36,190 - chi2: 14.476508532125646
+2019-02-04 08:23:36,344 - chi2: 14.556135255571284
+2019-02-04 08:23:36,652 - chi2: 12.913213908605094
+2019-02-04 08:23:36,805 - chi2: 13.028849361832417
+2019-02-04 08:23:36,960 - chi2: 13.918048379214559
+2019-02-04 08:23:37,271 - chi2: 13.317056806755444
+2019-02-04 08:23:37,570 - chi2: 13.207677265413524
+2019-02-04 08:23:37,869 - chi2: 13.06139580971638
+2019-02-04 08:23:38,172 - chi2: 13.003506617668947
+2019-02-04 08:23:38,479 - chi2: 12.962858923143
+2019-02-04 08:23:38,780 - chi2: 12.936484349065289
+2019-02-04 08:23:39,085 - chi2: 12.924829661327701
+2019-02-04 08:23:39,402 - chi2: 12.93013477939974
+2019-02-04 08:23:39,702 - chi2: 12.915454965066834
+2019-02-04 08:23:39,858 - chi2: 12.92052630902305
+2019-02-04 08:23:40,161 - chi2: 12.912771884113535
+2019-02-04 08:23:40,464 - chi2: 12.911642149633957
+2019-02-04 08:23:40,768 - chi2: 12.91077900750835
+2019-02-04 08:23:41,072 - chi2: 12.910790030053843
+2019-02-04 08:23:41,381 - chi2: 12.909613213133587
+2019-02-04 08:23:41,693 - chi2: 12.91031900277726
+2019-02-04 08:23:41,997 - chi2: 12.910138810951427
+2019-02-04 08:23:42,150 - chi2: 12.90998301413335
+2019-02-04 08:23:42,458 - chi2: 12.909863318569476
+2019-02-04 08:23:42,786 - chi2: 12.91033494367943
+2019-02-04 08:23:43,087 - chi2: 12.907824149092587
+2019-02-04 08:23:43,395 - chi2: 12.909075879650107
+2019-02-04 08:23:43,546 - chi2: 12.90785803961736
+2019-02-04 08:23:43,700 - chi2: 12.908781389451082
+2019-02-04 08:23:44,009 - chi2: 12.906115400722424
+2019-02-04 08:23:44,317 - chi2: 12.903721909035953
+2019-02-04 08:23:44,467 - chi2: 12.907388984356846
+2019-02-04 08:23:44,619 - chi2: 12.906730185092737
+2019-02-04 08:23:44,944 - chi2: 12.902082447638834
+2019-02-04 08:23:45,247 - chi2: 12.89860803147282
+2019-02-04 08:23:45,397 - chi2: 12.900115378334746
+2019-02-04 08:23:45,702 - chi2: 12.88915358721836
+2019-02-04 08:23:45,860 - chi2: 12.890122480102228
+2019-02-04 08:23:46,014 - chi2: 12.891377829119683
+2019-02-04 08:23:46,316 - chi2: 12.877089442483864
+2019-02-04 08:23:46,619 - chi2: 12.862289214219588
+2019-02-04 08:23:46,771 - chi2: 12.876726435848974
+2019-02-04 08:23:47,071 - chi2: 12.849711944439118
+2019-02-04 08:23:47,372 - chi2: 12.835946775633605
+2019-02-04 08:23:47,521 - chi2: 12.83727526225312
+2019-02-04 08:23:47,824 - chi2: 12.797540024001908
+2019-02-04 08:23:47,974 - chi2: 12.82343102214567
+2019-02-04 08:23:48,126 - chi2: 12.819920414387655
+2019-02-04 08:23:48,280 - chi2: 12.81341846742597
+2019-02-04 08:23:48,596 - chi2: 12.812814585236184
+2019-02-04 08:23:48,747 - chi2: 12.797852961527662
+2019-02-04 08:23:49,052 - chi2: 12.782299358923359
+2019-02-04 08:23:49,357 - chi2: 12.783075801857446
+2019-02-04 08:23:49,508 - chi2: 12.785160925407872
+2019-02-04 08:23:49,659 - chi2: 12.797417253011048
+2019-02-04 08:23:49,810 - chi2: 12.793056213992983
+2019-02-04 08:23:49,962 - chi2: 12.790385077125636
+2019-02-04 08:23:50,269 - chi2: 12.782958099148576
+2019-02-04 08:23:50,580 - chi2: 12.78211703797221
+2019-02-04 08:23:50,884 - chi2: 12.781103225269254
+2019-02-04 08:23:51,185 - chi2: 12.78078878130472
+2019-02-04 08:23:51,336 - chi2: 12.780997829454677
+2019-02-04 08:23:51,637 - chi2: 12.780399463078384
+2019-02-04 08:23:51,942 - chi2: 12.780344012631192
+2019-02-04 08:23:52,099 - chi2: 12.780382680355988
+2019-02-04 08:23:52,409 - chi2: 12.78027156085927
+2019-02-04 08:23:52,709 - chi2: 12.780552398564563
+2019-02-04 08:23:52,862 - chi2: 12.780085477934943
+2019-02-04 08:23:53,168 - chi2: 12.779940191384028
+2019-02-04 08:23:53,475 - chi2: 12.779711870103956
+2019-02-04 08:23:53,629 - chi2: 12.77989376276615
+2019-02-04 08:23:53,934 - chi2: 12.779886378933709
+2019-02-04 08:23:54,084 - chi2: 12.779661594622592
+2019-02-04 08:23:54,385 - chi2: 12.779208143071184
+2019-02-04 08:23:54,686 - chi2: 12.77968711624677
+2019-02-04 08:23:54,838 - chi2: 12.779220597754904
+2019-02-04 08:23:54,992 - chi2: 12.779368372675663
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2019-02-04 08:23:55,302 - chi2: 12.778480823774974
+2019-02-04 08:23:55,603 - chi2: 12.777853380681993
+2019-02-04 08:23:55,756 - chi2: 12.778551461282525
+2019-02-04 08:23:55,906 - chi2: 12.778386948776536
+2019-02-04 08:23:56,206 - chi2: 12.776625758266245
+2019-02-04 08:23:56,356 - chi2: 12.77704294956321
+2019-02-04 08:23:56,506 - chi2: 12.777022533716867
+2019-02-04 08:23:56,807 - chi2: 12.774285789321915
+2019-02-04 08:23:56,956 - chi2: 12.774751773280805
+2019-02-04 08:23:57,106 - chi2: 12.774567765340482
+2019-02-04 08:23:57,413 - chi2: 12.771073984133327
+2019-02-04 08:23:57,713 - chi2: 12.767699308006502
+2019-02-04 08:23:57,865 - chi2: 12.768862955091306
+2019-02-04 08:23:58,017 - chi2: 12.768028980499803
+2019-02-04 08:23:58,318 - chi2: 12.758079393747787
+2019-02-04 08:23:58,468 - chi2: 12.760258681229493
+2019-02-04 08:23:58,618 - chi2: 12.758405720151254
+2019-02-04 08:23:58,918 - chi2: 12.750313213128376
+2019-02-04 08:23:59,219 - chi2: 12.737403125757707
+2019-02-04 08:23:59,370 - chi2: 12.741135368218927
+2019-02-04 08:23:59,673 - chi2: 12.72628428812559
+2019-02-04 08:23:59,981 - chi2: 12.7223886536483
+2019-02-04 08:24:00,283 - chi2: 12.708772497261116
+2019-02-04 08:24:00,436 - chi2: 12.711844194169956
+2019-02-04 08:24:00,737 - chi2: 12.717540042228842
+2019-02-04 08:24:01,039 - chi2: 12.715222692679347
+2019-02-04 08:24:01,341 - chi2: 12.70194844777076
+2019-02-04 08:24:01,490 - chi2: 12.703482746875661
+2019-02-04 08:24:01,790 - chi2: 12.706077225787544
+2019-02-04 08:24:01,941 - chi2: 12.703967234131598
+2019-02-04 08:24:02,091 - chi2: 12.70241590623188
+2019-02-04 08:24:02,394 - chi2: 12.699838226174199
+2019-02-04 08:24:02,693 - chi2: 12.693286865333524
+2019-02-04 08:24:02,844 - chi2: 12.701441436197191
+2019-02-04 08:24:03,145 - chi2: 12.69550410683864
+2019-02-04 08:24:03,449 - chi2: 12.685164842033764
+2019-02-04 08:24:03,747 - chi2: 12.692369679855439
+2019-02-04 08:24:03,897 - chi2: 12.686455635946269
+2019-02-04 08:24:04,199 - chi2: 12.679671087868805
+2019-02-04 08:24:04,353 - chi2: 12.686362581944236
+2019-02-04 08:24:04,651 - chi2: 12.671543219190996
+2019-02-04 08:24:04,952 - chi2: 12.679043062508086
+2019-02-04 08:24:05,102 - chi2: 12.673016901983535
+2019-02-04 08:24:05,404 - chi2: 12.663379248157579
+2019-02-04 08:24:05,706 - chi2: 12.663193932436853
+2019-02-04 08:24:05,856 - chi2: 12.669563610893107
+2019-02-04 08:24:06,156 - chi2: 12.665377089532841
+2019-02-04 08:24:06,310 - chi2: 12.662629236086849
+2019-02-04 08:24:06,609 - chi2: 12.662566888927916
+2019-02-04 08:24:06,908 - chi2: 12.66149897575618
+2019-02-04 08:24:07,211 - chi2: 12.66117288954166
+2019-02-04 08:24:07,509 - chi2: 12.66104448009875
+2019-02-04 08:24:07,808 - chi2: 12.66115298843556
+2019-02-04 08:24:08,106 - chi2: 12.660803670370393
+2019-02-04 08:24:08,409 - chi2: 12.66086058016407
+2019-02-04 08:24:08,706 - chi2: 12.66086610587556
+2019-02-04 08:24:09,004 - chi2: 12.660823319491321
+2019-02-04 08:24:09,305 - chi2: 12.660751233905517
+2019-02-04 08:24:09,604 - chi2: 12.660779973597979
+2019-02-04 08:24:09,903 - chi2: 12.660824043643744
+2019-02-04 08:24:10,054 - chi2: 12.660809565509775
+2019-02-04 08:24:10,358 - chi2: 12.660782043416722
+2019-02-04 08:24:10,508 - chi2: 12.660791751571072
+2019-02-04 08:24:10,807 - chi2: 12.660715352472677
+2019-02-04 08:24:10,957 - chi2: 12.660770911373216
+2019-02-04 08:24:11,257 - chi2: 12.660766948336683
+2019-02-04 08:24:11,559 - chi2: 12.660769296489576
+2019-02-04 08:24:11,858 - chi2: 12.66078023501115
+2019-02-04 08:24:12,008 - chi2: 12.660691043786723
+2019-02-04 08:24:12,311 - chi2: 12.66065959973836
+2019-02-04 08:24:13,213 - chi2: 12.660682870572243
+2019-02-04 08:24:13,515 - chi2: 12.660678229388962
+2019-02-04 08:24:13,835 - chi2: 12.660669855518012
+2019-02-04 08:24:14,135 - chi2: 12.660655010859308
+2019-02-04 08:24:15,041 - chi2: 12.66065407305971
+2019-02-04 08:24:15,193 - chi2: 12.660662717025312
+2019-02-04 08:24:16,098 - chi2: 12.660692267505796
+2019-02-04 08:24:16,732 - chi2: 12.66065407305971
+</pre></div></div>
+</div>
+<p>Now we plot the results.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">final</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;photospheres/model_photosphere.1d&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;photospheres/model_photosphere_200.1d&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;output.h5&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;ph1&#39;</span><span class="p">][</span><span class="s1">&#39;T&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:])</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">final</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">start</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/scratch/miniconda3/envs/py36/lib/python3.6/site-packages/matplotlib/figure.py:2267: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+  warnings.warn(&#34;This figure includes Axes that are not compatible &#34;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_external_optimizer_13_1.png" src="../_images/notebooks_external_optimizer_13_1.png" />
+</div>
+</div>
+<p>Now let’s use an optimizer that uses first-order derivatives. Let’s select the Newton-CG method:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_single.ini&#39;</span><span class="p">,</span> <span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;inversion&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">read_observation</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">open_output</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">invert_external</span><span class="p">(</span><span class="n">minimize</span><span class="p">,</span> <span class="n">use_jacobian</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;Newton-CG&#39;</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">write_output</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">close_output</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2018-07-10 16:50:45,019 - Adding spectral region spec1
+2018-07-10 16:50:45,021 -   - Reading wavelength axis from observations/10830.wavelength
+2018-07-10 16:50:45,027 -   - Reading wavelength weights from observations/10830.weights
+2018-07-10 16:50:45,034 -   - Using observations from observations/10830_stokes.1d
+2018-07-10 16:50:45,036 -   - No mask for pixels
+2018-07-10 16:50:45,038 -   - Using LOS [&#39;0.0&#39;, &#39;0.0&#39;, &#39;90.0&#39;]
+2018-07-10 16:50:45,039 -   - Using boundary condition [&#39;1.0&#39;, &#39;0.0&#39;, &#39;0.0&#39;, &#39;0.0&#39;]
+2018-07-10 16:50:45,041 - Using 1 cycles
+2018-07-10 16:50:45,043 - Adding atmospheres
+2018-07-10 16:50:45,045 -   - New available photosphere : ph1
+2018-07-10 16:50:45,046 -     * Adding line : [300]
+2018-07-10 16:50:45,048 -     * Magnetic field reference frame : vertical
+2018-07-10 16:50:45,050 -     * Reading 1D model photospheres/model_photosphere_200.1d as reference
+2018-07-10 16:50:45,057 -   - New available chromosphere : ch1
+2018-07-10 16:50:45,059 -     * Adding line : 10830
+2018-07-10 16:50:45,060 -     * Magnetic field reference frame : vertical
+2018-07-10 16:50:45,062 -     * Reading 1D model chromospheres/model_chromosphere.1d as reference
+/scratch/Dropbox/GIT/hazel2/hazel/transforms.py:19: RuntimeWarning: divide by zero encountered in log
+  return np.log(x / (1.0 - x))
+2018-07-10 16:50:45,066 -   - New available parametric : te1
+2018-07-10 16:50:45,068 -     * Reading 1D model telluric/model_telluric.1d as reference
+2018-07-10 16:50:45,070 - Adding topologies
+2018-07-10 16:50:45,071 -   - ph1 -&gt; ch1 -&gt; te1
+2018-07-10 16:50:45,073 - Removing unused atmospheres
+2018-07-10 16:50:45,074 - Number of pixels to invert : 1
+2018-07-10 16:50:45,098 - -------------
+2018-07-10 16:50:45,099 -   Cycle 0
+2018-07-10 16:50:45,101 -   Weights for region spec1 : SI=1.0 - SQ=0.0 - SU=0.0 - SV=0.0
+2018-07-10 16:50:45,102 - -------------
+2018-07-10 16:50:45,930 - chi2: 60596.95373734312
+2018-07-10 16:50:46,542 - chi2: 243.02449839565205
+2018-07-10 16:50:54,937 - chi2: 243.02449839565205
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">final</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;photospheres/model_photosphere.1d&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;photospheres/model_photosphere_200.1d&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;output.h5&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;ph1&#39;</span><span class="p">][</span><span class="s1">&#39;T&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:])</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">final</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">start</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">OSError</span>                                   Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-5-224f8c68ccab&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>final <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>loadtxt<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;photospheres/model_photosphere.1d&#39;</span><span class="ansi-blue-fg">,</span> skiprows<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">4</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> start <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>loadtxt<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;photospheres/model_photosphere_200.1d&#39;</span><span class="ansi-blue-fg">,</span> skiprows<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">4</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> f <span class="ansi-blue-fg">=</span> h5py<span class="ansi-blue-fg">.</span>File<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;output.h5&#39;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span> pl<span class="ansi-blue-fg">.</span>plot<span class="ansi-blue-fg">(</span>f<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;ph1&#39;</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;T&#39;</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">,</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span> pl<span class="ansi-blue-fg">.</span>plot<span class="ansi-blue-fg">(</span>final<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/scratch/miniconda3/envs/py36/lib/python3.6/site-packages/numpy/lib/npyio.py</span> in <span class="ansi-cyan-fg">loadtxt</span><span class="ansi-blue-fg">(fname, dtype, comments, delimiter, converters, skiprows, usecols, unpack, ndmin, encoding)</span>
+<span class="ansi-green-intense-fg ansi-bold">    924</span>             fname <span class="ansi-blue-fg">=</span> str<span class="ansi-blue-fg">(</span>fname<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    925</span>         <span class="ansi-green-fg">if</span> _is_string_like<span class="ansi-blue-fg">(</span>fname<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 926</span><span class="ansi-red-fg">             </span>fh <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>lib<span class="ansi-blue-fg">.</span>_datasource<span class="ansi-blue-fg">.</span>open<span class="ansi-blue-fg">(</span>fname<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;rt&#39;</span><span class="ansi-blue-fg">,</span> encoding<span class="ansi-blue-fg">=</span>encoding<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    927</span>             fencoding <span class="ansi-blue-fg">=</span> getattr<span class="ansi-blue-fg">(</span>fh<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;encoding&#39;</span><span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;latin1&#39;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    928</span>             fh <span class="ansi-blue-fg">=</span> iter<span class="ansi-blue-fg">(</span>fh<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/scratch/miniconda3/envs/py36/lib/python3.6/site-packages/numpy/lib/_datasource.py</span> in <span class="ansi-cyan-fg">open</span><span class="ansi-blue-fg">(path, mode, destpath, encoding, newline)</span>
+<span class="ansi-green-intense-fg ansi-bold">    260</span>
+<span class="ansi-green-intense-fg ansi-bold">    261</span>     ds <span class="ansi-blue-fg">=</span> DataSource<span class="ansi-blue-fg">(</span>destpath<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 262</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">return</span> ds<span class="ansi-blue-fg">.</span>open<span class="ansi-blue-fg">(</span>path<span class="ansi-blue-fg">,</span> mode<span class="ansi-blue-fg">,</span> encoding<span class="ansi-blue-fg">=</span>encoding<span class="ansi-blue-fg">,</span> newline<span class="ansi-blue-fg">=</span>newline<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    263</span>
+<span class="ansi-green-intense-fg ansi-bold">    264</span>
+
+<span class="ansi-green-fg">/scratch/miniconda3/envs/py36/lib/python3.6/site-packages/numpy/lib/_datasource.py</span> in <span class="ansi-cyan-fg">open</span><span class="ansi-blue-fg">(self, path, mode, encoding, newline)</span>
+<span class="ansi-green-intense-fg ansi-bold">    616</span>                                       encoding=encoding, newline=newline)
+<span class="ansi-green-intense-fg ansi-bold">    617</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 618</span><span class="ansi-red-fg">             </span><span class="ansi-green-fg">raise</span> IOError<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#34;%s not found.&#34;</span> <span class="ansi-blue-fg">%</span> path<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    619</span>
+<span class="ansi-green-intense-fg ansi-bold">    620</span>
+
+<span class="ansi-red-fg">OSError</span>: photospheres/model_photosphere.1d not found.
+</pre></div></div>
+</div>
+</section>
+<section id="Using-other-external-optimizers-(pro-mode)">
+<h2><span class="section-number">6.6.2. </span>Using other external optimizers (pro-mode)<a class="headerlink" href="#Using-other-external-optimizers-(pro-mode)" title="Link to this heading">¶</a></h2>
+<p>Using non-SciPy optimizers is slightly more complicated. For this purpose Hazel provides the necessary tools to use them. Here we show an example using the well-known Adam optimizer, broadly used for training deep neural networks. It is a first-order optimizer which uses derivative information. Let us first define a class that implements the Adam optimizer:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AdamOptimizer</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">beta1</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">beta2</span><span class="o">=</span><span class="mf">0.999</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta1</span> <span class="o">=</span> <span class="n">beta1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta2</span> <span class="o">=</span> <span class="n">beta2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span> <span class="o">=</span> <span class="n">epsilon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">x0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fun</span> <span class="o">=</span> <span class="n">fun</span>
+
+    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_iter</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_iter</span><span class="p">):</span>
+            <span class="n">f</span><span class="p">,</span> <span class="n">gradient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta1</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta1</span><span class="p">)</span><span class="o">*</span><span class="n">gradient</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">gradient</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">m_hat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta1</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">)</span>
+            <span class="n">v_hat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta2</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">*</span><span class="p">(</span><span class="n">m_hat</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">v_hat</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iter: </span><span class="si">{0}</span><span class="s2"> - chi2: </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span>
+</pre></div>
+</div>
+</div>
+<p>Now we instantiate the model, read the observations and open the output. Next, we need to follow what <code class="docutils literal notranslate"><span class="pre">invert_external</span></code> does. First, compute some factors used internally by Hazel. Loop over all cycles with the following steps: i) find the active parameters, ii) instantiate the optimizer with the <code class="docutils literal notranslate"><span class="pre">_func_grad</span></code> function provided by Hazel, iii) call the optimizer, iv) set the final model and v) propagate the new parameters to the final ones. Finally, we write the output.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_single.ini&#39;</span><span class="p">,</span> <span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;inversion&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">read_observation</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">open_output</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">v</span><span class="o">.</span><span class="n">factor_chi2</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">noise</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">v</span><span class="o">.</span><span class="n">dof</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">mod</span><span class="o">.</span><span class="n">cycle</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">n_cycles</span><span class="p">):</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">find_active_parameters</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">cycle</span><span class="p">)</span>
+    <span class="n">n_pars</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>
+
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">AdamOptimizer</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">_func_grad</span><span class="p">,</span> <span class="n">mod</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>
+
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>
+
+    <span class="n">mod</span><span class="o">.</span><span class="n">set_new_model</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+
+    <span class="n">mod</span><span class="o">.</span><span class="n">flatten_parameters_to_reference</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">cycle</span><span class="p">)</span>
+
+<span class="n">mod</span><span class="o">.</span><span class="n">write_output</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">close_output</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2018-10-05 13:15:27,266 - Adding spectral region spec1
+2018-10-05 13:15:27,268 -   - Reading wavelength axis from observations/10830.wavelength
+2018-10-05 13:15:27,271 -   - Reading wavelength weights from observations/10830.weights
+2018-10-05 13:15:27,275 -   - Using observations from observations/10830_stokes.1d
+2018-10-05 13:15:27,277 -   - No mask for pixels
+2018-10-05 13:15:27,279 -   - No instrumental profile
+2018-10-05 13:15:27,280 -   - Using LOS [&#39;0.0&#39;, &#39;0.0&#39;, &#39;90.0&#39;]
+2018-10-05 13:15:27,282 -   - Using boundary condition [&#39;1.0&#39;, &#39;0.0&#39;, &#39;0.0&#39;, &#39;0.0&#39;]
+2018-10-05 13:15:27,283 - Using 1 cycles
+2018-10-05 13:15:27,285 - Not using randomizations
+2018-10-05 13:15:27,290 - Adding atmospheres
+2018-10-05 13:15:27,292 -   - New available photosphere : ph1
+2018-10-05 13:15:27,294 -     * Adding line : [300]
+2018-10-05 13:15:27,296 -     * Magnetic field reference frame : vertical
+2018-10-05 13:15:27,301 -     * Reading 1D model photospheres/model_photosphere_200.1d as reference
+2018-10-05 13:15:27,305 -   - New available chromosphere : ch1
+2018-10-05 13:15:27,307 -     * Adding line : 10830
+2018-10-05 13:15:27,308 -     * Magnetic field reference frame : vertical
+2018-10-05 13:15:27,310 -     * Reading 1D model chromospheres/model_chromosphere.1d as reference
+2018-10-05 13:15:27,315 -   - New available parametric : te1
+2018-10-05 13:15:27,317 -     * Reading 1D model telluric/model_telluric.1d as reference
+2018-10-05 13:15:27,320 - Adding topologies
+2018-10-05 13:15:27,321 -   - ph1 -&gt; ch1 -&gt; te1
+2018-10-05 13:15:27,323 - Removing unused atmospheres
+2018-10-05 13:15:27,324 - Number of pixels to invert : 1
+2018-10-05 13:15:27,329 - Total number of free parameters in all cycles : 2
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">OSError</span>                                   Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-9-a3e31dbce02b&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> mod <span class="ansi-blue-fg">=</span> hazel<span class="ansi-blue-fg">.</span>Model<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;conf_single.ini&#39;</span><span class="ansi-blue-fg">,</span> working_mode<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#39;inversion&#39;</span><span class="ansi-blue-fg">,</span> verbose<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">2</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> mod<span class="ansi-blue-fg">.</span>read_observation<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">----&gt; 3</span><span class="ansi-red-fg"> </span>mod<span class="ansi-blue-fg">.</span>open_output<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span> <span class="ansi-green-fg">for</span> k<span class="ansi-blue-fg">,</span> v <span class="ansi-green-fg">in</span> mod<span class="ansi-blue-fg">.</span>spectrum<span class="ansi-blue-fg">.</span>items<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/scratch/Dropbox/GIT/hazel2/hazel/model.py</span> in <span class="ansi-cyan-fg">open_output</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    311</span>     <span class="ansi-green-fg">def</span> open_output<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    312</span>         self<span class="ansi-blue-fg">.</span>output_handler <span class="ansi-blue-fg">=</span> Generic_output_file<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>output_file<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 313</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>output_handler<span class="ansi-blue-fg">.</span>open<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    314</span>
+<span class="ansi-green-intense-fg ansi-bold">    315</span>     <span class="ansi-green-fg">def</span> close_output<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/scratch/Dropbox/GIT/hazel2/hazel/io.py</span> in <span class="ansi-cyan-fg">open</span><span class="ansi-blue-fg">(self, model)</span>
+<span class="ansi-green-intense-fg ansi-bold">     31</span>             <span class="ansi-red-fg"># Open the file</span>
+<span class="ansi-green-intense-fg ansi-bold">     32</span>             <span class="ansi-green-fg">if</span> <span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>extension <span class="ansi-blue-fg">==</span> <span class="ansi-blue-fg">&#39;h5&#39;</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 33</span><span class="ansi-red-fg">                 </span>self<span class="ansi-blue-fg">.</span>handler <span class="ansi-blue-fg">=</span> h5py<span class="ansi-blue-fg">.</span>File<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>filename<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;w&#39;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     34</span>
+<span class="ansi-green-intense-fg ansi-bold">     35</span>             <span class="ansi-green-fg">if</span> <span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>extension <span class="ansi-blue-fg">==</span> <span class="ansi-blue-fg">&#39;zarr&#39;</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/miniconda3/envs/py36/lib/python3.6/site-packages/h5py/_hl/files.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, name, mode, driver, libver, userblock_size, swmr, **kwds)</span>
+<span class="ansi-green-intense-fg ansi-bold">    267</span>             <span class="ansi-green-fg">with</span> phil<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    268</span>                 fapl <span class="ansi-blue-fg">=</span> make_fapl<span class="ansi-blue-fg">(</span>driver<span class="ansi-blue-fg">,</span> libver<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwds<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 269</span><span class="ansi-red-fg">                 </span>fid <span class="ansi-blue-fg">=</span> make_fid<span class="ansi-blue-fg">(</span>name<span class="ansi-blue-fg">,</span> mode<span class="ansi-blue-fg">,</span> userblock_size<span class="ansi-blue-fg">,</span> fapl<span class="ansi-blue-fg">,</span> swmr<span class="ansi-blue-fg">=</span>swmr<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    270</span>
+<span class="ansi-green-intense-fg ansi-bold">    271</span>                 <span class="ansi-green-fg">if</span> swmr_support<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/miniconda3/envs/py36/lib/python3.6/site-packages/h5py/_hl/files.py</span> in <span class="ansi-cyan-fg">make_fid</span><span class="ansi-blue-fg">(name, mode, userblock_size, fapl, fcpl, swmr)</span>
+<span class="ansi-green-intense-fg ansi-bold">    103</span>         fid <span class="ansi-blue-fg">=</span> h5f<span class="ansi-blue-fg">.</span>create<span class="ansi-blue-fg">(</span>name<span class="ansi-blue-fg">,</span> h5f<span class="ansi-blue-fg">.</span>ACC_EXCL<span class="ansi-blue-fg">,</span> fapl<span class="ansi-blue-fg">=</span>fapl<span class="ansi-blue-fg">,</span> fcpl<span class="ansi-blue-fg">=</span>fcpl<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    104</span>     <span class="ansi-green-fg">elif</span> mode <span class="ansi-blue-fg">==</span> <span class="ansi-blue-fg">&#39;w&#39;</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 105</span><span class="ansi-red-fg">         </span>fid <span class="ansi-blue-fg">=</span> h5f<span class="ansi-blue-fg">.</span>create<span class="ansi-blue-fg">(</span>name<span class="ansi-blue-fg">,</span> h5f<span class="ansi-blue-fg">.</span>ACC_TRUNC<span class="ansi-blue-fg">,</span> fapl<span class="ansi-blue-fg">=</span>fapl<span class="ansi-blue-fg">,</span> fcpl<span class="ansi-blue-fg">=</span>fcpl<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    106</span>     <span class="ansi-green-fg">elif</span> mode <span class="ansi-blue-fg">==</span> <span class="ansi-blue-fg">&#39;a&#39;</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    107</span>         <span class="ansi-red-fg"># Open in append mode (read/write).</span>
+
+<span class="ansi-green-fg">h5py/_objects.pyx</span> in <span class="ansi-cyan-fg">h5py._objects.with_phil.wrapper</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-green-fg">h5py/_objects.pyx</span> in <span class="ansi-cyan-fg">h5py._objects.with_phil.wrapper</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-green-fg">h5py/h5f.pyx</span> in <span class="ansi-cyan-fg">h5py.h5f.create</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-red-fg">OSError</span>: Unable to create file (unable to truncate a file which is already open)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">final</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;photospheres/model_photosphere.1d&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;photospheres/model_photosphere_200.1d&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;output.h5&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;ph1&#39;</span><span class="p">][</span><span class="s1">&#39;T&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:])</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">final</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">start</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/scratch/miniconda3/envs/py36/lib/python3.6/site-packages/matplotlib/figure.py:2267: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+  warnings.warn(&#34;This figure includes Axes that are not compatible &#34;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_external_optimizer_21_1.png" src="../_images/notebooks_external_optimizer_21_1.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="parallel_synth.html" class="btn btn-neutral float-left" title="6.5. Synthesis of a 3D cube" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../graphical.html" class="btn btn-neutral float-right" title="7. Graphical front-end" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

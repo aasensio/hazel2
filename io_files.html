@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>4. Input/output files &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="4.1. Input files" href="io_files/input.html" />
+    <link rel="prev" title="3.4. Regularization" href="config/regularization.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="started/installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="started.html">2. Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">3. Configuration</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">4. Input/output files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="io_files/input.html">4.1. Input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io_files/generators.html">4.2. Generators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io_files/output.html">4.3. Output files</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="preparation.html">5. Data preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">6. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active"><span class="section-number">4. </span>Input/output files</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/io_files.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="input-output-files">
+<span id="iofiles"></span><h1><span class="section-number">4. </span>Input/output files<a class="headerlink" href="#input-output-files" title="Link to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="io_files/input.html">4.1. Input files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="io_files/input.html#wavelength-files">4.1.1. Wavelength files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="io_files/input.html#wavelength">4.1.1.1. Wavelength</a></li>
+<li class="toctree-l3"><a class="reference internal" href="io_files/input.html#wavelength-weights">4.1.1.2. Wavelength weights</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="io_files/input.html#observations-files">4.1.2. Observations files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="io_files/input.html#d-files">4.1.2.1. 1D files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="io_files/input.html#hdf5-zarr-3d-files">4.1.2.2. HDF5/zarr 3D files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="io_files/input.html#fits-3d-files">4.1.2.3. FITS 3D files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="io_files/input.html#mask-file">4.1.2.4. Mask file</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="io_files/input.html#photospheric-models">4.1.3. Photospheric models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="io_files/input.html#id1">4.1.3.1. 1D files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="io_files/input.html#id2">4.1.3.2. HDF5/zarr 3D files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="io_files/input.html#id3">4.1.3.3. FITS 3D files</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="io_files/input.html#chromospheric-models">4.1.4. Chromospheric models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="io_files/input.html#id4">4.1.4.1. 1D files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="io_files/input.html#id5">4.1.4.2. HDF5/zarr 3D files</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="io_files/input.html#parametric-models">4.1.5. Parametric models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io_files/input.html#straylight-models">4.1.6. Straylight models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="io_files/input.html#id6">4.1.6.1. 1D files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="io_files/input.html#id7">4.1.6.2. HDF5/zarr 3D files</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="io_files/generators.html">4.2. Generators</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="io_files/generators.html#observations">4.2.1. Observations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io_files/generators.html#photospheres">4.2.2. Photospheres</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io_files/generators.html#chromospheres">4.2.3. Chromospheres</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="io_files/output.html">4.3. Output files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="io_files/output.html#synthesis-mode">4.3.1. Synthesis mode</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="io_files/output.html#hdf5-files">4.3.1.1. HDF5 files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="io_files/output.html#fits-files">4.3.1.2. FITS files</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="io_files/output.html#inversion-mode">4.3.2. Inversion mode</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="io_files/output.html#id1">4.3.2.1. HDF5 files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="io_files/output.html#id4">4.3.2.2. FITS files</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="config/regularization.html" class="btn btn-neutral float-left" title="3.4. Regularization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="io_files/input.html" class="btn btn-neutral float-right" title="4.1. Input files" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

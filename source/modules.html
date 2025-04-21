@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>hazel &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../started/installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../started.html">2. Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">3. Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io_files.html">4. Input/output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparation.html">5. Data preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">6. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">hazel</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/modules.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="hazel">
+<h1>hazel<a class="headerlink" href="#hazel" title="Link to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hazel.html">hazel package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hazel.codes.html">hazel.codes package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hazel.codes.html#module-hazel.codes">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#module-hazel.atmosphere">hazel.atmosphere module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.atmosphere.General_atmosphere"><code class="docutils literal notranslate"><span class="pre">General_atmosphere</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.atmosphere.General_atmosphere.allocate_info_cycles"><code class="docutils literal notranslate"><span class="pre">General_atmosphere.allocate_info_cycles()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.atmosphere.General_atmosphere.init_reference"><code class="docutils literal notranslate"><span class="pre">General_atmosphere.init_reference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.atmosphere.General_atmosphere.reset_reference"><code class="docutils literal notranslate"><span class="pre">General_atmosphere.reset_reference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.atmosphere.General_atmosphere.set_reference"><code class="docutils literal notranslate"><span class="pre">General_atmosphere.set_reference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.atmosphere.General_atmosphere.to_physical"><code class="docutils literal notranslate"><span class="pre">General_atmosphere.to_physical()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.atmosphere.General_atmosphere.to_transformed"><code class="docutils literal notranslate"><span class="pre">General_atmosphere.to_transformed()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#module-hazel.chromosphere">hazel.chromosphere module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.chromosphere.Hazel_atmosphere"><code class="docutils literal notranslate"><span class="pre">Hazel_atmosphere</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.chromosphere.Hazel_atmosphere.add_active_line"><code class="docutils literal notranslate"><span class="pre">Hazel_atmosphere.add_active_line()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.chromosphere.Hazel_atmosphere.load_reference_model"><code class="docutils literal notranslate"><span class="pre">Hazel_atmosphere.load_reference_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.chromosphere.Hazel_atmosphere.nodes_to_model"><code class="docutils literal notranslate"><span class="pre">Hazel_atmosphere.nodes_to_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.chromosphere.Hazel_atmosphere.print_parameters"><code class="docutils literal notranslate"><span class="pre">Hazel_atmosphere.print_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.chromosphere.Hazel_atmosphere.select_coordinate_system"><code class="docutils literal notranslate"><span class="pre">Hazel_atmosphere.select_coordinate_system()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.chromosphere.Hazel_atmosphere.set_parameters"><code class="docutils literal notranslate"><span class="pre">Hazel_atmosphere.set_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.chromosphere.Hazel_atmosphere.synthesize"><code class="docutils literal notranslate"><span class="pre">Hazel_atmosphere.synthesize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#module-hazel.configuration">hazel.configuration module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.configuration.Configuration"><code class="docutils literal notranslate"><span class="pre">Configuration</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#module-hazel.exceptions">hazel.exceptions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.exceptions.Error"><code class="docutils literal notranslate"><span class="pre">Error</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.exceptions.NumericalErrorHazel"><code class="docutils literal notranslate"><span class="pre">NumericalErrorHazel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.exceptions.NumericalErrorSIR"><code class="docutils literal notranslate"><span class="pre">NumericalErrorSIR</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#hazel-forward-nn-module">hazel.forward_nn module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#hazel-graphnet-module">hazel.graphnet module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#module-hazel.hsra">hazel.hsra module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.hsra.hsra_continuum"><code class="docutils literal notranslate"><span class="pre">hsra_continuum()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#hazel-io-module">hazel.io module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#module-hazel.model">hazel.model module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.model.Model"><code class="docutils literal notranslate"><span class="pre">Model</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.add_chromosphere"><code class="docutils literal notranslate"><span class="pre">Model.add_chromosphere()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.add_parametric"><code class="docutils literal notranslate"><span class="pre">Model.add_parametric()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.add_photosphere"><code class="docutils literal notranslate"><span class="pre">Model.add_photosphere()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.add_spectral"><code class="docutils literal notranslate"><span class="pre">Model.add_spectral()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.add_straylight"><code class="docutils literal notranslate"><span class="pre">Model.add_straylight()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.add_topology"><code class="docutils literal notranslate"><span class="pre">Model.add_topology()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.backtracking_brent"><code class="docutils literal notranslate"><span class="pre">Model.backtracking_brent()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.backtracking_parabolic"><code class="docutils literal notranslate"><span class="pre">Model.backtracking_parabolic()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.close_output"><code class="docutils literal notranslate"><span class="pre">Model.close_output()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.compute_chi2"><code class="docutils literal notranslate"><span class="pre">Model.compute_chi2()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.compute_uncertainty"><code class="docutils literal notranslate"><span class="pre">Model.compute_uncertainty()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.exit_hazel"><code class="docutils literal notranslate"><span class="pre">Model.exit_hazel()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.find_active_parameters"><code class="docutils literal notranslate"><span class="pre">Model.find_active_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.flatten_parameters_to_reference"><code class="docutils literal notranslate"><span class="pre">Model.flatten_parameters_to_reference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.init_sir"><code class="docutils literal notranslate"><span class="pre">Model.init_sir()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.init_sir_external"><code class="docutils literal notranslate"><span class="pre">Model.init_sir_external()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.invert"><code class="docutils literal notranslate"><span class="pre">Model.invert()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.invert_external"><code class="docutils literal notranslate"><span class="pre">Model.invert_external()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.modified_svd_inverse"><code class="docutils literal notranslate"><span class="pre">Model.modified_svd_inverse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.normalize_ff"><code class="docutils literal notranslate"><span class="pre">Model.normalize_ff()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.open_output"><code class="docutils literal notranslate"><span class="pre">Model.open_output()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.randomize"><code class="docutils literal notranslate"><span class="pre">Model.randomize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.read_observation"><code class="docutils literal notranslate"><span class="pre">Model.read_observation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.remove_atmosphere"><code class="docutils literal notranslate"><span class="pre">Model.remove_atmosphere()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.remove_unused_atmosphere"><code class="docutils literal notranslate"><span class="pre">Model.remove_unused_atmosphere()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.set_new_model"><code class="docutils literal notranslate"><span class="pre">Model.set_new_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.set_nlte"><code class="docutils literal notranslate"><span class="pre">Model.set_nlte()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.set_topologies"><code class="docutils literal notranslate"><span class="pre">Model.set_topologies()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.setup"><code class="docutils literal notranslate"><span class="pre">Model.setup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.synthesize"><code class="docutils literal notranslate"><span class="pre">Model.synthesize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.synthesize_and_compute_rf"><code class="docutils literal notranslate"><span class="pre">Model.synthesize_and_compute_rf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.synthesize_spectral_region"><code class="docutils literal notranslate"><span class="pre">Model.synthesize_spectral_region()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.use_configuration"><code class="docutils literal notranslate"><span class="pre">Model.use_configuration()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.model.Model.write_output"><code class="docutils literal notranslate"><span class="pre">Model.write_output()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#module-hazel.multiprocess">hazel.multiprocess module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.multiprocess.Iterator"><code class="docutils literal notranslate"><span class="pre">Iterator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.multiprocess.Iterator.cleanup"><code class="docutils literal notranslate"><span class="pre">Iterator.cleanup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.multiprocess.Iterator.get_rank"><code class="docutils literal notranslate"><span class="pre">Iterator.get_rank()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.multiprocess.Iterator.mpi_parent_work"><code class="docutils literal notranslate"><span class="pre">Iterator.mpi_parent_work()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.multiprocess.Iterator.mpi_workers_work"><code class="docutils literal notranslate"><span class="pre">Iterator.mpi_workers_work()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.multiprocess.Iterator.nonmpi_work"><code class="docutils literal notranslate"><span class="pre">Iterator.nonmpi_work()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.multiprocess.Iterator.run_all_pixels"><code class="docutils literal notranslate"><span class="pre">Iterator.run_all_pixels()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.multiprocess.Iterator.use_model"><code class="docutils literal notranslate"><span class="pre">Iterator.use_model()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.multiprocess.handle_timeout"><code class="docutils literal notranslate"><span class="pre">handle_timeout()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.multiprocess.tags"><code class="docutils literal notranslate"><span class="pre">tags</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.multiprocess.tags.DONE"><code class="docutils literal notranslate"><span class="pre">tags.DONE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.multiprocess.tags.DONOTHING"><code class="docutils literal notranslate"><span class="pre">tags.DONOTHING</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.multiprocess.tags.EXIT"><code class="docutils literal notranslate"><span class="pre">tags.EXIT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.multiprocess.tags.READY"><code class="docutils literal notranslate"><span class="pre">tags.READY</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.multiprocess.tags.START"><code class="docutils literal notranslate"><span class="pre">tags.START</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.multiprocess.tags.TIMEOUT"><code class="docutils literal notranslate"><span class="pre">tags.TIMEOUT</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#module-hazel.parametric">hazel.parametric module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.parametric.Parametric_atmosphere"><code class="docutils literal notranslate"><span class="pre">Parametric_atmosphere</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.parametric.Parametric_atmosphere.add_active_line"><code class="docutils literal notranslate"><span class="pre">Parametric_atmosphere.add_active_line()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.parametric.Parametric_atmosphere.load_reference_model"><code class="docutils literal notranslate"><span class="pre">Parametric_atmosphere.load_reference_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.parametric.Parametric_atmosphere.nodes_to_model"><code class="docutils literal notranslate"><span class="pre">Parametric_atmosphere.nodes_to_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.parametric.Parametric_atmosphere.print_parameters"><code class="docutils literal notranslate"><span class="pre">Parametric_atmosphere.print_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.parametric.Parametric_atmosphere.set_parameters"><code class="docutils literal notranslate"><span class="pre">Parametric_atmosphere.set_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.parametric.Parametric_atmosphere.synthesize"><code class="docutils literal notranslate"><span class="pre">Parametric_atmosphere.synthesize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#module-hazel.photosphere">hazel.photosphere module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.photosphere.SIR_atmosphere"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.photosphere.SIR_atmosphere.add_active_line"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.add_active_line()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.photosphere.SIR_atmosphere.get_parameters"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.get_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.photosphere.SIR_atmosphere.interpolate_nodes"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.interpolate_nodes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.photosphere.SIR_atmosphere.interpolate_nodes_rf"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.interpolate_nodes_rf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.photosphere.SIR_atmosphere.list_lines"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.list_lines()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.photosphere.SIR_atmosphere.load_nlte_model"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.load_nlte_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.photosphere.SIR_atmosphere.load_reference_model"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.load_reference_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.photosphere.SIR_atmosphere.model_to_nodes"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.model_to_nodes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.photosphere.SIR_atmosphere.nodes_to_model"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.nodes_to_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.photosphere.SIR_atmosphere.print_parameters"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.print_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.photosphere.SIR_atmosphere.set_parameters"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.set_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.photosphere.SIR_atmosphere.synthesize"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.synthesize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#module-hazel.sir">hazel.sir module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.sir.Sir"><code class="docutils literal notranslate"><span class="pre">Sir</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.sir.Sir.synth"><code class="docutils literal notranslate"><span class="pre">Sir.synth()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.sir.Sir.synthRF"><code class="docutils literal notranslate"><span class="pre">Sir.synthRF()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#module-hazel.spectrum">hazel.spectrum module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.spectrum.Spectrum"><code class="docutils literal notranslate"><span class="pre">Spectrum</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.spectrum.Spectrum.add_mask_file"><code class="docutils literal notranslate"><span class="pre">Spectrum.add_mask_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.spectrum.Spectrum.add_name"><code class="docutils literal notranslate"><span class="pre">Spectrum.add_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.spectrum.Spectrum.add_observed_file"><code class="docutils literal notranslate"><span class="pre">Spectrum.add_observed_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.spectrum.Spectrum.add_spectrum"><code class="docutils literal notranslate"><span class="pre">Spectrum.add_spectrum()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.spectrum.Spectrum.add_stokes_weights"><code class="docutils literal notranslate"><span class="pre">Spectrum.add_stokes_weights()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.spectrum.Spectrum.add_weights"><code class="docutils literal notranslate"><span class="pre">Spectrum.add_weights()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.spectrum.Spectrum.allocate_info_cycles"><code class="docutils literal notranslate"><span class="pre">Spectrum.allocate_info_cycles()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.spectrum.Spectrum.close_observation"><code class="docutils literal notranslate"><span class="pre">Spectrum.close_observation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.spectrum.Spectrum.next_pixel"><code class="docutils literal notranslate"><span class="pre">Spectrum.next_pixel()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.spectrum.Spectrum.open_observation"><code class="docutils literal notranslate"><span class="pre">Spectrum.open_observation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.spectrum.Spectrum.read_mask"><code class="docutils literal notranslate"><span class="pre">Spectrum.read_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.spectrum.Spectrum.read_observation"><code class="docutils literal notranslate"><span class="pre">Spectrum.read_observation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.spectrum.Spectrum.read_straylight"><code class="docutils literal notranslate"><span class="pre">Spectrum.read_straylight()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.spectrum.Spectrum.set_boundary"><code class="docutils literal notranslate"><span class="pre">Spectrum.set_boundary()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.spectrum.Spectrum.set_los"><code class="docutils literal notranslate"><span class="pre">Spectrum.set_los()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.spectrum.Spectrum.set_normalization"><code class="docutils literal notranslate"><span class="pre">Spectrum.set_normalization()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#module-hazel.stray">hazel.stray module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.stray.Straylight_atmosphere"><code class="docutils literal notranslate"><span class="pre">Straylight_atmosphere</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.stray.Straylight_atmosphere.add_active_line"><code class="docutils literal notranslate"><span class="pre">Straylight_atmosphere.add_active_line()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.stray.Straylight_atmosphere.load_reference_model"><code class="docutils literal notranslate"><span class="pre">Straylight_atmosphere.load_reference_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.stray.Straylight_atmosphere.nodes_to_model"><code class="docutils literal notranslate"><span class="pre">Straylight_atmosphere.nodes_to_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.stray.Straylight_atmosphere.print_parameters"><code class="docutils literal notranslate"><span class="pre">Straylight_atmosphere.print_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.stray.Straylight_atmosphere.set_parameters"><code class="docutils literal notranslate"><span class="pre">Straylight_atmosphere.set_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.stray.Straylight_atmosphere.set_straylight"><code class="docutils literal notranslate"><span class="pre">Straylight_atmosphere.set_straylight()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.stray.Straylight_atmosphere.synthesize"><code class="docutils literal notranslate"><span class="pre">Straylight_atmosphere.synthesize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#module-hazel.tools">hazel.tools module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.tools.File_chromosphere"><code class="docutils literal notranslate"><span class="pre">File_chromosphere</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.tools.File_chromosphere.save"><code class="docutils literal notranslate"><span class="pre">File_chromosphere.save()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.tools.File_chromosphere.set_default"><code class="docutils literal notranslate"><span class="pre">File_chromosphere.set_default()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.tools.File_chromosphere.set_size"><code class="docutils literal notranslate"><span class="pre">File_chromosphere.set_size()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.tools.File_observation"><code class="docutils literal notranslate"><span class="pre">File_observation</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.tools.File_observation.save"><code class="docutils literal notranslate"><span class="pre">File_observation.save()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.tools.File_observation.set_size"><code class="docutils literal notranslate"><span class="pre">File_observation.set_size()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.tools.File_photosphere"><code class="docutils literal notranslate"><span class="pre">File_photosphere</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.tools.File_photosphere.list_models"><code class="docutils literal notranslate"><span class="pre">File_photosphere.list_models()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.tools.File_photosphere.save"><code class="docutils literal notranslate"><span class="pre">File_photosphere.save()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.tools.File_photosphere.set_default"><code class="docutils literal notranslate"><span class="pre">File_photosphere.set_default()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hazel.html#hazel.tools.File_photosphere.set_size"><code class="docutils literal notranslate"><span class="pre">File_photosphere.set_size()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#module-hazel.transforms">hazel.transforms module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.transforms.physical_to_transformed"><code class="docutils literal notranslate"><span class="pre">physical_to_transformed()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.transforms.transformed_to_physical"><code class="docutils literal notranslate"><span class="pre">transformed_to_physical()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#module-hazel.util">hazel.util module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.util.fvoigt"><code class="docutils literal notranslate"><span class="pre">fvoigt()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.util.i0_allen"><code class="docutils literal notranslate"><span class="pre">i0_allen()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.util.isint"><code class="docutils literal notranslate"><span class="pre">isint()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.util.lower_dict_keys"><code class="docutils literal notranslate"><span class="pre">lower_dict_keys()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hazel.html#hazel.util.show_tree"><code class="docutils literal notranslate"><span class="pre">show_tree()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hazel.html#module-hazel">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>9. API &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="10. Acknowledgements" href="acknowledgements.html" />
+    <link rel="prev" title="8. Changelog" href="changelog.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="started/installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="started.html">2. Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">3. Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io_files.html">4. Input/output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preparation.html">5. Data preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">6. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">8. Changelog</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">9. API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-hazel.model">9.1. Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hazel.model.Model"><code class="docutils literal notranslate"><span class="pre">Model</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.add_chromosphere"><code class="docutils literal notranslate"><span class="pre">Model.add_chromosphere()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.add_parametric"><code class="docutils literal notranslate"><span class="pre">Model.add_parametric()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.add_photosphere"><code class="docutils literal notranslate"><span class="pre">Model.add_photosphere()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.add_spectral"><code class="docutils literal notranslate"><span class="pre">Model.add_spectral()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.add_straylight"><code class="docutils literal notranslate"><span class="pre">Model.add_straylight()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.add_topology"><code class="docutils literal notranslate"><span class="pre">Model.add_topology()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.backtracking_brent"><code class="docutils literal notranslate"><span class="pre">Model.backtracking_brent()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.backtracking_parabolic"><code class="docutils literal notranslate"><span class="pre">Model.backtracking_parabolic()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.close_output"><code class="docutils literal notranslate"><span class="pre">Model.close_output()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.compute_chi2"><code class="docutils literal notranslate"><span class="pre">Model.compute_chi2()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.compute_uncertainty"><code class="docutils literal notranslate"><span class="pre">Model.compute_uncertainty()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.exit_hazel"><code class="docutils literal notranslate"><span class="pre">Model.exit_hazel()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.find_active_parameters"><code class="docutils literal notranslate"><span class="pre">Model.find_active_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.flatten_parameters_to_reference"><code class="docutils literal notranslate"><span class="pre">Model.flatten_parameters_to_reference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.init_sir"><code class="docutils literal notranslate"><span class="pre">Model.init_sir()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.init_sir_external"><code class="docutils literal notranslate"><span class="pre">Model.init_sir_external()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.invert"><code class="docutils literal notranslate"><span class="pre">Model.invert()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.invert_external"><code class="docutils literal notranslate"><span class="pre">Model.invert_external()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.modified_svd_inverse"><code class="docutils literal notranslate"><span class="pre">Model.modified_svd_inverse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.normalize_ff"><code class="docutils literal notranslate"><span class="pre">Model.normalize_ff()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.open_output"><code class="docutils literal notranslate"><span class="pre">Model.open_output()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.randomize"><code class="docutils literal notranslate"><span class="pre">Model.randomize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.read_observation"><code class="docutils literal notranslate"><span class="pre">Model.read_observation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.remove_atmosphere"><code class="docutils literal notranslate"><span class="pre">Model.remove_atmosphere()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.remove_unused_atmosphere"><code class="docutils literal notranslate"><span class="pre">Model.remove_unused_atmosphere()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.set_new_model"><code class="docutils literal notranslate"><span class="pre">Model.set_new_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.set_nlte"><code class="docutils literal notranslate"><span class="pre">Model.set_nlte()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.set_topologies"><code class="docutils literal notranslate"><span class="pre">Model.set_topologies()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.setup"><code class="docutils literal notranslate"><span class="pre">Model.setup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.synthesize"><code class="docutils literal notranslate"><span class="pre">Model.synthesize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.synthesize_and_compute_rf"><code class="docutils literal notranslate"><span class="pre">Model.synthesize_and_compute_rf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.synthesize_spectral_region"><code class="docutils literal notranslate"><span class="pre">Model.synthesize_spectral_region()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.use_configuration"><code class="docutils literal notranslate"><span class="pre">Model.use_configuration()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.model.Model.write_output"><code class="docutils literal notranslate"><span class="pre">Model.write_output()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-hazel.photosphere">9.2. Photosphere</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hazel.photosphere.SIR_atmosphere"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.photosphere.SIR_atmosphere.add_active_line"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.add_active_line()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.photosphere.SIR_atmosphere.get_parameters"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.get_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.photosphere.SIR_atmosphere.interpolate_nodes"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.interpolate_nodes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.photosphere.SIR_atmosphere.interpolate_nodes_rf"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.interpolate_nodes_rf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.photosphere.SIR_atmosphere.list_lines"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.list_lines()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.photosphere.SIR_atmosphere.load_nlte_model"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.load_nlte_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.photosphere.SIR_atmosphere.load_reference_model"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.load_reference_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.photosphere.SIR_atmosphere.model_to_nodes"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.model_to_nodes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.photosphere.SIR_atmosphere.nodes_to_model"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.nodes_to_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.photosphere.SIR_atmosphere.print_parameters"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.print_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.photosphere.SIR_atmosphere.set_parameters"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.set_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.photosphere.SIR_atmosphere.synthesize"><code class="docutils literal notranslate"><span class="pre">SIR_atmosphere.synthesize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-hazel.chromosphere">9.3. Chromosphere</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hazel.chromosphere.Hazel_atmosphere"><code class="docutils literal notranslate"><span class="pre">Hazel_atmosphere</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.chromosphere.Hazel_atmosphere.add_active_line"><code class="docutils literal notranslate"><span class="pre">Hazel_atmosphere.add_active_line()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.chromosphere.Hazel_atmosphere.load_reference_model"><code class="docutils literal notranslate"><span class="pre">Hazel_atmosphere.load_reference_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.chromosphere.Hazel_atmosphere.nodes_to_model"><code class="docutils literal notranslate"><span class="pre">Hazel_atmosphere.nodes_to_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.chromosphere.Hazel_atmosphere.print_parameters"><code class="docutils literal notranslate"><span class="pre">Hazel_atmosphere.print_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.chromosphere.Hazel_atmosphere.select_coordinate_system"><code class="docutils literal notranslate"><span class="pre">Hazel_atmosphere.select_coordinate_system()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.chromosphere.Hazel_atmosphere.set_parameters"><code class="docutils literal notranslate"><span class="pre">Hazel_atmosphere.set_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.chromosphere.Hazel_atmosphere.synthesize"><code class="docutils literal notranslate"><span class="pre">Hazel_atmosphere.synthesize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-hazel.parametric">9.4. Parametric</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hazel.parametric.Parametric_atmosphere"><code class="docutils literal notranslate"><span class="pre">Parametric_atmosphere</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.parametric.Parametric_atmosphere.add_active_line"><code class="docutils literal notranslate"><span class="pre">Parametric_atmosphere.add_active_line()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.parametric.Parametric_atmosphere.load_reference_model"><code class="docutils literal notranslate"><span class="pre">Parametric_atmosphere.load_reference_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.parametric.Parametric_atmosphere.nodes_to_model"><code class="docutils literal notranslate"><span class="pre">Parametric_atmosphere.nodes_to_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.parametric.Parametric_atmosphere.print_parameters"><code class="docutils literal notranslate"><span class="pre">Parametric_atmosphere.print_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.parametric.Parametric_atmosphere.set_parameters"><code class="docutils literal notranslate"><span class="pre">Parametric_atmosphere.set_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.parametric.Parametric_atmosphere.synthesize"><code class="docutils literal notranslate"><span class="pre">Parametric_atmosphere.synthesize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-hazel.multiprocess">9.5. Multiprocess</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hazel.multiprocess.Iterator"><code class="docutils literal notranslate"><span class="pre">Iterator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.multiprocess.Iterator.cleanup"><code class="docutils literal notranslate"><span class="pre">Iterator.cleanup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.multiprocess.Iterator.get_rank"><code class="docutils literal notranslate"><span class="pre">Iterator.get_rank()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.multiprocess.Iterator.mpi_parent_work"><code class="docutils literal notranslate"><span class="pre">Iterator.mpi_parent_work()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.multiprocess.Iterator.mpi_workers_work"><code class="docutils literal notranslate"><span class="pre">Iterator.mpi_workers_work()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.multiprocess.Iterator.nonmpi_work"><code class="docutils literal notranslate"><span class="pre">Iterator.nonmpi_work()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.multiprocess.Iterator.run_all_pixels"><code class="docutils literal notranslate"><span class="pre">Iterator.run_all_pixels()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.multiprocess.Iterator.use_model"><code class="docutils literal notranslate"><span class="pre">Iterator.use_model()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#hazel.multiprocess.handle_timeout"><code class="docutils literal notranslate"><span class="pre">handle_timeout()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hazel.multiprocess.tags"><code class="docutils literal notranslate"><span class="pre">tags</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.multiprocess.tags.DONE"><code class="docutils literal notranslate"><span class="pre">tags.DONE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.multiprocess.tags.DONOTHING"><code class="docutils literal notranslate"><span class="pre">tags.DONOTHING</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.multiprocess.tags.EXIT"><code class="docutils literal notranslate"><span class="pre">tags.EXIT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.multiprocess.tags.READY"><code class="docutils literal notranslate"><span class="pre">tags.READY</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.multiprocess.tags.START"><code class="docutils literal notranslate"><span class="pre">tags.START</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.multiprocess.tags.TIMEOUT"><code class="docutils literal notranslate"><span class="pre">tags.TIMEOUT</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-hazel.stray">9.6. Stray-light</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hazel.stray.Straylight_atmosphere"><code class="docutils literal notranslate"><span class="pre">Straylight_atmosphere</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.stray.Straylight_atmosphere.add_active_line"><code class="docutils literal notranslate"><span class="pre">Straylight_atmosphere.add_active_line()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.stray.Straylight_atmosphere.load_reference_model"><code class="docutils literal notranslate"><span class="pre">Straylight_atmosphere.load_reference_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.stray.Straylight_atmosphere.nodes_to_model"><code class="docutils literal notranslate"><span class="pre">Straylight_atmosphere.nodes_to_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.stray.Straylight_atmosphere.print_parameters"><code class="docutils literal notranslate"><span class="pre">Straylight_atmosphere.print_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.stray.Straylight_atmosphere.set_parameters"><code class="docutils literal notranslate"><span class="pre">Straylight_atmosphere.set_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.stray.Straylight_atmosphere.set_straylight"><code class="docutils literal notranslate"><span class="pre">Straylight_atmosphere.set_straylight()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.stray.Straylight_atmosphere.synthesize"><code class="docutils literal notranslate"><span class="pre">Straylight_atmosphere.synthesize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-hazel.tools">9.7. Tools</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hazel.tools.File_chromosphere"><code class="docutils literal notranslate"><span class="pre">File_chromosphere</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.tools.File_chromosphere.save"><code class="docutils literal notranslate"><span class="pre">File_chromosphere.save()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.tools.File_chromosphere.set_default"><code class="docutils literal notranslate"><span class="pre">File_chromosphere.set_default()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.tools.File_chromosphere.set_size"><code class="docutils literal notranslate"><span class="pre">File_chromosphere.set_size()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#hazel.tools.File_observation"><code class="docutils literal notranslate"><span class="pre">File_observation</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.tools.File_observation.save"><code class="docutils literal notranslate"><span class="pre">File_observation.save()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.tools.File_observation.set_size"><code class="docutils literal notranslate"><span class="pre">File_observation.set_size()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#hazel.tools.File_photosphere"><code class="docutils literal notranslate"><span class="pre">File_photosphere</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.tools.File_photosphere.list_models"><code class="docutils literal notranslate"><span class="pre">File_photosphere.list_models()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.tools.File_photosphere.save"><code class="docutils literal notranslate"><span class="pre">File_photosphere.save()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.tools.File_photosphere.set_default"><code class="docutils literal notranslate"><span class="pre">File_photosphere.set_default()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hazel.tools.File_photosphere.set_size"><code class="docutils literal notranslate"><span class="pre">File_photosphere.set_size()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active"><span class="section-number">9. </span>API</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api">
+<h1><span class="section-number">9. </span>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h1>
+<section id="module-hazel.model">
+<span id="model"></span><h2><span class="section-number">9.1. </span>Model<a class="headerlink" href="#module-hazel.model" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hazel.model.Model">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hazel.model.</span></span><span class="sig-name descname"><span class="pre">Model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">working_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'synthesis'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">randomization</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.add_chromosphere" title="hazel.model.Model.add_chromosphere"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_chromosphere</span></code></a>(atmosphere)</p></td>
+<td><p>Programmatically add a chromosphere</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.add_parametric" title="hazel.model.Model.add_parametric"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_parametric</span></code></a>(atmosphere)</p></td>
+<td><p>Programmatically add a parametric atmosphere</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.add_photosphere" title="hazel.model.Model.add_photosphere"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_photosphere</span></code></a>(atmosphere)</p></td>
+<td><p>Programmatically add a photosphere</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.add_spectral" title="hazel.model.Model.add_spectral"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_spectral</span></code></a>(spectral, index)</p></td>
+<td><p>Programmatically add a spectral region</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.add_straylight" title="hazel.model.Model.add_straylight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_straylight</span></code></a>(atmosphere)</p></td>
+<td><p>Programmatically add a straylight atmosphere</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.add_topology" title="hazel.model.Model.add_topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_topology</span></code></a>(atmosphere_order)</p></td>
+<td><p>Add a new topology</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.backtracking_parabolic" title="hazel.model.Model.backtracking_parabolic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">backtracking_parabolic</span></code></a>(dchi2, ddchi2[, ...])</p></td>
+<td><p>Do the backtracking to get an optimal value of lambda in the LM algorithm</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.compute_chi2" title="hazel.model.Model.compute_chi2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_chi2</span></code></a>([only_chi2, weights])</p></td>
+<td><p>Compute chi2 for all spectral regions</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.compute_uncertainty" title="hazel.model.Model.compute_uncertainty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_uncertainty</span></code></a>()</p></td>
+<td><p>Compute the uncertainty in the parameters at the minimum with the current Hessian</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.find_active_parameters" title="hazel.model.Model.find_active_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_active_parameters</span></code></a>(cycle)</p></td>
+<td><p>Find all active parameters in all active atmospheres in the current cycle</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.flatten_parameters_to_reference" title="hazel.model.Model.flatten_parameters_to_reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flatten_parameters_to_reference</span></code></a>(cycle)</p></td>
+<td><p>Flatten all current parameters to the reference atmosphere</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.init_sir" title="hazel.model.Model.init_sir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_sir</span></code></a>()</p></td>
+<td><p>Initialize SIR for this synthesis.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.init_sir_external" title="hazel.model.Model.init_sir_external"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_sir_external</span></code></a>()</p></td>
+<td><p>Initialize SIR for this synthesis</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.invert" title="hazel.model.Model.invert"><code class="xref py py-obj docutils literal notranslate"><span class="pre">invert</span></code></a>([randomize, randomization_ind])</p></td>
+<td><p>Invert all atmospheres</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.invert_external" title="hazel.model.Model.invert_external"><code class="xref py py-obj docutils literal notranslate"><span class="pre">invert_external</span></code></a>(algorithm[, use_jacobian])</p></td>
+<td><p>Invert all atmospheres</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.modified_svd_inverse" title="hazel.model.Model.modified_svd_inverse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">modified_svd_inverse</span></code></a>(H[, tol])</p></td>
+<td><p>Compute the inverse of the Hessian matrix using a modified SVD, by thresholding each subpsace separately</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.normalize_ff" title="hazel.model.Model.normalize_ff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_ff</span></code></a>(nodes)</p></td>
+<td><p>Normalize all filling factors so that they add to one to avoid later problems.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.randomize" title="hazel.model.Model.randomize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">randomize</span></code></a>()</p></td>
+<td><p>Randomize all free parameters to lie uniformly in the interval [-2,2] in the transformed domain</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.remove_atmosphere" title="hazel.model.Model.remove_atmosphere"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_atmosphere</span></code></a>(atm)</p></td>
+<td><p>Remove unused atmospheres</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.remove_unused_atmosphere" title="hazel.model.Model.remove_unused_atmosphere"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_unused_atmosphere</span></code></a>()</p></td>
+<td><p>Remove unused atmospheres</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.set_new_model" title="hazel.model.Model.set_new_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_new_model</span></code></a>(nodes)</p></td>
+<td><p>Set the nodes of the current model to the values passed on the arguments</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.set_nlte" title="hazel.model.Model.set_nlte"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_nlte</span></code></a>(option)</p></td>
+<td><p>Set calculation of Ca II 8542 A to NLTE</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.set_topologies" title="hazel.model.Model.set_topologies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_topologies</span></code></a>(topologies)</p></td>
+<td><p>Set the topologies to be used in the inversion</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.setup" title="hazel.model.Model.setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup</span></code></a>()</p></td>
+<td><p>Setup the model for synthesis/inversion.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.synthesize" title="hazel.model.Model.synthesize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synthesize</span></code></a>([perturbation])</p></td>
+<td><p>Synthesize all atmospheres</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.synthesize_and_compute_rf" title="hazel.model.Model.synthesize_and_compute_rf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synthesize_and_compute_rf</span></code></a>([compute_rf, ...])</p></td>
+<td><p>Compute response functions for all free parameters according to all active_parameters</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.synthesize_spectral_region" title="hazel.model.Model.synthesize_spectral_region"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synthesize_spectral_region</span></code></a>(spectral_region)</p></td>
+<td><p>Synthesize all atmospheres for a single spectral region and normalize to the continuum of the quiet Sun at disk center</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.model.Model.use_configuration" title="hazel.model.Model.use_configuration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">use_configuration</span></code></a>(config_dict)</p></td>
+<td><p>Use a configuration file</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>backtracking_brent</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>close_output</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>exit_hazel</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>open_output</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>read_observation</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>write_output</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.add_chromosphere">
+<span class="sig-name descname"><span class="pre">add_chromosphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atmosphere</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.add_chromosphere" title="Link to this definition">¶</a></dt>
+<dd><p>Programmatically add a chromosphere</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>atmosphere</strong> (<em>dict</em>) – Dictionary containing the following data
+‘Name’, ‘Spectral region’, ‘Height’, ‘Line’, ‘Wavelength’, ‘Reference atmospheric model’,
+‘Ranges’, ‘Nodes’</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.add_parametric">
+<span class="sig-name descname"><span class="pre">add_parametric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atmosphere</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.add_parametric" title="Link to this definition">¶</a></dt>
+<dd><p>Programmatically add a parametric atmosphere</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>atmosphere</strong> (<em>dict</em>) – Dictionary containing the following data
+‘Name’, ‘Spectral region’, ‘Wavelength’, ‘Reference atmospheric model’, ‘Type’,
+‘Ranges’, ‘Nodes’</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.add_photosphere">
+<span class="sig-name descname"><span class="pre">add_photosphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atmosphere</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.add_photosphere" title="Link to this definition">¶</a></dt>
+<dd><p>Programmatically add a photosphere</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>atmosphere</strong> (<em>dict</em>) – Dictionary containing the following data
+‘Name’, ‘Spectral region’, ‘Height’, ‘Line’, ‘Wavelength’, ‘Reference atmospheric model’,
+‘Ranges’, ‘Nodes’</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.add_spectral">
+<span class="sig-name descname"><span class="pre">add_spectral</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spectral</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.add_spectral" title="Link to this definition">¶</a></dt>
+<dd><p>Programmatically add a spectral region</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>spectral</strong> (<em>dict</em>) – Dictionary containing the following data
+‘Name’, ‘Wavelength’, ‘Topology’, ‘Weights Stokes’, ‘Wavelength file’, ‘Wavelength weight file’,
+‘Observations file’, ‘Mask file’</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.add_straylight">
+<span class="sig-name descname"><span class="pre">add_straylight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atmosphere</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.add_straylight" title="Link to this definition">¶</a></dt>
+<dd><p>Programmatically add a straylight atmosphere</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>atmosphere</strong> (<em>dict</em>) – Dictionary containing the following data
+‘Name’, ‘Spectral region’, ‘Reference atmospheric model’,
+‘Ranges’, ‘Nodes’</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.add_topology">
+<span class="sig-name descname"><span class="pre">add_topology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atmosphere_order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.add_topology" title="Link to this definition">¶</a></dt>
+<dd><p>Add a new topology</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>topology</strong> (<em>str</em>) – Topology</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.backtracking_brent">
+<span class="sig-name descname"><span class="pre">backtracking_brent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dchi2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ddchi2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[-3.0,</span> <span class="pre">3.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.backtracking_brent" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.backtracking_parabolic">
+<span class="sig-name descname"><span class="pre">backtracking_parabolic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dchi2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ddchi2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'down'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_chi2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000000.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.backtracking_parabolic" title="Link to this definition">¶</a></dt>
+<dd><p>Do the backtracking to get an optimal value of lambda in the LM algorithm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dchi2</strong> (<em>float</em>) – Gradient of the chi2</p></li>
+<li><p><strong>ddchi2</strong> (<em>float</em>) – Second order derivatives with which the Hessian is computed</p></li>
+<li><p><strong>direction</strong> (<em>str</em><em>, </em><em>optional</em>) – Direction on which do the backtracking (‘down’/’up’ for decreasing/increasing lambda)</p></li>
+<li><p><strong>maxiter</strong> (<em>int</em>) – Maximum number of iterations</p></li>
+<li><p><strong>lambda_init</strong> (<em>float</em>) – Initial value of lambda</p></li>
+<li><p><strong>current_chi2</strong> (<em>float</em>) – Current best chi2 to compare with those of the backtracking</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>lambda_opt</strong> (<em>float</em>) – Optimal value of lambda found. Bracketed value if bracketing has been possible or just the best value otherwise</p></li>
+<li><p><strong>bracketed</strong> (<em>bool</em>) – True if the best value has been bracketed</p></li>
+<li><p><strong>best_chi2</strong> (<em>float</em>) – Best value of chi2 found</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.close_output">
+<span class="sig-name descname"><span class="pre">close_output</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.close_output" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.compute_chi2">
+<span class="sig-name descname"><span class="pre">compute_chi2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">only_chi2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.compute_chi2" title="Link to this definition">¶</a></dt>
+<dd><p>Compute chi2 for all spectral regions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>float</em>) – Vector of observations</p></li>
+<li><p><strong>only_chi2</strong> (<em>bool</em>) – Control whether the gradient and Hessian is returned</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.compute_uncertainty">
+<span class="sig-name descname"><span class="pre">compute_uncertainty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.compute_uncertainty" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the uncertainty in the parameters at the minimum with the current Hessian</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.exit_hazel">
+<span class="sig-name descname"><span class="pre">exit_hazel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.exit_hazel" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.find_active_parameters">
+<span class="sig-name descname"><span class="pre">find_active_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cycle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.find_active_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Find all active parameters in all active atmospheres in the current cycle</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cycle</strong> (<em>int</em>) – Cycle to consider</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.flatten_parameters_to_reference">
+<span class="sig-name descname"><span class="pre">flatten_parameters_to_reference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cycle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.flatten_parameters_to_reference" title="Link to this definition">¶</a></dt>
+<dd><p>Flatten all current parameters to the reference atmosphere</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cycle</strong> (<em>int</em>) – Current cycle</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.init_sir">
+<span class="sig-name descname"><span class="pre">init_sir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.init_sir" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize SIR for this synthesis. This version does not make use of any external file, which might be
+not safe when running in MPI mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.init_sir_external">
+<span class="sig-name descname"><span class="pre">init_sir_external</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.init_sir_external" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize SIR for this synthesis</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.invert">
+<span class="sig-name descname"><span class="pre">invert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">randomize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">randomization_ind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.invert" title="Link to this definition">¶</a></dt>
+<dd><p>Invert all atmospheres</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.invert_external">
+<span class="sig-name descname"><span class="pre">invert_external</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_jacobian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.invert_external" title="Link to this definition">¶</a></dt>
+<dd><p>Invert all atmospheres</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.modified_svd_inverse">
+<span class="sig-name descname"><span class="pre">modified_svd_inverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">H</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.modified_svd_inverse" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverse of the Hessian matrix using a modified SVD, by thresholding each subpsace separately</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>H</strong> (<em>float</em>) – Hessian matrix</p></li>
+<li><p><strong>tol</strong> (<em>float</em>) – Tolerance for the singular value of each subspace</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.normalize_ff">
+<span class="sig-name descname"><span class="pre">normalize_ff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.normalize_ff" title="Link to this definition">¶</a></dt>
+<dd><p>Normalize all filling factors so that they add to one to avoid later problems.
+We use a softmax function to make sure they all add to one and can be unconstrained</p>
+<p>ff_i = exp(x_i) / sum(exp(x_i))</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.open_output">
+<span class="sig-name descname"><span class="pre">open_output</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.open_output" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.randomize">
+<span class="sig-name descname"><span class="pre">randomize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.randomize" title="Link to this definition">¶</a></dt>
+<dd><p>Randomize all free parameters to lie uniformly in the interval [-2,2] in the transformed
+domain</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.read_observation">
+<span class="sig-name descname"><span class="pre">read_observation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.read_observation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.remove_atmosphere">
+<span class="sig-name descname"><span class="pre">remove_atmosphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.remove_atmosphere" title="Link to this definition">¶</a></dt>
+<dd><p>Remove unused atmospheres</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.remove_unused_atmosphere">
+<span class="sig-name descname"><span class="pre">remove_unused_atmosphere</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.remove_unused_atmosphere" title="Link to this definition">¶</a></dt>
+<dd><p>Remove unused atmospheres</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.set_new_model">
+<span class="sig-name descname"><span class="pre">set_new_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.set_new_model" title="Link to this definition">¶</a></dt>
+<dd><p>Set the nodes of the current model to the values passed on the arguments</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>nodes</strong> (<em>float</em>) – Array with the new set of nodes</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.set_nlte">
+<span class="sig-name descname"><span class="pre">set_nlte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">option</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.set_nlte" title="Link to this definition">¶</a></dt>
+<dd><p>Set calculation of Ca II 8542 A to NLTE</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>option</strong> (<em>bool</em>) – Set to True to use NLTE, False to use LTE</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.set_topologies">
+<span class="sig-name descname"><span class="pre">set_topologies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topologies</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.set_topologies" title="Link to this definition">¶</a></dt>
+<dd><p>Set the topologies to be used in the inversion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>topologies</strong> (<em>list</em>) – List of strings with the names of the topologies</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.setup">
+<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.setup" title="Link to this definition">¶</a></dt>
+<dd><p>Setup the model for synthesis/inversion. This setup includes adding the topologies, removing unused
+atmospheres, reading the number of cycles for the inversion and some sanity checks</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.synthesize">
+<span class="sig-name descname"><span class="pre">synthesize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">perturbation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.synthesize" title="Link to this definition">¶</a></dt>
+<dd><p>Synthesize all atmospheres</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>perturbation</strong> (<em>bool</em>) – Set to True if you are synthesizing with a perturbation. In this case, the synthesis
+is saved in spectrum.stokes_perturbed instead of spectrum.stokes</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.synthesize_and_compute_rf">
+<span class="sig-name descname"><span class="pre">synthesize_and_compute_rf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">compute_rf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_jacobian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.synthesize_and_compute_rf" title="Link to this definition">¶</a></dt>
+<dd><p>Compute response functions for all free parameters according to all active_parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>compute_rf</strong> (<em>bool</em><em> (</em><em>optional</em><em>, </em><em>default False</em><em>)</em>) – If True, then compute the response functions. If not, just compute the synthesis.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.synthesize_spectral_region">
+<span class="sig-name descname"><span class="pre">synthesize_spectral_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spectral_region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perturbation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.synthesize_spectral_region" title="Link to this definition">¶</a></dt>
+<dd><p>Synthesize all atmospheres for a single spectral region and normalize to the continuum of the quiet Sun at disk center</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spectral_region</strong> (<em>str</em>) – Spectral region to synthesize</p></li>
+<li><p><strong>perturbation</strong> (<em>bool</em>) – Set to True if you are synthesizing with a perturbation. In this case, the synthesis
+is saved in spectrum.stokes_perturbed instead of spectrum.stokes</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.use_configuration">
+<span class="sig-name descname"><span class="pre">use_configuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.use_configuration" title="Link to this definition">¶</a></dt>
+<dd><p>Use a configuration file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config_dict</strong> (<em>dict</em>) – Dictionary containing all the options from the configuration file previously read</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.model.Model.write_output">
+<span class="sig-name descname"><span class="pre">write_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">randomization</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.model.Model.write_output" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hazel.photosphere">
+<span id="photosphere"></span><h2><span class="section-number">9.2. </span>Photosphere<a class="headerlink" href="#module-hazel.photosphere" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hazel.photosphere.SIR_atmosphere">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hazel.photosphere.</span></span><span class="sig-name descname"><span class="pre">SIR_atmosphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">working_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.photosphere.SIR_atmosphere" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="source/hazel.html#hazel.atmosphere.General_atmosphere" title="hazel.atmosphere.General_atmosphere"><code class="xref py py-class docutils literal notranslate"><span class="pre">General_atmosphere</span></code></a></p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.photosphere.SIR_atmosphere.add_active_line" title="hazel.photosphere.SIR_atmosphere.add_active_line"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_active_line</span></code></a>(lines, spectrum, wvl_range, ...)</p></td>
+<td><p>Add an active lines in this atmosphere</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">allocate_info_cycles</span></code>(n_cycles)</p></td>
+<td><p>Set the appropriate variables to store per-cycle models</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.photosphere.SIR_atmosphere.get_parameters" title="hazel.photosphere.SIR_atmosphere.get_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_parameters</span></code></a>()</p></td>
+<td><p>Get the curent parameters as a model</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_reference</span></code>([check_borders])</p></td>
+<td><p>Initialize the reference atmosphere to the values of the parameters, doing the inverse transformation if in inversion mode</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.photosphere.SIR_atmosphere.interpolate_nodes" title="hazel.photosphere.SIR_atmosphere.interpolate_nodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_nodes</span></code></a>(log_tau, reference, nodes, ...)</p></td>
+<td><p>Generate a model atmosphere by interpolating the defined nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.photosphere.SIR_atmosphere.interpolate_nodes_rf" title="hazel.photosphere.SIR_atmosphere.interpolate_nodes_rf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_nodes_rf</span></code></a>(log_tau, reference, ...)</p></td>
+<td><p>Generate a model atmosphere by interpolating the defined nodes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.photosphere.SIR_atmosphere.list_lines" title="hazel.photosphere.SIR_atmosphere.list_lines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_lines</span></code></a>()</p></td>
+<td><p>List the lines available in SIR for synthesis</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.photosphere.SIR_atmosphere.load_reference_model" title="hazel.photosphere.SIR_atmosphere.load_reference_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_reference_model</span></code></a>(model_file, verbose)</p></td>
+<td><p>Load a reference model or a model for every pixel for synthesis/inversion</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.photosphere.SIR_atmosphere.model_to_nodes" title="hazel.photosphere.SIR_atmosphere.model_to_nodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">model_to_nodes</span></code></a>()</p></td>
+<td><p>Transform from model to nodes</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.photosphere.SIR_atmosphere.nodes_to_model" title="hazel.photosphere.SIR_atmosphere.nodes_to_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nodes_to_model</span></code></a>()</p></td>
+<td><p>Transform from nodes to model</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_reference</span></code>()</p></td>
+<td><p>Reset reference model to the original reference loaded from file</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.photosphere.SIR_atmosphere.set_parameters" title="hazel.photosphere.SIR_atmosphere.set_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_parameters</span></code></a>(model, ff, vmac)</p></td>
+<td><p>Set the parameters of the current model to those passed as argument</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_reference</span></code>([cycle])</p></td>
+<td><p>Set reference model to that of the current parameters</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.photosphere.SIR_atmosphere.synthesize" title="hazel.photosphere.SIR_atmosphere.synthesize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synthesize</span></code></a>(stokes_in[, returnRF, nlte])</p></td>
+<td><p>Carry out the synthesis and returns the Stokes parameters and the response functions to all physical variables at all depths</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_physical</span></code>()</p></td>
+<td><p>Transform the atmospheric parameters from transformed domain to physical domain given the ranges.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_transformed</span></code>()</p></td>
+<td><p>Transform the atmospheric parameters from transformed domain to physical domain given the ranges.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>load_nlte_model</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>print_parameters</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.photosphere.SIR_atmosphere.add_active_line">
+<span class="sig-name descname"><span class="pre">add_active_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wvl_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.photosphere.SIR_atmosphere.add_active_line" title="Link to this definition">¶</a></dt>
+<dd><p>Add an active lines in this atmosphere</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lines</strong> (<em>str</em>) – Line to activate</p></li>
+<li><p><strong>spectrum</strong> (<a class="reference internal" href="source/hazel.html#hazel.spectrum.Spectrum" title="hazel.spectrum.Spectrum"><em>Spectrum</em></a>) – Spectrum object</p></li>
+<li><p><strong>wvl_range</strong> (<em>float</em>) – Vector containing wavelength range over which to synthesize this line</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.photosphere.SIR_atmosphere.get_parameters">
+<span class="sig-name descname"><span class="pre">get_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.photosphere.SIR_atmosphere.get_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Get the curent parameters as a model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>model</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a 6xN photspheric model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.photosphere.SIR_atmosphere.interpolate_nodes">
+<span class="sig-name descname"><span class="pre">interpolate_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes_location</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.photosphere.SIR_atmosphere.interpolate_nodes" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a model atmosphere by interpolating the defined nodes. The interpolation
+order depends on the number of nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_tau</strong> (<em>float</em>) – Vector of log optical depth at 500 nm</p></li>
+<li><p><strong>reference</strong> (<em>float</em>) – Vector with the reference atmosphere to which the nodes are added</p></li>
+<li><p><strong>nodes</strong> (<em>float</em>) – List with the position of the nodes</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Vector with the interpolated atmosphere</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>real</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.photosphere.SIR_atmosphere.interpolate_nodes_rf">
+<span class="sig-name descname"><span class="pre">interpolate_nodes_rf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.photosphere.SIR_atmosphere.interpolate_nodes_rf" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a model atmosphere by interpolating the defined nodes. The interpolation
+order depends on the number of nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_tau</strong> (<em>float</em>) – Vector of log optical depth at 500 nm</p></li>
+<li><p><strong>reference</strong> (<em>float</em>) – Vector with the reference atmosphere to which the nodes are added</p></li>
+<li><p><strong>nodes</strong> (<em>float</em>) – List with the position of the nodes</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Vector with the interpolated atmosphere</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>real</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.photosphere.SIR_atmosphere.list_lines">
+<span class="sig-name descname"><span class="pre">list_lines</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.photosphere.SIR_atmosphere.list_lines" title="Link to this definition">¶</a></dt>
+<dd><p>List the lines available in SIR for synthesis</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.photosphere.SIR_atmosphere.load_nlte_model">
+<span class="sig-name descname"><span class="pre">load_nlte_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.photosphere.SIR_atmosphere.load_nlte_model" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.photosphere.SIR_atmosphere.load_reference_model">
+<span class="sig-name descname"><span class="pre">load_reference_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.photosphere.SIR_atmosphere.load_reference_model" title="Link to this definition">¶</a></dt>
+<dd><p>Load a reference model or a model for every pixel for synthesis/inversion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_file</strong> (<em>str</em>) – String with the name of the file. Extensions can currently be “1d” or “h5”</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – Verbosity</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.photosphere.SIR_atmosphere.model_to_nodes">
+<span class="sig-name descname"><span class="pre">model_to_nodes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.photosphere.SIR_atmosphere.model_to_nodes" title="Link to this definition">¶</a></dt>
+<dd><p>Transform from model to nodes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.photosphere.SIR_atmosphere.nodes_to_model">
+<span class="sig-name descname"><span class="pre">nodes_to_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.photosphere.SIR_atmosphere.nodes_to_model" title="Link to this definition">¶</a></dt>
+<dd><p>Transform from nodes to model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.photosphere.SIR_atmosphere.print_parameters">
+<span class="sig-name descname"><span class="pre">print_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">first</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.photosphere.SIR_atmosphere.print_parameters" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.photosphere.SIR_atmosphere.set_parameters">
+<span class="sig-name descname"><span class="pre">set_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vmac</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.photosphere.SIR_atmosphere.set_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Set the parameters of the current model to those passed as argument</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_in</strong> (<em>float</em>) – Array with the model</p></li>
+<li><p><strong>ff</strong> (<em>float</em>) – Value of the filling factor</p></li>
+<li><p><strong>vmac</strong> (<em>float</em>) – Value of the macroturbulent velocity</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.photosphere.SIR_atmosphere.synthesize">
+<span class="sig-name descname"><span class="pre">synthesize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stokes_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">returnRF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlte</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.photosphere.SIR_atmosphere.synthesize" title="Link to this definition">¶</a></dt>
+<dd><p>Carry out the synthesis and returns the Stokes parameters and the response
+functions to all physical variables at all depths</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stokes_in</strong> (<em>float</em>) – An array of size [4 x nLambda] with the input Stokes parameter. It is irrelevant in this case
+because we assume that all SIR atmospheres have the Planck function as boundary.</p></li>
+<li><p><strong>returnRF</strong> (<em>bool</em><em>, </em><em>optional</em>) – Return response functions</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul>
+<li><p><strong>stokes</strong> (<em>float</em>) –</p>
+<dl class="simple">
+<dt>Stokes parameters, with the first index containing the wavelength displacement and the remaining</dt><dd><p>containing I, Q, U and V. Size (5,nLambda)</p>
+</dd>
+</dl>
+</li>
+<li><p><strong>rf</strong> (<em>float (optional)</em>) –</p>
+<dl class="simple">
+<dt>Response functions to T, Pe, vmic, B, v, theta, phi, all of size (4,nLambda,nDepth), plus the RF to macroturbulence of size (4,nLambda)</dt><dd><p>It is not returned if returnRF=False</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hazel.chromosphere">
+<span id="chromosphere"></span><h2><span class="section-number">9.3. </span>Chromosphere<a class="headerlink" href="#module-hazel.chromosphere" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hazel.chromosphere.Hazel_atmosphere">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hazel.chromosphere.</span></span><span class="sig-name descname"><span class="pre">Hazel_atmosphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">working_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.chromosphere.Hazel_atmosphere" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="source/hazel.html#hazel.atmosphere.General_atmosphere" title="hazel.atmosphere.General_atmosphere"><code class="xref py py-class docutils literal notranslate"><span class="pre">General_atmosphere</span></code></a></p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.chromosphere.Hazel_atmosphere.add_active_line" title="hazel.chromosphere.Hazel_atmosphere.add_active_line"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_active_line</span></code></a>(line, spectrum, wvl_range)</p></td>
+<td><p>Add an active lines in this atmosphere</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">allocate_info_cycles</span></code>(n_cycles)</p></td>
+<td><p>Set the appropriate variables to store per-cycle models</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_reference</span></code>([check_borders])</p></td>
+<td><p>Initialize the reference atmosphere to the values of the parameters, doing the inverse transformation if in inversion mode</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.chromosphere.Hazel_atmosphere.load_reference_model" title="hazel.chromosphere.Hazel_atmosphere.load_reference_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_reference_model</span></code></a>(model_file, verbose)</p></td>
+<td><p>Load a reference model or a model for every pixel for synthesis/inversion</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.chromosphere.Hazel_atmosphere.nodes_to_model" title="hazel.chromosphere.Hazel_atmosphere.nodes_to_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nodes_to_model</span></code></a>()</p></td>
+<td><p>Transform from nodes to model</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_reference</span></code>()</p></td>
+<td><p>Reset reference model to the original reference loaded from file</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.chromosphere.Hazel_atmosphere.set_parameters" title="hazel.chromosphere.Hazel_atmosphere.set_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_parameters</span></code></a>(pars, ff)</p></td>
+<td><p>Set the parameters of this model chromosphere</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_reference</span></code>([cycle])</p></td>
+<td><p>Set reference model to that of the current parameters</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.chromosphere.Hazel_atmosphere.synthesize" title="hazel.chromosphere.Hazel_atmosphere.synthesize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synthesize</span></code></a>([stokes, returnRF, nlte])</p></td>
+<td><p>Carry out the synthesis and returns the Stokes parameters</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_physical</span></code>()</p></td>
+<td><p>Transform the atmospheric parameters from transformed domain to physical domain given the ranges.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_transformed</span></code>()</p></td>
+<td><p>Transform the atmospheric parameters from transformed domain to physical domain given the ranges.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>print_parameters</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>select_coordinate_system</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.chromosphere.Hazel_atmosphere.add_active_line">
+<span class="sig-name descname"><span class="pre">add_active_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wvl_range</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.chromosphere.Hazel_atmosphere.add_active_line" title="Link to this definition">¶</a></dt>
+<dd><p>Add an active lines in this atmosphere</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lines</strong> (<em>str</em>) – Line to activate: [‘10830’,’5876’]</p></li>
+<li><p><strong>spectrum</strong> (<a class="reference internal" href="source/hazel.html#hazel.spectrum.Spectrum" title="hazel.spectrum.Spectrum"><em>Spectrum</em></a>) – Spectrum object</p></li>
+<li><p><strong>wvl_range</strong> (<em>float</em>) – Vector containing wavelength range over which to synthesize this line</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.chromosphere.Hazel_atmosphere.load_reference_model">
+<span class="sig-name descname"><span class="pre">load_reference_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.chromosphere.Hazel_atmosphere.load_reference_model" title="Link to this definition">¶</a></dt>
+<dd><p>Load a reference model or a model for every pixel for synthesis/inversion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_file</strong> (<em>str</em>) – String with the name of the file. Extensions can currently be “1d” or “h5”</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – verbosity flag</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.chromosphere.Hazel_atmosphere.nodes_to_model">
+<span class="sig-name descname"><span class="pre">nodes_to_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.chromosphere.Hazel_atmosphere.nodes_to_model" title="Link to this definition">¶</a></dt>
+<dd><p>Transform from nodes to model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.chromosphere.Hazel_atmosphere.print_parameters">
+<span class="sig-name descname"><span class="pre">print_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">first</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.chromosphere.Hazel_atmosphere.print_parameters" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.chromosphere.Hazel_atmosphere.select_coordinate_system">
+<span class="sig-name descname"><span class="pre">select_coordinate_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.chromosphere.Hazel_atmosphere.select_coordinate_system" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.chromosphere.Hazel_atmosphere.set_parameters">
+<span class="sig-name descname"><span class="pre">set_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ff</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.chromosphere.Hazel_atmosphere.set_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Set the parameters of this model chromosphere</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pars</strong> (<em>list</em><em> of </em><em>float</em>) – This list contains the following parameters in order: Bx, By, Bz, tau, v, delta, beta, a</p></li>
+<li><p><strong>ff</strong> (<em>float</em>) – Filling factor</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.chromosphere.Hazel_atmosphere.synthesize">
+<span class="sig-name descname"><span class="pre">synthesize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stokes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">returnRF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlte</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.chromosphere.Hazel_atmosphere.synthesize" title="Link to this definition">¶</a></dt>
+<dd><p>Carry out the synthesis and returns the Stokes parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stokes</strong> (<em>float</em>) – An array of size [4 x nLambda] with the input Stokes parameter.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p><strong>stokes</strong> –</p>
+<dl class="simple">
+<dt>Stokes parameters, with the first index containing the wavelength displacement and the remaining</dt><dd><p>containing I, Q, U and V. Size (4,nLambda)</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hazel.parametric">
+<span id="parametric"></span><h2><span class="section-number">9.4. </span>Parametric<a class="headerlink" href="#module-hazel.parametric" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hazel.parametric.Parametric_atmosphere">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hazel.parametric.</span></span><span class="sig-name descname"><span class="pre">Parametric_atmosphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">working_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.parametric.Parametric_atmosphere" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="source/hazel.html#hazel.atmosphere.General_atmosphere" title="hazel.atmosphere.General_atmosphere"><code class="xref py py-class docutils literal notranslate"><span class="pre">General_atmosphere</span></code></a></p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.parametric.Parametric_atmosphere.add_active_line" title="hazel.parametric.Parametric_atmosphere.add_active_line"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_active_line</span></code></a>(spectrum, wvl_range)</p></td>
+<td><p>Add an active lines in this atmosphere</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">allocate_info_cycles</span></code>(n_cycles)</p></td>
+<td><p>Set the appropriate variables to store per-cycle models</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_reference</span></code>([check_borders])</p></td>
+<td><p>Initialize the reference atmosphere to the values of the parameters, doing the inverse transformation if in inversion mode</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.parametric.Parametric_atmosphere.load_reference_model" title="hazel.parametric.Parametric_atmosphere.load_reference_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_reference_model</span></code></a>(model_file, verbose)</p></td>
+<td><p>Load a reference model or a model for every pixel for synthesis/inversion</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.parametric.Parametric_atmosphere.nodes_to_model" title="hazel.parametric.Parametric_atmosphere.nodes_to_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nodes_to_model</span></code></a>()</p></td>
+<td><p>Transform from nodes to model</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_reference</span></code>()</p></td>
+<td><p>Reset reference model to the original reference loaded from file</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.parametric.Parametric_atmosphere.set_parameters" title="hazel.parametric.Parametric_atmosphere.set_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_parameters</span></code></a>(pars, ff)</p></td>
+<td><p>Set parameters of the model</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_reference</span></code>([cycle])</p></td>
+<td><p>Set reference model to that of the current parameters</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.parametric.Parametric_atmosphere.synthesize" title="hazel.parametric.Parametric_atmosphere.synthesize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synthesize</span></code></a>([stokes, nlte])</p></td>
+<td><p>Carry out the synthesis and returns the Stokes parameters</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_physical</span></code>()</p></td>
+<td><p>Transform the atmospheric parameters from transformed domain to physical domain given the ranges.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_transformed</span></code>()</p></td>
+<td><p>Transform the atmospheric parameters from transformed domain to physical domain given the ranges.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>print_parameters</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.parametric.Parametric_atmosphere.add_active_line">
+<span class="sig-name descname"><span class="pre">add_active_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spectrum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wvl_range</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.parametric.Parametric_atmosphere.add_active_line" title="Link to this definition">¶</a></dt>
+<dd><p>Add an active lines in this atmosphere</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.parametric.Parametric_atmosphere.load_reference_model">
+<span class="sig-name descname"><span class="pre">load_reference_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.parametric.Parametric_atmosphere.load_reference_model" title="Link to this definition">¶</a></dt>
+<dd><p>Load a reference model or a model for every pixel for synthesis/inversion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_file</strong> (<em>str</em>) – String with the name of the file. Extensions can currently be “1d” or “h5”</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – verbosity flag</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.parametric.Parametric_atmosphere.nodes_to_model">
+<span class="sig-name descname"><span class="pre">nodes_to_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.parametric.Parametric_atmosphere.nodes_to_model" title="Link to this definition">¶</a></dt>
+<dd><p>Transform from nodes to model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.parametric.Parametric_atmosphere.print_parameters">
+<span class="sig-name descname"><span class="pre">print_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">first</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.parametric.Parametric_atmosphere.print_parameters" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.parametric.Parametric_atmosphere.set_parameters">
+<span class="sig-name descname"><span class="pre">set_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ff</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.parametric.Parametric_atmosphere.set_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Set parameters of the model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pars</strong> (<em>list</em><em> of </em><em>floats</em>) – Values of the parameters: lambda0, sigma, depth, a</p></li>
+<li><p><strong>ff</strong> (<em>float</em>) – Filling factor</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.parametric.Parametric_atmosphere.synthesize">
+<span class="sig-name descname"><span class="pre">synthesize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stokes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlte</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.parametric.Parametric_atmosphere.synthesize" title="Link to this definition">¶</a></dt>
+<dd><p>Carry out the synthesis and returns the Stokes parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stokes</strong> (<em>float</em>) – An array of size [4 x nLambda] with the input Stokes parameter.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p><strong>stokes</strong> –</p>
+<dl class="simple">
+<dt>Stokes parameters, with the first index containing the wavelength displacement and the remaining</dt><dd><p>containing I, Q, U and V. Size (4,nLambda)</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hazel.multiprocess">
+<span id="multiprocess"></span><h2><span class="section-number">9.5. </span>Multiprocess<a class="headerlink" href="#module-hazel.multiprocess" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hazel.multiprocess.Iterator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hazel.multiprocess.</span></span><span class="sig-name descname"><span class="pre">Iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_mpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.multiprocess.Iterator" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.multiprocess.Iterator.mpi_parent_work" title="hazel.multiprocess.Iterator.mpi_parent_work"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mpi_parent_work</span></code></a>([start, end])</p></td>
+<td><p>MPI parent work</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.multiprocess.Iterator.mpi_workers_work" title="hazel.multiprocess.Iterator.mpi_workers_work"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mpi_workers_work</span></code></a>()</p></td>
+<td><p>MPI workers work</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.multiprocess.Iterator.nonmpi_work" title="hazel.multiprocess.Iterator.nonmpi_work"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nonmpi_work</span></code></a>([start, end])</p></td>
+<td><p>Do the synthesis/inversion for all pixels in the models</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.multiprocess.Iterator.run_all_pixels" title="hazel.multiprocess.Iterator.run_all_pixels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_all_pixels</span></code></a>([start, end])</p></td>
+<td><p>Run synthesis/inversion for all pixels</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>cleanup</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>get_rank</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>use_model</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.multiprocess.Iterator.cleanup">
+<span class="sig-name descname"><span class="pre">cleanup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.multiprocess.Iterator.cleanup" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.multiprocess.Iterator.get_rank">
+<span class="sig-name descname"><span class="pre">get_rank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.multiprocess.Iterator.get_rank" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.multiprocess.Iterator.mpi_parent_work">
+<span class="sig-name descname"><span class="pre">mpi_parent_work</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.multiprocess.Iterator.mpi_parent_work" title="Link to this definition">¶</a></dt>
+<dd><p>MPI parent work</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> (<em>int</em>) – Initial pixel, by default 0</p></li>
+<li><p><strong>end</strong> (<em>int</em>) – Final pixel, by default the number of pixels in the observations</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.multiprocess.Iterator.mpi_workers_work">
+<span class="sig-name descname"><span class="pre">mpi_workers_work</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.multiprocess.Iterator.mpi_workers_work" title="Link to this definition">¶</a></dt>
+<dd><p>MPI workers work</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.multiprocess.Iterator.nonmpi_work">
+<span class="sig-name descname"><span class="pre">nonmpi_work</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.multiprocess.Iterator.nonmpi_work" title="Link to this definition">¶</a></dt>
+<dd><p>Do the synthesis/inversion for all pixels in the models</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model</strong> (<em>model</em>) – Model to be synthesized</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.multiprocess.Iterator.run_all_pixels">
+<span class="sig-name descname"><span class="pre">run_all_pixels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.multiprocess.Iterator.run_all_pixels" title="Link to this definition">¶</a></dt>
+<dd><p>Run synthesis/inversion for all pixels</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> (<em>int</em><em>, </em><em>optional</em>) – Initial pixel, by default 0</p></li>
+<li><p><strong>end</strong> (<em>int</em>) – Final pixel, by default the number of pixels in the observations</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.multiprocess.Iterator.use_model">
+<span class="sig-name descname"><span class="pre">use_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.multiprocess.Iterator.use_model" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hazel.multiprocess.handle_timeout">
+<span class="sig-prename descclassname"><span class="pre">hazel.multiprocess.</span></span><span class="sig-name descname"><span class="pre">handle_timeout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.multiprocess.handle_timeout" title="Link to this definition">¶</a></dt>
+<dd><p>Handles the timeout signal.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hazel.multiprocess.tags">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hazel.multiprocess.</span></span><span class="sig-name descname"><span class="pre">tags</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.multiprocess.tags" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IntEnum</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">denominator</span></code></dt><dd><p>the denominator of a rational number in lowest terms</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">imag</span></code></dt><dd><p>the imaginary part of a complex number</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">numerator</span></code></dt><dd><p>the numerator of a rational number in lowest terms</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">real</span></code></dt><dd><p>the real part of a complex number</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">as_integer_ratio</span></code>(/)</p></td>
+<td><p>Return a pair of integers, whose ratio is equal to the original int.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bit_count</span></code>(/)</p></td>
+<td><p>Number of ones in the binary representation of the absolute value of self.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bit_length</span></code>(/)</p></td>
+<td><p>Number of bits necessary to represent self in binary.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">conjugate</span></code></p></td>
+<td><p>Returns self, the complex conjugate of any int.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_bytes</span></code>(/, bytes[, byteorder, signed])</p></td>
+<td><p>Return the integer represented by the given array of bytes.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_integer</span></code>(/)</p></td>
+<td><p>Returns True.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_bytes</span></code>(/[, length, byteorder, signed])</p></td>
+<td><p>Return an array of bytes representing an integer.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hazel.multiprocess.tags.DONE">
+<span class="sig-name descname"><span class="pre">DONE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#hazel.multiprocess.tags.DONE" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hazel.multiprocess.tags.DONOTHING">
+<span class="sig-name descname"><span class="pre">DONOTHING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#hazel.multiprocess.tags.DONOTHING" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hazel.multiprocess.tags.EXIT">
+<span class="sig-name descname"><span class="pre">EXIT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#hazel.multiprocess.tags.EXIT" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hazel.multiprocess.tags.READY">
+<span class="sig-name descname"><span class="pre">READY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#hazel.multiprocess.tags.READY" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hazel.multiprocess.tags.START">
+<span class="sig-name descname"><span class="pre">START</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#hazel.multiprocess.tags.START" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hazel.multiprocess.tags.TIMEOUT">
+<span class="sig-name descname"><span class="pre">TIMEOUT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#hazel.multiprocess.tags.TIMEOUT" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hazel.stray">
+<span id="stray-light"></span><h2><span class="section-number">9.6. </span>Stray-light<a class="headerlink" href="#module-hazel.stray" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hazel.stray.Straylight_atmosphere">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hazel.stray.</span></span><span class="sig-name descname"><span class="pre">Straylight_atmosphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">working_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.stray.Straylight_atmosphere" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="source/hazel.html#hazel.atmosphere.General_atmosphere" title="hazel.atmosphere.General_atmosphere"><code class="xref py py-class docutils literal notranslate"><span class="pre">General_atmosphere</span></code></a></p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.stray.Straylight_atmosphere.add_active_line" title="hazel.stray.Straylight_atmosphere.add_active_line"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_active_line</span></code></a>(spectrum, wvl_range)</p></td>
+<td><p>Add an active lines in this atmosphere</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">allocate_info_cycles</span></code>(n_cycles)</p></td>
+<td><p>Set the appropriate variables to store per-cycle models</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_reference</span></code>([check_borders])</p></td>
+<td><p>Initialize the reference atmosphere to the values of the parameters, doing the inverse transformation if in inversion mode</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.stray.Straylight_atmosphere.load_reference_model" title="hazel.stray.Straylight_atmosphere.load_reference_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_reference_model</span></code></a>(model_file, verbose)</p></td>
+<td><p>Load a reference model or a model for every pixel for synthesis/inversion</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.stray.Straylight_atmosphere.nodes_to_model" title="hazel.stray.Straylight_atmosphere.nodes_to_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nodes_to_model</span></code></a>()</p></td>
+<td><p>Transform from nodes to model</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_reference</span></code>()</p></td>
+<td><p>Reset reference model to the original reference loaded from file</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_reference</span></code>([cycle])</p></td>
+<td><p>Set reference model to that of the current parameters</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.stray.Straylight_atmosphere.set_straylight" title="hazel.stray.Straylight_atmosphere.set_straylight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_straylight</span></code></a>(stokes)</p></td>
+<td><p>Load a reference model or a model for every pixel for synthesis/inversion</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.stray.Straylight_atmosphere.synthesize" title="hazel.stray.Straylight_atmosphere.synthesize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">synthesize</span></code></a>([nlte])</p></td>
+<td><p>Carry out the synthesis and returns the Stokes parameters</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_physical</span></code>()</p></td>
+<td><p>Transform the atmospheric parameters from transformed domain to physical domain given the ranges.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_transformed</span></code>()</p></td>
+<td><p>Transform the atmospheric parameters from transformed domain to physical domain given the ranges.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>print_parameters</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>set_parameters</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.stray.Straylight_atmosphere.add_active_line">
+<span class="sig-name descname"><span class="pre">add_active_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spectrum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wvl_range</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.stray.Straylight_atmosphere.add_active_line" title="Link to this definition">¶</a></dt>
+<dd><p>Add an active lines in this atmosphere</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.stray.Straylight_atmosphere.load_reference_model">
+<span class="sig-name descname"><span class="pre">load_reference_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.stray.Straylight_atmosphere.load_reference_model" title="Link to this definition">¶</a></dt>
+<dd><p>Load a reference model or a model for every pixel for synthesis/inversion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_file</strong> (<em>str</em>) – String with the name of the file. Extensions can currently be “1d” or “h5”</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – verbosity flag</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.stray.Straylight_atmosphere.nodes_to_model">
+<span class="sig-name descname"><span class="pre">nodes_to_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.stray.Straylight_atmosphere.nodes_to_model" title="Link to this definition">¶</a></dt>
+<dd><p>Transform from nodes to model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.stray.Straylight_atmosphere.print_parameters">
+<span class="sig-name descname"><span class="pre">print_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">first</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.stray.Straylight_atmosphere.print_parameters" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.stray.Straylight_atmosphere.set_parameters">
+<span class="sig-name descname"><span class="pre">set_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ff</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.stray.Straylight_atmosphere.set_parameters" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.stray.Straylight_atmosphere.set_straylight">
+<span class="sig-name descname"><span class="pre">set_straylight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stokes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.stray.Straylight_atmosphere.set_straylight" title="Link to this definition">¶</a></dt>
+<dd><p>Load a reference model or a model for every pixel for synthesis/inversion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_file</strong> (<em>str</em>) – String with the name of the file. Extensions can currently be “1d” or “h5”</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – verbosity flag</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.stray.Straylight_atmosphere.synthesize">
+<span class="sig-name descname"><span class="pre">synthesize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nlte</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.stray.Straylight_atmosphere.synthesize" title="Link to this definition">¶</a></dt>
+<dd><p>Carry out the synthesis and returns the Stokes parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p><strong>stokes</strong> –</p>
+<dl class="simple">
+<dt>Stokes parameters, with the first index containing the wavelength displacement and the remaining</dt><dd><p>containing I, Q, U and V. Size (4,nLambda)</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hazel.tools">
+<span id="tools"></span><h2><span class="section-number">9.7. </span>Tools<a class="headerlink" href="#module-hazel.tools" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hazel.tools.File_chromosphere">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hazel.tools.</span></span><span class="sig-name descname"><span class="pre">File_chromosphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'single'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.tools.File_chromosphere" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class that defines a model atmosphere and can be used to easily save observations</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.tools.File_chromosphere.save" title="hazel.tools.File_chromosphere.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a>(file[, default])</p></td>
+<td><p>Save the curent observation</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.tools.File_chromosphere.set_default" title="hazel.tools.File_chromosphere.set_default"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_default</span></code></a>([n_pixel, default])</p></td>
+<td><p>Set the atmosphere to one of the default ones available in the code</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.tools.File_chromosphere.set_size" title="hazel.tools.File_chromosphere.set_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_size</span></code></a>([n_pixel])</p></td>
+<td><p>Set the number of pixels of the current atmosphere</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.tools.File_chromosphere.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.tools.File_chromosphere.save" title="Link to this definition">¶</a></dt>
+<dd><p>Save the curent observation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file</strong> (<em>str</em>) – Name of the output files. Extensions will be added to it</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.tools.File_chromosphere.set_default">
+<span class="sig-name descname"><span class="pre">set_default</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_pixel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'disk'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.tools.File_chromosphere.set_default" title="Link to this definition">¶</a></dt>
+<dd><p>Set the atmosphere to one of the default ones available in the code</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_pixel</strong> (<em>int</em><em> (</em><em>optional</em><em>, </em><em>equal to 1 as default</em><em>)</em>) – Number of pixels of the output</p></li>
+<li><p><strong>default</strong> (<em>str</em><em> (</em><em>'disk' -&gt; on-disk observations</em><em>, </em><em>'offlimb' -&gt; off-limb observations</em><em>)</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.tools.File_chromosphere.set_size">
+<span class="sig-name descname"><span class="pre">set_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_pixel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.tools.File_chromosphere.set_size" title="Link to this definition">¶</a></dt>
+<dd><p>Set the number of pixels of the current atmosphere</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n_pixel</strong> (<em>int</em><em> (</em><em>optional</em><em>, </em><em>equal to 1 as default</em><em>)</em>) – Number of pixels of the output</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hazel.tools.File_observation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hazel.tools.</span></span><span class="sig-name descname"><span class="pre">File_observation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'single'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.tools.File_observation" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class that defines an observation. This can be used to easily save observations in the appropriate format</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.tools.File_observation.save" title="hazel.tools.File_observation.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a>(file)</p></td>
+<td><p>Save the curent observation</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.tools.File_observation.set_size" title="hazel.tools.File_observation.set_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_size</span></code></a>(n_lambda[, n_pixel])</p></td>
+<td><p>Set the number of wavelengths and number of pixels of the current observation</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.tools.File_observation.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.tools.File_observation.save" title="Link to this definition">¶</a></dt>
+<dd><p>Save the curent observation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file</strong> (<em>str</em>) – Name of the output files. Extensions will be added to it</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.tools.File_observation.set_size">
+<span class="sig-name descname"><span class="pre">set_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_lambda</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pixel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.tools.File_observation.set_size" title="Link to this definition">¶</a></dt>
+<dd><p>Set the number of wavelengths and number of pixels of the current observation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_lambda</strong> (<em>int</em>) – Number of wavelength points</p></li>
+<li><p><strong>n_pixel</strong> (<em>int</em><em> (</em><em>optional</em><em>, </em><em>equal to 1 as default</em><em>)</em>) – Number of pixels of the output</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hazel.tools.File_photosphere">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hazel.tools.</span></span><span class="sig-name descname"><span class="pre">File_photosphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'single'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.tools.File_photosphere" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class that defines a model photosphere and can be used to easily save observations</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.tools.File_photosphere.save" title="hazel.tools.File_photosphere.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a>(file[, default])</p></td>
+<td><p>Save the curent model</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="source/hazel.html#hazel.tools.File_photosphere.set_default" title="hazel.tools.File_photosphere.set_default"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_default</span></code></a>([n_pixel, default])</p></td>
+<td><p>Set the atmosphere to one of the default ones available in the code</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="source/hazel.html#hazel.tools.File_photosphere.set_size" title="hazel.tools.File_photosphere.set_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_size</span></code></a>(nz[, n_pixel])</p></td>
+<td><p>Set the number of depth points and number of pixels of the current atmosphere</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>list_models</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.tools.File_photosphere.list_models">
+<span class="sig-name descname"><span class="pre">list_models</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hazel.tools.File_photosphere.list_models" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.tools.File_photosphere.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.tools.File_photosphere.save" title="Link to this definition">¶</a></dt>
+<dd><p>Save the curent model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file</strong> (<em>str</em>) – Name of the output files. Extensions will be added to it</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.tools.File_photosphere.set_default">
+<span class="sig-name descname"><span class="pre">set_default</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_pixel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hsra'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.tools.File_photosphere.set_default" title="Link to this definition">¶</a></dt>
+<dd><p>Set the atmosphere to one of the default ones available in the code</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_pixel</strong> (<em>int</em><em> (</em><em>optional</em><em>, </em><em>equal to 1 as default</em><em>)</em>) – Number of pixels of the output</p></li>
+<li><p><strong>default</strong> (<em>str</em><em> (</em><em>'hsra' -&gt; Harvard-Smithsonian Reference Atmosphere</em><em>)</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hazel.tools.File_photosphere.set_size">
+<span class="sig-name descname"><span class="pre">set_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pixel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hazel.tools.File_photosphere.set_size" title="Link to this definition">¶</a></dt>
+<dd><p>Set the number of depth points and number of pixels of the current atmosphere</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nz</strong> (<em>int</em>) – Number of depth points of the atmosphere</p></li>
+<li><p><strong>n_pixel</strong> (<em>int</em><em> (</em><em>optional</em><em>, </em><em>equal to 1 as default</em><em>)</em>) – Number of pixels of the output</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="changelog.html" class="btn btn-neutral float-left" title="8. Changelog" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="acknowledgements.html" class="btn btn-neutral float-right" title="10. Acknowledgements" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

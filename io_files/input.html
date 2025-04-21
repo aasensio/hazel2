@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>4.1. Input files &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4.2. Generators" href="generators.html" />
+    <link rel="prev" title="4. Input/output files" href="../io_files.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../started/installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../started.html">2. Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">3. Configuration</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../io_files.html">4. Input/output files</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">4.1. Input files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#wavelength-files">4.1.1. Wavelength files</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wavelength">4.1.1.1. Wavelength</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wavelength-weights">4.1.1.2. Wavelength weights</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#observations-files">4.1.2. Observations files</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#d-files">4.1.2.1. 1D files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hdf5-zarr-3d-files">4.1.2.2. HDF5/zarr 3D files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fits-3d-files">4.1.2.3. FITS 3D files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mask-file">4.1.2.4. Mask file</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#photospheric-models">4.1.3. Photospheric models</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">4.1.3.1. 1D files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">4.1.3.2. HDF5/zarr 3D files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">4.1.3.3. FITS 3D files</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#chromospheric-models">4.1.4. Chromospheric models</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id4">4.1.4.1. 1D files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">4.1.4.2. HDF5/zarr 3D files</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#parametric-models">4.1.5. Parametric models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#straylight-models">4.1.6. Straylight models</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id6">4.1.6.1. 1D files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id7">4.1.6.2. HDF5/zarr 3D files</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="generators.html">4.2. Generators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="output.html">4.3. Output files</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../preparation.html">5. Data preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">6. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../io_files.html"><span class="section-number">4. </span>Input/output files</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">4.1. </span>Input files</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/io_files/input.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="input-files">
+<h1><span class="section-number">4.1. </span>Input files<a class="headerlink" href="#input-files" title="Link to this heading">¶</a></h1>
+<p>Hazel v2.0 can accept several formats for input/output files. 1D formats are specific
+for Hazel, but 3D formats are defined in standard HDF5 or FITS formats.</p>
+<section id="wavelength-files">
+<h2><span class="section-number">4.1.1. </span>Wavelength files<a class="headerlink" href="#wavelength-files" title="Link to this heading">¶</a></h2>
+<section id="wavelength">
+<h3><span class="section-number">4.1.1.1. </span>Wavelength<a class="headerlink" href="#wavelength" title="Link to this heading">¶</a></h3>
+<p>Wavelength files are defined with a text file with a single column and a header, and
+defines the wavelength axis in Angstrom of each spectral region.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># lambda</span>
+<span class="mf">1.082600000000000000e+04</span>
+<span class="mf">1.082604697986577230e+04</span>
+<span class="mf">1.082609395973154278e+04</span>
+<span class="mf">1.082614093959731508e+04</span>
+<span class="mf">1.082618791946308738e+04</span>
+<span class="mf">1.082623489932885968e+04</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+</section>
+<section id="wavelength-weights">
+<h3><span class="section-number">4.1.1.2. </span>Wavelength weights<a class="headerlink" href="#wavelength-weights" title="Link to this heading">¶</a></h3>
+<p>Each wavelength point can be weighted differently in the four Stokes parameters. To this end, you can
+provide a file with the weights in the following format.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># WeightI WeightQ WeightU WeightV</span>
+   <span class="mf">1.0</span>     <span class="mf">1.0</span>      <span class="mf">1.0</span>    <span class="mf">1.0</span>
+   <span class="mf">1.0</span>     <span class="mf">1.0</span>      <span class="mf">1.0</span>    <span class="mf">1.0</span>
+   <span class="mf">1.0</span>     <span class="mf">1.0</span>      <span class="mf">1.0</span>    <span class="mf">1.0</span>
+   <span class="mf">1.0</span>     <span class="mf">1.0</span>      <span class="mf">1.0</span>    <span class="mf">1.0</span>
+   <span class="o">......</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="observations-files">
+<h2><span class="section-number">4.1.2. </span>Observations files<a class="headerlink" href="#observations-files" title="Link to this heading">¶</a></h2>
+<p>We describe now the files that contain the observations needed for the inversion mode. Observations
+can be described in 1D files for single-pixel inversions, or in 3D files with different flavors for
+many-pixels inversions.</p>
+<section id="d-files">
+<h3><span class="section-number">4.1.2.1. </span>1D files<a class="headerlink" href="#d-files" title="Link to this heading">¶</a></h3>
+<p>These are text files giving the necessary information for the inversion. The first data line
+is the line-of-sight angles <span class="math notranslate nohighlight">\(\theta_\mathrm{LOS}\)</span>, <span class="math notranslate nohighlight">\(\phi_\mathrm{LOS}\)</span> and <span class="math notranslate nohighlight">\(\gamma_\mathrm{LOS}\)</span>.
+The second line gives the boundary condition in units of the continuum intensity of the quiet Sun at disk center.
+Finally, one has to list the value of the Stokes parameters and the standard deviation of the
+noise for each wavelength and Stokes parameter. An example follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># LOS theta_LOS, phi_LOS, gamma_LOS</span>
+<span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mf">90.0</span>
+
+<span class="c1"># Boundary condition I/Ic(mu=1), Q/Ic(mu=1), U/Ic(mu=1), V/Ic(mu=1)</span>
+<span class="mf">1.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span>
+
+<span class="c1"># SI SQ SU SV sigmaI sigmaQ sigmaU sigmaV</span>
+<span class="mf">9.398283088919315853e-01</span> <span class="mf">2.307830414199267630e-04</span> <span class="o">-</span><span class="mf">5.121676330588738812e-05</span> <span class="mf">1.457157835263802345e-04</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span>
+<span class="mf">9.354598051184511709e-01</span> <span class="mf">1.898170981935559632e-04</span> <span class="o">-</span><span class="mf">1.157160550018296303e-04</span> <span class="o">-</span><span class="mf">8.932093956208153021e-05</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span>
+<span class="mf">9.304626067718699822e-01</span> <span class="mf">3.837834915890673399e-05</span> <span class="mf">1.166320038345326575e-04</span> <span class="mf">1.087068643459882281e-04</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span> <span class="mf">1.000000000000000048e-04</span>
+<span class="o">....</span>
+</pre></div>
+</div>
+</section>
+<section id="hdf5-zarr-3d-files">
+<h3><span class="section-number">4.1.2.2. </span>HDF5/zarr 3D files<a class="headerlink" href="#hdf5-zarr-3d-files" title="Link to this heading">¶</a></h3>
+<p><a class="reference external" href="https://www.h5py.org/">HDF5</a> or <a class="reference external" href="http://zarr.readthedocs.io/en/stable/index.html">zarr</a> files with observations are defined with four double-precision datasets: <code class="docutils literal notranslate"><span class="pre">stokes</span></code>, <code class="docutils literal notranslate"><span class="pre">sigma</span></code>, <code class="docutils literal notranslate"><span class="pre">LOS</span></code> and <code class="docutils literal notranslate"><span class="pre">boundary</span></code>.
+The first two and the boundary conditions have size <code class="docutils literal notranslate"><span class="pre">(n_pixel,n_lambda,4)</span></code>,
+and contain the four Stokes parameters and standard deviation of the noises for all pixels, together with the
+boundary conditions for each pixel. The LOS is of size <code class="docutils literal notranslate"><span class="pre">(n_pixel,3)</span></code> and contains the
+<span class="math notranslate nohighlight">\(\theta_\mathrm{LOS}\)</span>, <span class="math notranslate nohighlight">\(\phi_\mathrm{LOS}\)</span> and <span class="math notranslate nohighlight">\(\gamma_\mathrm{LOS}\)</span> angles for
+each pixel. In the following we show how to
+create a sample file for HDF5 (with some mock Stokes parameters full of zeros), which should be equally simple for <code class="docutils literal notranslate"><span class="pre">zarr</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n_pixel</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">n_lambda</span> <span class="o">=</span> <span class="mi">150</span>
+
+<span class="c1"># Generate mock Stokes parameters full of zeros in this case (so completely useless)</span>
+<span class="n">stokes_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_pixel</span><span class="p">,</span><span class="n">n_lambda</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">sigma_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_pixel</span><span class="p">,</span><span class="n">n_lambda</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+<span class="n">los_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_pixel</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">boundary_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_pixel</span><span class="p">,</span><span class="n">n_lambda</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;observations/10830_stokes.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">db_stokes</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;stokes&#39;</span><span class="p">,</span> <span class="n">stokes_3d</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">db_sigma</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="n">sigma_3d</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">db_los</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;LOS&#39;</span><span class="p">,</span> <span class="n">los_3d</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">db_boundary</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;boundary&#39;</span><span class="p">,</span> <span class="n">boundary_3d</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">db_stokes</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">stokes_3d</span>
+<span class="n">db_sigma</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">sigma_3d</span>
+<span class="n">db_los</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">los_3d</span>
+<span class="n">db_boundary</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">boundary_3d</span>
+<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="fits-3d-files">
+<h3><span class="section-number">4.1.2.3. </span>FITS 3D files<a class="headerlink" href="#fits-3d-files" title="Link to this heading">¶</a></h3>
+<p>TBD.</p>
+</section>
+<section id="mask-file">
+<h3><span class="section-number">4.1.2.4. </span>Mask file<a class="headerlink" href="#mask-file" title="Link to this heading">¶</a></h3>
+<p>Sometimes it is interesting to reinvert some pixels of a map that, for some reason, did not
+go well in a previous inversion. Instead of rewriting a new file with these pixels, Hazel2
+allows you to use a file with a mask. This mask marks with 1 those pixels that need to be
+inverted and with zero those that will not be inverted. For the moment, we do not have
+the option of merging a previous inversion with a new one, so that the output file
+will be empty in those pixels that are not inverted. You will need to merge the
+two output files yourself. Since this mask is appropriate only for 3D inversions,
+it needs to be in one of the 3D formats. There is a single dataset <code class="docutils literal notranslate"><span class="pre">mask</span></code> of
+type <code class="docutils literal notranslate"><span class="pre">np.int8</span></code>. For the moment, only 0 and 1 are used, but we prefer to use
+an integer in case more elaborate masks can be used in the future. If the file is
+<code class="docutils literal notranslate"><span class="pre">None</span></code> or the keyword is absent, all pixels will be inverted.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n_pixel</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">mask_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_pixel</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;observations/10830_mask.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">db_mask</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;mask&#39;</span><span class="p">,</span> <span class="n">mask_3d</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+<span class="n">db_mask</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">mask_3d</span>
+<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="photospheric-models">
+<h2><span class="section-number">4.1.3. </span>Photospheric models<a class="headerlink" href="#photospheric-models" title="Link to this heading">¶</a></h2>
+<p>Photospheric models are used both in synthesis and inversion. In synthesis mode, they are used to
+obtain the emergent Stokes parameters. In inversion mode, they are used as an initial reference model that will
+be perturbed with nodes until a fit is obtained for the observed Stokes parameters.</p>
+<section id="id1">
+<h3><span class="section-number">4.1.3.1. </span>1D files<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<p>These are text files which tabulates the depth dependence as a function of the log optical depth at 500 nm
+of the temperature [K], electron pressure [cgs],
+microturbulent velocity [km/s], bulk velocity [km/s], and the cartesian components of the magnetic field,
+Bx, By and Bz [G]. Additionally, the filling factor and the macroscopic velocity in km/s
+is given in the header. An example follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ff</span>   <span class="n">vmac</span>
+<span class="mf">1.0</span>  <span class="mf">1.0</span>
+
+<span class="n">logtau</span>     <span class="n">T</span>        <span class="n">Pe</span>           <span class="n">vmic</span>        <span class="n">v</span>            <span class="n">Bx</span>           <span class="n">By</span>         <span class="n">Bz</span>
+<span class="mf">1.2000</span>   <span class="mf">8879.7</span>  <span class="mf">2.99831E+03</span>  <span class="mf">0.000E+00</span>  <span class="mf">0.0000E+00</span>   <span class="mf">5.0000E+02</span>    <span class="mf">0.0000E+00</span>  <span class="mf">0.0000E+00</span>
+<span class="mf">1.1000</span>   <span class="mf">8720.2</span>  <span class="mf">2.46927E+03</span>  <span class="mf">0.000E+00</span>  <span class="mf">0.0000E+00</span>   <span class="mf">5.0000E+02</span>    <span class="mf">0.0000E+00</span>  <span class="mf">0.0000E+00</span>
+<span class="mf">1.0000</span>   <span class="mf">8551.0</span>  <span class="mf">1.98933E+03</span>  <span class="mf">0.000E+00</span>  <span class="mf">0.0000E+00</span>   <span class="mf">5.0000E+02</span>    <span class="mf">0.0000E+00</span>  <span class="mf">0.0000E+00</span>
+<span class="mf">0.9000</span>   <span class="mf">8372.2</span>  <span class="mf">1.56782E+03</span>  <span class="mf">0.000E+00</span>  <span class="mf">0.0000E+00</span>   <span class="mf">5.0000E+02</span>    <span class="mf">0.0000E+00</span>  <span class="mf">0.0000E+00</span>
+<span class="mf">0.8000</span>   <span class="mf">8183.7</span>  <span class="mf">1.20874E+03</span>  <span class="mf">0.000E+00</span>  <span class="mf">0.0000E+00</span>   <span class="mf">5.0000E+02</span>    <span class="mf">0.0000E+00</span>  <span class="mf">0.0000E+00</span>
+<span class="mf">0.7000</span>   <span class="mf">7985.6</span>  <span class="mf">9.11633E+02</span>  <span class="mf">0.000E+00</span>  <span class="mf">0.0000E+00</span>   <span class="mf">5.0000E+02</span>    <span class="mf">0.0000E+00</span>  <span class="mf">0.0000E+00</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h3><span class="section-number">4.1.3.2. </span>HDF5/zarr 3D files<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<p>HDF5/zarr files with model photospheres are defined with three double-precision datasets: <code class="docutils literal notranslate"><span class="pre">model</span></code>, <code class="docutils literal notranslate"><span class="pre">ff</span></code> and <code class="docutils literal notranslate"><span class="pre">vmac</span></code>. The first
+one has size <code class="docutils literal notranslate"><span class="pre">(n_pixel,nz,8)</span></code>, containing the depth dependence of the 8 variables for all pixels. The second
+and the third ones have sizes <code class="docutils literal notranslate"><span class="pre">(n_pixel,)</span></code>, containing the filling factor and the macroscopic velocity
+for each pixel. In the following we show how to
+create a sample file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n_pixel</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">nz</span> <span class="o">=</span> <span class="mi">50</span>
+
+<span class="n">model_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_pixel</span><span class="p">,</span><span class="n">nz</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">ff_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_pixel</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">vmac_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_pixel</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;photospheres/model_photosphere.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">db_model</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="n">model_3d</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">db_ff</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;ff&#39;</span><span class="p">,</span> <span class="n">ff_3d</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">db_vmac</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;vmac&#39;</span><span class="p">,</span> <span class="n">vmac_3d</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">db_model</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">model_3d</span>
+<span class="n">db_ff</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">ff_3d</span>
+<span class="n">db_vmac</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">vmac_3d</span>
+<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h3><span class="section-number">4.1.3.3. </span>FITS 3D files<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<p>TBD</p>
+</section>
+</section>
+<section id="chromospheric-models">
+<h2><span class="section-number">4.1.4. </span>Chromospheric models<a class="headerlink" href="#chromospheric-models" title="Link to this heading">¶</a></h2>
+<p>Chromospheric models are used both in synthesis and inversion. In synthesis mode, they are used to
+obtain the emergent Stokes parameters. In inversion mode, they are used as an initial reference model that will
+be perturbed with nodes until a fit is obtained for the observed Stokes parameters.</p>
+<section id="id4">
+<h3><span class="section-number">4.1.4.1. </span>1D files<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
+<p>These are text files which tabulates the three cartesian components of the magnetic field [G],
+the optical depth of the slab, the bulk velocity [km/s], the Doppler width of the line [km/s],
+the enhancement factor beta, the damping a and the filling factor. An example follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Bx</span> <span class="p">[</span><span class="n">G</span><span class="p">]</span>   <span class="n">By</span> <span class="p">[</span><span class="n">G</span><span class="p">]</span>   <span class="n">Bz</span> <span class="p">[</span><span class="n">G</span><span class="p">]</span>   <span class="n">tau</span>    <span class="n">v</span> <span class="p">[</span><span class="n">km</span><span class="o">/</span><span class="n">s</span><span class="p">]</span>     <span class="n">deltav</span> <span class="p">[</span><span class="n">km</span><span class="o">/</span><span class="n">s</span><span class="p">]</span>   <span class="n">beta</span>    <span class="n">a</span>     <span class="n">ff</span>
+<span class="mf">0.0</span>       <span class="mf">0.0</span>     <span class="mf">0.0</span>      <span class="mf">1.0</span>      <span class="mf">0.0</span>             <span class="mf">8.0</span>        <span class="mf">1.0</span>    <span class="mf">0.0</span>    <span class="mf">1.0</span>
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h3><span class="section-number">4.1.4.2. </span>HDF5/zarr 3D files<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
+<p>HDF5/zarr files with model chromospheres are defined with two double-precision datasets: <code class="docutils literal notranslate"><span class="pre">model</span></code> and <code class="docutils literal notranslate"><span class="pre">ff</span></code>. The first
+one has size <code class="docutils literal notranslate"><span class="pre">(n_pixel,8)</span></code>, containing the depth dependence of the 8 variables for all pixels. The second
+one has size <code class="docutils literal notranslate"><span class="pre">(n_pixel,)</span></code>, containing the filling factor for each pixel. In the following we show how to
+create a sample file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n_pixel</span> <span class="o">=</span> <span class="mi">100</span>
+
+<span class="n">model_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_pixel</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">ff_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_pixel</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;photospheres/model_chromosphere.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">db_model</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="n">model_3d</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">db_ff</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;ff&#39;</span><span class="p">,</span> <span class="n">ff_3d</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">db_model</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">model_3d</span>
+<span class="n">db_ff</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">ff_3d</span>
+<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="parametric-models">
+<h2><span class="section-number">4.1.5. </span>Parametric models<a class="headerlink" href="#parametric-models" title="Link to this heading">¶</a></h2>
+<p>TBD</p>
+</section>
+<section id="straylight-models">
+<h2><span class="section-number">4.1.6. </span>Straylight models<a class="headerlink" href="#straylight-models" title="Link to this heading">¶</a></h2>
+<p>Straylight models contain a velocity [in km/s] and a filling factor. Additionally, one needs to define the
+intensity spectrum of the stray light contamination, which is given in units of the continuum intensity at
+disk center.</p>
+<section id="id6">
+<h3><span class="section-number">4.1.6.1. </span>1D files<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">v</span>   <span class="n">ff</span>
+<span class="mf">0.0</span>  <span class="mf">1.0</span>
+
+<span class="n">Stokes</span> <span class="n">I</span>
+<span class="mf">0.0</span>
+<span class="mf">0.0</span>
+<span class="mf">0.0</span>
+<span class="mf">1.0</span>
+<span class="mf">1.0</span>
+<span class="mf">1.0</span>
+<span class="mf">1.0</span>
+<span class="o">....</span>
+</pre></div>
+</div>
+</section>
+<section id="id7">
+<h3><span class="section-number">4.1.6.2. </span>HDF5/zarr 3D files<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h3>
+<p>HDF5/zarr files with model straylight contaminations are defined with three double-precision datasets: <code class="docutils literal notranslate"><span class="pre">profile</span></code>, <code class="docutils literal notranslate"><span class="pre">model</span></code> and <code class="docutils literal notranslate"><span class="pre">ff</span></code>. The first
+one has size <code class="docutils literal notranslate"><span class="pre">(n_pixel,n_wavelength)</span></code> (which needs to conform with the number of wavelength of the spectral region
+associated to this atmosphere) and contains the intensity spectrum in units of the continuum intensity
+at disk center. The second one has size <code class="docutils literal notranslate"><span class="pre">(n_pixel,1)</span></code> and contains the model variable, which in this case
+reduces just to the velocity shift. The last one
+has size <code class="docutils literal notranslate"><span class="pre">(n_pixel,)</span></code> and contains the filling factor for each pixel. In the following we show how to
+create a sample file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n_pixel</span> <span class="o">=</span> <span class="mi">100</span>
+
+<span class="n">model_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_pixel</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">ff_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_pixel</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">profile_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_pixel</span><span class="p">,</span><span class="mi">150</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;straylight/model_straylight.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">db_model</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="n">model_3d</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">db_profile</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;profile&#39;</span><span class="p">,</span> <span class="n">profile_3d</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">db_ff</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;ff&#39;</span><span class="p">,</span> <span class="n">ff_3d</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">db_model</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">model_3d</span>
+<span class="n">db_profile</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">profile_3d</span>
+<span class="n">db_ff</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">ff_3d</span>
+<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../io_files.html" class="btn btn-neutral float-left" title="4. Input/output files" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="generators.html" class="btn btn-neutral float-right" title="4.2. Generators" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

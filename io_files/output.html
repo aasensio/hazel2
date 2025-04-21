@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>4.3. Output files &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5. Data preparation" href="../preparation.html" />
+    <link rel="prev" title="4.2. Generators" href="generators.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../started/installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../started.html">2. Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">3. Configuration</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../io_files.html">4. Input/output files</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="input.html">4.1. Input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generators.html">4.2. Generators</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">4.3. Output files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#synthesis-mode">4.3.1. Synthesis mode</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#hdf5-files">4.3.1.1. HDF5 files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fits-files">4.3.1.2. FITS files</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#inversion-mode">4.3.2. Inversion mode</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">4.3.2.1. HDF5 files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">4.3.2.2. FITS files</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../preparation.html">5. Data preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">6. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../io_files.html"><span class="section-number">4. </span>Input/output files</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">4.3. </span>Output files</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/io_files/output.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="output-files">
+<span id="output"></span><h1><span class="section-number">4.3. </span>Output files<a class="headerlink" href="#output-files" title="Link to this heading">¶</a></h1>
+<p>Hazel v2.0 can accept several formats for input/output files. 1D formats are not allowed
+for output and the output is either HDF5 or FITS. 3D files also save some metadata of
+interest. In the case of HDF5, you can access this metadata using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">h5py</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;output.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">version</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+<span class="n">date</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>HDF5 files contain some attributes that can help the user reconstruct the
+specific options used for a certain run of Hazel v2.0. The following are of interest:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;configuration&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The first one defines the version of Hazel v2.0 used. The second one defines the date of creation of the file.
+The last one is a copy of the configuration file used for running the code.</p>
+<section id="synthesis-mode">
+<h2><span class="section-number">4.3.1. </span>Synthesis mode<a class="headerlink" href="#synthesis-mode" title="Link to this heading">¶</a></h2>
+<section id="hdf5-files">
+<h3><span class="section-number">4.3.1.1. </span>HDF5 files<a class="headerlink" href="#hdf5-files" title="Link to this heading">¶</a></h3>
+<p>In synthesis mode, all spectral regions are saved as HDF5 <code class="docutils literal notranslate"><span class="pre">Datasets</span></code>. Using <code class="docutils literal notranslate"><span class="pre">h5py</span></code>, they
+can be easily accessed using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">h5py</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;output.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">stokes</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">][</span><span class="s1">&#39;stokes&#39;</span><span class="p">]</span>
+<span class="n">chi2</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">][</span><span class="s1">&#39;chi2&#39;</span><span class="p">]</span>
+<span class="n">aic</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">][</span><span class="s1">&#39;aic&#39;</span><span class="p">]</span>
+<span class="n">bic</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">][</span><span class="s1">&#39;bic&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Each specific spectral region defines an HDF5 <code class="docutils literal notranslate"><span class="pre">Group</span></code>, with two different <code class="docutils literal notranslate"><span class="pre">Datasets</span></code>. The first
+one is <code class="docutils literal notranslate"><span class="pre">stokes</span></code>, which contains the emergent Stokes profiles for all the cycles and is of size <code class="docutils literal notranslate"><span class="pre">(n_pixel,n_randomizations,n_cycles,4,n_lambda)</span></code>. The
+second is the value of the <span class="math notranslate nohighlight">\(\chi^2\)</span> merit function for each cycle and is of size <code class="docutils literal notranslate"><span class="pre">(n_pixel,n_cycles)</span></code>.
+Additionally, we output the value of the <a class="reference external" href="https://en.wikipedia.org/wiki/Akaike_information_criterion">Akaike Information Criterion (AIC)</a>
+and the <a class="reference external" href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Bayesian Information Criterion (BIC)</a> that can
+be useful for model comparison.
+If you do not remember the ordering of the indices, you can check them from the file directly by invoking:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">][</span><span class="s1">&#39;stokes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dims</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">][</span><span class="s1">&#39;stokes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="fits-files">
+<h3><span class="section-number">4.3.1.2. </span>FITS files<a class="headerlink" href="#fits-files" title="Link to this heading">¶</a></h3>
+<p>TBD</p>
+</section>
+</section>
+<section id="inversion-mode">
+<h2><span class="section-number">4.3.2. </span>Inversion mode<a class="headerlink" href="#inversion-mode" title="Link to this heading">¶</a></h2>
+<section id="id1">
+<h3><span class="section-number">4.3.2.1. </span>HDF5 files<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<p>In inversion mode, apart from the synthetic Stokes profiles obtained for each spectral region,
+the model parameters of the active atmospheres are also included in the output. Each atmosphere
+defines an HDF5 <code class="docutils literal notranslate"><span class="pre">Group</span></code>, and each variable of each atmosphere is then an HDF5 <code class="docutils literal notranslate"><span class="pre">Datasets</span></code>
+inside the group. The group defines some attributes that allow the user to understand
+the inversion procedure followed by the code. Using <code class="docutils literal notranslate"><span class="pre">h5py</span></code>, they can be easily accessed using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">h5py</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;output.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;ph1&#39;</span><span class="p">][</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>
+<span class="n">T_err</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;ph1&#39;</span><span class="p">][</span><span class="s1">&#39;T_err&#39;</span><span class="p">]</span>
+<span class="n">T_nodes</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;ph1&#39;</span><span class="p">][</span><span class="s1">&#39;T_nodes&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The shape of the output is <code class="docutils literal notranslate"><span class="pre">(n_pixel,n_randomizations,n_cycles,nz)</span></code> for each specific parameter of a photospheric model
+and <code class="docutils literal notranslate"><span class="pre">(n_pixel,n_randomizations,n_cycles,1)</span></code> for each parameter of the remaining model atmospheres. The location of the nodes
+for each variable has dimensions <a href="#id2"><span class="problematic" id="id3">``</span></a>(n_pixel,n_randomizations,n_cycles)’’ and return an array with the value of log <span class="math notranslate nohighlight">\(\tau\)</span>
+for each node. Additionally, the error associated with each node can also be found. For the sake of
+clarity, the units of the output are saved as attributes. You can watch the units by invoking:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">h5py</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;output.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;ph1&#39;</span><span class="p">][</span><span class="s1">&#39;T&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;unit&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>If you do not remember the ordering of the indices, you can check them from the file directly by invoking:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;ph1&#39;</span><span class="p">][</span><span class="s1">&#39;T&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dims</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;ph1&#39;</span><span class="p">][</span><span class="s1">&#39;T&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The number of cycles, the ranges and the regularization parameters can be obtained as a dictionary using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ast</span>
+<span class="n">cycles</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;ph1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;cycles&#39;</span><span class="p">])</span>
+<span class="n">regularization</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;ph1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;regularization&#39;</span><span class="p">])</span>
+<span class="n">ranges</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;ph1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;ranges&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Finally, you can draw the tree of the output file, which surely clarifies the format by
+invoking <code class="docutils literal notranslate"><span class="pre">hazel.util.show_tree('output.h5')</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>output.h5
+    ├─ ch1
+    │  ├─ B -&gt; (1, 1, 1, 1)  float64
+    │  ├─ B_err -&gt; (1, 1, 1)  object
+    │  ├─ B_nodes -&gt; (1, 1, 1)  object
+    │  ├─ Bx -&gt; (1, 1, 1, 1)  float64
+    │  ├─ Bx_err -&gt; (1, 1, 1)  object
+    │  ├─ Bx_nodes -&gt; (1, 1, 1)  object
+    │  ├─ By -&gt; (1, 1, 1, 1)  float64
+    │  ├─ By_err -&gt; (1, 1, 1)  object
+    │  ├─ By_nodes -&gt; (1, 1, 1)  object
+    │  ├─ Bz -&gt; (1, 1, 1, 1)  float64
+    │  ├─ Bz_err -&gt; (1, 1, 1)  object
+    │  ├─ Bz_nodes -&gt; (1, 1, 1)  object
+    │  ├─ a -&gt; (1, 1, 1, 1)  float64
+    │  ├─ a_err -&gt; (1, 1, 1)  object
+    │  ├─ a_nodes -&gt; (1, 1, 1)  object
+    │  ├─ beta -&gt; (1, 1, 1, 1)  float64
+    │  ├─ beta_err -&gt; (1, 1, 1)  object
+    │  ├─ beta_nodes -&gt; (1, 1, 1)  object
+    │  ├─ deltav -&gt; (1, 1, 1, 1)  float64
+    │  ├─ deltav_err -&gt; (1, 1, 1)  object
+    │  ├─ deltav_nodes -&gt; (1, 1, 1)  object
+    │  ├─ ff -&gt; (1, 1, 1, 1)  float64
+    │  ├─ ff_err -&gt; (1, 1, 1)  object
+    │  ├─ ff_nodes -&gt; (1, 1, 1)  object
+    │  ├─ phiB -&gt; (1, 1, 1, 1)  float64
+    │  ├─ phiB_err -&gt; (1, 1, 1)  object
+    │  ├─ phiB_nodes -&gt; (1, 1, 1)  object
+    │  ├─ tau -&gt; (1, 1, 1, 1)  float64
+    │  ├─ tau_err -&gt; (1, 1, 1)  object
+    │  ├─ tau_nodes -&gt; (1, 1, 1)  object
+    │  ├─ thB -&gt; (1, 1, 1, 1)  float64
+    │  ├─ thB_err -&gt; (1, 1, 1)  object
+    │  ├─ thB_nodes -&gt; (1, 1, 1)  object
+    │  ├─ v -&gt; (1, 1, 1, 1)  float64
+    │  ├─ v_err -&gt; (1, 1, 1)  object
+    │  └─ v_nodes -&gt; (1, 1, 1)  object
+    ├─ ph2
+    │  ├─ Bx -&gt; (1, 1, 1, 73)  float64
+    │  ├─ Bx_err -&gt; (1, 1, 1)  object
+    │  ├─ Bx_nodes -&gt; (1, 1, 1)  object
+    │  ├─ By -&gt; (1, 1, 1, 73)  float64
+    │  ├─ By_err -&gt; (1, 1, 1)  object
+    │  ├─ By_nodes -&gt; (1, 1, 1)  object
+    │  ├─ Bz -&gt; (1, 1, 1, 73)  float64
+    │  ├─ Bz_err -&gt; (1, 1, 1)  object
+    │  ├─ Bz_nodes -&gt; (1, 1, 1)  object
+    │  ├─ T -&gt; (1, 1, 1, 73)  float64
+    │  ├─ T_err -&gt; (1, 1, 1)  object
+    │  ├─ T_nodes -&gt; (1, 1, 1)  object
+    │  ├─ ff -&gt; (1, 1, 1, 1)  float64
+    │  ├─ ff_err -&gt; (1, 1, 1)  object
+    │  ├─ ff_nodes -&gt; (1, 1, 1)  object
+    │  ├─ vmac -&gt; (1, 1, 1, 1)  float64
+    │  ├─ vmac_err -&gt; (1, 1, 1)  object
+    │  ├─ vmac_nodes -&gt; (1, 1, 1)  object
+    │  ├─ log_tau -&gt; (73,)  float64
+    │  ├─ v -&gt; (1, 1, 1, 73)  float64
+    │  ├─ v_err -&gt; (1, 1, 1)  object
+    │  ├─ v_nodes -&gt; (1, 1, 1)  object
+    │  ├─ vmic -&gt; (1, 1, 1, 73)  float64
+    │  ├─ vmic_err -&gt; (1, 1, 1)  object
+    │  └─ vmic_nodes -&gt; (1, 1, 1)  object
+    └─ spec1
+        ├─ aic -&gt; (1, 1, 1)  float64
+        ├─ bic -&gt; (1, 1, 1)  float64
+        ├─ chi2 -&gt; (1, 1, 1)  float64
+        ├─ stokes -&gt; (1, 1, 1, 4, 164)  float64
+        └─ wavelength -&gt; (164,)  float64
+</pre></div>
+</div>
+</section>
+<section id="id4">
+<h3><span class="section-number">4.3.2.2. </span>FITS files<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
+<p>TBD</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="generators.html" class="btn btn-neutral float-left" title="4.2. Generators" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../preparation.html" class="btn btn-neutral float-right" title="5. Data preparation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

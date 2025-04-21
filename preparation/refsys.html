@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>5.6. The reference system &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.7. Atomic models" href="atomicModels.html" />
+    <link rel="prev" title="5.5. List of photospheric lines" href="photospheric.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../started/installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../started.html">2. Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">3. Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io_files.html">4. Input/output files</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../preparation.html">5. Data preparation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="prepareData.html">5.1. Data preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/boundary_conditions.html">5.2. How to deal with boundary conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="equations.html">5.3. Basic Equations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ambiguities.html">5.4. Ambiguities in the Hanle effect in the saturation regime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="photospheric.html">5.5. List of photospheric lines</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">5.6. The reference system</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#on-disk-observation">5.6.1. On-disk observation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#off-limb-observation">5.6.2. Off-limb observation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="atomicModels.html">5.7. Atomic models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">6. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../preparation.html"><span class="section-number">5. </span>Data preparation</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">5.6. </span>The reference system</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/preparation/refsys.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="the-reference-system">
+<h1><span class="section-number">5.6. </span>The reference system<a class="headerlink" href="#the-reference-system" title="Link to this heading">¶</a></h1>
+<figure class="align-default" id="id1">
+<span id="fig-1"></span><img alt="../_images/ref-8.png" src="../_images/ref-8.png" />
+<figcaption>
+<p><span class="caption-text">Left) reference system used in Hazel. Right) configuration of the reference system choosing <span class="math notranslate nohighlight">\(\chi=0\)</span> and for different values of <span class="math notranslate nohighlight">\(\theta\)</span>.</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>We show in <a class="reference internal" href="#fig-1">Fig.1</a> the reference system used in Hazel. The capital letters <span class="math notranslate nohighlight">\(X\)</span>, <span class="math notranslate nohighlight">\(Y\)</span> and <span class="math notranslate nohighlight">\(Z\)</span> are the reference directions in the local frame, with <span class="math notranslate nohighlight">\(Z\)</span> pointing in the direction of the local vertical, and <span class="math notranslate nohighlight">\(X\)</span> and <span class="math notranslate nohighlight">\(Y\)</span> in the local horizontal plane parallel to the solar surface. The vector <span class="math notranslate nohighlight">\(\Omega\)</span> is pointing in the direction of the observer and the plane perpendicular to that vector (where <span class="math notranslate nohighlight">\(e_1\)</span> and <span class="math notranslate nohighlight">\(e_2\)</span> are defined) is the plane of the sky. The vector <span class="math notranslate nohighlight">\(\Omega\)</span> is defined by two angles: <span class="math notranslate nohighlight">\(\theta\)</span> and <span class="math notranslate nohighlight">\(\chi\)</span>. The angle <span class="math notranslate nohighlight">\(\theta\)</span> is the heliocentric angle, which is the angle between the vector <span class="math notranslate nohighlight">\(\Omega\)</span> and the local vertical. The angle <span class="math notranslate nohighlight">\(\chi\)</span> is the azimuthal angle, which is the angle between the projection of the vector <span class="math notranslate nohighlight">\(\Omega\)</span> in the local horizontal plane and the local X direction. The magnetic field has its own reference system, defined by the angles <span class="math notranslate nohighlight">\(\gamma_B\)</span> and <span class="math notranslate nohighlight">\(\phi_B\)</span> measured from the local X and Z directions, respectively.</p>
+<p>For off-limb observations, we have <span class="math notranslate nohighlight">\(\theta = 90\)</span>, while for observations on the solar disk, we have <span class="math notranslate nohighlight">\(\theta &lt; 90\)</span>. Without any lack of generality and for simplicity, <span class="math notranslate nohighlight">\(\phi\)</span> is generally taken to be 0 so that the LOS vector is contained in the Z and X plane. For example, if <span class="math notranslate nohighlight">\(\phi = 0\)</span> is chosen in an off-limb observation the <span class="math notranslate nohighlight">\(\Omega\)</span> vector lies along the X axis, while for on-disk observations <span class="math notranslate nohighlight">\(\Omega\)</span> lies somewhere between the Z and X axis, i.e., the projection of the X axis in the plane perpendicular to the LOS points towards the disk center (see right panel of <a class="reference internal" href="#fig-1">Fig.1</a>). We could also choose <span class="math notranslate nohighlight">\(\chi= 180\)</span>, then <span class="math notranslate nohighlight">\(\Omega\)</span> is between <span class="math notranslate nohighlight">\(Z\)</span> and <span class="math notranslate nohighlight">\(-X\)</span>. However, for simplicity, we choose <span class="math notranslate nohighlight">\(\chi= 0\)</span> unless we have a good reason to do it. The angle of the reference of the polarimeter is indicated with the angle <span class="math notranslate nohighlight">\(\gamma\)</span> and it is measured from the local Z.</p>
+<section id="on-disk-observation">
+<h2><span class="section-number">5.6.1. </span>On-disk observation<a class="headerlink" href="#on-disk-observation" title="Link to this heading">¶</a></h2>
+<p>Let’s consider an on-disk observation with location <span class="math notranslate nohighlight">\((x,y)\)</span>: (-300,-200) arcsec where the reference of the polarimeter (Q&gt;0) is aligned with the solar N-S direction. As mentioned before, we choose <span class="math notranslate nohighlight">\(\chi= 0\)</span> for simplicity. This means that the LOS is in between the Z and X axis, and the X axis is pointing towards the disk center. The angle <span class="math notranslate nohighlight">\(\gamma\)</span> is measured from the plane X-Z towards the <span class="math notranslate nohighlight">\(e_1\)</span> direction. Let’s calculate the angles for this observation. A sketch of the reference system is shown in the following figure:</p>
+<figure class="align-default">
+<img alt="../_images/fig_OD.png" src="../_images/fig_OD.png" />
+</figure>
+<p>We start calculating the heliocentric angle:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">theta</span> <span class="o">=</span> <span class="n">arcsin</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mf">2.</span><span class="o">+</span><span class="n">y</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span><span class="o">/</span><span class="mf">960.</span><span class="p">)</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">pi</span> <span class="o">=</span> <span class="mf">22.1</span><span class="n">d</span>
+</pre></div>
+</div>
+<p>Then we can calculate the angle from the solar equator:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">alpha</span> <span class="o">=</span> <span class="n">arctan</span><span class="p">(</span><span class="n">y</span><span class="o">/</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mf">180.</span><span class="o">/</span><span class="n">pi</span> <span class="o">=</span> <span class="mf">33.7</span><span class="n">d</span>
+</pre></div>
+</div>
+<p>Now we can calculate <span class="math notranslate nohighlight">\(\gamma\)</span> (must be measured from X to Y,
+anticlockwise). In this case, <span class="math notranslate nohighlight">\(\gamma\)</span> gives:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gamma</span> <span class="o">=</span><span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">=</span> <span class="mf">56.3</span><span class="n">d</span>
+</pre></div>
+</div>
+<p>Then, the angles for this observation are:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">theta_OBS</span> <span class="o">=</span> <span class="mf">22.1</span><span class="n">d</span>
+<span class="n">chi_OBS</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">d</span>
+<span class="n">gamma_OBS</span> <span class="o">=</span> <span class="mf">56.3</span><span class="n">d</span>
+</pre></div>
+</div>
+</section>
+<section id="off-limb-observation">
+<h2><span class="section-number">5.6.2. </span>Off-limb observation<a class="headerlink" href="#off-limb-observation" title="Link to this heading">¶</a></h2>
+<p>Let’s consider an off-limb observation with location <span class="math notranslate nohighlight">\((x,y)\)</span>: (+750,+600) arcsec where the reference of the polarimeter (Q&gt;0) is aligned with the solar N-S direction. As mentioned before, we choose <span class="math notranslate nohighlight">\(\chi= 0\)</span> for simplicity. A sketch of the reference system is shown in the following figure:</p>
+<figure class="align-default">
+<img alt="../_images/fig_OL.png" src="../_images/fig_OL.png" />
+</figure>
+<p>In this situation, the observations are at the limb, and as a consequence of choosing <span class="math notranslate nohighlight">\(\chi= 0\)</span>, the X axis is pointing towards the observer parallel to the LOS. As in the previous example, the angle <span class="math notranslate nohighlight">\(\gamma\)</span> is measured from the plane X-Z towards the <span class="math notranslate nohighlight">\(e_1\)</span> direction. We follow the same procedure as for the on-disk observation. First, we calculate the heliocentric angle:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">theta</span> <span class="o">=</span> <span class="n">arcsin</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mf">2.</span><span class="o">+</span><span class="n">y</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span><span class="o">/</span><span class="mf">960.</span><span class="p">)</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">pi</span> <span class="o">=</span> <span class="mf">90.0</span><span class="n">d</span>
+</pre></div>
+</div>
+<p>Then we can calculate the angle from the solar equator:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">alpha</span> <span class="o">=</span> <span class="n">arctan</span><span class="p">(</span><span class="n">y</span><span class="o">/</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mf">180.</span><span class="o">/</span><span class="n">pi</span> <span class="o">=</span> <span class="mf">38.7</span><span class="n">d</span>
+</pre></div>
+</div>
+<p>So the angle <span class="math notranslate nohighlight">\(\gamma\)</span> gives:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gamma</span> <span class="o">=</span><span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">=</span> <span class="mf">51.3</span><span class="n">d</span>
+</pre></div>
+</div>
+<p>Then, the angles for this observation are:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">theta_OBS</span> <span class="o">=</span> <span class="mf">90.0</span><span class="n">d</span>
+<span class="n">chi_OBS</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">d</span>
+<span class="n">Gamma_OBS</span> <span class="o">=</span> <span class="mf">51.3</span><span class="n">d</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="photospheric.html" class="btn btn-neutral float-left" title="5.5. List of photospheric lines" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="atomicModels.html" class="btn btn-neutral float-right" title="5.7. Atomic models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>5.1. Data preparation &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.2. How to deal with boundary conditions" href="../notebooks/boundary_conditions.html" />
+    <link rel="prev" title="5. Data preparation" href="../preparation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../started/installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../started.html">2. Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">3. Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io_files.html">4. Input/output files</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../preparation.html">5. Data preparation</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">5.1. Data preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/boundary_conditions.html">5.2. How to deal with boundary conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="equations.html">5.3. Basic Equations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ambiguities.html">5.4. Ambiguities in the Hanle effect in the saturation regime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="photospheric.html">5.5. List of photospheric lines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="refsys.html">5.6. The reference system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="atomicModels.html">5.7. Atomic models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">6. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../preparation.html"><span class="section-number">5. </span>Data preparation</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">5.1. </span>Data preparation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/preparation/prepareData.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="data-preparation">
+<h1><span class="section-number">5.1. </span>Data preparation<a class="headerlink" href="#data-preparation" title="Link to this heading">¶</a></h1>
+<p>Some data preprocessing has to be done in order to have reliable inversions with
+Hazel. The process takes the following steps:</p>
+<ul class="simple">
+<li><p><strong>Data normalization</strong>: the data has to be normalized to the local quiet Sun continuum. This
+is sometimes slightly difficult because the nearby Si I line has strong wings and one should
+use that pseudocontinuum. The very first step would be to remove large scale variations
+of the continuum, so that it is as flat as possible (perhaps removing fringes if you have
+any). Then, if you are only inverting He I, you have to deal with the presence of the
+nearby Si I line because the He I multiplet is in the wings of this photospheric line.
+In this version of the code you can use SIR to simuultaneously invert the photospheric
+and chromospheric lines, so you do not have to worry for decontaminating from the
+Si I line. You can even do that with the telluric contamination nearby.
+If the data is off-limb, things are typically easier because there is no continuum but
+sometimes there is some stray-light that can give you a headache. In this case,
+the input should be normalized by the peak emission.</p></li>
+<li><p><strong>Wavelength calibration</strong>: the data has to be wavelength calibrated. How to do it depends
+on whether you want an absolute calibration of velocities or not. If you want such absolute scale, the best is to do the wavelength
+calibration using telluric lines and then transform everything to the Sun using the relative
+velocity between the observed region and the Earth. If not, maybe using some weak
+surrounding photospheric lines is enough.</p></li>
+<li><p><strong>Computation of the boundary condition and heliocentric angle</strong>: every pixel should be labeled with its heliocentric angle (this is important for
+observations close to the limb, where mu is changing fast) and its boundary condition.
+So, you need to get a map of heliocentric angles together with your map of observed Stokes
+profiles. Concerning the boundary condition, it is enough to compute the ratio between
+the continuum intensity at every pixel and the average at the same heliocentric angle.</p></li>
+<li><p><strong>Rotation of the reference system</strong>: it is important to understand which is the reference direction for positive Stokes
+Q in the observations. Note that the output of the code depends on the <span class="math notranslate nohighlight">\(\gamma\)</span> angle, which exactly
+defines this positive Q direction. Two possibilities appear. The first one is to set <span class="math notranslate nohighlight">\(\gamma\)</span> in the code
+so that you understand which is the reference direction in the code and then rotate the Stokes Q and U data
+so that the reference direction for Stokes Q is aligned with that of the code. The second possibility is to
+keep the data as it is and then put the appropriate value of <span class="math notranslate nohighlight">\(\gamma\)</span> in the code to make both reference
+directions equal. This is usually not difficult, but it requires to understand which is the reference direction
+for the telescope, which is sometimes difficult to get. It is always a good advice to have the scattering
+geometry in mind and try to adapt it to your observations. See <a class="reference internal" href="equations.html#equations"><span class="std std-ref">Basic Equations</span></a> for more information.</p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../preparation.html" class="btn btn-neutral float-left" title="5. Data preparation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../notebooks/boundary_conditions.html" class="btn btn-neutral float-right" title="5.2. How to deal with boundary conditions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

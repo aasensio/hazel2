@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>6.2. Synthesis with a configuration file &mdash; Hazel 2.0beta1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=2c8e27ff"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="6.3. Inversion with a configuration file" href="conf_inversion.html" />
+    <link rel="prev" title="6.1. Synthesis in programmatic mode" href="prog_synthesis.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hazel
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../started/installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../started.html">2. Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">3. Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io_files.html">4. Input/output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparation.html">5. Data preparation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">6. Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="prog_synthesis.html">6.1. Synthesis in programmatic mode</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">6.2. Synthesis with a configuration file</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Single-pixel-synthesis">6.2.1. Single pixel synthesis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Many-pixels-synthesis">6.2.2. Many pixels synthesis</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Without-MPI">6.2.2.1. Without MPI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#With-MPI">6.2.2.2. With MPI</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="conf_inversion.html">6.3. Inversion with a configuration file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parallel.html">6.4. Inversion of a 3D cube</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parallel_synth.html">6.5. Synthesis of a 3D cube</a></li>
+<li class="toctree-l2"><a class="reference internal" href="external_optimizer.html">6.6. Using an external optimizer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../graphical.html">7. Graphical front-end</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">8. Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">9. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">10. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../disclaimer.html">11. Disclaimer</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hazel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html"><span class="section-number">6. </span>Examples</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">6.2. </span>Synthesis with a configuration file</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notebooks/conf_synthesis.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Synthesis-with-a-configuration-file">
+<h1><span class="section-number">6.2. </span>Synthesis with a configuration file<a class="headerlink" href="#Synthesis-with-a-configuration-file" title="Link to this heading">¶</a></h1>
+<p>Perhaps the simplest approach to Hazel is to use configuration files. In this notebook we show how to use a configuration file to run Hazel in different situations.</p>
+<section id="Single-pixel-synthesis">
+<h2><span class="section-number">6.2.1. </span>Single pixel synthesis<a class="headerlink" href="#Single-pixel-synthesis" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">pl</span>
+<span class="kn">import</span> <span class="nn">hazel</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">hazel</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+<span class="n">label</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="s1">&#39;Q&#39;</span><span class="p">,</span> <span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="s1">&#39;V&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/scratch/miniconda3/envs/py36/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+2018.06.07
+</pre></div></div>
+</div>
+<p>Configuration files can be used very simply by just instantiating the <code class="docutils literal notranslate"><span class="pre">Model</span></code> with a configuration file. First, let’s print the configuration file. The architecture of the file is explained in the documentation.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">cat</span> conf_single.ini
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+# Hazel configuration File
+
+[Working mode]
+Output file = output.h5
+Number of cycles = 1
+
+# Topology
+# Always photosphere and then chromosphere
+# Photospheres are only allowed to be added with a filling factor
+# Atmospheres share a filling factor if they are in parenthesis
+# Atmospheres are one after the other with the -&gt; operator
+# Atmosphere 1 = ph2 -&gt; ch1 -&gt; ch2
+
+[Spectral regions]
+    [[Region 1]]
+    Name = spec1
+    Wavelength = 10826, 10833, 150
+    Topology = ph1 -&gt; ch1 -&gt; te1
+    Stokes weights = 1.0, 1.0, 1.0, 1.0
+    LOS = 0.0, 0.0, 90.0
+    Boundary condition = 1.0, 0.0, 0.0, 0.0       # I/Ic(mu=1), Q/Ic(mu=1), U/Ic(mu=1), V/Ic(mu=1)
+    Wavelength file = &#39;observations/10830.wavelength&#39;
+    Wavelength weight file = &#39;observations/10830.weights&#39;
+    Observations file = &#39;observations/10830_stokes.1d&#39;
+    Weights Stokes I = 1.0, 0.0, 0.0, 0.0
+    Weights Stokes Q = 0.0, 0.0, 0.0, 0.0
+    Weights Stokes U = 0.0, 0.0, 0.0, 0.0
+    Weights Stokes V = 0.0, 0.0, 0.0, 0.0
+    Mask file = None
+
+[Atmospheres]
+
+    [[Photosphere 1]]
+    Name = ph1
+    Reference atmospheric model = &#39;photospheres/model_photosphere_200.1d&#39;
+    Spectral region = spec1
+    Wavelength = 10826, 10833
+    Spectral lines = 300,
+
+        [[[Ranges]]]
+        T      = 2500.0, 9000.0
+        vmic   = 0.0, 3.0
+        v      = -10.0, 10.0
+        Bx     = -1000.0, 1000.0
+        By     = -1000.0, 1000.0
+        Bz     = -1000.0, 1000.0
+        ff     = 0.0, 1.001
+
+        [[[Nodes]]]
+        T      = 1, 1, 5, 5
+        vmic   = 1, 0, 1, 1
+        v      = 0, 0, 1, 1
+        Bx     = 0, 0, 1, 1
+        By     = 0, 0, 1, 1
+        Bz     = 0, 0, 1, 1
+        ff     = 0, 0, 0, 0
+
+
+    [[Chromosphere 1]]
+    Name = ch1                                              # Name of the atmosphere component
+    Spectral region = spec1                                 # Spectral region to be used for synthesis
+    Height = 3.0                                            # Height of the slab
+    Line = 10830                                            # 10830, 5876
+    Wavelength = 10828, 10833                         # Wavelength range used for synthesis
+    Reference atmospheric model = &#39;chromospheres/model_chromosphere.1d&#39;    # File with model parameters
+
+        [[[Ranges]]]
+        Bx     = -500, 500
+        By     = -500, 500
+        Bz     = -500, 500
+        tau    = 0.1, 2.0
+        v      = -10.0, 10.0
+        deltav = 3.0, 12.0
+        beta   = 0.9, 2.0
+        a      = 0.0, 1.0
+        ff     = 0.0, 1.001
+
+
+        [[[Nodes]]]
+        Bx     = 0, 0, 1, 1
+        By     = 0, 0, 1, 1
+        Bz     = 0, 0, 1, 1
+        tau    = 0, 0, 0, 0
+        v      = 0, 0, 0, 0
+        deltav = 0, 0, 0, 0
+        beta   = 0, 0, 0, 0
+        a      = 0, 0, 0, 0
+        ff     = 0, 0, 0, 0
+
+    [[Parametric 1]]
+    Name = te1
+    Spectral region = spec1
+    Wavelength = 10828, 10833
+    Reference atmospheric model = &#39;telluric/model_telluric.1d&#39;    # File with model parameters
+    Type = Voigt           # Voigt, MoGaussian, MoVoigt
+
+        [[[Ranges]]]
+        Lambda0 = 10832.0, 10834.0
+        Sigma = 0.1, 0.5
+        Depth = 0.2, 0.8
+        a = 0.0, 1.2
+        ff = 0.0, 1.001
+
+        [[[Nodes]]]
+        Lambda0 = 0, 0, 0, 0
+        Sigma = 0, 0, 0, 0
+        Depth = 0, 0, 0, 0
+        a = 0, 0, 0, 0
+        ff = 0, 0, 0, 0
+</pre></div></div>
+</div>
+<p>We use this file and do the synthesis.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_single.ini&#39;</span><span class="p">,</span> <span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;synthesis&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">synthesize</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2018-09-07 08:50:49,092 - Adding spectral region spec1
+2018-09-07 08:50:49,094 -   - Reading wavelength axis from observations/10830.wavelength
+2018-09-07 08:50:49,097 -   - Reading wavelength weights from observations/10830.weights
+2018-09-07 08:50:49,101 -   - Using observations from observations/10830_stokes.1d
+2018-09-07 08:50:49,102 -   - No mask for pixels
+2018-09-07 08:50:49,103 -   - Using LOS [&#39;0.0&#39;, &#39;0.0&#39;, &#39;90.0&#39;]
+2018-09-07 08:50:49,104 -   - Using boundary condition [&#39;1.0&#39;, &#39;0.0&#39;, &#39;0.0&#39;, &#39;0.0&#39;]
+2018-09-07 08:50:49,105 - Using 1 cycles
+2018-09-07 08:50:49,106 - Not using randomizations
+2018-09-07 08:50:49,106 - Adding atmospheres
+2018-09-07 08:50:49,107 -   - New available photosphere : ph1
+2018-09-07 08:50:49,108 -     * Adding line : [300]
+2018-09-07 08:50:49,109 -     * Magnetic field reference frame : vertical
+2018-09-07 08:50:49,110 -     * Reading 1D model photospheres/model_photosphere_200.1d as reference
+2018-09-07 08:50:49,112 -   - New available chromosphere : ch1
+2018-09-07 08:50:49,113 -     * Adding line : 10830
+2018-09-07 08:50:49,114 -     * Magnetic field reference frame : vertical
+2018-09-07 08:50:49,115 -     * Reading 1D model chromospheres/model_chromosphere.1d as reference
+2018-09-07 08:50:49,117 -   - New available parametric : te1
+2018-09-07 08:50:49,118 -     * Reading 1D model telluric/model_telluric.1d as reference
+2018-09-07 08:50:49,119 - Adding topologies
+2018-09-07 08:50:49,120 -   - ph1 -&gt; ch1 -&gt; te1
+2018-09-07 08:50:49,120 - Removing unused atmospheres
+2018-09-07 08:50:49,121 - Number of pixels to read : 1
+</pre></div></div>
+</div>
+<p>And now do some plots.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">wavelength_axis</span> <span class="o">-</span> <span class="mi">10830</span><span class="p">,</span> <span class="n">mod</span><span class="o">.</span><span class="n">spectrum</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">stokes</span><span class="p">[</span><span class="n">i</span><span class="p">,:])</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Wavelength - 10830[$\AA$]&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">/Ic&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+
+<span class="n">pl</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/scratch/miniconda3/envs/py36/lib/python3.6/site-packages/matplotlib/figure.py:2267: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+  warnings.warn(&#34;This figure includes Axes that are not compatible &#34;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_conf_synthesis_9_1.png" src="../_images/notebooks_conf_synthesis_9_1.png" />
+</div>
+</div>
+<p>It is possible to save the output of a single pixel to a file. In this case, just open the file, do the synthesis, write to the file and close it.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_single.ini&#39;</span><span class="p">,</span> <span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;synthesis&#39;</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">open_output</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">synthesize</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">write_output</span><span class="p">()</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">close_output</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>The output file contains a dataset for the currently synthesized spectral region. Here you can see the datasets and their content:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;output.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;spec1&#39;]
+[&#39;chi2&#39;, &#39;stokes&#39;, &#39;wavelength&#39;]
+</pre></div></div>
+</div>
+<p>And then we do some plots:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">][</span><span class="s1">&#39;wavelength&#39;</span><span class="p">][:]</span> <span class="o">-</span> <span class="mi">10830</span><span class="p">,</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">][</span><span class="s1">&#39;stokes&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">i</span><span class="p">,:])</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Wavelength - 10830[$\AA$]&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">/Ic&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+
+<span class="n">pl</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/scratch/miniconda3/envs/py36/lib/python3.6/site-packages/matplotlib/figure.py:2267: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+  warnings.warn(&#34;This figure includes Axes that are not compatible &#34;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_conf_synthesis_15_1.png" src="../_images/notebooks_conf_synthesis_15_1.png" />
+</div>
+</div>
+</section>
+<section id="Many-pixels-synthesis">
+<h2><span class="section-number">6.2.2. </span>Many pixels synthesis<a class="headerlink" href="#Many-pixels-synthesis" title="Link to this heading">¶</a></h2>
+<p>Synthesizing many pixels can be exhausting and time consuming if you do it one by one. For this reason, Hazel can admit HDF5 files with different models for the synthesis.</p>
+<section id="Without-MPI">
+<h3><span class="section-number">6.2.2.1. </span>Without MPI<a class="headerlink" href="#Without-MPI" title="Link to this heading">¶</a></h3>
+<p>The simplest option is to iterate over all pixels with a single CPU. To this end, we make use of the <code class="docutils literal notranslate"><span class="pre">iterator</span></code>. You first instantiate the iterator and then pass the model to the iterator, which will take care of iterating through all pixels.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">iterator</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Iterator</span><span class="p">(</span><span class="n">use_mpi</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">rank</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_nonmpi_syn1d.ini&#39;</span><span class="p">,</span> <span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;synthesis&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">use_model</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">mod</span><span class="p">)</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">run_all_pixels</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2018-09-07 08:50:51,487 - Adding spectral region spec1
+2018-09-07 08:50:51,489 -   - Reading wavelength axis from observations/10830.wavelength
+2018-09-07 08:50:51,492 -   - Reading wavelength weights from observations/10830.weights
+2018-09-07 08:50:51,496 -   - Using observations from observations/10830_stokes.1d
+2018-09-07 08:50:51,497 -   - No mask for pixels
+2018-09-07 08:50:51,498 -   - Using LOS [&#39;0.0&#39;, &#39;0.0&#39;, &#39;90.0&#39;]
+2018-09-07 08:50:51,499 -   - Using boundary condition [&#39;1.0&#39;, &#39;0.0&#39;, &#39;0.0&#39;, &#39;0.0&#39;]
+2018-09-07 08:50:51,500 - Not using randomizations
+2018-09-07 08:50:51,501 - Adding atmospheres
+2018-09-07 08:50:51,503 -   - New available photosphere : ph1
+2018-09-07 08:50:51,504 -     * Adding line : [300]
+2018-09-07 08:50:51,505 -     * Magnetic field reference frame : vertical
+2018-09-07 08:50:51,506 -     * Reading 3D model photospheres/model_photosphere.h5 as reference
+2018-09-07 08:50:51,510 -   - New available chromosphere : ch1
+2018-09-07 08:50:51,511 -     * Adding line : 10830
+2018-09-07 08:50:51,512 -     * Magnetic field reference frame : vertical
+2018-09-07 08:50:51,513 -     * Reading 3D model chromospheres/model_chromosphere.h5 as reference
+2018-09-07 08:50:51,516 - Adding topologies
+2018-09-07 08:50:51,517 -   - ph1 -&gt; ch1
+2018-09-07 08:50:51,518 - Removing unused atmospheres
+2018-09-07 08:50:51,519 - Number of pixels to read : 2
+100%|██████████| 2/2 [00:00&lt;00:00, 13.89it/s]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;output.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;(npix,ncycle,nstokes,nlambda) -&gt; </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">][</span><span class="s1">&#39;stokes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+        <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">][</span><span class="s1">&#39;wavelength&#39;</span><span class="p">][:]</span> <span class="o">-</span> <span class="mi">10830</span><span class="p">,</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;spec1&#39;</span><span class="p">][</span><span class="s1">&#39;stokes&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">i</span><span class="p">,:])</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Wavelength - 10830[$\AA$]&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">/Ic&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="n">pl</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(npix,ncycle,nstokes,nlambda) -&gt; (2, 1, 1, 4, 150)
+</pre></div></div>
+</div>
+</section>
+<section id="With-MPI">
+<h3><span class="section-number">6.2.2.2. </span>With MPI<a class="headerlink" href="#With-MPI" title="Link to this heading">¶</a></h3>
+<p>In case you want to synthesize large maps in a supercomputer, you can use <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> and run many pixels in parallel. To this end, you pass the <code class="docutils literal notranslate"><span class="pre">use_mpi=True</span></code> keyword to the iterator. Then, this piece of code should be called with <code class="docutils literal notranslate"><span class="pre">mpiexec</span></code> to run it using MPI:</p>
+<p><code class="docutils literal notranslate"><span class="pre">mpiexec</span> <span class="pre">-n</span> <span class="pre">10</span> <span class="pre">python</span> <span class="pre">code.py</span></code></p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">iterator</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">iterator</span><span class="p">(</span><span class="n">use_mpi</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rank</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">hazel</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s1">&#39;conf_mpi_synh5.ini&#39;</span><span class="p">,</span> <span class="n">working_mode</span><span class="o">=</span><span class="s1">&#39;synthesis&#39;</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">)</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">use_model</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">mod</span><span class="p">)</span>
+<span class="n">iterator</span><span class="o">.</span><span class="n">run_all_pixels</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="prog_synthesis.html" class="btn btn-neutral float-left" title="6.1. Synthesis in programmatic mode" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="conf_inversion.html" class="btn btn-neutral float-right" title="6.3. Inversion with a configuration file" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Andres Asensio Ramos.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
