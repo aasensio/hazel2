@@ -171,7 +171,7 @@ version can be uninstalled by typing:
 
 ::
     
-    python setup.py develop --uninstall
+    python setup.py uninstall
 
 Documentation
 -------------

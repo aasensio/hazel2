@@ -1,20 +1,147 @@
 import numpy as np
 import h5py
+import os.path
 
 __all__ = ['File_observation', 'File_photosphere', 'File_chromosphere']
 
 class File_observation(object):
     """
-    Class that defines an observation. This can be used to easily save observations in the appropriate format
+    Class that defines an observation. This can be used to easily save and load 
+    observations in the appropriate format.
     """
     def __init__(self, file=None, mode='single'):
+        """
+        Initializes the observation object.
 
-        if (file is not None):
+        If a file is provided, it reads the observation data from the file. 
+        Otherwise, it initializes an empty observation object.
+
+        Parameters
+        ----------
+        file : str, optional
+            Base name of the file(s) to read the observation from (default is None).
+        mode : str, optional
+            The mode of the observation ('single' or 'multi'), used when no file is loaded.
+        """
+        if file is not None:
+            # If a file is provided, load the data from it.
+            # The read method will set attributes like self.mode, self.n_lambda, etc.
             self.obs = self.read(file)
+        else:
+            # If no file is provided, initialize with default empty values.
+            self.mode = mode
+            self.n_pixel = 0
+            self.n_lambda = 0
+            self.obs = {
+                'stokes': None, 
+                'sigma': None, 
+                'los': None, 
+                'boundary': None, 
+                'wavelength': None, 
+                'weights': None,
+                'mask': None
+            }
 
-        self.mode = mode
+    def read(self, file):
+        """
+        Read an observation from a file or a set of files.
+
+        This method automatically detects whether the observation is for a single
+        pixel (.1d file) or multiple pixels (.h5 file) and loads all associated
+        data (wavelengths, weights, etc.).
+
+        Parameters
+        ----------
+        file : str
+            The base name of the input files (without extension).
+
+        Returns
+        -------
+        dict
+            A dictionary containing all the observation data.
         
-        self.obs = {'stokes': None, 'sigma': None, 'los': None, 'boundary': None, 'wavelength': None, 'weights': None}
+        Raises
+        ------
+        FileNotFoundError
+            If the essential observation files cannot be found.
+        """
+        print(f"Reading observation from base file: {file}")
+        obs = {}
+
+        # --- Read common files (wavelength and weights) ---
+        wavelength_file = f"{file}.wavelength"
+        weights_file = f"{file}.weights"
+
+        if not os.path.exists(wavelength_file):
+            raise FileNotFoundError(f"Wavelength file not found: {wavelength_file}")
+        if not os.path.exists(weights_file):
+            raise FileNotFoundError(f"Weights file not found: {weights_file}")
+
+        print(f"Reading wavelength file: {wavelength_file}")
+        obs['wavelength'] = np.loadtxt(wavelength_file, comments='#')
+        self.n_lambda = len(obs['wavelength']) if obs['wavelength'].ndim > 0 else 1
+
+        print(f"Reading weights file: {weights_file}")
+        obs['weights'] = np.loadtxt(weights_file, comments='#')
+
+        # --- Determine mode and read mode-specific files ---
+        single_mode_file = f"{file}.1d"
+        multi_mode_file = f"{file}.h5"
+
+        if os.path.exists(single_mode_file):
+            # --- Single-pixel mode ---
+            print(f"Reading 1D Stokes file: {single_mode_file}")
+            self.mode = 'single'
+            self.n_pixel = 1
+
+            with open(single_mode_file, 'r') as f:
+                lines = f.readlines()
+            
+            # Extract data from the .1d file based on the format from the save method
+            obs['los'] = np.array(lines[1].split(), dtype=np.float64).reshape(1, 3)
+            boundary_vals = np.array(lines[4].split(), dtype=np.float64)
+            
+            # The boundary condition is a single set of values, tile it for all wavelengths
+            obs['boundary'] = np.tile(boundary_vals, (self.n_lambda, 1)).reshape(1, self.n_lambda, 4)
+
+            # Load the main data block (Stokes and sigma)
+            # The header consists of 7 lines to skip
+            data = np.loadtxt(single_mode_file, skiprows=7)
+            obs['stokes'] = data[:, 0:4].reshape(1, self.n_lambda, 4)
+            obs['sigma'] = data[:, 4:8].reshape(1, self.n_lambda, 4)
+            
+            # Mask is not saved for 1D, so we assume the pixel is active
+            obs['mask'] = np.ones((1,), dtype=np.int8)
+
+        elif os.path.exists(multi_mode_file):
+            # --- Multi-pixel mode ---
+            print(f"Reading 3D Stokes file: {multi_mode_file}")
+            self.mode = 'multi'
+            with h5py.File(multi_mode_file, 'r') as f:
+                obs['stokes'] = f['stokes'][:]
+                obs['sigma'] = f['sigma'][:]
+                obs['los'] = f['LOS'][:]
+                obs['boundary'] = f['boundary'][:]
+            
+            self.n_pixel = obs['stokes'].shape[0]
+
+            # Read the corresponding mask file if it exists
+            mask_file = f"{file}.mask"
+            if os.path.exists(mask_file):
+                print(f"Reading 3D mask file: {mask_file}")
+                with h5py.File(mask_file, 'r') as f:
+                    obs['mask'] = f['mask'][:]
+            else:
+                # If no mask file is found, assume all pixels are active
+                print("Mask file not found, creating a default mask where all pixels are active.")
+                obs['mask'] = np.ones(self.n_pixel, dtype=np.int8)
+
+        else:
+            raise FileNotFoundError(f"Could not find observation data file '{single_mode_file}' or '{multi_mode_file}'")
+
+        print("Finished reading observation.")
+        return obs
+
 
     def set_size(self, n_lambda, n_pixel=1):
         """
@@ -48,7 +175,7 @@ class File_observation(object):
 
         self.obs['weights'] = np.zeros((n_lambda,4), dtype=np.float64)
         self.obs['wavelength'] = np.zeros((n_lambda), dtype=np.float64)
-        
+
     def save(self, file):
         """
         Save the curent observation

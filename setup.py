@@ -35,6 +35,49 @@ import numpy
 import glob
 import re
 
+# Ensure FC is set, default to 'gfortran' if not present
+if 'FC' not in os.environ:
+    os.environ['FC'] = 'gfortran'
+
+
+from setuptools import Command
+
+class CleanupCommand(Command):
+    """Custom command to clean up Hazel from site-packages."""
+    description = "Remove Hazel package and all related files from site-packages"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        import sys
+        import glob, os
+        import sysconfig
+
+        site_packages = sysconfig.get_paths()["purelib"]
+        patterns = [
+            'hazel',
+            'hazel-*',
+            '__editable__*hazel*',
+            '__editable___hazel*'
+        ]
+        removed = False
+        for pattern in patterns:
+            for path in glob.glob(os.path.join(site_packages, pattern)):
+                print(f"Removing {path}")
+                if os.path.isdir(path):
+                    os.system(f'rm -rf "{path}"')
+                else:
+                    os.remove(path)
+                removed = True
+        if not removed:
+            print("No Hazel-related files found in site-packages.")
+
+
 # Adding an alternative way compatible with PEP440:
 def get_pep440version_info():
     # This version of the function uses the format {tag_name}.dev{num_commits}+{commit_hash} to
@@ -284,7 +327,8 @@ setup_config = dict(
     zip_safe=False,
     include_package_data=True,
     scripts=['gui/hazelgui'],
-    cmdclass={'build_ext': BuildExtSubclass}
+    cmdclass={'build_ext': BuildExtSubclass, 
+              'uninstall': CleanupCommand},
 )
 
 if __name__ == "__main__":    
