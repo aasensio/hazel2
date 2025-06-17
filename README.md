@@ -76,10 +76,7 @@ files described in the documentation.
 #### Single pixel mode
 
 Calculations in single-pixel mode (only one pixel synthesis/inversion) are very easy
-to do. The following code uses a configuration file that can be found in the [examples](https://github.com/aasensio/hazel2/test)
-which uses `1d` inputs files. The following one carries out synthesis:
-
-
+to do. The following code uses a configuration file that can be found in the [examples](https://github.com/aasensio/hazel2/tree/master/examples) which uses `1d` inputs files. The following one carries out synthesis:
 
     mod = hazel.Model('conf_single_syn.ini')
     mod.open_output()
