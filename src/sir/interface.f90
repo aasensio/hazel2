@@ -301,10 +301,10 @@ contains
 	end subroutine c_setpsf
 
 
-	subroutine c_synth(index, nDepth, nLambda, macroturbulence, model, stokes, colmass, error) bind(c)
+	subroutine c_synth(index, nDepth, nLambda, macroturbulence, mu, model, stokes, colmass, error) bind(c)
 	integer(c_int), intent(in) :: index, nDepth, nLambda
 	real(c_double), intent(in) :: model(8,ndepth)
-	real(c_double), intent(in) :: macroturbulence
+	real(c_double), intent(in) :: macroturbulence, mu
 	real(c_double), intent(out) :: stokes(5,nLambda), colmass(ndepth)
 	integer(c_int), intent(out) :: error
 	
@@ -384,7 +384,7 @@ contains
 
 ! offset de velocidad para perturbaciones relativas necesitamos que la velocidad sea siempre positiva        
 		voffset=-15.e5    !cm/s
-	    xmu=1.            !coseno del angulo heliocentrico	
+	    xmu=mu            !coseno del angulo heliocentrico	
 
 ! Put the model in vectorized form
 		atmosmodel(8*ntau+1) = macroturbulence
@@ -462,10 +462,10 @@ contains
 	end subroutine c_synth
 
 
-	subroutine c_synthrf(index, nDepth, nLambda, nLines, macroturbulence, model, departure, stokes, colmass, RFt, RFp, RFh, RFv, RFg, RFf, RFmic, RFmac, error) bind(c)
+	subroutine c_synthrf(index, nDepth, nLambda, nLines, macroturbulence, mu, model, departure, stokes, colmass, RFt, RFp, RFh, RFv, RFg, RFf, RFmic, RFmac, error) bind(c)
 	integer(c_int), intent(in) :: index, nDepth, nLambda, nLines
 	real(c_double), intent(in) :: model(8,ndepth), departure(2, nLines, nDepth)
-	real(c_double), intent(in) :: macroturbulence
+	real(c_double), intent(in) :: macroturbulence, mu
 	real(c_double), intent(out) :: stokes(5,nLambda), colmass(ndepth)
 	real(c_double), intent(out), dimension(4,nLambda,nDepth) :: RFt, RFp, RFh, RFv, RFg, RFf, RFmic
 	real(c_double), intent(out), dimension(4,nLambda) :: RFmac
@@ -547,7 +547,7 @@ contains
 
 ! offset de velocidad para perturbaciones relativas necesitamos que la velocidad sea siempre positiva        
 		voffset=-15.e5    !cm/s
-	    xmu=1.            !coseno del angulo heliocentrico	
+	    xmu=mu            !coseno del angulo heliocentrico	
 
 ! Put the model in vectorized form
 		atmosmodel(8*ntau+1) = macroturbulence

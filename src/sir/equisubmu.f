@@ -32,7 +32,6 @@ c        common/pinicial/pcontorno
 	g=mu*2.7414e+4		!gravedad cm/s^2 en fotosfera solar   
        	avog=6.023e23
        	cth=1.
-       	mu=1.
 
         do i=1,ntau
            tau(i)=tau1(i)+alog10(cth)  !this is the optical depth in 

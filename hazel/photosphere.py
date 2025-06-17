@@ -451,7 +451,7 @@ class SIR_atmosphere(General_atmosphere):
         # Check that parameters are inside borders by clipping inside the interval with a border of 1e-8
         if (self.working_mode == 'inversion'):
             for k, v in self.parameters.items():                
-                self.parameters[k] = np.clip(v, self.ranges[k][0] + 1e-8, self.ranges[k][1] - 1e-8)
+                self.parameters[k] = np.clip(v, self.ranges[k][0], self.ranges[k][1])
                 
 
     def get_parameters(self):                
@@ -577,7 +577,7 @@ class SIR_atmosphere(General_atmosphere):
 
             stokes, cmass, rf, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau, self.parameters['T'], 
                 self.Pe, 1e5*self.parameters['vmic'], 1e5*self.parameters['v'], self.parameters['Bx'], self.parameters['By'], 
-                self.parameters['Bz'], self.parameters['vmac'])            
+                self.parameters['Bz'], self.parameters['vmac'], self.spectrum.mu)
 
             if (error == 1):
                 raise NumericalErrorSIR()
@@ -655,17 +655,7 @@ class SIR_atmosphere(General_atmosphere):
                     if (self.n_nodes[k] > 0):
                         lower = self.ranges[k][0]
                         upper = self.ranges[k][1]
-                        rf = self.interpolate_nodes_rf(self.log_tau, self.reference[k], self.nodes[k], lower, upper)
-
-                        # import matplotlib.pyplot as pl
-                        # f, ax = pl.subplots(nrows=3, ncols=3, figsize=(10,10))
-                        # ax = ax.flatten()
-                        # for i in range(9):
-                        #     ax[i].plot(rfn[i*10,:] / self.rf_analytical['T'][0,i*10,:], color=f'C{i}')
-                        #     ax[i].set_ylim([0,2])
-                        # pl.show()
-                        # print(k)
-                        # breakpoint()
+                        rf = self.interpolate_nodes_rf(self.log_tau, self.reference[k], self.nodes[k], lower, upper)                       
 
                         self.rf_analytical[k] = np.einsum('ijk,lk->ijl', self.rf_analytical[k], rf) * i0
 
@@ -700,7 +690,7 @@ class SIR_atmosphere(General_atmosphere):
                                 vlos = self.parameters['v'][::-1] * 1e3             # in m/s
                                 prediction = self.transformer_nlte.predict(tau, ne, vturb, tt, vlos)                                
                                 self.departure[0, i, :] = 10.0**prediction[::-1, 2]
-                                self.departure[1, i, :] = 10.0**prediction[::-1, 4]                                
+                                self.departure[1, i, :] = 10.0**prediction[::-1, 4]
             
                             self.t_old = self.parameters['T']
                         
@@ -709,7 +699,8 @@ class SIR_atmosphere(General_atmosphere):
                         
             stokes, cmass, rf, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau.astype('float64'), self.parameters['T'].astype('float64'), 
                 self.Pe.astype('float64'), 1e5*self.parameters['vmic'].astype('float64'), 1e5*self.parameters['v'].astype('float64'), self.parameters['Bx'].astype('float64'), self.parameters['By'].astype('float64'), 
-                self.parameters['Bz'].astype('float64'), np.float64(self.parameters['vmac']), np.asfortranarray(self.departure.astype('float64')))
+                self.parameters['Bz'].astype('float64'), np.float64(self.parameters['vmac']), np.float64(self.spectrum.mu), np.asfortranarray(self.departure.astype('float64')))
+            
             
             # Transform SIR RFs into response functions to Bx, By and Bz.
             # To this end, we have:

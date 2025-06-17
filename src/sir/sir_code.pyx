@@ -10,9 +10,9 @@ cdef extern:
 		int *mult1, int *mult2, int *design1, int *design2, double *tam1, double *tam2, double *alfa, double *sigma,
 		double *lambda0, double *lambda1, int *nsteps)
 	void c_setpsf(int *nPSF, float *xPSF, float *yPSF)
-	void c_synthrf(int *index, int *nDepth, int *nLambda, int *nLines, double *macroturbulence, double *model, double *departure, double *stokes, double *cmass, double *rt, double *rp, double *rh,
+	void c_synthrf(int *index, int *nDepth, int *nLambda, int *nLines, double *macroturbulence, double *mu, double *model, double *departure, double *stokes, double *cmass, double *rt, double *rp, double *rh,
 		double *rv, double *rf, double *rg, double *rm, double *rmac, int *error)
-	void c_synth(int *index, int *nDepth, int *nLambda, double *macroturbulence, double *model, double *stokes, double *cmass, int *error)
+	void c_synth(int *index, int *nDepth, int *nLambda, double *macroturbulence, double *mu, double *model, double *stokes, double *cmass, int *error)
 	void c_hydroeq(int *nDepth, double *model, double *pe_out, int *error)
 
 def init_externalfile(int index, str file):
@@ -47,7 +47,7 @@ def setPSF(ar[float, ndim=1] xPSF, ar[float, ndim=1] yPSF):
 
 def synth(int index, int nLambda, ar[double, ndim=1] log_tau, ar[double, ndim=1] T, ar[double, ndim=1] Pe, ar[double, ndim=1] vmic, 
 	ar[double, ndim=1] vlos, ar[double, ndim=1] Bx, ar[double, ndim=1] By, ar[double, ndim=1] Bz, 
-	double macroturbulence):
+	double macroturbulence, double mu):
 	cdef:
 		int nDepth = len(log_tau)
 		int error
@@ -64,7 +64,7 @@ def synth(int index, int nLambda, ar[double, ndim=1] log_tau, ar[double, ndim=1]
 	model[6,:] = 180.0 / np.pi * np.arccos(Bz / (model[4,:] + 1e-8))      # Regularize in case B=0
 	model[7,:] = 180.0 / np.pi * np.arctan2(By, Bx)
 
-	c_synth(&index, &nDepth, &nLambda, &macroturbulence, &model[0,0], <double*> stokes.data, <double*> cmass.data, &error)
+	c_synth(&index, &nDepth, &nLambda, &macroturbulence, &mu, &model[0,0], <double*> stokes.data, <double*> cmass.data, &error)
 	
 	return stokes, cmass, error
 
@@ -91,7 +91,7 @@ def hydroeq(ar[double, ndim=1] log_tau, ar[double, ndim=1] T, ar[double, ndim=1]
 
 def synthRF(int index, int nLambda, ar[double, ndim=1] log_tau, ar[double, ndim=1] T, ar[double, ndim=1] Pe, ar[double, ndim=1] vmic, 
 	ar[double, ndim=1] vlos, ar[double, ndim=1] Bx, ar[double, ndim=1] By, ar[double, ndim=1] Bz, 
-	double macroturbulence, ar[double, ndim=3] departure):
+	double macroturbulence, double mu, ar[double, ndim=3] departure):
 
 	cdef:
 		int nDepth = len(log_tau)
@@ -118,7 +118,7 @@ def synthRF(int index, int nLambda, ar[double, ndim=1] log_tau, ar[double, ndim=
 	model[6,:] = 180.0 / np.pi * np.arccos(Bz / (model[4,:] + 1e-8))
 	model[7,:] = 180.0 / np.pi * np.arctan2(By, Bx)
 
-	c_synthrf(&index, &nDepth, &nLambda, &nLines, &macroturbulence, &model[0,0], &departure[0,0,0], <double*> stokes.data, <double*> cmass.data, <double*> rt.data, <double*> rp.data, 
+	c_synthrf(&index, &nDepth, &nLambda, &nLines, &macroturbulence, &mu, &model[0,0], &departure[0,0,0], <double*> stokes.data, <double*> cmass.data, <double*> rt.data, <double*> rp.data, 
 		<double*> rh.data, <double*> rv.data, <double*> rf.data, <double*> rg.data, <double*> rm.data, 
 		<double*> rmac.data, &error)
 	

@@ -6,8 +6,12 @@ tmp = hazel.tools.File_photosphere(mode='single')
 tmp.set_default(n_pixel=1, default='hsra')
 tmp.save('hsra')
 
+tmp = hazel.tools.File_photosphere(mode='single')
+tmp.set_default(n_pixel=1, default='falc82')
+tmp.save('falc')
 
-mod = hazel.Model('conf_8542_10827_inv.ini', working_mode='inversion', verbose=3)
+
+mod = hazel.Model('../../configurations/conf_8542_10827_inv.ini', working_mode='inversion', verbose=3)
 mod.read_observation()
 mod.open_output()
 mod.invert()
@@ -30,9 +34,12 @@ ax[1].plot(mod.spectrum['spec2'].wavelength_axis, mod.spectrum['spec2'].stokes[0
 pl.show()
 
 hsra = np.loadtxt('hsra.1d', skiprows=4)
+falc = np.loadtxt('falc.1d', skiprows=4)
 fig, ax = pl.subplots()
 ax.plot(hsra[:, 0], hsra[:, 1], label='hsra')
+ax.plot(falc[:, 0], falc[:, 1], label='falc')
 ax.plot(mod.atmospheres['ph1'].log_tau, mod.atmospheres['ph1'].parameters['T'], label='ph1')
 ax.plot(mod.atmospheres['ph2'].log_tau, mod.atmospheres['ph2'].parameters['T'], label='ph2')
+ax.set_ylim([3000, 10000])
 
 ax.legend()

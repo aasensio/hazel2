@@ -189,13 +189,33 @@ class General_atmosphere(object):
         """
 
         # Transform parameters to  unbounded domain
-        if (self.working_mode == 'inversion'):
+        if (self.working_mode == 'inversion'):                        
             if (check_borders):
-                for k, v in self.parameters.items():                    
+                self.logger.warning(f"Checking initial parameters of atmosphere {self.name} against ranges.")
+                for k, v in self.parameters.items():                         
                     if (self.ranges[k] is not None):
                         if (not np.all(np.logical_and(v >= self.ranges[k][0], v <= self.ranges[k][1]))):
-                            raise Exception("Parameter {0} of atmosphere {1} is outside ranges".format(k, self.name))
+                            raise Exception(f" * Parameter '{k}' of atmosphere {self.name} is outside ranges [{self.ranges[k][0]}, {self.ranges[k][1]}].")
+                        if np.any(v == self.ranges[k][0]):
+                            self.logger.warning(f"   -> Parameter '{k}' of atmosphere {self.name} is at the lower border of the range [{self.ranges[k][0]}, {self.ranges[k][1]}].")
+                            new_value = 0.9 * self.ranges[k][0] + 0.1 * self.ranges[k][1]
+                            if isinstance(v, np.ndarray):
+                                ind = np.where(v == self.ranges[k][0])[0]                            
+                                self.parameters[k][ind] = new_value  # Avoid singularities in the transformation
+                            else:
+                                self.parameters[k] = new_value
+                            self.logger.warning(f"   -> Setting it to '{k}'={new_value} to avoid singularities in the transformation")
+                        if np.any(v == self.ranges[k][1]):
+                            self.logger.warning(f"   -> Parameter '{k}' of atmosphere {self.name} is at the upper border of the range [{self.ranges[k][0]}, {self.ranges[k][1]}].")
+                            new_value = 0.1 * self.ranges[k][0] + 0.9 * self.ranges[k][1]
+                            if isinstance(v, np.ndarray):
+                                ind = np.where(v == self.ranges[k][0])[0]                            
+                                self.parameters[k][ind] = new_value  # Avoid singularities in the transformation
+                            else:
+                                self.parameters[k] = new_value
+                            self.logger.warning(f"   -> Setting it to '{k}'={new_value} to avoid singularities in the transformation")
 
+                                            
             self.to_transformed()
 
         self.reference = copy.deepcopy(self.parameters)

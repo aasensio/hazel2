@@ -190,7 +190,7 @@ c   iprimera=1
         x(1)=g*(tau(1)-tau(2))*2.3025851         
         do i=1,ntau-1                             
            x(i+1)=g*(tau(i)-tau(i+1))*2.3025851   
-        end do                                   
+        end do                              
 
 c leemos la atmosfera
         do i=1,ntau
