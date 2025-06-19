@@ -1131,16 +1131,16 @@ c convolucionamos con la macro (y la PSF si existe)
 	      end do
 	   end do
 	      
-         !   call deconv(stok,1,ntls,npass,dlamda0s,dlamdas,macro)
-         !   call deconv2(rmac,1,ntls,npass,dlamda0s,dlamdas,macro)
+            call deconv(stok,1,ntls,npass,dlamda0s,dlamdas,macro)
+            call deconv2(rmac,1,ntls,npass,dlamda0s,dlamdas,macro)
 
-         !   call deconRF(mnodos(1),rt,dlamda0s,ntotal4,macro)
-         !   call deconRF(mnodos(2),rp,dlamda0s,ntotal4,macro)
-         !   call deconRF(mnodos(3),rm,dlamda0s,ntotal4,macro)
-         !   call deconRF(mnodos(4),rh,dlamda0s,ntotal4,macro)
-         !   call deconRF(mnodos(5),rv,dlamda0s,ntotal4,macro)
-         !   call deconRF(mnodos(6),rg,dlamda0s,ntotal4,macro)
-         !   call deconRF(mnodos(7),rf,dlamda0s,ntotal4,macro)
+            call deconRF(mnodos(1),rt,dlamda0s,ntotal4,macro)
+            call deconRF(mnodos(2),rp,dlamda0s,ntotal4,macro)
+            call deconRF(mnodos(3),rm,dlamda0s,ntotal4,macro)
+            call deconRF(mnodos(4),rh,dlamda0s,ntotal4,macro)
+            call deconRF(mnodos(5),rv,dlamda0s,ntotal4,macro)
+            call deconRF(mnodos(6),rg,dlamda0s,ntotal4,macro)
+            call deconRF(mnodos(7),rf,dlamda0s,ntotal4,macro)
         end if
         
         return

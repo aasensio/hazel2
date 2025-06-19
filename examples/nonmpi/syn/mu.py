@@ -24,3 +24,13 @@ for i in range(len(theta)):
     mod.synthesize()
     ax.plot(mod.spectrum['spec1'].stokes[0, :] / mod.spectrum['spec1'].stokes[0, 0])
     # ax.plot(mod.spectrum['spec1'].stokes[0, :])
+
+
+fig, ax = pl.subplots()
+
+for i in range(len(theta)):
+    mod.spectrum['spec1'].set_los([0.0, 0.0, 90.0])
+    mod.atmospheres['ph1'].set_parameters(model, 1.0, 1.0*i)
+    mod.synthesize()
+    ax.plot(mod.spectrum['spec1'].stokes[0, :] / mod.spectrum['spec1'].stokes[0, 0])
+    # ax.plot(mod.spectrum['spec1'].stokes[0, :])
