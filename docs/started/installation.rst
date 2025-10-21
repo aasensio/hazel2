@@ -24,7 +24,7 @@ For a Linux OS, type:
 
     conda create -n hazel_env python=3.10
     conda activate hazel_env
-    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpich mpi4py configobj gfortran setuptools asciitree
+    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpich mpi4py configobj gfortran setuptools asciitree gcc_linux-64
 
 A different version of Python can be installed in the environment. For Mac OS, type:
 
@@ -135,7 +135,7 @@ All of them can be installed in Anaconda with:
 
 ::
 
-    conda install numpy h5py scipy astropy mpi4py configobj tqdm pyqt maplotlib
+    conda install numpy h5py scipy astropy mpi4py configobj tqdm pyqt matplotlib
 
 Container
 ---------
@@ -179,7 +179,7 @@ For the compilation of the docs, you will need the following packages:
 
 ::
   
-    sphinx numpydoc sphinx_rtd_theme nbsphinx
+    conda install sphinx numpydoc sphinx_rtd_theme nbsphinx pandoc
 
 Issues
 ------

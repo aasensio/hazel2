@@ -35,3 +35,10 @@ dynamic = ["license", "keywords", "dependencies", "version"]
 [project.urls]
 "Homepage" = "https://github.com/aasensio/hazel2"
 "Bug Tracker" = "https://github.com/aasensio/hazel2/issues"
+
+[tool.cibuildwheel]
+build = "cp313-*"
+build-frontend = "build"
+skip = "pp* *-musllinux_*"
+build-verbosity = 3
+manylinux-x86_64-image = "quay.io/pypa/manylinux_2_28_x86_64"

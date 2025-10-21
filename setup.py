@@ -177,7 +177,7 @@ list_files = glob.glob(path+'/*.f*')
 list_files.append(path+'/sir_code.pyx')
 
 lib_sir = MyExtension('hazel.codes.sir_code',
-                  libraries=["gfortran"],
+                  libraries=["gfortran", "mvec"],
                   library_dirs=get_libgfortran_dir(),
                   sources=list_files,
                   include_dirs=[numpy.get_include()])
@@ -190,7 +190,7 @@ list_files = [path+'/vars.f90', path+'/singleton.f90', path+'/maths.f90', path+'
 			path+'/hazel_py.f90', path+'/hazel_code.pyx']
 
 lib_hazel = MyExtension('hazel.codes.hazel_code',
-                  libraries=["gfortran"],
+                  libraries=["gfortran", "mvec"],
                   library_dirs=get_libgfortran_dir(),
                   sources=list_files,
                   include_dirs=[numpy.get_include()])

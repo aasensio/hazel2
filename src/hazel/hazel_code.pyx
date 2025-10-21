@@ -7,7 +7,7 @@ cdef extern:
 		double* boundaryInput, int* transInput, double* anglesInput, int* nLambdaInput, double* lambdaAxisInput,
 		double* dopplerWidthInput, double* dampingInput, double* dopplerVelocityInput, 
 		double* betaInput, double* nbarInput, double* omegaInput, 
-		double* wavelengthOutput, double* stokesOutput, int* error)
+		double* wavelengthOutput, double* stokesOutput, double* epsOutput, double* etaOutput, double* rhoOutput, int* error)
 		
 	void c_init()
 	void c_exit(int *index)
@@ -49,16 +49,19 @@ def _synth(int index=1, ar[double,ndim=1] B1Input=zeros(3), double hInput=3.0,
 	cdef:
 		ar[double,ndim=1] wavelengthOutput = empty(nLambdaInput, order='F')
 		ar[double,ndim=2] stokesOutput = empty((4,nLambdaInput), order='F')
+		ar[double,ndim=2] epsOutput = empty((4,nLambdaInput), order='F')
+		ar[double,ndim=2] etaOutput = empty((4,nLambdaInput), order='F')
+		ar[double,ndim=2] rhoOutput = empty((3,nLambdaInput), order='F')
 		int error
 		
 	c_hazel(&index, &B1Input[0], &hInput, &tau1Input,  
 		&boundaryInput[0,0], &transInput, &anglesInput[0], &nLambdaInput, &lambdaAxisInput[0],  
 		&dopplerWidthInput, &dampingInput, &dopplerVelocityInput, 
 		&betaInput, &nbarInput[0], &omegaInput[0], <double*> wavelengthOutput.data, 
-		<double*> stokesOutput.data, &error)
-    
-	return wavelengthOutput, stokesOutput, error
-	
+		<double*> stokesOutput.data, <double*> epsOutput.data, <double*> etaOutput.data, <double*> rhoOutput.data, &error)
+
+	return wavelengthOutput, stokesOutput, epsOutput, etaOutput, rhoOutput, error
+
 def _init():
 	"""
 	Initialize and do some precomputations that can be avoided in the subsequent calls to the synthesis

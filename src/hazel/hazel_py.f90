@@ -13,7 +13,7 @@ contains
 subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     transInput, anglesInput, nLambdaInput, lambdaAxisInput, dopplerWidthInput, dampingInput, &
     dopplerVelocityInput, betaInput, nbarInput, omegaInput, &
-    wavelengthOutput, stokesOutput, error) bind(c)
+    wavelengthOutput, stokesOutput, epsOutput, etaOutput, rhoOutput, error) bind(c)
 
     integer(c_int), intent(in) :: transInput, index
     integer(c_int), intent(in) :: nLambdaInput
@@ -23,7 +23,8 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     real(c_double), intent(in), dimension(4) :: nbarInput, omegaInput
     real(c_double), intent(in) :: hInput, tau1Input, dopplerWidthInput, dampingInput, dopplerVelocityInput, betaInput
     real(c_double), intent(out), dimension(nLambdaInput) :: wavelengthOutput
-    real(c_double), intent(out), dimension(4,nLambdaInput) :: stokesOutput
+    real(c_double), intent(out), dimension(4,nLambdaInput) :: stokesOutput, epsOutput, etaOutput
+    real(c_double), intent(out), dimension(3,nLambdaInput) :: rhoOutput
     integer(c_int), intent(out) :: error
 
     integer :: n, nterml, ntermu
@@ -155,7 +156,22 @@ subroutine c_hazel(index, B1Input, hInput, tau1Input, boundaryInput, &
     do i = 1, 4
         stokesOutput(i,:) = inversion(index)%stokes_unperturbed(i-1,:)
     enddo
-    
+
+    ! Output the absorption/emission/magneto-optical coefficients
+    epsOutput(1,:) = fixed(index)%epsI
+    epsOutput(2,:) = fixed(index)%epsQ
+    epsOutput(3,:) = fixed(index)%epsU
+    epsOutput(4,:) = fixed(index)%epsV
+
+    etaOutput(1,:) = fixed(index)%etaI
+    etaOutput(2,:) = fixed(index)%etaQ
+    etaOutput(3,:) = fixed(index)%etaU
+    etaOutput(4,:) = fixed(index)%etaV
+
+    rhoOutput(1,:) = fixed(index)%rhoQ
+    rhoOutput(2,:) = fixed(index)%rhoU
+    rhoOutput(3,:) = fixed(index)%rhoV
+
     wavelengthOutput = observation(index)%wl + fixed(index)%wl
 
     params(index)%dopplerVelocityInput_old = dopplerVelocityInput

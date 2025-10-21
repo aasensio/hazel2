@@ -457,15 +457,15 @@ class Hazel_atmosphere(General_atmosphere):
         # emission because the value of the source function, a consequence of the pumping radiation,
         # is too large. In this case, one needs to use beta to reduce the value of the source function.
         nbarInput = np.ones(4) * ratio
-        omegaInput = np.zeros(4)
+        omegaInput = np.zeros(4)        
         
         args = (self.index, B1Input, hInput, tau1Input, boundaryInput, transInput, 
             anglesInput, nLambdaInput, lambdaAxisInput, dopplerWidthInput, 
             dampingInput, dopplerVelocityInput, 
             betaInput, nbarInput, omegaInput)
-            
-        l, stokes, error = hazel_code._synth(*args)
-        
+
+        l, stokes, self.eps, self.eta, self.rho, error = hazel_code._synth(*args)
+
         if (error == 1):
             raise NumericalErrorHazel()
 
