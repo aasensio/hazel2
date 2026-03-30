@@ -72,7 +72,7 @@ use a different environment), the sources can be installed by cloning this repos
 ::
     
     git clone https://github.com/aasensio/hazel2
-    python setup.py install
+    pip install .
 
 Do not forget to often pull from the `repository <https://github.com/aasensio/hazel2>`_ and recompile
 the code by typing the following from the location of the sources:
@@ -80,7 +80,7 @@ the code by typing the following from the location of the sources:
 ::
     
     git pull
-    python setup.py install
+    pip install .
     
 Improvements are pushed all the time in |hazel2|. In case you do not want
 to reinstall it after every pull or you are in fact helping on the development
@@ -89,8 +89,9 @@ of the code, you can also install it in develop mode:
 ::
     
     git pull
-    python setup.py develop
+    pip install -e .
 
+If you want a verbose installation, you can also add the ``-v`` or ``-vvv`` flags to the previous command.
 
 ..
     Using pip (not preferred until a stable version is published)
