@@ -187,7 +187,7 @@ lib_sir = MyExtension('hazel.codes.sir_code',
 path = pathGlobal+"hazel"
 list_files = [path+'/vars.f90', path+'/singleton.f90', path+'/maths.f90', path+'/allen.f90', path+'/svd.f90', 
             path+'/io_py.f90', path+'/SEE.f90', path+'/rt_coef.f90', path+'/synth.f90',
-			path+'/transfer.f90', path+'/hazel_py.f90', path+'/hazel_code.pyx']
+			path+'/hazel_py.f90', path+'/hazel_code.pyx']
 
 lib_hazel = MyExtension('hazel.codes.hazel_code',
                   libraries=["gfortran", "mvec"],

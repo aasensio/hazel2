@@ -8,11 +8,10 @@ contains
 !------------------------------------------------------------
 ! Fill and solve the SEE equations
 !------------------------------------------------------------
-    subroutine fill_SEE(in_params, in_fixed, component, external)
+    subroutine fill_SEE(in_params, in_fixed, component)
     type(variable_parameters) :: in_params
     type(fixed_parameters) :: in_fixed
     integer :: nt, component, error
-    logical :: external
     real(kind=8) :: nbar, w, gei(0:2)
     integer :: n, lu2, ll2, i
     integer :: ju2, jup2, ku, ku2, qu, qu2, iru, j, jl2, jlp2, ql, ql2, irl, kl, kl2, kr, kr2
@@ -42,13 +41,8 @@ contains
         do nt = 1, atom%ntran
             
 ! Use Allen's tables to calculate the anisotropy and the value of nbar
-            if (external) then
-                nbar = nbarExternal(nt)
-                w = omegaExternal(nt)
-            else
-                nbar = nbar_allen(atom%wavelength(nt), in_fixed, in_params, atom%reduction_factor(nt) * in_fixed%nbarExternal(nt))
-                w = omega_allen(atom%wavelength(nt), in_fixed, in_params, atom%reduction_factor_omega(nt) * in_fixed%omegaExternal(nt))
-            endif
+            nbar = nbar_allen(atom%wavelength(nt), in_fixed, in_params, atom%reduction_factor(nt) * in_fixed%nbarExternal(nt))
+            w = omega_allen(atom%wavelength(nt), in_fixed, in_params, atom%reduction_factor_omega(nt) * in_fixed%omegaExternal(nt))
 
 ! Neglect the influence of anisotropy
             if (in_fixed%use_atomic_pol == -1) then
@@ -926,7 +920,7 @@ contains
             print *, 'Not implemented'
 !           call slapsolver(SEE_A,SEE_b)
         end select
-        
+
     
 ! Write the solution
 !       open(unit=7,file='tanti.res',status='unknown')

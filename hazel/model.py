@@ -1,5 +1,4 @@
 from hazel.chromosphere import Hazel_atmosphere
-from hazel.rt_chromosphere import Hazel_atmosphereRT
 from hazel.photosphere import SIR_atmosphere
 from hazel.parametric import Parametric_atmosphere
 from hazel.stray import Straylight_atmosphere
@@ -248,12 +247,6 @@ class Model(object):
                     self.logger.info('  - New available chromosphere : {0}'.format(value['name']))
 
                 self.add_chromosphere(value)
-
-            if ('rt' in key):
-                if (self.verbose >= 1):
-                    self.logger.info('  - New available chromosphere RT : {0}'.format(value['name']))
-
-                self.add_chromosphereRT(value)
                                             
             if ('parametric' in key):
                 if (self.verbose >= 1):
@@ -826,114 +819,6 @@ class Model(object):
         
         # Set values of parameters
         self.atmospheres[atm['name']].height = float(atm['height'])
-
-        if ('nodes' in atm):
-            for k, v in atm['nodes'].items():
-                for k2, v2 in self.atmospheres[atm['name']].parameters.items():
-                    if (k.lower() == k2.lower()):                            
-                        self.atmospheres[atm['name']].cycles[k2] = hazel.util.toint(v)
-
-    def add_chromosphereRT(self, atmosphere):
-        """
-        Programmatically add a chromosphere
-
-        Parameters
-        ----------
-        atmosphere : dict
-            Dictionary containing the following data
-            'Name', 'Spectral region', 'Height', 'Line', 'Wavelength', 'Reference atmospheric model',
-            'Ranges', 'Nodes'
-
-        Returns
-        -------
-        None
-        """
-
-        # Make sure that all keys of the input dictionary are in lower case
-        # This is irrelevant if a configuration file is used because this has been
-        # already done
-        atm = hazel.util.lower_dict_keys(atmosphere)
-        
-        self.atmospheres[atm['name']] = Hazel_atmosphereRT(working_mode=self.working_mode, name=atm['name'])
-
-        if ('wavelength' not in atm):
-            atm['wavelength'] = None
-        elif (atm['wavelength'] == 'None'):
-            atm['wavelength'] = None
-
-        if (atm['wavelength'] is not None):
-            wvl_range = [float(k) for k in atm['wavelength']]
-        else:
-            wvl_range = [np.min(self.spectrum[atm['spectral region']].wavelength_axis), np.max(self.spectrum[atm['spectral region']].wavelength_axis)]
-
-        self.atmospheres[atm['name']].add_active_line(line=atm['line'], spectrum=self.spectrum[atm['spectral region']], 
-            wvl_range=np.array(wvl_range))
-
-        if ('reference frame' in atm):
-            if (atm['reference frame'] == 'line-of-sight'):
-                self.atmospheres[atm['name']].reference_frame = 'line-of-sight'
-            if (atm['reference frame'] == 'vertical'):
-                self.atmospheres[atm['name']].reference_frame = 'vertical'
-        else:
-            self.atmospheres[atm['name']].reference_frame = 'vertical'
-
-        if (self.verbose >= 1):
-            self.logger.info("    * Adding line : {0}".format(atm['line']))
-            self.logger.info("    * Magnetic field reference frame : {0}".format(self.atmospheres[atm['name']].reference_frame))
-
-        if ('ranges' in atm):
-            for k, v in atm['ranges'].items():
-                for k2, v2 in self.atmospheres[atm['name']].parameters.items():
-                    if (k.lower() == k2.lower()):
-                        if (v == 'None'):
-                            self.atmospheres[atm['name']].ranges[k2] = None
-                        else:
-                            self.atmospheres[atm['name']].ranges[k2] = hazel.util.tofloat(v)
-
-        for k2, v2 in self.atmospheres[atm['name']].parameters.items():
-            self.atmospheres[atm['name']].regularization[k2] = None
-
-        if ('regularization' in atm):
-            for k, v in atm['regularization'].items():                
-                for k2, v2 in self.atmospheres[atm['name']].parameters.items():                    
-                    if (k.lower() == k2.lower()):                        
-                        if (v == 'None'):
-                            self.atmospheres[atm['name']].regularization[k2] = None
-                        else:
-                            self.atmospheres[atm['name']].regularization[k2] = v
-        
-        if ('coordinates for magnetic field vector' in atm):
-            if (atm['coordinates for magnetic field vector'] == 'cartesian'):
-                self.atmospheres[atm['name']].coordinates_B = 'cartesian'
-            if (atm['coordinates for magnetic field vector'] == 'spherical'):
-                self.atmospheres[atm['name']].coordinates_B = 'spherical'
-        else:
-            self.atmospheres[atm['name']].coordinates_B = 'cartesian'
-
-        self.atmospheres[atm['name']].select_coordinate_system()
-
-        if (self.verbose >= 1):            
-            self.logger.info("    * Magnetic field coordinates system : {0}".format(self.atmospheres[atm['name']].coordinates_B))            
-
-
-        if ('reference atmospheric model' in atm):
-            my_file = Path(self.root + atm['reference atmospheric model'])
-            if (not my_file.exists()):
-                raise FileExistsError("Input file {0} for atmosphere {1} does not exist.".format(my_file, atm['name']))
-
-            self.atmospheres[atm['name']].load_reference_model(self.root + atm['reference atmospheric model'], self.verbose)
-
-            if (self.atmospheres[atm['name']].model_type == '3d'):
-                self.atmospheres[atm['name']].n_pixel = self.atmospheres[atm['name']].model_handler.get_npixel()
-        
-        # Set values of parameters
-        self.atmospheres[atm['name']].height = float(atm['height'])
-
-        # Number of slabs, dz and number of quadrature points for the photosphere and the chromosphere
-        self.atmospheres[atm['name']].nslabs = int(atm['nslabs'])
-        self.atmospheres[atm['name']].dz = float(atm['dz'])
-        self.atmospheres[atm['name']].nquad_photosphere = int(atm['nquad_photosphere'])
-        self.atmospheres[atm['name']].nquad_nophotosphere = int(atm['nquad_nophotosphere'])
 
         if ('nodes' in atm):
             for k, v in atm['nodes'].items():
