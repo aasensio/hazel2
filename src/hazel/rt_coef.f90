@@ -7,14 +7,14 @@ contains
 !------------------------------------------------------------
 ! Calculate the radiative transfer coefficients
 !------------------------------------------------------------
-	subroutine calc_rt_coef(in_params,in_fixed,in_observation,component)
+	subroutine calc_rt_coef(in_params,in_fixed,in_observation,component,rt)
 	type(variable_parameters) :: in_params
 	type(fixed_parameters) :: in_fixed
 	type(type_observation) :: in_observation
 	integer :: k, q, p, j, component
 	real(kind=8) :: theta, chi, gamma, sign
 	complex(kind=8) :: tr(0:2,-2:2,0:3), trp(0:2,-2:2,0:3), ii, suma
-	real(kind=8) :: onum0, dnum, adamp, reduc(0:2,-2:2,-2:2)
+	real(kind=8) :: onum0, dnum, dnum_freq, adamp, reduc(0:2,-2:2,-2:2)
 	integer, allocatable :: njlevu(:), njlevl(:)
 	real(kind=8), allocatable :: autl(:,:), autu(:,:), cl(:,:,:), cu(:,:,:), e0(:)
 	real(kind=8), allocatable :: tmp1(:), tmp2(:), onum(:)
@@ -27,7 +27,8 @@ contains
 	integer :: klmax, kl, kl2, nfreq, tnumber
 	
 	integer :: values_start(8), values_end(8)
-	real(kind=8) :: start_time, end_time
+	real(kind=8) :: start_time, end_time, normalization
+	logical :: rt
 	
 	
 		ii = cmplx(0.d0,1.d0)
@@ -128,6 +129,14 @@ contains
 			dnum = in_params%vdopp*1.d5 / (in_fixed%wl*1.d-8*PC)		! Delta w = v_th / (lambda*c) (from eqs. 5.43 of the book)
 		else
 			dnum = in_params%vdopp2*1.d5 / (in_fixed%wl*1.d-8*PC)		! Delta w = v_th / (lambda*c) (from eqs. 5.43 of the book)
+		endif
+		
+		dnum_freq = dnum * PC
+		
+		if (rt) then
+			normalization = dnum_freq * SQRTPI
+		else
+			normalization = 1.d0
 		endif
 		
 		adamp = in_params%damping
@@ -419,7 +428,7 @@ contains
 											      		do jsmallu = 1, njlevu(mu2)
 												      		onum0 = autu(mu2,jsmallu) - autl(ml2,jsmalll)
 ! Evaluate the profile
-																prof = profile(adamp,(onum0-onum-va)/dnum)																
+																prof = profile(adamp,(onum0-onum-va)/dnum) / normalization
 
 												      		x7=cl(ml2,jsmalll,jl2)*cl(ml2,jsmalll,jlp2)*&
 																	cu(mu2,jsmallu,ju2)*cu(mu2,jsmallu,jus2)
@@ -533,7 +542,7 @@ contains
 											      			do jsmallu = 1, njlevu(mu2)
 												      			onum0 = autu(mu2,jsmallu) - autl(ml2,jsmalll)
 	! Evaluate the profile
-																	prof = profile(adamp,(onum0-onum-va)/dnum)
+																	prof = profile(adamp,(onum0-onum-va)/dnum) / normalization
 
 												      			x7=cl(ml2,jsmalll,jl2)*cl(ml2,jsmalll,jls2)*&
 																		cu(mu2,jsmallu,ju2)*cu(mu2,jsmallu,jup2)
@@ -607,20 +616,40 @@ contains
 		in_fixed%Blu = Blu
 		in_fixed%Aul = aesto(in_fixed%nemiss)
 		in_fixed%nu = freq
+
+		if (rt) then
+
+			in_fixed%eta_stim = PH * freq / (4.d0*PI) * Bul * in_fixed%epsilon
+			in_fixed%eta_stim_zeeman = PH * freq / (4.d0*PI) * Bul * in_fixed%epsilon_zeeman
+
+			in_fixed%epsilon = PH * freq / (4.d0*PI) * Bul * (2.d0*PH*freq**3) / PC**2 * in_fixed%epsilon
+			in_fixed%epsilon_zeeman = PH * freq / (4.d0*PI) * Bul * (2.d0*PH*freq**3) / PC**2 * in_fixed%epsilon_zeeman
+
+			in_fixed%eta = PH * freq / (4.d0*PI) * Bul * in_fixed%eta
+			in_fixed%eta_zeeman = PH * freq / (4.d0*PI) * Bul * in_fixed%eta_zeeman
+
+			in_fixed%mag_opt = PH * freq / (4.d0*PI) * Bul * in_fixed%mag_opt
+			in_fixed%mag_opt_zeeman = PH * freq / (4.d0*PI) * Bul * in_fixed%mag_opt_zeeman
+
+			in_fixed%mag_opt_stim = PH * freq / (4.d0*PI) * Bul * in_fixed%mag_opt_stim
+			in_fixed%mag_opt_stim_zeeman = PH * freq / (4.d0*PI) * Bul * in_fixed%mag_opt_stim_zeeman
+
+		else
 		
 ! Stimulated emission
 !		eta_stim = PH * freq / (4.d0*PI) * Bul * epsilon
 !		eta_stim_zeeman = PH * freq / (4.d0*PI) * Bul * epsilon_zeeman		
 		
-		in_fixed%eta_stim = in_fixed%epsilon
-		in_fixed%eta_stim_zeeman = in_fixed%epsilon_zeeman		
+			in_fixed%eta_stim = in_fixed%epsilon
+			in_fixed%eta_stim_zeeman = in_fixed%epsilon_zeeman		
 
 ! Emissivity
 !		epsilon = PH * freq / (4.d0*PI) * Bul * (2.d0*PH*freq**3) / PC**2 * epsilon
 !		epsilon_zeeman = PH * freq / (4.d0*PI) * Bul * (2.d0*PH*freq**3) / PC**2 * epsilon_zeeman
 				
-		in_fixed%epsilon = (2.d0*PH*freq**3) / PC**2 * in_fixed%epsilon
-		in_fixed%epsilon_zeeman = (2.d0*PH*freq**3) / PC**2 * in_fixed%epsilon_zeeman
+			in_fixed%epsilon = (2.d0*PH*freq**3) / PC**2 * in_fixed%epsilon
+			in_fixed%epsilon_zeeman = (2.d0*PH*freq**3) / PC**2 * in_fixed%epsilon_zeeman
+		endif
 
 ! Absorption
 !		eta = PH * freq / (4.d0*PI) * Bul * eta

@@ -20,3 +20,4 @@ for i in range(4):
     ax.flat[i].plot(mod.spectrum['spec1'].stokes[i,:])
     ax.flat[i].plot(mod_rt.spectrum['spec1'].stokes[i,:])
 pl.show()
+pl.pause(2)

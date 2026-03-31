@@ -28,32 +28,6 @@ contains
 	end subroutine set_slab
 
 !------------------------------------------------------------
-! Initialize the values of nbar and omega to Allen's values
-!------------------------------------------------------------
-    subroutine initialize_slab_tensors(input_model_file, slab, in_params, in_fixed)
-    type(variable_parameters) :: in_params
-    type(fixed_parameters) :: in_fixed
-    character(len=120) :: input_model_file
-    type(type_slab) :: slab
-    integer :: nt
-    integer :: n, nterml, ntermu
-    real(kind=8) :: ae, wavelength
-                
-        open(unit=12,file=input_model_file,action='read',status='old')
-        call lb(12,file_pointer)
-        
-        read(12,*) ntran
-
-        do nt = 1, ntran
-            read(12,*) n, nterml, ntermu, ae, wavelength            
-            slab%nbar(:,nt) = nbar_allen(wavelength, in_fixed, in_params, 1.d0)
-            slab%omega(:,nt) = omega_allen(wavelength, in_fixed, in_params, 1.d0)
-        enddo
-        close(12)
-
-    end subroutine initialize_slab_tensors
-
-!------------------------------------------------------------
 ! Do a synthesis calling the appropriate routines
 !------------------------------------------------------------
     subroutine do_transfer(in_params, in_fixed, in_observation, output, error)
@@ -128,8 +102,11 @@ contains
             
 ! Initialize the values of nbar and omega to the Allen's values to start iterating
 ! Use Allen's tables to calculate the anisotropy and the value of nbar
-            slab%nbar(:,i) = nbar_allen(atom%wavelength(i), in_fixed, in_params, atom%reduction_factor(i) * in_fixed%nbarExternal(i))
-            slab%omega(:,i) = omega_allen(atom%wavelength(i), in_fixed, in_params, atom%reduction_factor_omega(i) * in_fixed%omegaExternal(i))
+            ! slab%nbar(:,i) = nbar_allen(atom%wavelength(i), in_fixed, in_params, atom%reduction_factor(i) * in_fixed%nbarExternal(i))
+            ! slab%omega(:,i) = omega_allen(atom%wavelength(i), in_fixed, in_params, atom%reduction_factor_omega(i) * in_fixed%omegaExternal(i))
+
+            slab%nbar(:,i) = nbar_allen(atom%wavelength(i), in_fixed, in_params, 1.d0)
+            slab%omega(:,i) = omega_allen(atom%wavelength(i), in_fixed, in_params, 1.d0)
 
         enddo
 
@@ -241,7 +218,6 @@ contains
 ! Solve the RT equation and calculate the tensors J00 and J20
             do i = 1, in_fixed%no
                 call calculate_tensors(slab, i, J00_nu(:,i), J20_nu(:,i), in_fixed%gammad)
-                ! pause
             enddo
             
 ! Carry out the integration over frequency weighted by the line profile                
@@ -304,14 +280,14 @@ contains
             epsV = in_fixed%epsilon(3,:)
             
 ! Absorption including stimulated emission
-            etaI = in_fixed%eta(0,:) - use_stim_emission_RT * in_fixed%eta_stim(0,:)
-            etaQ = in_fixed%eta(1,:) - use_stim_emission_RT * in_fixed%eta_stim(1,:)
-            etaU = in_fixed%eta(2,:) - use_stim_emission_RT * in_fixed%eta_stim(2,:)
-            etaV = in_fixed%eta(3,:) - use_stim_emission_RT * in_fixed%eta_stim(3,:)
+            etaI = in_fixed%eta(0,:) - in_fixed%eta_stim(0,:)
+            etaQ = in_fixed%eta(1,:) - in_fixed%eta_stim(1,:)
+            etaU = in_fixed%eta(2,:) - in_fixed%eta_stim(2,:)
+            etaV = in_fixed%eta(3,:) - in_fixed%eta_stim(3,:)
 
-            rhoQ = in_fixed%mag_opt(1,:) - use_stim_emission_RT * in_fixed%mag_opt_stim(1,:)
-            rhoU = in_fixed%mag_opt(2,:) - use_stim_emission_RT * in_fixed%mag_opt_stim(2,:)
-            rhoV = in_fixed%mag_opt(3,:) - use_stim_emission_RT * in_fixed%mag_opt_stim(3,:)
+            rhoQ = in_fixed%mag_opt(1,:) - in_fixed%mag_opt_stim(1,:)
+            rhoU = in_fixed%mag_opt(2,:) - in_fixed%mag_opt_stim(2,:)
+            rhoV = in_fixed%mag_opt(3,:) - in_fixed%mag_opt_stim(3,:)
             
 
 ! Set emission vector at this shell

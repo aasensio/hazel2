@@ -1,12 +1,13 @@
 module vars
 implicit none
 
-	real(kind=8), parameter :: PK = 1.3806503d-16, UMA = 1.66053873d-24, PC = 2.99792458d10
+   real(kind=8), parameter :: PK = 1.3806503d-16, UMA = 1.66053873d-24, PC = 2.99792458d10
    real(kind=8), parameter :: PH = 6.62606876d-27, PHK = PH / PK, PHC = 2.d0 * PH / PC**2
    real(kind=8), parameter :: PME = 9.10938188d-28, PE = 4.8032d-10, PI = 3.14159265359d0
    real(kind=8), parameter :: PHC2 = 2.d0 * PH * PC**2, OPA = PI * PE**2 / (PME * PC)
    real(kind=8), parameter :: SQRTPI = 1.77245385091d0, EARTH_SUN_DISTANCE = 1.495979d13
    real(kind=8), parameter :: LARMOR = PE/(4.d0*PI*PME*PC), PMP = 1.67262158d-24, RSUN = 976.6d0
+   real(kind=8), parameter :: J00_FACTOR = 0.5d0, J20_FACTOR = 1.d0 / (4.d0*sqrt(2.d0))
 	
 	
 	integer :: isti, idep, imag, linear_solver, use_paschen_back, verbose_mode, working_mode, synthesis_mode
@@ -28,6 +29,7 @@ implicit none
 !	integer :: nemiss, no
 	
 	real(kind=8) :: dr(-1:1,-1:1), di(-1:1,-1:1)
+	real(kind=8) :: identity_4x4(4,4)
 	
 	real(kind=8), allocatable :: SEE_A(:,:), SEE_b(:), SEE_mag_A(:,:)
 	integer, allocatable :: ntab(:), ktab(:), qtab(:), irtab(:), j2tab(:), jp2tab(:), ntlsto(:), ntusto(:)
@@ -39,7 +41,7 @@ implicit none
 	
 	type variable_parameters
 		real(kind=8) :: bgauss, thetabd, chibd, vdopp, dtau, delta_collision, vmacro, damping, beta, height, vdopp2, beta2
-		real(kind=8) :: dtau2, vmacro2, bgauss2, thetabd2, chibd2, ff
+		real(kind=8) :: dtau2, vmacro2, bgauss2, thetabd2, chibd2, ff, logn
 		integer :: n_inverted, n_total, nslabs
 		integer, pointer :: inverted(:)
 		real(kind=8), dimension(3) :: B1Input_old
@@ -49,10 +51,10 @@ implicit none
 	end type variable_parameters
 	
 	type fixed_parameters
-		real(kind=8) :: thetad, chid, gammad, omin, omax, wl
+		real(kind=8) :: thetad, chid, gammad, omin, omax, wl, dz
 		real(kind=8) :: thetad_old, chid_old, gammad_old
 		real(kind=8) :: Stokes_incident(0:3), Aul, Bul, Blu, nu
-		integer :: no, nemiss, use_atomic_pol, total_forward_modeling
+		integer :: no, nemiss, use_atomic_pol, total_forward_modeling, nslabs, nmus_photo, nmus_nophoto
 		integer :: pix_syn_id, col_syn_id, nlambda_syn_id, lambda_syn_id, map_syn_id, syn_id
 		integer :: pix_par_id, col_par_id, map_par_id, par_id
 		integer :: pix_error_id, col_error_id, map_error_id, error_id
@@ -76,7 +78,7 @@ implicit none
 		integer :: n, npixel, ny, pix_id, col_id, nlambda_id, lambda_id, map_id, obs_id, nstokespar_id
 		character(len=4) :: normalization
 		integer :: observation_format, boundary_id, height_id, obstheta_id, obsgamma_id, parsInit_id, normalization_id
-		real(kind=8), pointer :: wl(:), stokes(:,:), sigma(:,:)
+		real(kind=8), pointer :: wl(:), stokes(:,:), sigma(:,:), freq(:)
 	end type type_observation
 	
 	type type_inversion
@@ -92,6 +94,15 @@ implicit none
 		integer, pointer :: nterml(:), ntermu(:)
 		real(kind=8), pointer :: ae(:), wavelength(:), reduction_factor(:), reduction_factor_omega(:), j10(:)
 	end type atom_model
+
+	type type_slab
+		integer :: nshells, nmus_photosphere, nmus_nophotosphere, nmus
+		real(kind=8), pointer :: nbar(:,:), omega(:,:), Lambda(:), z(:), density(:), tau(:,:)
+		real(kind=8), pointer :: boundary(:,:,:), nbar_old(:,:), omega_old(:,:)
+		real(kind=8), pointer :: emission_vector(:,:,:)
+		real(kind=8), pointer :: propagation_matrix(:,:,:,:)
+		real(kind=8), pointer :: mus(:), weights(:), velocity(:), B(:), thB(:), chiB(:)
+	end type type_slab
 		
 	
 	type(variable_parameters) :: params(100), trial, scaled_params, errorparams
@@ -111,6 +122,8 @@ implicit none
 	real(kind=8) :: chi2Level
 
 	integer :: error_code
+
+	real(kind=8), dimension(4) :: nbarExternal, omegaExternal
 
 	
 	

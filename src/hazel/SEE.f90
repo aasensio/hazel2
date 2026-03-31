@@ -8,7 +8,7 @@ contains
 !------------------------------------------------------------
 ! Fill and solve the SEE equations
 !------------------------------------------------------------
-    subroutine fill_SEE(in_params, in_fixed, component)
+    subroutine fill_SEE(in_params, in_fixed, component, rt)
     type(variable_parameters) :: in_params
     type(fixed_parameters) :: in_fixed
     integer :: nt, component, error
@@ -20,6 +20,7 @@ contains
     real(kind=8) :: y0, y1, y2, y3, y4, j10
     real(kind=8) :: flarmor, bcoeff, d, thb, chb
     integer, allocatable :: indx(:)
+    logical :: rt
 
 
         if (verbose_mode == 1) then
@@ -40,9 +41,14 @@ contains
 
         do nt = 1, atom%ntran
             
+            if (rt) then
+                nbar = nbarExternal(nt)
+                w = omegaExternal(nt)
+            else
 ! Use Allen's tables to calculate the anisotropy and the value of nbar
-            nbar = nbar_allen(atom%wavelength(nt), in_fixed, in_params, atom%reduction_factor(nt) * in_fixed%nbarExternal(nt))
-            w = omega_allen(atom%wavelength(nt), in_fixed, in_params, atom%reduction_factor_omega(nt) * in_fixed%omegaExternal(nt))
+                nbar = nbar_allen(atom%wavelength(nt), in_fixed, in_params, atom%reduction_factor(nt) * in_fixed%nbarExternal(nt))
+                w = omega_allen(atom%wavelength(nt), in_fixed, in_params, atom%reduction_factor_omega(nt) * in_fixed%omegaExternal(nt))
+            endif
 
 ! Neglect the influence of anisotropy
             if (in_fixed%use_atomic_pol == -1) then

@@ -156,5 +156,26 @@ contains
 		omega_allen = (3.d0*K-J) / (2.d0*J) * reduction_factor
 		
 	end function omega_allen	
+
+!------------------------------------------------------------
+! Return the continuum intensity from Allen's data
+!------------------------------------------------------------
+	function I0_allen(lmb, mu)
+	real(kind=8) :: I0_allen
+	real(kind=8) :: lmb, mu, l(1), t(1), delta, reduction_factor
+	integer :: i
+	real(kind=8) :: u1, u2, I0, sg, cg, a0, a1, a2, b0, b1, b2, J, K
+
+		l(1) = lmb
+		call lin_interpol(allen_ic(:,1), allen_ic(:,2), l, t)
+		I0 = t(1) * 1.d10
+		call lin_interpol(allen_cl(:,1), allen_cl(:,2), l, t)
+		u1 = t(1)
+		call lin_interpol(allen_cl(:,1), allen_cl(:,3), l, t)
+		u2 = t(1)
+		
+		I0_allen = I0*(1.d0 - u1 - u2 + u1 * mu + u2 * mu**2)
+		
+	end function I0_allen
 	
 end module allen
