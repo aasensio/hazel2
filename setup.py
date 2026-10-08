@@ -34,6 +34,7 @@ import sys
 import numpy
 import glob
 import re
+import tempfile
 
 # Ensure FC is set, default to 'gfortran' if not present
 if 'FC' not in os.environ:
@@ -142,6 +143,7 @@ class MyExtension(Extension):
         Extension.__init__(self, *args, **kwargs)        
         self.export_symbols = finallist(self.export_symbols)        
 
+
 def get_libgfortran_dir():
     """
     Helper function returning the library directory of libgfortran. Useful
@@ -162,6 +164,30 @@ def get_libgfortran_dir():
             continue
         return []
 
+def can_link_library(lib_name, lib_dirs=None):
+    """Attempt to actually link against lib_name using setuptools' compiler."""
+    from distutils.ccompiler import new_compiler
+
+    compiler = new_compiler()
+    if lib_dirs:
+        for d in lib_dirs:
+            if d and os.path.exists(d):
+                compiler.add_library_dir(d)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        c_file = os.path.join(tmpdir, "test.c")
+        with open(c_file, "w") as f:
+            f.write("int main() { return 0; }\n")
+
+        try:
+            objs = compiler.compile([c_file], output_dir=tmpdir)
+            compiler.link_shared_lib(
+                objs, os.path.join(tmpdir, "test.so"), libraries=[lib_name]
+            )
+            return True
+        except Exception:
+            return False
+
 pathGlobal = "src/"
 
 # Monkey patch the compilers to treat Fortran files like C files.
@@ -176,8 +202,14 @@ path = pathGlobal+"sir"
 list_files = glob.glob(path+'/*.f*')
 list_files.append(path+'/sir_code.pyx')
 
+is_mvec = can_link_library("mvec", get_libgfortran_dir())
+if not is_mvec:
+    libs = ["gfortran"]
+else:
+    libs = ["gfortran", "mvec"]
+
 lib_sir = MyExtension('hazel.codes.sir_code',
-                  libraries=["gfortran"],#, "mvec"],
+                  libraries=libs,
                   library_dirs=get_libgfortran_dir(),
                   sources=list_files,
                   include_dirs=[numpy.get_include()])
@@ -190,7 +222,7 @@ list_files = [path+'/vars.f90', path+'/singleton.f90', path+'/maths.f90', path+'
 			path+'/hazel_py.f90', path+'/hazel_code.pyx']
 
 lib_hazel = MyExtension('hazel.codes.hazel_code',
-                  libraries=["gfortran"],#, "mvec"],
+                  libraries=libs,
                   library_dirs=get_libgfortran_dir(),
                   sources=list_files,
                   include_dirs=[numpy.get_include()])
