@@ -63,8 +63,6 @@ contains
 		allocate(slab%chiB(slab%nshells))
 
         call set_slab(slab, in_params%logn, in_fixed%dz, in_params%vmacro, in_params%bgauss, in_params%thetabd, in_params%chibd)
-
-        print *, 'Starting transfer...'
         
         allocate(J00_nu(slab%nshells,in_fixed%no))
         allocate(J20_nu(slab%nshells,in_fixed%no))
@@ -109,7 +107,7 @@ contains
             slab%omega(:,i) = omega_allen(atom%wavelength(i), in_fixed, in_params, 1.d0)
 
         enddo
-
+        
 ! Boundary conditions
         slab%boundary = 0.d0
         do i = 1, slab%nmus_photosphere
@@ -128,14 +126,14 @@ contains
         vmacro = in_params%vmacro
         in_params%vmacro = 0.0
         
-        do while (loop_iteration < 50 .and. relative_change(1) > 0.001d0 .and. relative_change(2) > 0.001d0)
+        do while (loop_iteration < 50 .and. (relative_change(1) > 0.001d0 .or. relative_change(2) > 0.001d0))
 
             do loop_shell = 1, slab%nshells
             
 ! Fill and solve the statistical equilibrium equations
-                in_params%bgauss = slab%B(i)
-                in_params%thetabd = slab%thB(i)
-                in_params%chibd = slab%chiB(i)
+                in_params%bgauss = slab%B(loop_shell)
+                in_params%thetabd = slab%thB(loop_shell)
+                in_params%chibd = slab%chiB(loop_shell)
 
                 nbarExternal = slab%nbar(loop_shell,:)
                 omegaExternal = slab%omega(loop_shell,:)
@@ -222,8 +220,8 @@ contains
             
 ! Carry out the integration over frequency weighted by the line profile                
             do i = 1, slab%nshells
-                J00(i) = J00(i) + int_tabulated(-in_observation%freq, J00_nu(i,:)*prof)
-                J20(i) = J20(i) + int_tabulated(-in_observation%freq, J20_nu(i,:)*prof)
+                J00(i) = int_tabulated(-in_observation%freq, J00_nu(i,:)*prof)
+                J20(i) = int_tabulated(-in_observation%freq, J20_nu(i,:)*prof)
             enddo
                                     
 ! Put the new values of nbar and omega
@@ -232,8 +230,9 @@ contains
 
             loop_iteration = loop_iteration + 1
 
-            relative_change(1) = maxval(abs(slab%nbar - slab%nbar_old) / abs(slab%nbar))
-            relative_change(2) = maxval(abs(slab%omega - slab%omega_old) / abs(slab%omega))
+! Only transition 1 is updated, so check convergence only there (omega of other transitions can be zero)
+            relative_change(1) = maxval(abs(slab%nbar(:,1) - slab%nbar_old(:,1)) / abs(slab%nbar(:,1)))
+            relative_change(2) = maxval(abs(slab%omega(:,1) - slab%omega_old(:,1)) / abs(slab%omega(:,1)))
 
             slab%nbar_old = slab%nbar
             slab%omega_old = slab%omega
@@ -316,6 +315,19 @@ contains
             write(18,*) maxval(slab%tau(i,:)), slab%nbar(i,1), slab%omega(i,1)
         enddo
         close(18)
+
+
+        deallocate(slab%nbar)
+        deallocate(slab%omega)
+
+        deallocate(slab%nbar_old)
+        deallocate(slab%omega_old)
+
+        deallocate(slab%emission_vector)
+        deallocate(slab%propagation_matrix)
+        deallocate(slab%boundary)
+
+        deallocate(slab%tau)
 
         deallocate(J00_nu)
         deallocate(J20_nu)
@@ -401,23 +413,23 @@ contains
             J20(kfrom-kstep) = J20(kfrom-kstep) + J20_FACTOR * slab%weights(loop_mu) * &
                 ( (3.d0*mu**2-1.d0) * Inten(1) - 3.d0*(1.d0-mu**2) * Qtilde )
             
-            do k = kfrom, kto
+            do k = kfrom, kto, kstep
 
-! Parabolic short-characteristics
+! Parabolic short-characteristics (km is upwind, kp is downwind along the ray)
                 if (k /= kto) then
-                    km = k - 1
-                    kp = k + 1
-                    chim = slab%propagation_matrix(1,1,km,freq)                    
-                    chi0 = slab%propagation_matrix(1,1,k,freq)                    
-                    chip = slab%propagation_matrix(1,1,kp,freq)                    
+                    km = k - kstep
+                    kp = k + kstep
+                    chim = slab%propagation_matrix(1,1,km,freq)
+                    chi0 = slab%propagation_matrix(1,1,k,freq)
+                    chip = slab%propagation_matrix(1,1,kp,freq)
                     sm = source_vector(:,km)
                     s0 = source_vector(:,k)
                     sp = source_vector(:,kp)
                     dm = dabs((slab%z(k) - slab%z(km)) / mu)
                     dp = dabs((slab%z(kp) - slab%z(k)) / mu)
                 else
-! Linear short-characteristics            
-                    km = k - 1
+! Linear short-characteristics
+                    km = k - kstep
                     chim = slab%propagation_matrix(1,1,km,freq)
                     chi0 = slab%propagation_matrix(1,1,k,freq)
                     chip = 0.d0
@@ -427,10 +439,10 @@ contains
                     dm = dabs((slab%z(k) - slab%z(km)) / mu)
                     dp = 0.d0
                 endif
-                    
+
                 dtm = 0.5d0 * (chim + chi0) * dm
                 dtp = 0.5d0 * (chi0 + chip) * dp
-                                   
+
                 if (dtm >= 1.d-4) then
                     exu = dexp(-dtm)
                 else
@@ -597,6 +609,7 @@ contains
 
         deallocate(ab_matrix)
         deallocate(source_vector)
+        deallocate(total_tau)
 
     end subroutine synthesize_stokes
 

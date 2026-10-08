@@ -20,3 +20,8 @@ for i in range(4):
     ax.flat[i].plot(mod.spectrum['spec1'].stokes[i,:])
     ax.flat[i].plot(mod_rt.spectrum['spec1'].stokes[i,:])
 pl.show()
+
+jbar = np.loadtxt('Jbar_tensors.dat', skiprows=1)
+fig, ax = pl.subplots(nrows=1, ncols=2, figsize=(10,5))
+ax[0].plot(jbar[:,0], jbar[:,1], label='Jbar')
+ax[1].plot(jbar[:,0], jbar[:,2], label='Jbar_Q')

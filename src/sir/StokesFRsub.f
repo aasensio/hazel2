@@ -176,14 +176,14 @@ c nble es el numero de componentes de cada linea
               taue(i)=10.**(tau(i))
            end do
            do i=1,ntau-1
-              deltae(i)=taue(i)-taue(i+1)
+              deltae(i)=(taue(i)-taue(i+1)) !/xmu
            end do 
            do i=2,ntau
-              deltai(i)=(tau(i)-tau(i-1))/2.0
-              delt2i(i)=deltai(i)*deltai(i)/3.0
+              deltai(i)=(tau(i)-tau(i-1))/2.0 !/xmu
+              delt2i(i)=deltai(i)*deltai(i)/3.0 !/xmu
            end do
 
-           paso=tau(1)-tau(2)
+           paso=(tau(1)-tau(2)) !/xmu
 c   iprimera=1
         end if
 

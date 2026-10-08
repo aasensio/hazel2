@@ -253,7 +253,7 @@ class Model(object):
                 if (self.verbose >= 1):
                     self.logger.info('  - New available RT chromosphere : {0}'.format(value['name']))
 
-                self.add_chromosphere_rt(value)
+                self.add_chromosphere_rt(value)                
                                             
             if ('parametric' in key):
                 if (self.verbose >= 1):

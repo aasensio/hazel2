@@ -696,7 +696,7 @@ class SIR_atmosphere(General_atmosphere):
                         
             else:
                 self.departure = np.ones((2, len(self.lines), len(self.log_tau)))
-                        
+            
             stokes, cmass, rf, error = sir_code.synthRF(self.index, self.n_lambda, self.log_tau.astype('float64'), self.parameters['T'].astype('float64'), 
                 self.Pe.astype('float64'), 1e5*self.parameters['vmic'].astype('float64'), 1e5*self.parameters['v'].astype('float64'), self.parameters['Bx'].astype('float64'), self.parameters['By'].astype('float64'), 
                 self.parameters['Bz'].astype('float64'), np.float64(self.parameters['vmac']), np.float64(self.spectrum.mu), np.asfortranarray(self.departure.astype('float64')))
