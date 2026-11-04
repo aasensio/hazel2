@@ -36,7 +36,7 @@ contains
       theta = in_fixed%thetad * PI/180.d0
       chi = in_fixed%chid * PI/180.d0
       gamma = in_fixed%gammad * PI/180.d0
-		
+	  		
 ! The emission and absorption formulae are given in the magnetic reference frame. Therefore, we need the rho^K_Q
 ! calculated in this reference frame. The T^K_Q(i,Omega) tensor thus gives us the emission and absorption coefficient
 ! when observing at a given direction Omega with respect with the magnetic field reference frame. Then, it is composed
@@ -131,10 +131,10 @@ contains
 			dnum = in_params%vdopp2*1.d5 / (in_fixed%wl*1.d-8*PC)		! Delta w = v_th / (lambda*c) (from eqs. 5.43 of the book)
 		endif
 		
-		dnum_freq = dnum * PC
-		
+
+! This integrates the profile to 1 in frequency		
 		if (rt) then
-			normalization = dnum_freq * SQRTPI
+			normalization = dnum * PC * SQRTPI
 		else
 			normalization = 1.d0
 		endif
@@ -213,7 +213,7 @@ contains
 		rhol = 0.d0
 		if (.not.allocated(rhoml)) allocate(rhoml(0:j2max,0:j2max,0:kmax,-qmax:qmax))
 		rhoml = 0.d0
-		
+				
 		do i = 1, nrhos
 			if (ntab(i) == nu) then
 				if (irtab(i) == 1) then
@@ -276,34 +276,34 @@ contains
 		enddo
 		
 ! We write the upper level rho^K_Q(J,J') in the reference frame of the vertical
-! 		open(unit=12, file=output_rho_vertical_upper,action='write',status='replace')
-! 		do j2 = jminu2, jmaxu2, 2
-! 			do jp2 = jminu2, jmaxu2, 2
-! 				kmin = abs(jp2-j2)/2
-! 				kmax = (jp2+j2) / 2
-! 				do k = kmin, kmax
-! 					do q = -k, k
-! 						write(12,FMT='(4(1X,I3),2(1x,e15.7))') j2, jp2, k, q, real(rhou(j2,jp2,k,q)), aimag(rhou(j2,jp2,k,q))
-! 					enddo
-! 				enddo
-! 			enddo
-! 		enddo
-! 		close(12)
+		open(unit=12, file='upper',action='write',status='replace')
+		do j2 = jminu2, jmaxu2, 2
+			do jp2 = jminu2, jmaxu2, 2
+				kmin = abs(jp2-j2)/2
+				kmax = (jp2+j2) / 2
+				do k = kmin, kmax
+					do q = -k, k
+						write(12,FMT='(4(1X,I3),2(1x,e15.7))') j2, jp2, k, q, real(rhou(j2,jp2,k,q)), aimag(rhou(j2,jp2,k,q))
+					enddo
+				enddo
+			enddo
+		enddo
+		close(12)
 		
 ! We write the lower level rho^K_Q(J,J') in the reference frame of the vertical
-! 		open(unit=12, file=output_rho_vertical_lower,action='write',status='replace')
-! 		do j2 = jminl2, jmaxl2, 2
-! 			do jp2 = jminl2, jmaxl2, 2
-! 				kmin = abs(jp2-j2)/2
-! 				kmax = (jp2+j2) / 2
-! 				do k = kmin, kmax
-! 					do q = -k, k
-! 						write(12,FMT='(4(1X,I3),2(1x,e15.7))') j2, jp2, k, q, real(rhol(j2,jp2,k,q)), aimag(rhol(j2,jp2,k,q))
-! 					enddo
-! 				enddo
-! 			enddo
-! 		enddo
-! 		close(12)		
+		open(unit=12, file='lower',action='write',status='replace')
+		do j2 = jminl2, jmaxl2, 2
+			do jp2 = jminl2, jmaxl2, 2
+				kmin = abs(jp2-j2)/2
+				kmax = (jp2+j2) / 2
+				do k = kmin, kmax
+					do q = -k, k
+						write(12,FMT='(4(1X,I3),2(1x,e15.7))') j2, jp2, k, q, real(rhol(j2,jp2,k,q)), aimag(rhol(j2,jp2,k,q))
+					enddo
+				enddo
+			enddo
+		enddo
+		close(12)		
 		
 ! We transform the density matrix to the reference system of the magnetic field. We perform a rotation of the 
 ! density matrix elements following eq. 3.98 of Landi & Landolfi (2004)
@@ -348,34 +348,34 @@ contains
 		enddo
 		
 ! We write the upper level rho^K_Q(J,J') in the reference frame of the vertical
-! 		open(unit=12, file=output_rho_magnetic_upper,action='write',status='replace')
-! 		do j2 = jminu2, jmaxu2, 2
-! 			do jp2 = jminu2, jmaxu2, 2
-! 				kmin = abs(jp2-j2)/2
-! 				kmax = (jp2+j2) / 2
-! 				do k = kmin, kmax
-! 					do q = -k, k
-! 						write(12,FMT='(4(1X,I3),2(1x,e15.7))') j2, jp2, k, q, real(rhomu(j2,jp2,k,q)), aimag(rhomu(j2,jp2,k,q))
-! 					enddo
-! 				enddo
-! 			enddo
-! 		enddo
-! 		close(12)
+		! open(unit=12, file='upper',action='write',status='replace')
+		! do j2 = jminu2, jmaxu2, 2
+		! 	do jp2 = jminu2, jmaxu2, 2
+		! 		kmin = abs(jp2-j2)/2
+		! 		kmax = (jp2+j2) / 2
+		! 		do k = kmin, kmax
+		! 			do q = -k, k
+		! 				write(12,FMT='(4(1X,I3),2(1x,e15.7))') j2, jp2, k, q, real(rhomu(j2,jp2,k,q)), aimag(rhomu(j2,jp2,k,q))
+		! 			enddo
+		! 		enddo
+		! 	enddo
+		! enddo
+		! close(12)
 		
 ! We write the lower level rho^K_Q(J,J') in the reference frame of the vertical
-! 		open(unit=12, file=output_rho_magnetic_lower,action='write',status='replace')
-! 		do j2 = jminl2, jmaxl2, 2
-! 			do jp2 = jminl2, jmaxl2, 2
-! 				kmin = abs(jp2-j2)/2
-! 				kmax = (jp2+j2) / 2
-! 				do k = kmin, kmax
-! 					do q = -k, k
-! 						write(12,FMT='(4(1X,I3),2(1x,e15.7))') j2, jp2, k, q, real(rhoml(j2,jp2,k,q)), aimag(rhoml(j2,jp2,k,q))
-! 					enddo
-! 				enddo
-! 			enddo
-! 		enddo
-! 		close(12)		
+		! open(unit=12, file='lower',action='write',status='replace')
+		! do j2 = jminl2, jmaxl2, 2
+		! 	do jp2 = jminl2, jmaxl2, 2
+		! 		kmin = abs(jp2-j2)/2
+		! 		kmax = (jp2+j2) / 2
+		! 		do k = kmin, kmax
+		! 			do q = -k, k
+		! 				write(12,FMT='(4(1X,I3),2(1x,e15.7))') j2, jp2, k, q, real(rhoml(j2,jp2,k,q)), aimag(rhoml(j2,jp2,k,q))
+		! 			enddo
+		! 		enddo
+		! 	enddo
+		! enddo
+		! close(12)		
 
 !-------------------------------------------------------------------------
 ! And we perform the summation given by eq. 7.47 of Landi & Landolfi (2004)
@@ -675,25 +675,16 @@ contains
 !-------------------------------------------------------------------------		
 ! And finally write the emission coefficients		
 !-------------------------------------------------------------------------				
-! 		open(unit=12,file=output_rtcoef,action='write',status='replace')
+! 		open(unit=12,file='rtcoef',action='write',status='replace')
 ! 		write(12,FMT='(A,56X,A,48X,A,48X,A,48X,A,48X,A,48X,A,48X)') 'Lambda','epsilon','eta_A','eta_S','rho_A','rho_S'
 ! 		do i = 1, in_fixed%no			
 ! 			write(12,FMT='(2(1X,E15.8),4(1X,E12.5),A2,4(1X,E12.5),A2,4(1X,E12.5),A2,3(1X,E12.5),A2,3(1X,E12.5))') &
 ! 				-1.d-8 * in_fixed%wl**2 * onum(i), &
-! 				-1.d-8 * in_fixed%wl**2 * onum(i) + in_fixed%wl, (epsilon(j,i),j=0,3), '  ',(eta(j,i),j=0,3), '  ',&
-! 				(eta_stim(j,i),j=0,3),'  ', (mag_opt(j,i),j=1,3), '  ', (mag_opt_stim(j,i),j=1,3)
+! 				-1.d-8 * in_fixed%wl**2 * onum(i) + in_fixed%wl, (in_fixed%epsilon(j,i),j=0,3), '  ',(in_fixed%eta(j,i),j=0,3), '  ',&
+! 				(in_fixed%eta_stim(j,i),j=0,3),'  ', (in_fixed%mag_opt(j,i),j=1,3), '  ', (in_fixed%mag_opt_stim(j,i),j=1,3)
 ! 		enddo
-! 		close(12)
-! 		
-! 		open(unit=12,file=output_rtcoef_zeeman,action='write',status='replace')
-! 		write(12,FMT='(A,56X,A,48X,A,48X,A,48X,A,48X,A,48X,A,48X)') 'Lambda','epsilon','eta_A','eta_S','rho_A','rho_S'
-! 		do i = 1, in_fixed%no			
-! 			write(12,FMT='(2(1X,E15.8),4(1X,E12.5),2X,4(1X,E12.5),2X,4(1X,E12.5),2X,3(1X,E12.5),2X,3(1X,E12.5))') &
-! 				-1.d-8 * in_fixed%wl**2 * onum(i), &
-! 				-1.d-8 * in_fixed%wl**2 * onum(i) + in_fixed%wl, (epsilon_zeeman(j,i),j=0,3), (eta_zeeman(j,i),j=0,3),&
-! 				(eta_stim_zeeman(j,i),j=0,3), (mag_opt_zeeman(j,i),j=1,3), (mag_opt_stim_zeeman(j,i),j=1,3)
-! 		enddo
-! 		close(12)
+! 		close(12) 		
+!		pause
 		
 		
 ! Clean the allocated memory

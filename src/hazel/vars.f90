@@ -98,9 +98,9 @@ implicit none
 	type type_slab
 		integer :: nshells, nmus_photosphere, nmus_nophotosphere, nmus
 		real(kind=8), pointer :: nbar(:,:), omega(:,:), Lambda(:), z(:), density(:), tau(:,:)
-		real(kind=8), pointer :: boundary(:,:,:), nbar_old(:,:), omega_old(:,:)
-		real(kind=8), pointer :: emission_vector(:,:,:)
-		real(kind=8), pointer :: propagation_matrix(:,:,:,:)
+		real(kind=8), pointer :: boundary(:,:,:), nbar_old(:,:), omega_old(:,:), etaI_abs(:, :, :)
+		real(kind=8), pointer :: emission_vector(:,:,:,:)
+		real(kind=8), pointer :: propagation_matrix(:,:,:,:,:)
 		real(kind=8), pointer :: mus(:), weights(:), velocity(:), B(:), thB(:), chiB(:)
 	end type type_slab
 		

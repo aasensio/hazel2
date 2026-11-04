@@ -925,7 +925,7 @@ contains
             endif
             print *, 'Not implemented'
 !           call slapsolver(SEE_A,SEE_b)
-        end select
+        end select        
 
     
 ! Write the solution
@@ -935,6 +935,8 @@ contains
 !               irtab(i),SEE_b(i)
 !       enddo
 !       close(7)
+
+!       pause
         
 !       deallocate(aesto)
 !       deallocate(ntlsto)
