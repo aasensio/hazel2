@@ -1,0 +1,2 @@
+option('native', type: 'boolean', value: false,
+       description: 'Compile the Fortran code with -march=native (not portable)')

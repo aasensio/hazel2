@@ -18,6 +18,7 @@ TODO
 .Python
 env/
 build/
+.mesonpy-*/
 develop-eggs/
 dist/
 downloads/

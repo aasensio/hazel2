@@ -276,34 +276,34 @@ contains
 		enddo
 		
 ! We write the upper level rho^K_Q(J,J') in the reference frame of the vertical
-		open(unit=12, file='upper',action='write',status='replace')
-		do j2 = jminu2, jmaxu2, 2
-			do jp2 = jminu2, jmaxu2, 2
-				kmin = abs(jp2-j2)/2
-				kmax = (jp2+j2) / 2
-				do k = kmin, kmax
-					do q = -k, k
-						write(12,FMT='(4(1X,I3),2(1x,e15.7))') j2, jp2, k, q, real(rhou(j2,jp2,k,q)), aimag(rhou(j2,jp2,k,q))
-					enddo
-				enddo
-			enddo
-		enddo
-		close(12)
+! 		open(unit=12, file='upper',action='write',status='replace')
+! 		do j2 = jminu2, jmaxu2, 2
+! 			do jp2 = jminu2, jmaxu2, 2
+! 				kmin = abs(jp2-j2)/2
+! 				kmax = (jp2+j2) / 2
+! 				do k = kmin, kmax
+! 					do q = -k, k
+! 						write(12,FMT='(4(1X,I3),2(1x,e15.7))') j2, jp2, k, q, real(rhou(j2,jp2,k,q)), aimag(rhou(j2,jp2,k,q))
+! 					enddo
+! 				enddo
+! 			enddo
+! 		enddo
+! 		close(12)
 		
-! We write the lower level rho^K_Q(J,J') in the reference frame of the vertical
-		open(unit=12, file='lower',action='write',status='replace')
-		do j2 = jminl2, jmaxl2, 2
-			do jp2 = jminl2, jmaxl2, 2
-				kmin = abs(jp2-j2)/2
-				kmax = (jp2+j2) / 2
-				do k = kmin, kmax
-					do q = -k, k
-						write(12,FMT='(4(1X,I3),2(1x,e15.7))') j2, jp2, k, q, real(rhol(j2,jp2,k,q)), aimag(rhol(j2,jp2,k,q))
-					enddo
-				enddo
-			enddo
-		enddo
-		close(12)		
+! ! We write the lower level rho^K_Q(J,J') in the reference frame of the vertical
+! 		open(unit=12, file='lower',action='write',status='replace')
+! 		do j2 = jminl2, jmaxl2, 2
+! 			do jp2 = jminl2, jmaxl2, 2
+! 				kmin = abs(jp2-j2)/2
+! 				kmax = (jp2+j2) / 2
+! 				do k = kmin, kmax
+! 					do q = -k, k
+! 						write(12,FMT='(4(1X,I3),2(1x,e15.7))') j2, jp2, k, q, real(rhol(j2,jp2,k,q)), aimag(rhol(j2,jp2,k,q))
+! 					enddo
+! 				enddo
+! 			enddo
+! 		enddo
+! 		close(12)		
 		
 ! We transform the density matrix to the reference system of the magnetic field. We perform a rotation of the 
 ! density matrix elements following eq. 3.98 of Landi & Landolfi (2004)

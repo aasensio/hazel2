@@ -1,4 +1,9 @@
-__version__ = "1.0.0"
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("hazel2")
+except PackageNotFoundError:
+    __version__ = "unknown"
 __author__ = "Andres Asensio Ramos"
 
 from .atmosphere import *
@@ -10,6 +15,7 @@ from .tools import *
 from .io_hazel import *
 from .sir import *
 from .exceptions import *
+from .nlte_weights import *
 from .util import *
 from .analysis import *
 from . import codes
