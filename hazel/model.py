@@ -653,6 +653,8 @@ class Model(object):
                     self.logger.info("    * Line in NLTE if available")
         else:
             self.atmospheres[atm['name']].nlte = False
+            if (hazel.util.tobool(atm.get('nlte', 'False'))):
+                warnings.warn("NLTE was requested but PyTorch is not installed, so LTE will be used. Install it with: pip install hazel2[nn]")
                 
         if ('wavelength' not in atm):
             atm['wavelength'] = None

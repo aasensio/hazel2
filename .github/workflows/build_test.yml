@@ -12,13 +12,10 @@ jobs:
         shell: bash -l {0}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7.0.1
+      - uses: conda-incubator/setup-miniconda@v4.1.0
         with:
-          fetch-depth: 0
-          fetch-tags: 'true'
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          python-version: '3.10'          
+          python-version: '3.13'          
           activate-environment: test          
           auto-activate-base: false
           channels: conda-forge          
@@ -28,24 +25,21 @@ jobs:
         run: |          
           conda info -a
           conda list
-          conda install -c conda-forge Cython numpy scipy h5py sphinx sphinx_rtd_theme ipython nbsphinx tqdm astropy configobj matplotlib numpydoc mpich mpi4py pytest-cov zarr gfortran_linux-64 
+          conda install -c conda-forge scipy h5py sphinx sphinx_rtd_theme ipython nbsphinx tqdm astropy configobj asciitree matplotlib numpydoc mpich mpi4py pytest-cov zarr gfortran_linux-64 gcc_linux-64
           pip install coveralls
           pip install torch
 
       - name: Build
         run: |
           conda list
-          python setup.py develop
+          pip install .
 
       - name: Test with pytest
         run: |          
-          py.test -v --cov-report lcov --cov hazel
+          pytest -v --cov-report lcov --cov hazel
 
       - name: Publish to coveralls.io
-        uses: coverallsapp/github-action@v1.1.2
+        uses: coverallsapp/github-action@v2.3.8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: coverage.lcov
-
-            #      - name: Build wheels
-            #        uses: pypa/cibuildwheel@v2.16.0
+          file: coverage.lcov

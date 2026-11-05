@@ -1,44 +1,65 @@
 [build-system]
-#requires = ["setuptools>=61.0", "cython", "numpy"]
-requires = ["setuptools", "cython", "numpy"]
-build-backend = "setuptools.build_meta"
+# meson<1.11: newer versions check Cython against the python3 that pkg-config
+# finds instead of the Python doing the build, which fails when they differ
+# (e.g. conda compilers on a machine with a system Python).
+requires = ["meson-python>=0.18", "meson>=1.4,<1.11", "Cython>=3.1", "numpy>=2.0"]
+build-backend = "mesonpy"
 
 [project]
-name = "hazel"
-#version = "2018.9.22"
+name = "hazel2"
+dynamic = ["version"]
 authors = [
   { name="A. Asensio Ramos", email="andres.asensio@iac.es" },
 ]
 description = "Hazel synthesis and inversion code"
 readme = "README.md"
-requires-python = ">=3.6"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+keywords = ["hazel", "radiative transfer"]
 classifiers = [
     'Development Status :: 4 - Beta',
     'Environment :: Console',
     'Intended Audience :: Science/Research',
     'Intended Audience :: Developers',
-    "Operating System :: Unix",
-    "Operating System :: POSIX",
+    "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
-    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-    'Programming Language :: Python',
-    "Programming Language :: Python :: 3.4",
+    'Programming Language :: Fortran',
+    'Programming Language :: Python :: 3',
     "Programming Language :: Python :: Implementation :: CPython",
     'Topic :: Scientific/Engineering',
     'Topic :: Scientific/Engineering :: Physics',
 ]
-dynamic = ["license", "keywords", "dependencies", "version"]
+dependencies = [
+    "numpy",
+    "scipy",
+    "configobj",
+    "h5py",
+    "astropy",
+    "tqdm",
+    "asciitree",
+]
 
-[tool.setuptools_scm]
-# can be empty if no extra settings are needed, presence enables setuptools-scm
+[project.optional-dependencies]
+nn = ["torch"]
+mpi = ["mpi4py"]
+zarr = ["zarr"]
+gui = ["matplotlib", "PyQt5"]
 
 [project.urls]
 "Homepage" = "https://github.com/aasensio/hazel2"
 "Bug Tracker" = "https://github.com/aasensio/hazel2/issues"
 
 [tool.cibuildwheel]
-build = "cp313-*"
+build = "cp311-* cp312-* cp313-* cp314-*"
+skip = "*-musllinux_*"
 build-frontend = "build"
-skip = "pp* *-musllinux_*"
-build-verbosity = 3
-manylinux-x86_64-image = "quay.io/pypa/manylinux_2_28_x86_64"
+build-verbosity = 1
+test-requires = "pytest"
+# Plain `pytest`, not `python -m pytest`: the latter would put the repository
+# root first on sys.path and test the sources instead of the installed wheel.
+test-command = "cd {project} && pytest test"
+
+[tool.cibuildwheel.linux]
+manylinux-x86_64-image = "manylinux_2_28"
+manylinux-aarch64-image = "manylinux_2_28"

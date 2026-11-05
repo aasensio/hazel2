@@ -7,6 +7,7 @@ from hazel.codes import sir_code
 from hazel.io_hazel import Generic_SIR_file
 import scipy.interpolate as interp
 from hazel.exceptions import NumericalErrorSIR
+from hazel.nlte_weights import get_checkpoint
 from hazel.transforms import transformed_to_physical, jacobian_transformation
 
 # try:
@@ -16,8 +17,8 @@ from hazel.transforms import transformed_to_physical, jacobian_transformation
 
 try:
     from hazel.forward_nn_transformer import Forward
-except:
-    pass
+except Exception:
+    Forward = None
 
 
 __all__ = ['SIR_atmosphere']
@@ -193,8 +194,10 @@ class SIR_atmosphere(General_atmosphere):
             #     self.logger.info('    * Reading NLTE Neural Network')                    
             # self.graphnet_nlte = Forward(checkpoint=checkpoint, verbose=verbose)
             
-            path = str(__file__).split('/')
-            checkpoint = '/'.join(path[0:-1])+'/data/2024-09-13-11_17_34.best.pth'
+            if Forward is None:
+                raise ImportError("The NLTE treatment of Ca II 8542 needs PyTorch. Install it with: pip install hazel2[nn]")
+
+            checkpoint = get_checkpoint()
             if (verbose >= 1):
                 self.logger.info('    * Reading NLTE Transformer Neural Network')
             self.transformer_nlte = Forward(checkpoint=checkpoint, verbose=verbose)

@@ -3,140 +3,68 @@
 Installation
 ============
 
-Generalities
-------------
+Using pip
+---------
 
-|hazel2| is a Python 3 module with some wrapped compiled Fortran routines. It should
-be pretty easy to install once you have a working compiler in your system.
-
-There are different ways to install |hazel2|, but the best is to install
-it into a virtual environment either with `pip <http://www.virtualenv.org>`_ or `conda <https://conda.io/docs/user-guide/tasks/manage-environments.html>`_,
-which makes everything much more safer, plus making sure that all packages are installed for the code.
-For example, once you have installed `Miniconda <https://conda.io/miniconda.html>`_, you can generate
-a new environment and install the dependencies (you can install whatever version of Python 3 you desire).
-For consistency, it is better to use the gfortran compilers from Anaconda. In the
-following we show how install all packages with Anaconda. Anyway, feel free to use
-the gfortran compiler from your system but you might have some issues.
-
-For a Linux OS, type:
+|hazel2| is distributed with precompiled binaries for Linux (x86_64 and aarch64) and macOS
+(Apple Silicon and Intel), so no compiler is needed. It requires Python 3.11 or newer. We recommend
+installing it in a virtual environment:
 
 ::
 
-    conda create -n hazel_env python=3.10
-    conda activate hazel_env
-    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpich mpi4py configobj gfortran setuptools asciitree gcc_linux-64
+    python -m venv hazel_env
+    source hazel_env/bin/activate
+    pip install hazel2
 
-A different version of Python can be installed in the environment. For Mac OS, type:
+Note that the package is called ``hazel2`` on PyPI, but it is imported as ``hazel``. Windows
+users can install it inside `WSL <https://learn.microsoft.com/windows/wsl/>`_.
 
-::
+The following optional features can be added between brackets, for instance ``pip install "hazel2[nn,mpi]"``:
 
-    conda create -n hazel_env python=3.10
-    conda activate hazel_env
-    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpich mpi4py configobj gfortran_osx-64 gcc_osx-64 asciitree
+* ``nn``: PyTorch, needed for the NLTE neural option for synthesizing the Ca II 854.2 nm line.
+* ``mpi``: ``mpi4py``, for inverting large maps in parallel. It needs an MPI library in your system.
+* ``zarr``: support for ``zarr`` input and output files.
+* ``gui``: ``matplotlib`` and ``PyQt5``, needed for the ``hazelgui`` graphical interface.
 
-The specific packages for the Fortran and C compilers might change depending on the version of Anaconda
-that you have installed in your system. Their name might also be `gfortran` and `gcc` or simply `compilers`.
-Feel free to add `matplotlib` for doing some plots. You will need it if you want to run some of the examples
-shown in this documentation in your computer.
-
-If you also want to use the GUI, you need to add two new dependencies:
-
-::
-
-    conda create -n hazel_env python=3.10
-    conda activate hazel_env
-    conda install -c conda-forge cython numpy h5py tqdm scipy astropy mpich mpi4py configobj gfortran_linux-64 gcc_linux-64 matplotlib pyqt asciitree
-
-Remember to add `ipython` if you are using this shell to run |hazel2|. Otherwise, it will use
-`ipython` from another environment and you can get confused.
-
-If you want to use the NLTE neural option for synthesizing the Ca II 854.2 nm line, the packages ``pytorch``,
-``pytorch_geometric`` and ``pytorch-scatter`` should be installed. Take a look at the documentation for `PyTorch <https://pytorch.org/>`_
-, `PyTorch Geometric <https://pytorch-geometric.readthedocs.io/en/latest/>`_ `PyTorch Scatter <https://github.com/rusty1s/pytorch_scatter>`_ for more information.
-A typical installation using `pip` can be done using:
+The first time the NLTE option is used, the weights of the neural network (76 MB) are downloaded
+and stored in ``~/.cache/hazel``. If the nodes of your supercomputer have no access
+to the network, download them from a login node:
 
 ::
-    
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-    pip install torch_geometric
-    pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.2.0+cpu
 
+    python -c "import hazel; hazel.download_nlte_model()"
+
+The file can also be placed in any other directory, indicated with the ``HAZEL_DATA_DIR`` environment variable.
 
 Installation from source
 ------------------------
-Since |hazel2| is still in a heavy development phase, the only possible way of
-installing the code is via compilation of the sources.
-Once your environment is activated (or in your base environment if you prefer not to
-use a different environment), the sources can be installed by cloning this repository and installing it:
+
+Since improvements are pushed all the time, you might want to use the development version. This
+needs a Fortran and a C compiler (``gfortran`` and ``gcc``, for instance from
+``conda install -c conda-forge compilers``). The remaining build tools are downloaded by ``pip``:
 
 ::
-    
+
     git clone https://github.com/aasensio/hazel2
+    cd hazel2
     pip install .
 
-Do not forget to often pull from the `repository <https://github.com/aasensio/hazel2>`_ and recompile
+Binaries are built to run in any computer. To tune the code for your own CPU, which is a
+few percent faster, use:
+
+::
+
+    pip install . -Csetup-args=-Dnative=true
+
+Do not forget to often pull from the `repository <https://github.com/aasensio/hazel2>`_ and reinstall
 the code by typing the following from the location of the sources:
 
 ::
-    
+
     git pull
     pip install .
-    
-Improvements are pushed all the time in |hazel2|. In case you do not want
-to reinstall it after every pull or you are in fact helping on the development
-of the code, you can also install it in develop mode:
 
-::
-    
-    git pull
-    pip install -e .
-
-If you want a verbose installation, you can also add the ``-v`` or ``-vvv`` flags to the previous command.
-
-..
-    Using pip (not preferred until a stable version is published)
-    ---------
-
-    |hazel2| can be easily installed from PyPI by invoking:
-
-    ::
-
-        pip install hazel
-
-    Using conda
-    -----------
-
-    It can also be installed from the Anaconda Cloud by invoking:
-
-    ::
-
-        conda install hazel
-
-Requirements
-------------
-|hazel2| depends on the following external packages, that should be
-pretty straightforward to install:
-
-* ``numpy``
-* ``h5py``
-* ``scipy``
-* ``astropy``
-* ``mpich``
-* ``mpi4py``
-* ``configobj``
-* ``tqdm``
-* ``asciitree``
-
-If you want to use the GUI, you also need to install the following dependencies:
-
-* ``matplotlib``
-* ``pyqt5``
-
-All of them can be installed in Anaconda with:
-
-::
-
-    conda install numpy h5py scipy astropy mpi4py configobj tqdm pyqt matplotlib
+If you want a verbose installation, you can also add the ``-v`` flag to the previous command.
 
 Container
 ---------
@@ -160,19 +88,19 @@ distribution and running:
 
 For developers
 --------------
-Remember that if you want to be involved in the development of the code, it is perhaps more
-useful to install the code using
+If you want to be involved in the development of the code, install it in editable mode,
+so that changes are used immediately and the Fortran code is recompiled when importing ``hazel``:
 
 ::
-    
-    python setup.py develop
 
-so that you can immediately test the changes to the code. This development
-version can be uninstalled by typing:
+    pip install meson-python "meson<1.11" ninja cython numpy
+    pip install --no-build-isolation -e .
+
+This version can be uninstalled by typing:
 
 ::
-    
-    python setup.py uninstall
+
+    pip uninstall hazel2
 
 Documentation
 -------------

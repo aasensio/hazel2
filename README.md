@@ -40,6 +40,39 @@ Graphical front-ends are also provided.
 - User-friendly API.
 
 
+## Installation
+
+Precompiled binaries are available for Linux and macOS, so no compiler is needed:
+
+    pip install hazel2
+
+The package is imported as `hazel`. Add `hazel2[nn]` for the NLTE treatment of Ca II 854.2 nm,
+`hazel2[mpi]` for parallel inversions, `hazel2[zarr]` for zarr files and `hazel2[gui]` for
+the graphical interface. See the
+[installation instructions](http://aasensio.github.io/hazel2/started/installation.html)
+for building from source.
+
+For editable installations, do this once per environment
+
+    pip install "meson-python>=0.18" "meson>=1.4,<1.11" "Cython>=3.1" "numpy>=2.0" ninja
+
+And then
+    
+    pip install --no-build-isolation -e . -Cbuild-dir=build/dev
+
+--no-build-isolation is needed because an editable install recompiles when you import the package. Normally pip builds in a temporary environment and then deletes it, so meson, ninja and Cython would be gone by the time you import.
+-Cbuild-dir is needed to keep the compiled files in a known place. build/ is already in .gitignore. It still holds old setuptools output, which is why I suggest the build/dev subfolder.
+
+Day-to-day behaviour
+
+- Python changes: edits to the .py files in hazel/ take effect straight away.
+- Fortran or Cython changes: these are recompiled automatically the next time you import hazel, so that import pauses while it builds. I didn't test this step, but it's how meson-python documents it. An import with nothing to rebuild took about 0.5 s.
+- Seeing compiler output: add -Ceditable-verbose=true to the install command. Otherwise a rebuild looks like a silent hang.
+- New Python files: meson.build lists them explicitly under py.install_sources, so add any new file there or it won't be importable.
+- Activate the environment: the rebuild needs ninja and meson on your PATH, so a Python started without the venv activated may fail on import.
+- Compilers: the choice is saved in the build directory at setup. If you change compilers, delete build/dev and reinstall.
+- Native builds: for a build tuned to your machine, add -Csetup-args=-Dnative=true.
+
 ## Getting started
 
 Read the [documentation](http://aasensio.github.io/hazel2) for getting 

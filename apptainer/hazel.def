@@ -10,5 +10,5 @@ From: continuumio/miniconda3
     conda activate base 
     git clone https://github.com/aasensio/hazel2.git
     cd hazel2
-    python setup.py install 
+    pip install .
     conda clean -afy

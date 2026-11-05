@@ -1,0 +1,4 @@
+# Keep these out of the source distribution (PyPI limits files to 100 MB).
+hazel/data/*.pth export-ignore
+docs export-ignore
+apptainer export-ignore

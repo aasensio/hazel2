@@ -1,0 +1,96 @@
+# Builds the wheels and the source distribution, and publishes them.
+#   - pull requests: build and test only
+#   - manual run (Actions tab): also upload to TestPyPI
+#   - tag vX.Y.Z: also upload to PyPI. The tag has to match the version in meson.build
+# Uploads use PyPI Trusted Publishing, so no token is stored in the repository.
+
+name: Wheels
+
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v7.1.0
+        with:
+          python-version: '3.13'
+      - name: Build
+        run: pipx run build --sdist
+      - name: Install from the source distribution and test
+        run: |
+          sudo apt-get update && sudo apt-get install -y gfortran
+          pip install dist/*.tar.gz pytest
+          pytest test
+      - uses: actions/upload-artifact@v7.0.2
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+
+  wheels:
+    name: wheels (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-15-intel]
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      # gfortran from conda-forge targets old macOS versions, unlike the Homebrew
+      # one, which would limit the wheels to the macOS version of the runner.
+      - uses: conda-incubator/setup-miniconda@v4.1.0
+        if: runner.os == 'macOS'
+        with:
+          miniforge-version: latest
+          auto-activate-base: false
+          activate-environment: ''
+      - name: Install gfortran
+        if: runner.os == 'macOS'
+        shell: bash -el {0}
+        run: |
+          conda create -y -p "$HOME/fortran" -c conda-forge gfortran
+          echo "CIBW_ENVIRONMENT_MACOS=FC=$HOME/fortran/bin/gfortran SDKROOT=$(xcrun --show-sdk-path) MACOSX_DEPLOYMENT_TARGET=11.0 LDFLAGS=-Wl,-rpath,$HOME/fortran/lib" >> "$GITHUB_ENV"
+
+      - uses: pypa/cibuildwheel@v4.3.5
+      - uses: actions/upload-artifact@v7.0.2
+        with:
+          name: wheels-${{ matrix.os }}
+          path: wheelhouse/*.whl
+
+  publish-testpypi:
+    if: github.event_name == 'workflow_dispatch'
+    needs: [sdist, wheels]
+    runs-on: ubuntu-latest
+    environment: testpypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: pypa/gh-action-pypi-publish@v1.14.3
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  publish-pypi:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [sdist, wheels]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Check that the tag matches the package version
+        run: ls dist | grep -F "hazel2-${GITHUB_REF_NAME#v}.tar.gz"
+      - uses: pypa/gh-action-pypi-publish@v1.14.3
