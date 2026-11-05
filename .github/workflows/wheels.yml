@@ -50,12 +50,15 @@ jobs:
           miniforge-version: latest
           auto-activate-base: false
           activate-environment: ''
+      # The conda assembler runs clang-23, which it looks up in PATH. The directory
+      # goes last so that conda's cc and ar do not replace the system ones. \$PATH
+      # is left for cibuildwheel to expand.
       - name: Install gfortran
         if: runner.os == 'macOS'
         shell: bash -el {0}
         run: |
           conda create -y -p "$HOME/fortran" -c conda-forge gfortran
-          echo "CIBW_ENVIRONMENT_MACOS=FC=$HOME/fortran/bin/gfortran SDKROOT=$(xcrun --show-sdk-path) MACOSX_DEPLOYMENT_TARGET=11.0 LDFLAGS=-Wl,-rpath,$HOME/fortran/lib" >> "$GITHUB_ENV"
+          echo "CIBW_ENVIRONMENT_MACOS=FC=$HOME/fortran/bin/gfortran PATH=\$PATH:$HOME/fortran/bin SDKROOT=$(xcrun --show-sdk-path) MACOSX_DEPLOYMENT_TARGET=11.0 LDFLAGS=-Wl,-rpath,$HOME/fortran/lib" >> "$GITHUB_ENV"
 
       - uses: pypa/cibuildwheel@v4.3.5
       - uses: actions/upload-artifact@v7.0.2
