@@ -390,9 +390,9 @@ integer :: i
     input_model_file = 'helium.mod'
     
 ! Read the atomic model 
-    ! call read_model_file(input_model_file)
+    call read_model_file(input_model_file)
 
-    call read_model_file_twolevel(input_model_file)
+    !call read_model_file_twolevel(input_model_file)
 
     ! Force recomputation of RT coefficients by using an absurd velocity
     do i = 1, 10
